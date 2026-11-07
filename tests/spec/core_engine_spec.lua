@@ -56,14 +56,35 @@ describe("engine", function()
         assert.equal("tr-train-1", H.cur(ns))
     end)
 
-    it("drops a background goal whose quest left the log and goes back to an accept the player undid", function()
+    it("drops a background goal whose quest the player abandoned and keeps the cursor (quest given up)", function()
         m, ns = H.boot()
+        local cdb = m.env.FastesBoooyCharDB
         H.playTo(m, ns, "tr-train-1")
         assert.same({ "tr-bg-364" }, H.ids(E():GetBackground()))
-        m:AbandonQuest(364)
+        local mark = #m.chat
+        m:AbandonQuest(364) -- by hand, without pressing Skip first
         H.settle(m)
         assert.same({}, E():GetBackground())
-        assert.equal("tr-363-364", H.cur(ns), "the route quest must be taken again")
+        assert.equal("tr-train-1", H.cur(ns), "no jump back to the accept of the abandoned quest")
+        assert.is_true(E():IsDone("tr-363-364"))
+        assert.is_nil(E():GetAcceptQuests()[364], "a given-up quest is not auto-accepted again")
+        -- its single-quest step is skipped; the turn-in step also accepts 3901: not marked
+        assert.is_true(cdb.skipped["tr-complete-364"])
+        assert.is_nil(cdb.skipped["tr-turnin-364"])
+        assert.same({ accept = "tr-363-364", steps = { "tr-complete-364" } }, cdb.gaveUp[364])
+        assert.same({ 'Quest "The Mindless Ones" abandoned: its steps are skipped (/fb prev to go back).' },
+            H.chat(m, mark + 1))
+        -- the mixed step waits only for its other action
+        E():Next() -- train
+        H.settle(m)
+        assert.equal("tr-turnin-364", H.cur(ns))
+        local lines = ns.Steps:Describe(E():GetCurrentStep())
+        assert.same({ "turnin", "accept" }, { lines[1].kind, lines[2].kind })
+        assert.is_true(lines[1].done, "turn-in of the given-up quest")
+        assert.is_false(lines[2].done)
+        m:AddQuestToLog(3901)
+        H.settle(m)
+        assert.equal("tr-level-2", H.cur(ns))
     end)
 
     it("keeps the cursor when the player skips a quest's step and then abandons the quest", function()
@@ -87,6 +108,58 @@ describe("engine", function()
         H.settle(m)
         assert.is_false(E():IsPinned())
         assert.equal("tr-363-364", H.cur(ns))
+    end)
+
+    it("leaves the route's own `abandon` step alone when the player abandons that quest by hand", function()
+        m, ns = H.boot()
+        local cdb = m.env.FastesBoooyCharDB
+        H.playTo(m, ns, "tr-abandon-3902")
+        local mark = #m.chat
+        m:AbandonQuest(3902) -- what the step asks for
+        H.settle(m, 1)
+        assert.equal("tr-complete-380", H.cur(ns))
+        assert.is_nil(cdb.gaveUp[3902])
+        assert.same({}, cdb.skipped)
+        assert.same({}, H.chat(m, mark + 1))
+
+        -- abandoned early, before the route's abandon step: the same flow as before
+        m, ns = H.boot()
+        cdb = m.env.FastesBoooyCharDB
+        H.playTo(m, ns, "tr-optional")
+        mark = #m.chat
+        m:AbandonQuest(3902)
+        H.settle(m, 1)
+        assert.equal("tr-optional", H.cur(ns))
+        assert.is_true(E():IsDone("tr-turnin-3901-376"))
+        assert.is_true(E():IsDone("tr-abandon-3902"))
+        assert.is_nil(cdb.gaveUp[3902])
+        assert.same({}, H.chat(m, mark + 1))
+    end)
+
+    it("keeps a quest given up by hand across /reload; a cold start rebuilds from the game state", function()
+        m, ns = H.boot()
+        H.playTo(m, ns, "tr-train-1")
+        m:AbandonQuest(364)
+        H.settle(m)
+        assert.equal("tr-train-1", H.cur(ns))
+        local m2, ns2 = H.reload(m)
+        assert.equal("tr-train-1", H.cur(ns2), "/reload: the give-up is saved")
+        assert.same({ accept = "tr-363-364", steps = { "tr-complete-364" } }, m2.env.FastesBoooyCharDB.gaveUp[364])
+        assert.is_true(m2.env.FastesBoooyCharDB.skipped["tr-complete-364"])
+        assert.is_nil(ns2.Engine:GetAcceptQuests()[364])
+        m2:AssertClean()
+        -- empty SavedVariables: nothing in the game says the quest was given up (like a Skip)
+        local m3, ns3 = H.reload(m, { coldStart = true })
+        assert.equal("tr-363-364", H.cur(ns3), "the quest is not in the log: back to its accept")
+        assert.same({}, m3.env.FastesBoooyCharDB.gaveUp)
+        assert.is_false(H.chatHas(m3, "abandoned"), "no give-up without a QUEST_REMOVED")
+        m3:AssertClean()
+        -- and the usual reconstruction still lands on the right step
+        local m4, ns4 = H.boot({ player = { level = 2, xp = 600 },
+            mock = { completedQuests = { 363, 364, 3901, 376 } }, setup = function(mm) mm:_addToLog(380) end })
+        assert.equal("tr-turnin-3901-376", H.cur(ns4))
+        assert.same({}, m4.env.FastesBoooyCharDB.gaveUp)
+        m4:AssertClean()
     end)
 
     it("observes transient actions only on the displayed step", function()

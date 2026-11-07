@@ -58,6 +58,23 @@ describe("action completion", function()
         assert.is_false(done(a, { index = 2, givenUp = { [363] = 5 } }))
     end)
 
+    it("complete / turnin: a given-up quest out of the log counts before the given-up index (non-bg steps)", function()
+        local c = { type = "complete", quest = 364 }
+        local t = { type = "turnin", quest = 364 }
+        local gu = { [364] = 5 }
+        assert.is_false(done(c, { index = 3 }))
+        assert.is_true(done(c, { index = 3, givenUp = gu }))
+        assert.is_true(done(t, { index = 4, givenUp = gu }))
+        assert.is_false(done(t, { index = 5, givenUp = gu }), "at / after the given-up index")
+        assert.is_false(done(c, { givenUp = gu }), "no index: not comparable")
+        assert.is_false(S():IsActionDone(c, { bg = true }, { index = 3, givenUp = gu }), "bg step")
+        m:AddQuestToLog(364)
+        assert.is_false(done(c, { index = 3, givenUp = gu }), "back in the log: its objectives count")
+        assert.is_false(done(t, { index = 3, givenUp = gu }), "back in the log: not turned in")
+        m:CompleteObjectives(364)
+        assert.is_true(done(c, { index = 3, givenUp = gu }))
+    end)
+
     it("turnin: quest flagged completed (or QUEST_TURNED_IN seen this session)", function()
         local a = { type = "turnin", quest = 363 }
         m:AddQuestToLog(363)

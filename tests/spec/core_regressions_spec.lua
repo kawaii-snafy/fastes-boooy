@@ -145,14 +145,18 @@ describe("regressions", function()
             H.settle(m)
             assert.equal("t376", H.cur(ns), "the optional 364 steps are forwarded")
             -- "without the item, abandon 364": the accept of 364 must not come back
+            local mark = #m.chat
             m:AbandonQuest(364)
             H.settle(m)
             assert.equal("t376", H.cur(ns))
             assert.is_true(E():IsDone("t363a364"))
             assert.is_nil(E():GetAcceptQuests()[364])
+            -- nothing left to skip: no give-up record, no chat line
+            assert.is_nil(m.env.FastesBoooyCharDB.gaveUp[364])
+            assert.same({}, H.chat(m, mark + 1))
         end)
 
-        it("abandon before skipping still goes back; a later accept of the same quest is not given up", function()
+        it("abandoning by hand keeps the cursor; a later accept of the same quest is still needed", function()
             boot({
                 { id = "a364", accept = 364 },
                 { id = "c364", complete = 364 },
@@ -160,29 +164,320 @@ describe("regressions", function()
                 { id = "r364", accept = 364 },
                 { id = "m1", manual = true },
             })
+            local cdb = m.env.FastesBoooyCharDB
             m:AddQuestToLog(364)
             H.settle(m)
             assert.equal("c364", H.cur(ns))
-            m:AbandonQuest(364)
+            m:AbandonQuest(364) -- no Skip on c364 first
             H.settle(m)
-            assert.equal("a364", H.cur(ns), "no mark on c364 yet: the route quest must be taken again")
-            m:AddQuestToLog(364)
-            H.settle(m)
-            E():Skip() -- skip c364 first ...
-            H.settle(m)
-            assert.equal("a376", H.cur(ns))
-            m:AbandonQuest(364) -- ... then abandon
-            H.settle(m)
-            assert.equal("a376", H.cur(ns))
+            assert.equal("a376", H.cur(ns), "c364 skipped for the player, no jump back to a364")
+            assert.is_true(cdb.skipped.c364)
             assert.is_true(E():IsDone("a364"))
-            assert.is_false(E():IsDone("r364"), "the accept after the given-up step is still needed")
+            assert.is_false(E():IsDone("r364"), "the accept after the given-up instance is still needed")
             m:AddQuestToLog(376)
             H.settle(m)
             assert.equal("r364", H.cur(ns))
             assert.is_true(E():GetAcceptQuests()[364])
+            -- taken again for r364 (inside the accept window): the given-up instance stays skipped
             m:AddQuestToLog(364)
             H.settle(m)
             assert.equal("m1", H.cur(ns))
+            assert.is_true(cdb.skipped.c364)
+            assert.is_true(E():IsDone("c364"))
+            -- turned in later: nothing left to keep
+            m:TurnInQuest(364)
+            H.settle(m)
+            assert.is_nil(cdb.gaveUp[364])
+            assert.is_nil(cdb.skipped.c364)
+            assert.equal("m1", H.cur(ns))
+        end)
+    end)
+
+    describe("quests abandoned by hand (order-independent give-up)", function()
+        -- 364 and 376 run in parallel; a transient step lies between their steps
+        local function route()
+            return {
+                { id = "a364", accept = 364 },
+                { id = "a376", accept = 376 },
+                { id = "c364", complete = 364 },
+                { id = "go1", go = true, at = { 1420, 40, 40 } },
+                { id = "c376", complete = 376 },
+                { id = "t364", turnin = 364 },
+                { id = "t376", turnin = 376 },
+                { id = "m1", manual = true },
+            }
+        end
+        local GAVE_UP = 'Quest "The Mindless Ones" abandoned: its steps are skipped (/fb prev to go back).'
+
+        local function cdb() return m.env.FastesBoooyCharDB end
+
+        local function start()
+            boot(route())
+            m:AddQuestToLog(364)
+            m:AddQuestToLog(376)
+            H.settle(m)
+            assert.equal("c364", H.cur(ns))
+        end
+
+        -- remove a quest from the log without any event (the server-side half of a removal)
+        local function silentRemove(q)
+            for i, e in ipairs(m.questLog) do
+                if e.questID == q then table.remove(m.questLog, i); return end
+            end
+        end
+
+        it("abandon without Skip: the quest's steps are skipped, the cursor neither goes back nor jumps ahead", function()
+            start()
+            local mark = #m.chat
+            m:AbandonQuest(364)
+            H.settle(m)
+            assert.equal("go1", H.cur(ns), "the transient step after it is not forwarded by the auto marks")
+            assert.equal(2, E().anchor, "auto marks are no anchor")
+            assert.is_true(cdb().skipped.c364)
+            assert.is_true(cdb().skipped.t364)
+            assert.same({ accept = "a364", steps = { "c364", "t364" } }, cdb().gaveUp[364])
+            assert.is_true(E():IsDone("a364"))
+            assert.is_nil(E():GetAcceptQuests()[364])
+            assert.same({ GAVE_UP }, H.chat(m, mark + 1))
+            -- the rest of the route is unaffected
+            m:MoveTo(1420, 40, 40)
+            H.settle(m)
+            assert.equal("c376", H.cur(ns))
+            m:CompleteObjectives(376)
+            H.settle(m)
+            assert.equal("t376", H.cur(ns))
+            m:TurnInQuest(376)
+            H.settle(m)
+            assert.equal("m1", H.cur(ns))
+        end)
+
+        it("the cursor does not move back while the check is pending", function()
+            start()
+            local changed = H.record(ns, "STEP_CHANGED")
+            m:AbandonQuest(364)
+            m:Advance(0.3)
+            assert.equal("c364", H.cur(ns), "held at the step of that moment")
+            assert.is_nil(E():GetAcceptQuests()[364], "not re-accepted meanwhile")
+            H.settle(m)
+            assert.equal("go1", H.cur(ns))
+            for _, c in ipairs(changed) do
+                assert.are_not.equal("a364", c[1] and c[1].id, "never displayed the accept again")
+            end
+        end)
+
+        it("abandon then Skip and Skip then abandon end on the same step", function()
+            start()
+            m:AbandonQuest(364)
+            E():Skip() -- right away, on the displayed quest step (before the guide reacted)
+            H.settle(m)
+            assert.equal("go1", H.cur(ns))
+            assert.is_true(cdb().skipped.c364)
+            assert.same({ accept = "a364", steps = { "t364" } }, cdb().gaveUp[364], "c364 was marked by the player")
+
+            start()
+            E():Skip()
+            H.settle(m)
+            assert.equal("go1", H.cur(ns))
+            m:AbandonQuest(364)
+            H.settle(m)
+            assert.equal("go1", H.cur(ns))
+            assert.is_true(E():IsDone("a364"))
+            assert.same({ accept = "a364", steps = { "t364" } }, cdb().gaveUp[364])
+        end)
+
+        it("abandoned after its complete step was passed: that step does not come back", function()
+            start()
+            m:CompleteObjectives(364)
+            H.settle(m)
+            assert.equal("go1", H.cur(ns))
+            m:AbandonQuest(364)
+            H.settle(m)
+            assert.equal("go1", H.cur(ns))
+            assert.is_true(E():IsDone("c364"))
+            assert.same({ accept = "a364", steps = { "c364", "t364" } }, cdb().gaveUp[364])
+        end)
+
+        it("a step mixing the abandoned quest with another one waits only for the other", function()
+            boot({
+                { id = "a", accept = { 364, 376 } },
+                { id = "c", complete = { 364, 376 } },
+                { id = "t", turnin = { 364, 376 } },
+                { id = "m1", manual = true },
+            })
+            m:AddQuestToLog(364)
+            m:AddQuestToLog(376)
+            H.settle(m)
+            assert.equal("c", H.cur(ns))
+            local mark = #m.chat
+            m:AbandonQuest(364)
+            H.settle(m)
+            assert.equal("c", H.cur(ns))
+            assert.same({ accept = "a", steps = {} }, cdb().gaveUp[364], "mixed steps are not marked")
+            assert.same({ GAVE_UP }, H.chat(m, mark + 1))
+            assert.is_true(E():IsDone("a"))
+            local lines = ns.Steps:Describe(E():GetCurrentStep())
+            assert.is_true(lines[1].done, "complete 364 (given up)")
+            assert.equal(376, lines[2].questID)
+            assert.is_false(lines[2].done)
+            m:CompleteObjectives(376)
+            H.settle(m)
+            assert.equal("t", H.cur(ns))
+            m:TurnInQuest(376)
+            H.settle(m)
+            assert.equal("m1", H.cur(ns))
+        end)
+
+        it("re-accepting the quest by hand un-marks its steps (also when the event was missed)", function()
+            start()
+            m:AbandonQuest(364)
+            H.settle(m)
+            assert.equal("go1", H.cur(ns))
+            m:AddQuestToLog(364) -- QUEST_ACCEPTED
+            H.settle(m)
+            assert.is_nil(cdb().gaveUp[364])
+            assert.is_nil(cdb().skipped.c364)
+            assert.is_nil(cdb().skipped.t364)
+            assert.equal("c364", H.cur(ns), "the quest is needed again")
+
+            m:AbandonQuest(364)
+            H.settle(m)
+            assert.equal("go1", H.cur(ns))
+            m:_addToLog(364) -- back in the log without QUEST_ACCEPTED (e.g. while the addon was off)
+            m:Fire("QUEST_LOG_UPDATE")
+            H.settle(m)
+            assert.is_nil(cdb().gaveUp[364])
+            assert.is_nil(cdb().skipped.t364)
+            assert.equal("c364", H.cur(ns))
+        end)
+
+        it("Prev right after the give-up takes the quest back; later Prev / SetCursor work as usual", function()
+            start()
+            m:AbandonQuest(364)
+            H.settle(m)
+            assert.equal("go1", H.cur(ns))
+            E():Prev()
+            H.settle(m)
+            assert.is_false(E():IsPinned())
+            assert.equal("a364", H.cur(ns), "undo: back to the accept of the quest")
+            assert.is_nil(cdb().gaveUp[364])
+            assert.same({}, cdb().skipped)
+            assert.is_true(E():GetAcceptQuests()[364])
+            m:AddQuestToLog(364)
+            H.settle(m)
+            assert.equal("c364", H.cur(ns))
+
+            -- after the player moved on, Prev only shows the previous step
+            m:AbandonQuest(364)
+            H.settle(m)
+            m:MoveTo(1420, 40, 40)
+            H.settle(m)
+            assert.equal("c376", H.cur(ns))
+            E():Prev()
+            assert.is_true(E():IsPinned())
+            assert.equal("go1", H.cur(ns))
+            assert.is_table(cdb().gaveUp[364], "still given up")
+            E():SetCursor(1) -- view the accept step: the progress does not change
+            assert.is_true(E():IsPinned())
+            assert.equal("a364", H.cur(ns))
+            assert.equal(5, E():GetNaturalCursor())
+            E():SetCursor(5)
+            assert.equal("c376", H.cur(ns))
+            assert.is_false(E():IsPinned())
+            assert.is_table(cdb().gaveUp[364])
+            -- Prev onto one of its marked steps drops the give-up as well
+            m:CompleteObjectives(376)
+            H.settle(m)
+            assert.equal("t376", H.cur(ns))
+            E():Prev()
+            H.settle(m)
+            assert.is_nil(cdb().gaveUp[364])
+            assert.equal("a364", H.cur(ns))
+        end)
+
+        it("Reset forgets the give-up with the other marks", function()
+            start()
+            m:AbandonQuest(364)
+            H.settle(m)
+            E():Reset()
+            assert.same({}, cdb().gaveUp)
+            assert.same({}, cdb().skipped)
+            assert.equal("a364", H.cur(ns), "progress from the game state: the quest is not in the log")
+        end)
+
+        it("an abandon before the route's accept was reached (accepted early) changes nothing", function()
+            boot({
+                { id = "a376", accept = 376 },
+                { id = "a364", accept = 364 },
+                { id = "c364", complete = 364 },
+                { id = "m1", manual = true },
+            })
+            m:AddQuestToLog(364) -- e.g. through the lookahead
+            H.settle(m)
+            assert.equal("a376", H.cur(ns))
+            local mark = #m.chat
+            m:AbandonQuest(364)
+            H.settle(m)
+            assert.equal("a376", H.cur(ns))
+            assert.is_nil(cdb().gaveUp[364])
+            assert.same({}, cdb().skipped)
+            assert.same({}, H.chat(m, mark + 1))
+            m:AddQuestToLog(376)
+            H.settle(m)
+            assert.equal("a364", H.cur(ns), "the accept step comes as usual")
+        end)
+
+        it("a turn-in is not an abandon, whatever the order of QUEST_TURNED_IN and QUEST_REMOVED", function()
+            start()
+            local mark = #m.chat
+            m:CompleteObjectives(364)
+            m:TurnInQuest(364) -- QUEST_TURNED_IN, then QUEST_REMOVED
+            H.settle(m, 1)
+            assert.is_nil(cdb().gaveUp[364])
+            assert.same({}, cdb().skipped)
+            assert.same({}, H.chat(m, mark + 1))
+
+            start()
+            m:CompleteObjectives(364)
+            silentRemove(364)
+            m:Fire("QUEST_REMOVED", 364, false) -- the removal first ...
+            m:Advance(0.2)
+            m:SetQuestCompleted(364, true)
+            m:Fire("QUEST_TURNED_IN", 364, 170, 0) -- ... the turn-in a little later
+            H.settle(m, 1)
+            assert.is_nil(cdb().gaveUp[364])
+            assert.same({}, cdb().skipped)
+            assert.equal("c376", H.cur(ns), "turned in: the done turn-in step forwards go1")
+        end)
+
+        it("ignores the removal of a replay quest", function()
+            start()
+            silentRemove(364)
+            m:Fire("QUEST_REMOVED", 364, true)
+            H.settle(m, 1)
+            assert.is_nil(cdb().gaveUp[364])
+            assert.equal("a364", H.cur(ns), "nothing gives the quest up")
+        end)
+
+        it("a given-up quest accepted by a background step leaves the 'along the way' list", function()
+            boot({
+                { id = "m0", manual = true },
+                { id = "bg364", accept = 364, complete = 364, bg = true },
+                { id = "a376", accept = 376 },
+                { id = "t364", turnin = 364 },
+                { id = "t376", turnin = 376 },
+            })
+            E():Next()
+            m:AddQuestToLog(364)
+            m:AddQuestToLog(376)
+            H.settle(m)
+            assert.equal("t364", H.cur(ns))
+            assert.same({ "bg364" }, H.ids(E():GetBackground()))
+            m:AbandonQuest(364)
+            H.settle(m)
+            assert.equal("t376", H.cur(ns))
+            assert.same({}, H.ids(E():GetBackground()))
+            assert.is_nil(E():GetAcceptQuests()[364])
+            assert.same({ accept = "bg364", steps = { "t364" } }, cdb().gaveUp[364])
         end)
     end)
 

@@ -12,8 +12,11 @@
 --                     high-water mark): transient actions count as done, optional steps are done
 --   manual            true when the step is marked done ("Next") or skipped
 --   abandonedLater    { [questID] = true } quests abandoned by a LATER step of the route
---   givenUp           { [questID] = j } quests the player gave up: j = last index of a non-bg
---                     step with its complete/turnin that is marked or `optional` and forwarded
+--   givenUp           { [questID] = j } quests the player gave up, counted for the steps before
+--                     index j: j = last index of a non-bg step with its complete/turnin that is
+--                     marked or `optional` and forwarded, or -- quest abandoned by hand
+--                     (cdb.gaveUp, see Core/Engine.lua) -- the next accept of it after the
+--                     recorded one (#steps + 1 when none)
 --   index             index of the step in the engine's filtered list (compared with givenUp)
 --   cache             per-evaluation memo table for quest state (shared between steps)
 --   items             per-evaluation memo table for item counts
@@ -21,9 +24,12 @@
 -- Non-monotonic stateful actions behind the forward limit (ctx.forwarded) stay done:
 -- `collect` (the items are normally consumed by a later turn-in) and `accept` of a
 -- quest that a later step abandons -- otherwise the cursor would jump back to them.
--- `accept` of a quest the player gave up (a later complete/turnin step of it skipped,
--- marked done or passed as optional; ctx.givenUp) also stays done after the player
--- abandons it by hand: the route notes say "skip this step, then abandon Q".
+-- A quest the player gave up (a later complete/turnin step of it skipped, marked done
+-- or passed as optional, or the quest abandoned by hand -- Engine:GiveUpQuest; ctx.givenUp)
+-- counts while it is neither in the log nor turned in: its `accept` and, on non-bg steps,
+-- its `complete`/`turnin` before the given-up index stay done, so the cursor does not go
+-- back to them and a step that mixes it with other quests waits only for the others
+-- (the order "abandon, then skip" or "skip, then abandon" does not matter).
 -- `complete` is not forwarded (its state is readable while the quest is in the log and
 -- turned-in quests count as complete); neither is `abandon` (a route that takes the
 -- same quest again later would make that second accept an anchor and skip the abandon).
@@ -110,6 +116,12 @@ local function itemCount(ctx, item)
     return n
 end
 
+-- Is quest q given up for the step being evaluated? (ctx.givenUp[q] beyond ctx.index)
+local function givenUp(ctx, q)
+    local j = ctx and ctx.givenUp and ctx.givenUp[q]
+    return (j and ctx.index and j > ctx.index) and true or false
+end
+
 local function playerLevel(ctx)
     local level, xp, xpMax = ctx and ctx.level, ctx and ctx.xp, ctx and ctx.xpMax
     if level == nil then
@@ -126,10 +138,10 @@ end
 
 --- Is one normalized action done?
 -- accept:   quest in the log or turned in (or forwarded and abandoned by a later step,
---           or given up: a later complete/turnin step of it is marked / forwarded optional)
--- turnin:   quest turned in
+--           or given up: ctx.givenUp, see the header)
+-- turnin:   quest turned in (or, on a non-bg step, given up and not in the log)
 -- complete: quest turned in, or in the log with the listed objectives (all when
---           none listed) finished
+--           none listed) finished (or, on a non-bg step, given up and not in the log)
 -- abandon:  quest not in the log
 -- collect:  bags hold >= count (or forwarded)
 -- level:    level > n, or level == n and xp/xpMax >= fraction
@@ -145,16 +157,17 @@ function Steps:IsActionDone(action, step, ctx)
         local later = ctx.forwarded and ctx.abandonedLater
         if later and later[q] then return true end
         -- given up: a later complete/turnin step of the quest was skipped / marked
-        -- (or passed as optional), then the quest was abandoned by hand
-        local j = ctx.givenUp and ctx.givenUp[q]
-        return (j and ctx.index and j > ctx.index) and true or false
+        -- (or passed as optional), or the quest was abandoned by hand
+        return givenUp(ctx, q)
     elseif t == "turnin" then
-        return questState(ctx, action.quest).turnedIn
+        local s = questState(ctx, action.quest)
+        if s.turnedIn then return true end
+        return (not s.on and not (step and step.bg) and givenUp(ctx, action.quest)) and true or false
     elseif t == "complete" then
         local q = action.quest
         local s = questState(ctx, q)
         if s.turnedIn then return true end
-        if not s.on then return false end
+        if not s.on then return (not (step and step.bg) and givenUp(ctx, q)) and true or false end
         local wanted = action.objectives
         if wanted and #wanted > 0 then
             local objs = questObjectives(ctx, q)
@@ -234,8 +247,9 @@ end
 -- quests (accept/complete/turnin) stays while one of them is in the log or an
 -- `accept` quest is still to be taken (neither in the log nor turned in); it is
 -- dropped once its quests are turned in, or have left the log and none is left
--- to accept. With ctx.forwarded (the bg step lies in a segment the player has
--- left, see Core/Engine.lua) a quest not taken yet no longer keeps it.
+-- to accept (a given-up quest -- ctx.givenUp -- is not left to accept). With
+-- ctx.forwarded (the bg step lies in a segment the player has left, see
+-- Core/Engine.lua) a quest not taken yet no longer keeps it.
 function Steps:IsBackgroundRelevant(step, ctx)
     local hasQuest = false
     local forwarded = ctx and ctx.forwarded
@@ -245,7 +259,9 @@ function Steps:IsBackgroundRelevant(step, ctx)
             hasQuest = true
             local s = questState(ctx, a.quest)
             if s.on then return true end
-            if t == "accept" and not s.turnedIn and not forwarded then return true end
+            if t == "accept" and not s.turnedIn and not forwarded and not givenUp(ctx, a.quest) then
+                return true
+            end
         end
     end
     return not hasQuest

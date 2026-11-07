@@ -289,6 +289,8 @@ ns.DEFAULTS = {
         manual = {},       -- [stepId] = true: step marked done with "Next"
         skipped = {},      -- [stepId] = true: step skipped
         bgDone = {},       -- [stepId] = true: background step seen done (collect / transient; optimization)
+        gaveUp = {},       -- [questID] = { accept = "<step id>", steps = { "<step id>", ... } }: quest
+                           -- abandoned by hand -- its accept step and the skip marks made for it
         -- cursorHint = n, cursorHintId = "<step id>": high-water mark of the cursor
     },
 }

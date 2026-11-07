@@ -360,9 +360,9 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
         { complete = 93318, at = { 2521, 42.66, 52.80 },
           note = {
               ru = "ЭЛИТА: Vulgara the Insatiable (8 ур.). Шипы + Омоложение, держите дистанцию; "
-                  .. "слишком тяжело - пропустите шаг и бросьте задание.",
+                  .. "слишком тяжело - бросьте задание (гайд сам пропустит его шаги).",
               en = "ELITE: Vulgara the Insatiable (level 8). Thorns + Rejuvenation, keep your distance; "
-                  .. "too hard - skip the step and abandon the quest.",
+                  .. "too hard - abandon the quest (the guide skips its steps).",
           } },
         ---------------------------------------------------------------------
         -- Falaath Village straight from Vulgara (8)

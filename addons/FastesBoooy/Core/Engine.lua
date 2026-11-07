@@ -26,12 +26,29 @@
 --                game, so a cold start with empty SavedVariables still lands on
 --                the right step (only transient steps after the last done
 --                stateful step are unknown and shown again);
---   * a quest the player GAVE UP -- a later non-bg step with its complete/turnin
---     is marked (Skip / Next) or is `optional` and forwarded -- keeps its earlier
---     `accept` done when the player then abandons it by hand (ctx.givenUp, see
---     Core/Steps.lua): the cursor does not jump back and the quest is not
---     auto-accepted again. A quest abandoned by hand WITHOUT such a mark still
---     sends the cursor back to its accept (the route needs it);
+--   * a quest the player GAVE UP keeps its earlier `accept` (and its complete/turnin
+--     actions up to the given-up point) done while it is neither in the log nor
+--     turned in (ctx.givenUp, see Core/Steps.lua): the cursor does not jump back
+--     and the quest is not auto-accepted again. givenUp[q] = j comes from
+--       - a later non-bg step with its complete/turnin that is marked (Skip / Next)
+--         or is `optional` and forwarded (j = that step), and
+--       - a quest abandoned BY HAND (cdb.gaveUp, order-independent): QUEST_REMOVED
+--         (not a replay) is re-checked GIVE_UP_DELAY later (QUEST_TURNED_IN and
+--         QUEST_REMOVED both fire on a turn-in); when the quest is neither turned in
+--         nor in the log, the route has an `accept` of it before the cursor (the
+--         natural cursor when it was removed, or the high-water mark) and that
+--         instance of the quest (up to the next `accept` of it) has no explicit
+--         `abandon` step (the route drops it itself), Engine:GiveUpQuest marks the
+--         not-done non-bg steps whose actions are all complete/turnin of the quest
+--         (cdb.skipped, ids listed in cdb.gaveUp[q].steps) and records the accept
+--         (j = the next accept of the quest, so steps mixing it with other quests
+--         wait only for their other actions). An abandon before the route's accept
+--         was reached (quest taken early by the lookahead) is not given up.
+--     Auto marks are no forward evidence (no anchor). Re-accepting the quest by
+--     hand (QUEST_ACCEPTED, or finding it in the log; not when it is taken for the
+--     route's next accept of it within the accept window -- that instance is new),
+--     the quest turned in, Prev right after the give-up or Prev onto one of its
+--     marked steps, and Reset drop the record and its marks;
 --   * background (`bg`) steps are NOT forwarded by that limit: a bg step passed
 --     by the cursor stays in the "along the way" list until its actions are really
 --     done or its quests are turned in / left the log (ns.Steps:IsBackgroundRelevant).
@@ -83,7 +100,11 @@ local Engine = {
     turninSet = {},      -- [questID] = true for every turnin action of the filtered steps
     abandonAfter = {},   -- [index] = { [questID] = true } quests abandoned by a later step
     questEnds = {},      -- { { index, questID }, ... } complete/turnin actions of the non-bg steps
-    givenUp = {},        -- [questID] = last index of a marked / forwarded optional step ending it (last evaluation)
+    givenUp = {},        -- [questID] = index before which the quest counts as given up (last evaluation)
+    acceptAt = {},       -- [questID] = { index, ... } ascending: steps with an accept action of the quest
+    autoMarks = {},      -- [stepId] = questID: skip marks made by GiveUpQuest (cdb.gaveUp; last evaluation)
+    removed = {},        -- [questID] = step id (or END_ID) of the reach when QUEST_REMOVED arrived (pending check)
+    lastGaveUp = nil,    -- { quest, natural }: the latest automatic give-up (Prev right after it undoes it)
     segFirst = {},       -- [index] = index of the first filtered step of the same segment
     windows = {},        -- [actionType] = { open, openedAt, closedAt, ids } trainer/merchant/taxi window state
     started = false,
@@ -96,6 +117,7 @@ local THROTTLE = 0.1
 local ARRIVAL_TICK = 0.25
 local MAX_PASSES = 6
 local DUP_WINDOW = 1 -- seconds: legacy + interaction-manager event of the same window
+local GIVE_UP_DELAY = 0.5 -- seconds: QUEST_REMOVED -> "abandoned, not turned in?" check
 
 local function L() return ns.L end
 
@@ -111,6 +133,37 @@ end
 local function isMarked(id)
     local cdb = ns.cdb
     return (cdb.manual and cdb.manual[id]) or (cdb.skipped and cdb.skipped[id]) or false
+end
+
+-- marked by the player (not by GiveUpQuest): evidence of progress for the forward anchor
+local function isMarkedByPlayer(self, id)
+    local cdb = ns.cdb
+    if cdb.manual and cdb.manual[id] then return true end
+    return (cdb.skipped and cdb.skipped[id] and not self.autoMarks[id]) and true or false
+end
+
+-- cdb.gaveUp (created on demand: SavedVariables of older versions lack it)
+local function gaveUpRecords()
+    local cdb = ns.cdb
+    if type(cdb.gaveUp) ~= "table" then cdb.gaveUp = {} end
+    return cdb.gaveUp
+end
+
+-- Are all actions of the step complete/turnin of quest q (at least one)?
+local function endsOnly(step, q)
+    local any = false
+    for _, a in ipairs(step.actions) do
+        if (a.type ~= "complete" and a.type ~= "turnin") or a.quest ~= q then return false end
+        any = true
+    end
+    return any
+end
+
+local function hasQuestAction(step, actionType, q)
+    for _, a in ipairs(step.actions) do
+        if a.type == actionType and a.quest == q then return true end
+    end
+    return false
 end
 
 -- bg step remembered as done (cdb.bgDone)
@@ -272,19 +325,26 @@ function Engine:BuildSteps()
             end
         end
     end
-    -- questEnds = complete/turnin actions of the non-bg steps (for the given-up set)
-    local questEnds = {}
+    -- questEnds = complete/turnin actions of the non-bg steps (for the given-up set);
+    -- acceptAt[q] = indices of the steps accepting q (ascending)
+    local questEnds, acceptAt = {}, {}
     for i, s in ipairs(steps) do
-        if not s.bg then
-            for _, a in ipairs(s.actions) do
-                if a.type == "complete" or a.type == "turnin" then
-                    questEnds[#questEnds + 1] = { i, a.quest }
+        for _, a in ipairs(s.actions) do
+            local t = a.type
+            if (t == "complete" or t == "turnin") and not s.bg then
+                questEnds[#questEnds + 1] = { i, a.quest }
+            elseif t == "accept" then
+                local list = acceptAt[a.quest]
+                if not list then
+                    list = {}
+                    acceptAt[a.quest] = list
                 end
+                if list[#list] ~= i then list[#list + 1] = i end
             end
         end
     end
     self.steps, self.indexById, self.turninSet = steps, byId, turnins
-    self.abandonAfter, self.questEnds, self.givenUp = abandonAfter, questEnds, {}
+    self.abandonAfter, self.questEnds, self.givenUp, self.acceptAt = abandonAfter, questEnds, {}, acceptAt
     self.done, self.bg = {}, {}
     self.needRebuild = false
 end
@@ -307,8 +367,10 @@ function Engine:ActivateRoute(route, force)
     self.cursor, self.natural = nil, nil
     self.currentStep = nil
     self.finishedAnnounced = nil
+    self.lastGaveUp = nil
     clear(self.flags)
     clear(self.bindBase)
+    clear(self.removed)
     self:BuildSteps()
     ns:Fire("ROUTE_CHANGED", route)
     if self.started then
@@ -400,11 +462,28 @@ function Engine:Evaluate()
     }
     self.lastCtx = ctx
 
-    -- anchor: last non-bg step with evidence whose stateful actions are done (or marked)
+    -- quests given up by hand (cdb.gaveUp): a record whose quest is turned in, or back
+    -- in the log (re-accepted, e.g. while the addon was off) and not for the route's next
+    -- accept of it, is dropped with its marks
+    local records = gaveUpRecords()
+    for q, rec in pairs(records) do
+        local qs = type(q) == "number" and type(rec) == "table" and Steps.QuestState(ctx, q)
+        if not qs or qs.turnedIn or (qs.on and not self:TakenForNextAccept(q)) then
+            self:RestoreQuest(q)
+        end
+    end
+    local autoMarks = {}
+    for q, rec in pairs(records) do
+        for _, id in ipairs(type(rec.steps) == "table" and rec.steps or EMPTY) do autoMarks[id] = q end
+    end
+    self.autoMarks = autoMarks
+
+    -- anchor: last non-bg step with evidence whose stateful actions are done (or marked
+    -- by the player; GiveUpQuest marks are no evidence)
     local anchor = 0
     for i = n, 1, -1 do
         local s = steps[i]
-        if s.stateful and Steps:IsAnchorStep(s) and (isMarked(s.id) or Steps:IsStatefulDone(s, ctx)) then
+        if s.stateful and Steps:IsAnchorStep(s) and (isMarkedByPlayer(self, s.id) or Steps:IsStatefulDone(s, ctx)) then
             anchor = i
             break
         end
@@ -413,8 +492,10 @@ function Engine:Evaluate()
     local limit = max(anchor, hint)
 
     -- given up: quests whose complete/turnin step the player marked (Skip / Next) or
-    -- passed as `optional` -- an earlier accept of such a quest stays done once the
-    -- player abandons it (see Steps:IsActionDone)
+    -- passed as `optional`, and quests abandoned by hand (cdb.gaveUp: up to the next
+    -- accept of the quest after the recorded one) -- the accept and complete/turnin
+    -- actions of such a quest before that index stay done once the player abandons it
+    -- (see Steps:IsActionDone)
     local givenUp = {}
     for _, e in ipairs(self.questEnds) do
         local j, q = e[1], e[2]
@@ -422,6 +503,19 @@ function Engine:Evaluate()
         if (isMarked(s.id) or (s.optional and j < limit)) and (givenUp[q] or 0) < j then
             givenUp[q] = j
         end
+    end
+    for q, rec in pairs(records) do
+        local a = self.indexById[rec.accept]
+        if a then
+            local j = self:NextAccept(q, a) or (n + 1)
+            if (givenUp[q] or 0) < j then givenUp[q] = j end
+        end
+    end
+    -- quests that just left the log (GiveUpQuest check pending): held up to the cursor
+    -- of that moment, so the cursor does not flicker back to their accept meanwhile
+    for q, at in pairs(self.removed) do
+        local j = (at == END_ID) and (n + 1) or self.indexById[at]
+        if j and (givenUp[q] or 0) < j then givenUp[q] = j end
     end
     self.givenUp = givenUp
     ctx.givenUp = givenUp
@@ -479,11 +573,12 @@ function Engine:Evaluate()
     for i = 1, bgEnd do
         local s = steps[i]
         if s.bg and not done[i] then
+            ctx.index = i
             ctx.forwarded = (self.bgHome[i] or i) < bgLimit
             if Steps:IsBackgroundRelevant(s, ctx) then bg[#bg + 1] = s end
         end
     end
-    ctx.forwarded = false
+    ctx.forwarded, ctx.index = false, nil
     self.bg = bg
 
     -- pin
@@ -679,6 +774,7 @@ end
 function Engine:Next()
     local c = self.cursor
     if not c then return end
+    self.lastGaveUp = nil
     if self.pinned then
         advancePin(self)
     else
@@ -688,7 +784,10 @@ function Engine:Next()
 end
 
 --- "Prev": shows the previous non-bg step. From the natural cursor, a step that
--- is done only because of a manual/skip mark is un-marked (undo).
+-- is done only because of a manual/skip mark is un-marked (undo); un-marking a step
+-- that ends a quest given up by hand drops that give-up (Engine:RestoreQuest), and so
+-- does Prev right after an automatic give-up (Engine:GiveUpQuest): the quest is needed
+-- again, the cursor goes back to it.
 function Engine:Prev()
     local steps = self.steps
     local n = #steps
@@ -699,12 +798,23 @@ function Engine:Prev()
     local s = steps[p]
     if not self.pinned then
         local cdb = ns.cdb
+        local last = self.lastGaveUp
+        if last and last.natural == self.natural then
+            self:RestoreQuest(last.quest) -- undo the give-up that just happened
+        end
         if cdb.manual[s.id] or cdb.skipped[s.id] then
+            local records = gaveUpRecords()
+            for _, a in ipairs(s.actions) do
+                if (a.type == "complete" or a.type == "turnin") and records[a.quest] then
+                    self:RestoreQuest(a.quest)
+                end
+            end
             cdb.manual[s.id], cdb.skipped[s.id] = nil, nil
             self.flags[s.id] = nil
             if self:ValidHint() > p then self:SaveHint(p) end
         end
     end
+    self.lastGaveUp = nil
     self.pinned = p
     self:Refresh() -- the pin is dropped automatically when p became the natural cursor
 end
@@ -713,6 +823,7 @@ end
 function Engine:Skip()
     local c = self.cursor
     if not c then return end
+    self.lastGaveUp = nil
     ns.cdb.skipped[self.steps[c].id] = true
     if self.pinned then advancePin(self) end
     self:Refresh()
@@ -725,6 +836,7 @@ function Engine:SetCursor(i)
     local n = #self.steps
     if not i or n == 0 then return false end
     i = max(1, min(n, floor(i)))
+    self.lastGaveUp = nil
     local nat = self.natural or (n + 1)
     if i < nat then
         self.pinned = i
@@ -740,19 +852,163 @@ function Engine:SetCursor(i)
     return true
 end
 
---- Forget manual marks, skips, the high-water mark and transient observations
--- of this character (progress derived from the game is kept).
+--- Forget manual marks, skips (also those of quests given up by hand), the
+-- high-water mark and transient observations of this character (progress derived
+-- from the game is kept).
 function Engine:Reset()
     local cdb = ns.cdb
     clear(cdb.manual)
     clear(cdb.skipped)
+    clear(gaveUpRecords())
     if type(cdb.bgDone) == "table" then clear(cdb.bgDone) end
     self:ClearHint()
     clear(self.flags)
     clear(self.bindBase)
     self.pinned = nil
+    self.lastGaveUp = nil
     ns.Print(L().MSG_RESET)
     self:Refresh()
+end
+
+---------------------------------------------------------------------------
+-- quests abandoned by hand (cdb.gaveUp[questID] = { accept = <step id>, steps = { <step id>, ... } })
+---------------------------------------------------------------------------
+
+--- Index of the first step after index i accepting quest q (nil when none).
+function Engine:NextAccept(q, i)
+    for _, j in ipairs(self.acceptAt[q] or EMPTY) do
+        if j > i then return j end
+    end
+    return nil
+end
+
+--- Is quest q (given up, back in the log) taken for the route's NEXT accept of it
+-- after the given-up one? True when that accept lies before the end of the accept
+-- window (the automation takes it there): the given-up instance stays skipped.
+function Engine:TakenForNextAccept(q)
+    local rec = gaveUpRecords()[q]
+    local a = type(rec) == "table" and self.indexById[rec.accept]
+    local a2 = a and self:NextAccept(q, a)
+    if not a2 then return false end
+    local _, to = self:AcceptWindow()
+    return (to ~= nil and a2 <= to) and true or false
+end
+
+--- Drop the give-up of quest q: its record and the skip marks GiveUpQuest made
+-- (marks the player set himself stay). @return true when there was a record
+function Engine:RestoreQuest(q)
+    local records = gaveUpRecords()
+    local rec = records[q]
+    if rec == nil then return false end
+    records[q] = nil
+    local skipped = ns.cdb.skipped
+    if type(rec) == "table" and type(rec.steps) == "table" then
+        for _, id in ipairs(rec.steps) do
+            skipped[id] = nil
+            self.autoMarks[id] = nil
+        end
+    end
+    if self.lastGaveUp and self.lastGaveUp.quest == q then self.lastGaveUp = nil end
+    return true
+end
+
+--- QUEST_REMOVED (not a replay quest): remember where the player was and check
+-- GIVE_UP_DELAY later whether the quest was abandoned rather than turned in.
+-- Until then the quest is held up to that point (Evaluate), see Engine:GiveUpQuest.
+function Engine:NoteQuestRemoved(q)
+    if not self.started or not self.route or type(q) ~= "number" then return end
+    local n = #self.steps
+    if n == 0 or self.removed[q] or not self.acceptAt[q] then return end
+    -- the evaluation before the removal (refreshes are throttled)
+    local reach = max(self.natural or (n + 1), self.cursor or 0)
+    self.removed[q] = (reach > n) and END_ID or self.steps[reach].id
+    local function check()
+        local at = Engine.removed[q]
+        if not at then return end
+        Engine.removed[q] = nil
+        if not Engine:GiveUpQuest(q, at) then Engine:RequestRefresh() end -- release the hold
+    end
+    if C_Timer and C_Timer.After then
+        C_Timer.After(GIVE_UP_DELAY, check)
+    else
+        check()
+    end
+end
+
+--- A route quest left the log: when it was not turned in, is not back in the log,
+-- the route accepted it before the cursor (`at` = step id or END_ID of the natural
+-- cursor when it was removed; the high-water mark counts too) and that instance of
+-- the quest has no explicit `abandon` step, the quest is given up: the not-done
+-- non-bg steps whose actions are all complete/turnin of it (between its accept and
+-- the next accept of it) are skipped and the give-up is recorded (cdb.gaveUp), so
+-- the cursor stays and the quest is not auto-accepted again. Steps mixing it with
+-- other actions are not marked: its complete/turnin actions there count as done
+-- (ctx.givenUp), the step waits for its other actions.
+-- @return true when the quest was given up
+function Engine:GiveUpQuest(q, at)
+    if not self.started or not self.route or type(q) ~= "number" then return false end
+    local C = ns.Compat
+    if C.IsQuestTurnedIn(q) or C.IsOnQuest(q) then return false end
+    if not self.acceptAt[q] then return false end -- not a route quest
+    local steps, n = self.steps, #self.steps
+    local ref = self:ValidHint()
+    local atIndex = (at == END_ID) and (n + 1) or (at and self.indexById[at]) or 0
+    if atIndex > ref then ref = atIndex end
+    -- the accept of this instance: the last accept before the cursor (none: taken early
+    -- through the lookahead, the route's accept is still ahead -- normal flow)
+    local a, a2
+    for _, i in ipairs(self.acceptAt[q] or EMPTY) do
+        if i < ref then a = i else a2 = i; break end
+    end
+    if not a then return false end
+    a2 = a2 or (n + 1)
+    -- the route drops this instance itself: leave that flow alone
+    for i = a + 1, a2 - 1 do
+        if hasQuestAction(steps[i], "abandon", q) then return false end
+    end
+    -- steps to mark: not done -- complete/turnin of a quest neither in the log nor turned
+    -- in are done only through a mark (or as an optional step behind the forward limit)
+    local marks, last = {}, nil
+    for i = a + 1, a2 - 1 do
+        local s = steps[i]
+        if not s.bg and (hasQuestAction(s, "complete", q) or hasQuestAction(s, "turnin", q)) then
+            last = i
+            if endsOnly(s, q) and not isMarked(s.id) and not (s.optional and i < self.forwardLimit) then
+                marks[#marks + 1] = s.id
+            end
+        end
+    end
+    local records = gaveUpRecords()
+    local old = records[q]
+    if old ~= nil and (type(old) ~= "table" or old.accept ~= steps[a].id or type(old.steps) ~= "table") then
+        self:RestoreQuest(q) -- a stale record (another accept / route)
+        old = nil
+    end
+    if #marks == 0 and not old and last then
+        -- already given up through the player's marks / passed optional steps up to its
+        -- last step (Evaluate's questEnds rule): nothing to do
+        local j = 0
+        for _, e in ipairs(self.questEnds) do
+            local s = steps[e[1]]
+            if e[2] == q and (isMarked(s.id) or (s.optional and e[1] < self.forwardLimit)) and e[1] > j then
+                j = e[1]
+            end
+        end
+        if j >= last then return false end
+    end
+    local rec = old or { accept = steps[a].id, steps = {} }
+    local skipped = ns.cdb.skipped
+    for _, id in ipairs(marks) do
+        skipped[id] = true
+        rec.steps[#rec.steps + 1] = id
+    end
+    records[q] = rec
+    if not old or #marks > 0 then
+        ns.Print(L().MSG_QUEST_GIVEN_UP, ns.Steps:QuestTitle(q))
+    end
+    self:Refresh()
+    self.lastGaveUp = { quest = q, natural = self.natural }
+    return true
 end
 
 ---------------------------------------------------------------------------
@@ -765,18 +1021,22 @@ local function addAccepts(set, step)
     end
 end
 
---- Quests that may be auto-accepted: accept actions of the steps
--- [cursor, cursor + lookahead] (from the smaller of displayed/natural cursor to
--- the larger + lookahead) plus the active background steps.
+--- Accept window [from, to]: from the smaller of displayed/natural cursor to the
+-- larger + lookahead (nil when the route is finished).
+function Engine:AcceptWindow()
+    local a, b = self.cursor, self.natural
+    if not (a or b) then return nil end
+    local look = tonumber(settings().lookahead) or 6
+    return min(a or b, b or a), min(#self.steps, max(a or 0, b or 0) + look)
+end
+
+--- Quests that may be auto-accepted: accept actions of the steps in the accept
+-- window [cursor, cursor + lookahead] plus the active background steps.
 function Engine:GetAcceptQuests()
     local set = {}
     local steps = self.steps
-    local n = #steps
-    local look = tonumber(settings().lookahead) or 6
-    local a, b = self.cursor, self.natural
-    if a or b then
-        local from = min(a or b, b or a)
-        local to = min(n, max(a or 0, b or 0) + look)
+    local from, to = self:AcceptWindow()
+    if from then
         for i = from, to do addAccepts(set, steps[i]) end
     end
     for _, s in ipairs(self.bg) do addAccepts(set, s) end
@@ -898,6 +1158,26 @@ ns:On("QUEST_TURNED_IN", function(_, questID, xpReward)
     end
     Engine:RecordXP(questID, xp, level)
     refresh()
+end)
+
+-- a quest left the log: abandoned by hand (given up) or turned in? (checked later)
+ns:On("QUEST_REMOVED", function(_, questID, wasReplayQuest)
+    local Compat = ns.Compat
+    if Compat.IsSecret(questID) or type(questID) ~= "number" then return end
+    if wasReplayQuest and not Compat.IsSecret(wasReplayQuest) then return end
+    Engine:NoteQuestRemoved(questID)
+end)
+
+-- re-accepting a quest given up by hand: its steps are needed again
+ns:On("QUEST_ACCEPTED", function(_, a, b)
+    local Compat = ns.Compat
+    local questID = a
+    if not Compat.IsSecret(b) and type(b) == "number" then questID = b end -- (logIndex, questID) payload
+    if Compat.IsSecret(questID) or type(questID) ~= "number" then return end
+    if Engine.started and gaveUpRecords()[questID] ~= nil and not Engine:TakenForNextAccept(questID) then
+        Engine:RestoreQuest(questID)
+        refresh()
+    end
 end)
 
 -- transient observations ---------------------------------------------------

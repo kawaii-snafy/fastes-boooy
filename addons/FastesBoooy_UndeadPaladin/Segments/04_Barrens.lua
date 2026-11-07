@@ -363,8 +363,10 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
           note = { ru = "Награда за 863: Засаленные штаны механика. Ветку Уэники не берите.",
                    en = "Reward for 863: Greasy Tinker's Pants. Skip the Wenikee follow-up." } },
         { turnin = 896, npc = 3453, optional = true, at = { 1413, 63.35, 38.45 },
-          note = { ru = "Есть изумруд — сдайте Диззивигу. Нет — пропустите (бросьте 896 позже).",
-                   en = "Have the emerald: turn it in to Dizzywig. If not, skip it (abandon 896 later)." } },
+          note = { ru = "Есть изумруд — сдайте Диззивигу. Нет — пропустите шаг (896 можно бросить в любой момент; "
+                       .. "в Кабестане будет ещё шанс его сдать).",
+                   en = "Have the emerald: turn it in to Dizzywig. If not, skip the step (abandon 896 whenever you "
+                       .. "like; you get one more chance to hand it in at Ratchet)." } },
         { accept = 865, npc = 3446, at = { 1413, 62.37, 37.62 }, -- 865 is carried: Mebok, ud-05
           note = { ru = "Мебок Миззирикс: 5 рогов серпокоготных ящеров — на юге, у гнёзд.",
                    en = "Mebok Mizzyrix: 5 horns from Sunscale Scytheclaws, in the south by the nests." } },

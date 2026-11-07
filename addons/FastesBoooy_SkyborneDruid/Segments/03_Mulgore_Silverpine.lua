@@ -133,9 +133,9 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
         { complete = 97326, optional = true, object = { 661446, 661448, 661449 }, at = { 1454, 43.2, 33.6 },
           note = {
               ru = "8 гладких валунов (оранжевые камни на земле) к юго-востоку. Камней мало и много "
-                  .. "конкурентов - пропустите этот и следующий шаг и бросьте задание.",
+                  .. "конкурентов - бросьте задание (гайд сам пропустит этот и следующий шаг).",
               en = "8 Smooth Boulders (orange rocks on the ground) to the south-east. Few rocks and lots of "
-                  .. "competition - skip this and the next step and abandon the quest.",
+                  .. "competition - abandon the quest (the guide skips this and the next step).",
           } },
         { turnin = 97326, optional = true, npc = 268684, at = { 1454, 36.82, 29.06 } }, -- WARN-OK: xp-unknown
         { turnin = 95350, accept = 98024, npc = 4949, at = { 1454, 31.73, 37.82 }, -- WARN-OK: xp-unknown; 98024 -> sd-04
@@ -146,10 +146,11 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
         { accept = 1061, optional = true, npc = 4047, at = { 1454, 38.93, 38.40 }, -- carried: 1061 -> sd-04 (Seereth)
           note = {
               ru = "Zor Lonetree по пути из Аллеи Мудрости к воротам: «Духи Когтистых гор» (сдадите у "
-                  .. "Seereth на границе в конце Степей). Нужен 13-й уровень - ещё не 13, пропустите шаг.",
+                  .. "Seereth на границе в конце Степей). Нужен 13-й уровень: ниже 13-го Zor задание не "
+                  .. "предлагает - пропустите шаг.",
               en = "Zor Lonetree on the way out of the Valley of Wisdom: The Spirits of Stonetalon (handed in at "
-                  .. "Seereth on the Stonetalon border at the end of the Barrens). Needs level 13 - not 13 yet, skip "
-                  .. "the step.",
+                  .. "Seereth on the Stonetalon border at the end of the Barrens). Needs level 13: below 13 Zor "
+                  .. "does not offer it - skip the step.",
           } },
         { id = "sd03-zeppelin", go = true, npc = 9564, at = { 1411, 50.80, 13.80 }, radius = 15,
           note = {

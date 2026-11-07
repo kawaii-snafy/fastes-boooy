@@ -103,9 +103,9 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
                    en = "Over the bridges to Spirit Rise: the Pools of Vision cave entrance is below it." } },
         { turnin = 853, npc = 3419, at = { 1456, 22.81, 20.89 },
           note = { ru = "Аптекарь Зама в пещере. Награда: любое зелье (Зелье стремительности — для бегства). "
-                       .. "Таймер истёк — бросьте 853 и пропустите этот шаг.",
+                       .. "Таймер истёк — бросьте 853 (гайд сам пропустит шаги).",
                    en = "Apothecary Zamah in the cave. Reward: any potion (Swiftness Potion helps to escape). "
-                       .. "Timer ran out: abandon 853 and skip this step." } },
+                       .. "Timer ran out: abandon 853 (the guide skips its steps)." } },
         { id = "ud05-train-18", train = true, npc = 246344, at = { 1456, 25.81, 19.03 },
           spells = { { ru = "Печать праведности (ранг 3)", en = "Seal of Righteousness (Rank 3)" } },
           note = { ru = "Тренер паладинов Алодан Жизнерадостный бродит по этой же пещере. Нужен 18-й уровень "

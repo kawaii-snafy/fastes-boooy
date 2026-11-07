@@ -317,9 +317,9 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
           } },
         { complete = 93165, optional = true, at = { 2521, 63.6, 37.2 },
           note = {
-              ru = "Доберите уши. Падают медленно - пропустите этот и следующий шаг "
-                  .. "и бросьте задание.",
-              en = "Finish the ears. Dropping slowly - skip this and the next step and abandon the quest.",
+              ru = "Доберите уши. Падают медленно - бросьте задание (гайд сам пропустит "
+                  .. "этот и следующий шаг).",
+              en = "Finish the ears. Dropping slowly - abandon the quest (the guide skips this and the next step).",
           } },
         { turnin = 93165, optional = true, npc = 254151, at = { 2521, 63.81, 36.01 }, -- WARN-OK: xp-unknown
           reward = { [93165] = 1 },
@@ -369,9 +369,9 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
         { complete = 92708, turnin = 92708, npc = 251968, at = { 2521, 59.15, 79.78 }, -- WARN-OK: xp-unknown
           note = {
               ru = "Выслушайте речь Ayessa (~75 с; не началась - заговорите с ней) и "
-                  .. "сдайте, пока ждёте корабль. Не выходит - пропустите шаг и бросьте задание.",
+                  .. "сдайте, пока ждёте корабль. Не выходит - бросьте задание (гайд сам пропустит шаг).",
               en = "Listen to Ayessa's speech (~75 s; if it does not start, talk to her) and turn it in while "
-                  .. "you wait for the skycutter. Not working - skip the step and abandon the quest.",
+                  .. "you wait for the skycutter. Not working - abandon the quest (the guide skips the step).",
           } },
         { id = "sd02-skycutter", go = true, npc = 275270, at = { 2521, 57.92, 80.78 }, radius = 15,
           note = {
