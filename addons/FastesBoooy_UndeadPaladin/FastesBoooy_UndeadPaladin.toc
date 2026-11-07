@@ -1,0 +1,14 @@
+## Interface: 16001
+## Title: FastesBoooy: Undead Paladin 1-22
+## Notes: Speed leveling route for FastesBoooy: Undead Paladin (Horde), levels 1-22 (Tirisfal, Silverpine, Barrens, Stonetalon, Ashenvale).
+## Notes-ruRU: Скоростной маршрут прокачки для FastesBoooy: нежить-паладин (Орда), уровни 1-22 (Тирисфаль, Серебряный бор, Степи, Когтистые горы, Ясеневый лес).
+## Dependencies: FastesBoooy
+## Version: 0.1.0
+
+Route.lua
+Data.lua
+Segments\01_Deathknell.lua
+Segments\02_Tirisfal.lua
+Segments\03_Silverpine.lua
+Segments\04_Barrens.lua
+Segments\05_Barrens_Stonetalon_Ashenvale.lua
