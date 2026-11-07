@@ -1,0 +1,351 @@
+# Офлайн-инструменты FastesBoooy
+
+Всё, что проверяет аддон и маршруты **без запуска игры**: генераторы данных о клиенте
+World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), снимок базы
+квестов/NPC, валидатор маршрутов, генератор `Data.lua`, упаковка.
+
+Требования: `lua5.1`, `luacheck` 1.1.x, `busted` 2.x, `python3` (только для
+перегенерации данных и упаковки), `make`.
+
+| Файл | Что делает |
+|---|---|
+| `gen_forever_api.py` | разбирает дамп API клиента Forever → `data/forever_api.lua` |
+| `data/forever_api.lua` | (генерируется, коммитится) функции/неймспейсы/события/FrameXML/шаблоны/миксины/методы виджетов/Enum клиента Forever |
+| `build_db_snapshot.py` | снимок БД Forever из research-JSON → `data/forever_db.lua` |
+| `data/forever_db.lua` | (генерируется, коммитится) квесты, NPC, объекты, предметы, зоны, правила опыта |
+| `validate_routes.lua` | **валидатор маршрутов** (CLI; логика в `lib/validator.lua`) |
+| `gen_route_data.lua` | генерирует `<модуль>/Data.lua` (enUS-имена квестов/NPC маршрута) |
+| `package_addons.py` | `dist/<Аддон>-<версия>.zip` для каждого каталога `addons/*` |
+| `simulate_routes.lua` | прогон маршрутов через настоящий движок на моке (принадлежит ядру) |
+| `lib/route_loader.lua` | загрузка модуля маршрута в песочнице + нормализация через `Core/Schema.lua` |
+| `lib/fbdb.lua` | доступ к снимку БД: маски рас/классов, поиск, расстояния, формулы опыта |
+| `lib/json.lua` | детерминированный JSON-энкодер |
+
+Все Lua-инструменты — Lua 5.1, запускаются из корня репозитория. Сторонний код
+(Questie, QuestieDB, RXPGuides, BlizzardInterfaceResources, FrameXML) никогда не
+исполняется: исходные файлы читаются только как текст/JSON.
+
+## Цели make
+
+| Цель | Команда |
+|---|---|
+| `make check` | `lint` + `test` + `validate` + `validate-fixtures` + `simulate` + `simulate-fixtures` (то же, что CI) |
+| `make lint` | `luacheck --config .luacheckrc addons tools tests` |
+| `make test` | `busted` (все `tests/spec/*_spec.lua`) |
+| `make validate` | `lua5.1 tools/validate_routes.lua` (флаги: `make validate VALIDATE_FLAGS=--strict`) |
+| `make simulate` | `lua5.1 tools/simulate_routes.lua` |
+| `make validate-fixtures` / `make simulate-fixtures` | валидатор (0 ERROR) / симулятор на заведомо хороших фикстурах (`FxClean`, `FxNs`, `TestRoute`) — стадии проверяют что-то и до появления первого модуля маршрута |
+| `make report` | пишет `docs/VALIDATION.md` (Markdown-отчёт валидатора; ошибки маршрутов не роняют цель) |
+| `make routedata` / `make routedata-check` | перегенерировать / проверить актуальность `Data.lua` всех модулей (check — и фикстуры `FxClean`) |
+| `make api BIR=… WOWUI=…` | перегенерировать `data/forever_api.lua` (оба пути обязательны; `WOWUI=none` — без глобалов FrameXML) |
+| `make db RESEARCH=… CONVERSION=…` | перегенерировать `data/forever_db.lua` (`CONVERSION` = `QuestieDB/data/Forever/conversion.json` или `none`) |
+| `make package` | архивы аддонов в `dist/` (воспроизводимые: фиксированные даты, сортировка) |
+
+## 1. API клиента: `gen_forever_api.py` → `data/forever_api.lua`
+
+```
+python3 -I tools/gen_forever_api.py --bir <BlizzardInterfaceResources>/Resources \
+        --wowui <Forever FrameXML>/Interface/AddOns|none [--out tools/data/forever_api.lua]
+```
+
+`--bir` и `--wowui` обязательны (никаких путей по умолчанию, привязанных к машине).
+
+* Вход: Ketho/BlizzardInterfaceResources, ветка `forever` (in-game дамп KethoDoc),
+  `Resources/*.lua` разбираются регулярными выражениями **как текст**; билд берётся из
+  `README.md` дампа (`GetBuildInfo()`), коммит — из `.git` (тоже как текст).
+* `--wowui`: исходники FrameXML Forever (`none` — пропустить сознательно). TOC
+  разрешаются для типа игры `camelot`, из загружаемых файлов собираются глобальные
+  присваивания в колонке 0 (`Settings`, `SlashCmdList`, `RAID_CLASS_COLORS`, …) →
+  `frameXMLExtraGlobals`, и `*_COLOR`-глобалы из `C_UIColor` → `uiColorGlobals`.
+  Для «библиотечных» таблиц среди них (инициализированы конструктором таблицы в колонке 0,
+  есть хотя бы одна `function Name.Field(`, не расширяются через `Mixin`) — `Settings`,
+  `UiMapPoint`, … — записывается список членов → `frameXMLExtraTables` (ключи конструктора +
+  `Name.Field =` / `function Name.Field(` / `function Name:Field(` в колонке 0).
+* Причуда дампа: `Region` наследует сам себя; генератор пишет `ScriptRegion` (как в клиенте)
+  и проверяет, что граф наследования виджетов ацикличен.
+* Выход (отсортирован, детерминирован, без меток времени):
+  `build`, `meta`, `globals`, `namespaces = { C_QuestLog = {...} }`, `luaGlobals`,
+  `luaNamespaces`, `events`, `frameXMLGlobals`, `frameXMLTables`, `frameXMLExtraGlobals`,
+  `frameXMLExtraTables`, `uiColorGlobals`, `frames`, `templates`, `templateTypes`, `fonts`, `mixins`,
+  `widgetMethods` (собственные методы типа) + `widgetInherits` (родители; полный набор —
+  рекурсивно), `widgetHandlers`, `scriptObjectMethods`, `leGlobals`/`leValues`,
+  `enumNames`/`enums`, `constantNames`/`constants`, `counts`.
+* Формат стабилен: его читает мок WoW API (`tests/mocks/**`).
+
+## 2. luacheck: стандарт `forever` (`.luacheckrc`)
+
+`.luacheckrc` при загрузке читает `tools/data/forever_api.lua` (`dofile` доступен в
+конфиге luacheck 1.1.2; путь относительно корня репозитория) и строит std `forever`:
+
+* `read_globals` = функции C API + Lua-помощники WoW + функции FrameXML + `LE_*`;
+* `C_*`-неймспейсы, `Enum.X.Y`, `Constants.X.Y`, `string/table/math/bit`, таблицы
+  `frameXMLExtraTables` (`Settings`, `UiMapPoint`, …) — с **закрытым** набором полей:
+  опечатка или несуществующая функция (`C_QuestLog.GetQuestLogTitle`,
+  `Settings.RegisterBogusCategory`) → `W143`, несуществующий глобал (`GetQuestLogTitle`,
+  `GetItemCount`, `GetSpellInfo`) → `W113`;
+* фреймы (`UIParent`, …), шрифты (`GameFontNormal`), миксины, прочие глобалы FrameXML
+  (`SlashCmdList`, `RAID_CLASS_COLORS`, …) — с открытыми полями; `io`/`os`/`require`/`dofile`
+  недоступны (как в клиенте).
+
+| Файлы | std |
+|---|---|
+| `addons/FastesBoooy/**` | `forever+fastesboooy` (писать можно только `FastesBoooy`, `FastesBoooyDB`, `FastesBoooyCharDB`, `SLASH_FASTESBOOOY1/2`, `SlashCmdList.FASTESBOOOY`) |
+| `addons/FastesBoooy_*/**`, `tests/fixtures/FastesBoooy_*/**`, `tests/fixtures/*/FastesBoooy_*/**` | `fastesboooy_route`: только чтение `FastesBoooy.RegisterRoute/AddSegment/AddRouteData`, без исключений |
+| `tools/**` | `lua51` |
+| `tests/spec/**`, `tests/mocks/**`, `tests/fixtures/core/helpers.lua` | `lua51+busted` (мок ставит глобалы WoW; ослабленные правила только здесь) |
+
+Длина строки — 140. Доказательство, что std работает: `tests/spec/validator_lint_spec.lua`
+(неверное имя API даёт предупреждение, верное — нет).
+
+## 3. Снимок БД: `build_db_snapshot.py` → `data/forever_db.lua`
+
+```
+python3 -I tools/build_db_snapshot.py --research <research> \
+        --conversion <QuestieDB>/data/Forever/conversion.json|none [--out tools/data/forever_db.lua] [--date 2026-11-07]
+```
+
+`--research` и `--conversion` обязательны.
+
+* Вход: `<research>/db/{quests,npcs,objects,items,zones,enums,wclbox_quests}.json` и
+  `<research>/xp_table.json` (см. `research/db/README.md`). Данные: QuestieDB Forever
+  (GPL-3.0; статические слои коррекций воспроизведены research-шагом) + зеркало WCLBox
+  данных Wowhead Forever. Хэши входов записываются в `meta.sources`.
+* **Охват**: все квесты, доступные Орде (маска рас содержит любую расу Орды, включая
+  Skyborne-Орду 2^33, или 0), чья зона (через цепочку родительских AreaID) или спавн
+  выдающего/принимающего NPC/объекта лежит в зонах: Tirisfal Glades, Undercity,
+  Silverpine Forest, Durotar, Orgrimmar, The Barrens, Stonetalon Mountains, Ashenvale,
+  Mulgore, Thunder Bluff, Hillsbrad Foothills, Zephras Isle (2521 со всеми подзонами,
+  Valanaar и др.), Moonglade, Riverglades, Ragefire Chasm, Wailing Caverns, Ruins of
+  Lordaeron, Hall of Thanes; все классовые квесты PALADIN и DRUID (любой стороны — чтобы
+  валидатор мог сообщить «не та фракция»); плюс транзитивно (глубина 3) всё, на что они
+  ссылаются: pre/next/breadcrumb/exclusive/parent/child.
+  NPC: выдающие/принимающие, цели (creature/killCredit), источники выпадения предметов
+  целей (больше 40 спавнов на карту → **прореживание по сетке** 2×2 единицы карты: в каждой
+  клетке остаётся спавн, ближайший к её центру, так что каждый кластер сохраняет
+  представителя — любой настоящий спавн не дальше 2·√2 единиц от оставленного; такие записи
+  помечены `spawnsGrid = 2`), а также все тренеры/полётчики/трактирщики/торговцы/
+  ремонт/банкиры/стойла в этих зонах и все тренеры паладинов и друидов.
+  Вне охвата — компактные индексы `questIndex`/`npcIndex`/`objectIndex`, чтобы отличать
+  «не существует в Forever» от «вне снимка».
+* Overlay Horde Dynamic (QuestieDB dynamic corrections для Орды) применён; различия
+  PALADIN/DRUID — в `byClass`.
+* **Количество целей** — из WCLBox (данные Wowhead Forever: например, 364 — 5+5 зомби, а
+  не 8+8 как в тексте Classic), иначе из текста цели.
+* **Опыт квеста** (`xp`, `xpSrc`): опыт данжевых квестов Forever (`forever-dungeon`),
+  иначе WCLBox (`wclbox-classic`, равен Classic), иначе QuestieDB XP (`questie-classic`);
+  для ~720 новых квестов Forever опыт неизвестен (`xp = nil`) — валидатор оценивает его, а
+  аддон записывает реальные значения в игре (`/fb xp`).
+* **Координаты.** QuestieDB хранит спавны по AreaID в процентах карты этой зоны. Данные
+  QuestieDB Forever **уже в системе координат Forever**: сырые файлы получены
+  `QuestieDB convert-forever` (границы карт Era 1.15.9 → Forever 1.60.1.69893; геометрия
+  изменилась только у Mulgore 215, Eastern Plaguelands 139, Redridge 44, Stormwind 1519, и
+  они уже пересчитаны), слои traces/generated — нативные координаты Forever
+  (`research/db/crosscheck.md`: медиана расхождения с WCLBox 0.04 по 1 628 точкам,
+  включая Mulgore). Поэтому преобразуется только AreaID → uiMapID (`zones.json`), что даёт
+  ровно систему маршрутов `at = {uiMapID, x, y}`. Спавны `[-1, -1]` («внутри инстанса»)
+  попадают в `instance = {AreaID}`. uiMap 2665 («вторая карта» Zephras Isle) известен, но
+  спавнов на нём нет.
+* **Размеры карт в ярдах**: `zones[uiMap].size = {ширина, высота}` из границ карт Forever
+  (`geometry.transforms[].target_bounds` в `QuestieDB/data/Forever/conversion.json`:
+  ширина = |left − right|, высота = |top − bottom|), 49 карт. Например, The Barrens
+  10 133 × 6 756 ярдов, Undercity 959 × 640, Tirisfal 4 519 × 3 013. У Zephras Isle (2521)
+  границ офлайн нет — размера нет.
+* Размер ≈ 2.6 МБ, загрузка ≈ 0.1 с. Счётчики (снимок 2026-11-07): квестов 2 040 (+3 193 в
+  индексе), NPC 4 548 (+8 869), объектов 487 (+6 556), предметов 1 429, карт 98.
+
+Структура (подробно — в шапке файла):
+
+```lua
+return {
+  meta = { build = {"1.60.1", "70862"}, interface = 16001, generated = "2026-11-07", sources = {...}, counts = {...} },
+  questLogSize = 40, levelCap = 60,
+  enums = { races = {UNDEAD = 16, SKYBORNE_HORDE = 8589934592, ...}, classes = {PALADIN = 2, DRUID = 1024, ...},
+            raceFileToBit = { Scourge = 16, ..., Skyborne = { Horde = 2^33, Alliance = 2^32 } },
+            factionMasks = { Horde = 8589934770, Alliance = 4294967373 }, npcFlags = {...}, ... },
+  zones = { [1420] = {name = "Tirisfal Glades", areaId = 85, scope = true, size = {4518.7, 3012.5}}, ... },
+  areaToUiMap = { [154] = 1420, ... }, dungeons = { [16611] = {name, entrances = {{1458, 72.48, 11.33}}} },
+  xp = { levels = {[1] = 400, ...}, questRule = {...}, mobRule = {...}, typicalQuestXpByLevel = {...} },
+  quests = { [364] = { name, level, reqLevel, races, classes, side = "H", start = {npcs = {1569}},
+                       finish = {npcs = {1569}}, breadcrumbs = {363}, objectives = {creatures = {{1501, 5}, {1502, 5}}},
+                       zone = 154, uiMap = 1420, xp = 170, xpSrc = "wclbox-classic", status = "same" } },
+  npcs = { [1569] = { name, sub, minLevel, maxLevel, rank, faction = "H", flags = {questgiver = true},
+                      spawns = { [1420] = { {30.84, 66.2} } } } },   -- spawns[uiMapID] = {{x, y}, ...}
+                                                                   -- (+ spawnsGrid = 2 when thinned)
+  objects = {...}, items = {...}, questIndex = {...}, npcIndex = {...}, objectIndex = {...},
+}
+```
+
+Маски рас больше 32 бит: проверять только арифметикой `floor(mask / bit) % 2`
+(`DB.HasBit`), никогда `bit.band`.
+
+## 4. `gen_route_data.lua` → `<модуль>/Data.lua`
+
+```
+lua5.1 tools/gen_route_data.lua <каталог-модуля> [...]   # записать
+lua5.1 tools/gen_route_data.lua --all                     # все addons/FastesBoooy_*/
+lua5.1 tools/gen_route_data.lua --all --check             # CI: код 1, если Data.lua устарел
+lua5.1 tools/gen_route_data.lua --stdout <каталог>        # напечатать
+```
+
+Загружает `Route.lua` и сегменты (порядок TOC, сам `Data.lua` пропускается) в песочнице
+(все файлы модуля получают одну общую приватную таблицу `local _, ns = ...`, как в клиенте),
+собирает id квестов (`accept/turnin/complete/abandon`, ключи `reward`), NPC (`npc`),
+объектов (`object`), предметов (`collect`, `use`) и пишет для каждого маршрута
+`FastesBoooy.AddRouteData("<id>", { quests = {[id] = "enUS"}, npcs = {...}, objects = ..., items = ... })`.
+Вывод детерминирован (сортировка по id). Если у модуля есть ошибки загрузки/схемы,
+`Data.lua` не пишется (и не печатается) и код выхода — 1.
+
+## 5. Валидатор: `validate_routes.lua`
+
+```
+lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
+```
+
+Без каталогов проверяет все `addons/FastesBoooy_*/` с TOC. Опции:
+
+| Опция | Смысл |
+|---|---|
+| `--route ID` | только этот маршрут |
+| `--profile race=Scourge,class=PALADIN[,faction=Horde]` | переопределить профиль игрока |
+| `--strict` | WARN тоже даёт код выхода 1 |
+| `--json FILE` | полный отчёт (включая INFO) в JSON |
+| `--markdown FILE` | Markdown-отчёт (`make report` → `docs/VALIDATION.md`) |
+| `--db FILE` | другой снимок БД |
+| `--addons DIR` | где искать модули |
+| `--tolerance-yards N` / `--hard-tolerance-yards N` | пороги расстояния `at` → спавн в ярдах (по умолчанию 40 / 120) |
+| `--tolerance N` / `--hard-tolerance N` | те же пороги в единицах карты (%) для карт без известного размера (по умолчанию 3.0 / 8.0; помечается «approximate») |
+| `--ignore код,код` | подавить коды сообщений (например `xp-unknown`) |
+| `--xp-optimism N` | множитель оценённого опыта для «оптимистичной» симуляции (по умолчанию 2.0) |
+| `-v` / `-q` | показать INFO / только итоговые строки |
+
+Код выхода: 0 — нет ошибок; 1 — есть ERROR (или WARN при `--strict`); 2 — ошибка запуска
+или `--route` не совпал ни с одним маршрутом.
+
+### Как работает
+
+1. Модуль грузится в песочнице (`lib/route_loader.lua`): только чистые библиотеки Lua и
+   заглушка `FastesBoooy`, которая нормализует `RegisterRoute/AddSegment/AddRouteData`
+   **настоящим** `addons/FastesBoooy/Core/Schema.lua` (как `Core/Registry.lua`). Ошибки
+   схемы, загрузки, объявление глобалов → `schema` (ERROR) с именем файла.
+2. Профили: каждая пара (раса × класс) из метаданных маршрута; фракция — из маршрута.
+   `raceFile` → бит расы через `enums.raceFileToBit` (Нежить = `Scourge`; `Skyborne` —
+   по фракции: Орда 2^33, Альянс 2^32; Skyborne-маршрут без `faction` проверяется за обе
+   стороны). Один раз на маршрут: токены рас маршрута и фильтров шагов сверяются с
+   `raceFileToBit` (`unknown-race-token`), шаг, который не видит ни один профиль, — WARN
+   `step-no-profile`.
+3. Шаги проходят по порядку; шаги, не подходящие по `class/race/faction`, пропускаются
+   (INFO). Внутри шага действия выполняются в порядке игрока у одного NPC: abandon →
+   цели/предметы квестов, уже бывших в журнале → turnin → accept → цели и сдача квестов,
+   взятых этим же шагом → остальное в порядке `Schema.ACTION_ORDER`. Так работают «сдать и
+   сразу взять», `{accept=Q, turnin=Q}`, `{accept=Q, complete=Q}`, `{complete=Q, turnin=Q}`.
+4. Симуляция: журнал квестов, сданные/брошенные, опыт и уровень.
+   * старт: уровень 1, 0 опыта; таблица опыта = Classic Era (`xp.levels`);
+   * `turnin`: опыт квеста × штраф за разницу уровней Classic (`mult = clamp(2*(qL-pL)+20, 1, 10)/10`,
+     округление клиента); неизвестный опыт → медиана известных квестов того же уровня (WARN `xp-unknown`);
+   * `complete`: убийства целей-существ (`count` × опыт моба, при неизвестном количестве — 8)
+     и добыча предметов целей (≈1.5 убийства источника на предмет); опыт моба — формула Classic
+     (`(5·pL+45)`, +5%/уровень выше, серые = 0, элита ×2) со штрафом Forever за «зелёных»
+     мобов (−4% за уровень разницы, максимум −20%) — это **оценка** (INFO);
+   * `level`: если опыта не хватает — гринд мобами своего уровня, число убийств (INFO,
+     WARN если > 30);
+   * параллельно идёт **оптимистичная** симуляция: неизвестный опыт квестов × `--xp-optimism`
+     (2.0), предполагаемое число убийств × 1.5. Требование уровня — ERROR `level-too-low`,
+     только если не выполняется даже в оптимистичной симуляции, иначе WARN
+     `level-too-low-estimated` (недобор может быть артефактом оценки). Совет для маршрутов:
+     перед квестом с порогом уровня поставить шаг `level` — в игре он выполняется сразу,
+     если уровень уже набран;
+   * rested-бонус, еда, лагерь и групповой опыт не моделируются.
+
+### Проверки и коды сообщений
+
+| Код | Уровень | Что значит |
+|---|---|---|
+| `schema` | ERROR | ошибка формата (Schema.lua), загрузки файла, глобал в модуле, сегмент без маршрута |
+| `quest-unknown` | ERROR | квеста нет в БД Forever |
+| `quest-out-of-scope` | WARN | квест есть в Forever, но вне снимка (проверки NPC/цепочек пропущены) |
+| `quest-side` | ERROR | квест другой фракции |
+| `quest-race` / `quest-class` | ERROR | недоступен расе / классу профиля (`requiredRaces/Classes`) |
+| `level-too-low` / `level-too-high` | ERROR | симулированный уровень ниже `reqLevel` (даже оптимистично) / выше `maxLevel` при принятии |
+| `level-too-low-estimated` | WARN | уровень ниже `reqLevel` по оценке, но достижим в оптимистичной симуляции |
+| `accept-prereq` | ERROR | не сданы все `preGroup` или ни один из `preSingle` |
+| `accept-exclusive` | ERROR | взят/сдан взаимоисключающий квест (в обе стороны: в БД группа часто указана только у одного квеста) |
+| `accept-unavailable` | ERROR | квест больше не выдаётся: сдан его `availableUntilCompleted` (`untilCompleted`) |
+| `accept-disabled` | ERROR | квест не выдаётся, пока в журнале его `disabledByQuest` (`disabledBy`) |
+| `accept-parent` | ERROR | родительский квест не в журнале |
+| `accept-duplicate` / `accept-done` | ERROR | квест уже в журнале / уже сдан (кроме повторяемых) |
+| `questlog-full` | ERROR | в журнале больше `questLogSize` (40) квестов |
+| `breadcrumb-late` / `breadcrumb-open` | WARN | «хлебная крошка» берётся после цели / цель берётся при открытой крошке |
+| `accept-wrong-npc` / `accept-wrong-object` | ERROR | NPC/объект шага не выдаёт квест |
+| `turnin-wrong-npc` / `turnin-wrong-object` | ERROR | NPC/объект шага не принимает квест |
+| `turnin-not-accepted` / `turnin-twice` / `turnin-abandoned` | ERROR | сдача невзятого / повторная / брошенного квеста |
+| `turnin-no-complete` | WARN | у квеста есть цели, но не было шага `complete` |
+| `turnin-partial` | WARN | шаги `complete = { [id] = {…} }` покрыли не все цели квеста |
+| `turnin-items` | INFO | предметы целей не собраны шагами `complete`/`collect` |
+| `complete-not-active` | ERROR | `complete` для квеста не в журнале |
+| `complete-bad-index` | WARN | номер цели больше числа целей в БД |
+| `abandon-not-active` | ERROR | бросается квест не из журнала |
+| `quest-carried` | WARN | квест не сдан и не брошен к концу маршрута |
+| `npc-unknown` / `object-unknown` | ERROR | NPC/объекта нет в БД Forever |
+| `npc-out-of-scope` / `object-out-of-scope` | WARN | существует, но вне снимка (позиция не проверена) |
+| `at-map-unknown` | ERROR | неизвестный uiMapID |
+| `at-far` | WARN / ERROR | ближайший спавн NPC/объекта шага дальше 40 / 120 ярдов (карты без размера: 3 / 8 единиц карты, «approximate»; у прореженных спавнов вычитается 2·√2 единицы) |
+| `at-no-spawn` | ERROR | у NPC/объекта нет спавна на карте `at` |
+| `at-far-from-giver` | WARN | шаг accept/turnin без `npc`: `at` дальше порога от выдающих/принимающих (ярды; без размера карты — единицы) |
+| `at-instance` | INFO | NPC внутри инстанса — позицию не проверить |
+| `train-wrong-trainer` | ERROR | NPC не тренер класса маршрута (`subName` «<Class> Trainer») |
+| `train-not-class-trainer` | WARN | тренер профессии/верховой езды, а не класса |
+| `train-no-npc` | WARN | шаг `train` без NPC |
+| `not-flightmaster` | ERROR | `fp`/`fly` у NPC без флага полётчика |
+| `not-innkeeper` | ERROR | `sethearth` не у трактирщика |
+| `not-vendor` | WARN | `vendor` у NPC без флага торговца/ремонта |
+| `npc-hostile` | ERROR | NPC тренера/полётов/таверны/торговли не дружелюбен фракции (`A`/`H`/`AH`) |
+| `hearth-mismatch` / `hearth-unbound` | WARN / INFO | камень привязан к другому месту / не было `sethearth` |
+| `xp-unknown` | WARN | опыт квеста неизвестен — использована оценка |
+| `complete-kill-xp` | INFO | оценка убийств и опыта за цели |
+| `level-grind` | INFO / WARN | сколько убийств нужно до уровня шага `level` (WARN если > 30) |
+| `segment-level` / `route-level` | WARN | симулированный уровень в конце сегмента / маршрута отличается от плана больше чем на 1 |
+| `step-skipped` | INFO | шаг отфильтрован по классу/расе/фракции |
+| `unknown-race-token` | ERROR | токен расы маршрута или фильтра шага — не `raceFile` из `UnitRace()` (например `Undead` вместо `Scourge`): шаг молча пропал бы у всех |
+| `step-no-profile` | WARN | шаг не подходит ни одному профилю маршрута — его никто не увидит |
+| `profile-race` / `profile-class` / `profile-faction` | ERROR / WARN | неизвестный профиль (в т. ч. `raceFile` обеих фракций без `faction`) |
+| `route-empty` | ERROR | у маршрута нет шагов |
+
+### Вывод
+
+* stdout: ERROR/WARN (с `-v` и INFO) в виде `SEVERITY сегмент#шаг (файл) [код] сообщение`,
+  таблица сегментов (план уровней, симулированный уровень начала → конца, опыт квестов/мобов/
+  гринда, журнал), итог маршрута;
+* `--json`: `{ db, totals, routes = [{ route, module, profile, counts, summary, segments, messages }] }`;
+* `--markdown`: отчёт на русском для `docs/VALIDATION.md`. Оба файла детерминированы.
+
+## 6. Тесты и фикстуры
+
+* `tests/spec/validator_fixtures_spec.lua` — модули-фикстуры `tests/fixtures/validator/`
+  на реальных данных Forever (Мертвый Звон): чистый маршрут `FastesBoooy_FxClean` (0 ERROR,
+  0 WARN), `FastesBoooy_FxNs` (файлы модуля делят таблицу `ns`) и по модулю на каждую ошибку:
+  неверный id квеста, квест другой расы/фракции/класса, нет предквеста, NPC далеко от `at`
+  (ярды; Zephras Isle — приблизительно), не тот NPC выдачи/сдачи, переполнение журнала,
+  низкий уровень, не тот тренер/полётчик/трактирщик, учёт журнала (exclusive, дубли,
+  сдача невзятого), ошибки схемы, фильтры шагов (`FastesBoooy_FxFilters`); плюс маршруты в
+  памяти: порядок действий в шаге, exclusive в обе стороны, `untilCompleted`/`disabledBy`,
+  частичный `complete`, Skyborne без фракции, ярды на разных картах, прореженные спавны.
+* `tests/spec/validator_lib_spec.lua` — маски > 32 бит, формулы опыта, структура снимка,
+  загрузчик модулей, профили, JSON.
+* `tests/spec/validator_cli_spec.lua` — коды выхода CLI, `--json/--markdown`, детерминизм,
+  `gen_route_data.lua --check/--stdout`.
+* `tests/spec/validator_lint_spec.lua` — std `forever` ловит несуществующие API.
+
+```
+busted tests/spec/validator_*_spec.lua
+lua5.1 tools/validate_routes.lua tests/fixtures/validator/FastesBoooy_FxClean
+```
+
+## Ограничения
+
+* Опыт ~720 новых квестов Forever неизвестен офлайн — уровни в симуляции приблизительны,
+  пока не собраны реальные значения (`/fb xp` в аддоне → обновить данные).
+* Опыт за мобов — формула Classic + приблизительный штраф Forever; вероятности выпадения
+  предметов в снимке нет.
+* Расстояние считается в ярдах по размерам карт из `conversion.json`; у карт без известных
+  границ (Zephras Isle 2521, данжевые карты) — в процентах карты (приблизительно).
+* uiMap 2665 (вторая карта Zephras Isle) не разрешён в данных QuestieDB.

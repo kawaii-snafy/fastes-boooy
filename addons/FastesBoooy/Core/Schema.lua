@@ -93,7 +93,7 @@ function Schema.Text(t, locale)
     if type(t) ~= "table" then return tostring(t) end
     local short = locale and locale:sub(1, 2) or "en"
     return t[locale or ""] or t[short] or t.en or t.ru or (function()
-        for _, v in pairs(t) do return v end
+        for _, v in pairs(t) do return v end -- luacheck: ignore 512 (first value)
     end)()
 end
 
@@ -149,7 +149,7 @@ local function normQuestAction(kind, value, where, errors, out)
     end
     -- hash part: { [questId] = {objective indexes} } (complete only)
     local extra = {}
-    for k, v in pairs(value) do
+    for k in pairs(value) do
         if not (type(k) == "number" and k >= 1 and k <= n and floor(k) == k) then
             extra[#extra + 1] = k
         end
@@ -273,7 +273,8 @@ function Schema.NormalizeStep(def, where, errors)
     end
 
     if #actions == 0 then
-        addErr(errors, where, "step has no action (accept/turnin/complete/level/go/train/fp/fly/sethearth/hearth/collect/vendor/abandon/manual)")
+        addErr(errors, where, "step has no action "
+            .. "(accept/turnin/complete/level/go/train/fp/fly/sethearth/hearth/collect/vendor/abandon/manual)")
     end
 
     -- fields
@@ -302,12 +303,17 @@ function Schema.NormalizeStep(def, where, errors)
         if type(def.reward) ~= "table" then
             addErr(errors, where, "reward must be { [questId] = choiceIndex }")
         else
+            -- only valid entries are kept (an invalid one is an error already and
+            -- must not reach the reward automation, e.g. a string index)
+            local reward = {}
             for q, idx in pairs(def.reward) do
                 if not isPosInt(q) or not isPosInt(idx) then
                     addErr(errors, where, "reward entry [%s]=%s invalid", tostring(q), tostring(idx))
+                else
+                    reward[q] = idx
                 end
             end
-            step.reward = def.reward
+            step.reward = reward
         end
     end
     if def.gossip ~= nil then
@@ -339,7 +345,7 @@ function Schema.NormalizeStep(def, where, errors)
         for tok in pairs(set or {}) do
             if not Schema.CLASSES[tok] then addErr(errors, where, "unknown class token '%s'", tostring(tok)) end
         end
-        filters = filters or {}
+        filters = {}
         filters.class = set
     end
     if def.race ~= nil then
@@ -476,7 +482,7 @@ function Schema.AddSegment(route, def)
     end
     seg.last = #route.steps
     route.segments[#route.segments + 1] = seg
-    route.segmentById[def.id] = seg
+    if def.id ~= nil then route.segmentById[def.id] = seg end
     return seg, errors
 end
 

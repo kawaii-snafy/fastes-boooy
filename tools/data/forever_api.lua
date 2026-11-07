@@ -6,6 +6,8 @@
 --         Resources/*.lua parsed as text (never executed).
 -- frameXMLExtraGlobals: column-0 global assignments in Blizzard FrameXML 1.60.1.70862 files
 --         that load for game type camelot (2373 files, TOC directives resolved).
+-- frameXMLExtraTables: member names of the function-library tables among them (Settings,
+--         UiMapPoint, ...): constructor keys + column-0 Name.Field = / function Name.Field(.
 -- uiColorGlobals: *_COLOR / *_COLOR_CODE globals created from C_UIColor.GetColors() at load
 --         time (Blizzard_SharedXMLBase/Color.lua), as referenced by camelot FrameXML code.
 --
@@ -15,7 +17,8 @@
 --   luaNamespaces               { string = {...}, table = {...}, math = {...}, bit = {...}, ... }
 --   frameXMLGlobals/Tables      FrameXML functions / { SomeUtil = {fields} }
 --   widgetMethods/Handlers      OWN methods/script handlers per widget type;
---   widgetInherits              parents per widget type (resolve recursively for the full set)
+--   widgetInherits              parents per widget type (resolve recursively for the full set;
+--                               the dump's Region -> Region self-loop is written as ScriptRegion)
 --   leGlobals / leValues        LE_* and NUM_LE_* constants (names / values)
 --   enums / constants           Enum.X.Y and Constants.X.Y values
 
@@ -5875,6 +5878,814 @@ return {
         "newmetaindex", "parentLabel", "professionsFrameWidthOverride", "rtable",
         "secretunwrap", "secureEnv", "setglobal", "showParty",
         "showRaid", "strmeta", "tomtest", "xx",
+    },
+    frameXMLExtraTables = {
+        AccessibilityOverrides = {
+            "CreateArachnophobiaSetting", "CreatePhotosensitivitySetting",
+        },
+        ActionBarOverlayGlowAnimInMixin = {
+            "OnFinished", "OnPlay",
+        },
+        ActionBarsOverrides = {
+            "AdjustActionBarSettings", "CreateActionBarVisibilitySettings", "RunSettingsCallback",
+        },
+        ActionButtonSpellAlertManager = {
+            "HasAlert", "HideAlert", "ShowAlert", "SpellAlertType",
+            "activeAlerts",
+        },
+        AnimTransitionMixin = {
+            "CancelAnimTransition", "GetTranslationDeltas", "InitAnimTransition", "StartAnimIn",
+            "StartAnimOut", "StartAnimTransition",
+        },
+        AnimaDiversionUtil = {
+            "IsAnyNodeActive", "IsNodeActive",
+        },
+        ArdenwealdGardening = {
+            "Create",
+        },
+        AssistedCombatManager = {
+            "AddSpellTooltipLine", "BuildAssistedHighlightCandidateActionButtonsList", "ForceUpdateAtEndOfFrame", "GetActionButtonSpellForAssistedHighlight",
+            "GetActionSpellDescription", "GetActionSpellID", "GetUpdateRate", "HasActionSpell",
+            "Init", "IsAssistedHighlightActive", "IsHighlightableSpellbookSpell", "IsRecommendedAssistedHighlightButton",
+            "IsRotationSpell", "OnActionButtonActionChanged", "OnPlayerRegenChanged", "OnSpellsChanged",
+            "OnUpdate", "ProcessCVars", "SetActionSpell", "SetAssistedHighlightFrameShown",
+            "SetCanHighlightSpellbookSpells", "ShouldDowngradeSpellAlertForButton", "ShouldHighlightSpellbookSpell", "UpdateAllAssistedHighlightFramesForSpell",
+            "UpdateAssistedHighlightCandidateActionButtonsList", "UpdateAssistedHighlightState", "rotationSpells",
+        },
+        AsyncCallbackSystemMixin = {
+            "AddCallback", "AddCancelableCallback", "ClearCallbacks", "FireCallbacks",
+            "GetCallbacks", "GetOrCreateCallbacks", "Init",
+        },
+        AsyncRequests = {
+            "CreateAsyncRequest",
+        },
+        AuctionHousePriceDisplayFrameMixin = {
+            "GetAmount", "OnLoad", "SetAmount",
+        },
+        AuctionHouseTableBuilder = {
+            "GetAllAuctionsLayout", "GetAuctionsItemListLayout", "GetBidsListLayout", "GetBrowseListLayout",
+            "GetCommoditiesAuctionsListLayout", "GetCommoditiesBuyListLayout", "GetCommoditiesSellListLayout", "GetItemBuyListLayout",
+            "GetItemSellListLayout",
+        },
+        AuctionHouseTableBuilderMixin = {
+            "AddColumnInternal", "AddFillColumn", "AddFixedWidthColumn", "AddUnsortableColumnInternal",
+            "AddUnsortableFillColumn", "AddUnsortableFixedWidthColumn",
+        },
+        AuctionHouseUtil = {
+            "AddAuctionHouseTooltipInfo", "AddSellersToTooltip", "AggregateCommoditySearchResultsByMaxPrice", "AggregateSearchResultsByQuantity",
+            "AppendBattlePetVariationLines", "CompareItemKeys", "ConvertBidStatusToText", "ConvertCategoryToSearchContext",
+            "ConvertItemSellItemKey", "CreateVirtualRowData", "FormatTimeLeft", "FormatTimeLeftTooltip",
+            "GenerateRowSelectedCallbackWithInspect", "GenerateRowSelectedCallbackWithLink", "GetBidTextFromStatus", "GetDisplayTextFromOwnedAuctionData",
+            "GetErrorText", "GetHeaderNameFromSortOrder", "GetItemDisplayText", "GetItemDisplayTextFromItemKey",
+            "GetItemKeyDisplayLevel", "GetItemLinkFromRowData", "GetItemQualityColorFromOwnedAuctionData", "GetQuantityDisplayTextFromOwnedAuctionData",
+            "GetSellersString", "GetTimeLeftBandText", "GetTooltipTimeLeftBandText", "HasBidType",
+            "HasOwnedAuctionType", "IsAuctionIDUniqueShadowlandsCrafted", "IsOwnedAuction", "LineOnEnterCallback",
+            "LineOnLeaveCallback", "LineOnUpdate", "RowDataIsWoWToken", "SanitizeAuctionHousePrice",
+            "SetAuctionHouseTooltip", "SetBidsFrameBidTextColor", "SetOwnedAuctionBidTextColor", "TimeLeftFormatter",
+            "TimeLeftTooltipFormatter",
+        },
+        AudioOverrides = {
+            "CreateEncounterWarningsSoundSettings", "CreateGameplaySoundEffectsSettings", "CreatePingSoundSettings", "HasPetBattleMusic",
+        },
+        AuraContainerUtil = {
+            "AddUnitEventRegistration", "AppendCandidateFilterUnitEvents", "ApplyAccessRestrictions", "CanApplyIdentityCandidateFilters",
+            "ClearTooltipStyle", "CompareItemEnchantmentsByDuration", "CompareItemEnchantmentsBySlot", "CreateAuraGroup",
+            "CreateAuraGroupManager", "CreateAuraSlot", "CreateAuraSlotManager", "CreateCustomFrameProvider",
+            "CreateFramePoolProvider", "CreateItemEnchantment", "CreateItemEnchantmentManager", "CreateSingleFrameProvider",
+            "DoesAuraPassCandidateFilters", "GetAuraSortComparator", "GetDefaultTooltip", "GetItemEnchantmentDurationSortValue",
+            "GetItemEnchantmentInfo", "GetItemEnchantmentInventorySlot", "GetItemEnchantmentSortComparator", "GetItemEnchantmentSortOrder",
+            "GetPandemicWindow", "InitializeInboundAnimationGroup", "InitializeInboundScriptObject", "RequireObjectType",
+            "SetIconTextureForAura", "SetSpellNameForAura", "SetTooltipBackdrop", "SetTooltipNineSlice",
+            "SetTooltipTextureSlice", "ShouldIncludeAuraForFilterString", "ValidateInboundScriptObject", "ValidateInboundScriptObjectOrOwner",
+        },
+        AzeriteEmpoweredItemDataSource = {
+            "CreateEmpty", "CreateFromFromItemLink", "CreateFromItemLocation",
+        },
+        AzeriteLayoutInfo = {
+            "CalculatePlugOffset", "CalculatePowerOffset",
+        },
+        BagTutorialQueue = {
+            "AddToQueue", "GetQueueFront", "IsInQueue", "StartNext",
+            "queue",
+        },
+        BattlegroundChatFiltersMixin = {
+            "FilterChatMsgSystem", "OnEvent", "OnLoad", "OnUpdate",
+            "StartBGChatFilter", "StopBGChatFilter",
+        },
+        BlizzCon2026 = {
+            "IsActive", "IsColdSwapEnabled", "IsDungeonExperience", "IsSkyborneExperience",
+        },
+        BoostTutorial = {
+            "ACTIONBAR_SLOT_CHANGED", "CanDismissPointer", "ClearActionBar", "GetPointerFrameID",
+            "HidePointerFrame", "HighlightSpell", "Init", "IsSpellInPushQueue",
+            "MINIMUM_POINTER_SHOW_TIME", "OnEvent", "RemoveSpellFromPushQueue", "SCENARIO_UPDATE",
+            "SPELL_PUSHED_TO_ACTIONBAR", "SetQueuedHighlight", "TUTORIAL_HIGHLIGHT_SPELL", "TUTORIAL_UNHIGHLIGHT_SPELL",
+            "UNIT_SPELLCAST_SUCCEEDED", "UPDATE_BONUS_ACTIONBAR", "UnhighlightSpells", "UpdateQueuedActionBarHighlight",
+            "spellQueue",
+        },
+        CatalogShopInboundInterface = {
+            "CheckForFree", "EscapePressed", "IsShown", "OpenGamesCategory",
+            "SelectBoost", "SelectGameTimeProduct", "SelectSpecificProduct", "SelectSubscriptionProduct",
+            "SetGamesCategory", "SetServicesCategory", "SetShown", "SetTokenCategory",
+        },
+        CatalogShopRaceChoiceMixin = {
+            "OnEvent", "OnHide", "OnLoad", "OnShow",
+        },
+        CatalogShopRefundFlowInboundInterface = {
+            "EscapePressed", "IsShown", "SetShown",
+        },
+        CatalogShopTopUpFlowInboundInterface = {
+            "EscapePressed", "IsShown", "SetCurrentBalance", "SetDesiredQuantity",
+            "SetShown", "SetSuggestedProduct",
+        },
+        ClassMenu = {
+            "InitClassSpecDropdown",
+        },
+        ClassTalentHelper = {
+            "SwitchToLoadoutByIndex", "SwitchToLoadoutByName", "SwitchToSpecializationByIndex", "SwitchToSpecializationByName",
+        },
+        ClassTalentUtil = {
+            "GetEdgeTemplateType", "GetSheenAlphaForVisualState", "GetSpecializedChoiceMixin", "GetSpecializedMixin",
+            "GetSpendSoundKitID", "GetTemplateForTalentType", "GetVisualsForClassID", "GetVisualsForSpecID",
+            "IsEntryTalentMissingFromActionBars", "IsTalentMissingFromActionBars", "ShouldRefundClearEdges",
+        },
+        ColorManager = {
+            "GetAtlasDataForAuctionHouseItemQuality", "GetAtlasDataForGarrisonFollowerQuality", "GetAtlasDataForGarrisonShipyardFollowerQuality", "GetAtlasDataForLootBorderItemQuality",
+            "GetAtlasDataForLootJournalSetItemQuality", "GetAtlasDataForLootUpgradeQuality", "GetAtlasDataForMawBuff", "GetAtlasDataForNewItemQuality",
+            "GetAtlasDataForPlayerChoice", "GetAtlasDataForProfessionsItemQuality", "GetAtlasDataForSpellDisplayColor", "GetAtlasDataForWardrobeSetItemQuality",
+            "GetColorDataForBagItemQuality", "GetColorDataForDressUpFrameQuality", "GetColorDataForFollowerQuality", "GetColorDataForItemQuality",
+            "GetColorDataForWorldQuestQuality", "GetDefaultColorDataForBagItemQuality", "GetDefaultColorDataForItemQuality", "GetFormattedStringForItemQuality",
+            "UpdateColorData", "UpdateColorsForFollowerQuality", "UpdateColorsForItemQuality", "UpdateColorsForWorldQuestQuality",
+        },
+        ColorblindOverrides = {
+            "CreateSettings", "ShouldShowItemQuality",
+        },
+        CombatLogDriverMixin = {
+            "OnCombatLogEntriesCleared", "OnCombatLogMessage", "OnCombatLogMessageLimitChanged", "OnCombatLogRefilterFinished",
+            "OnCombatLogRefilterStarted", "OnCombatLogRefilterUpdate", "OnEvent", "OnLoad",
+        },
+        CombatLogInbound = {
+            "GenerateMessage",
+        },
+        CombatLogProcessor = {
+            "ApplyFilterSettings", "GenerateMessage", "GetFilterSettings", "IsRefiltering",
+            "OnLoad", "ProcessCurrentCombatEvent", "ProcessCurrentEntry", "RefilterEntries",
+            "SetFilterSettings", "StartRefiltering", "StopRefiltering",
+        },
+        CombatOverrides = {
+            "AdjustCombatSettings", "CreateFloatingCombatTextSetting", "CreateOccludedSilhouettePlayerSetting", "CreateRaidSelfHighlightSetting",
+            "RunSettingsCallback",
+        },
+        CombatTextUtil = {
+            "FountainScroll", "GetBasicPowerTypeColor", "GetComboPointsMessageInfo", "GetFormattedBlockMessage",
+            "GetPowerEnumFromEnergizeString", "GetRunePowerUpdateMessage", "RegisterCachableCVars", "StandardScroll",
+            "UpdateEventRegistration",
+        },
+        CommentatorUtil = {
+            "GetOppositeTeamIndex",
+        },
+        CommunitiesGuildMemberDetailMixin = {
+            "DisplayMember", "GetClubId", "GetMemberInfo", "InitializeGamepad",
+            "OnEvent", "OnHide", "OnLoad", "OnShow",
+            "RegisterForTransitions", "SetupRankDropdown", "UninitializeGamepad",
+        },
+        CommunitiesHyperlink = {
+            "OnClickLink", "OnClickReference",
+        },
+        CompositorMixin = {
+            "AttachFontString", "AttachFrame", "AttachTemplate", "AttachTexture",
+            "Clear", "ClearTicker", "CreateWithPool", "Detach",
+            "GetBase", "NewTicker", "__index",
+        },
+        ContainerFrameSettingsManager = {
+            "AddCheckReopenBag", "CheckBagSetup", "CheckReopenBags", "ClearCheckReopenBags",
+            "ClearFilterFlag", "GenerateFilterList", "GetBagsShown", "GetFilterFlags",
+            "GetTokenTracker", "GetTokenTrackerIfShown", "Init", "IsUsingCombinedBags",
+            "MarkBagSetupDirty", "MarkBagsShownDirty", "OnAddonLoaded", "OnBagClosed",
+            "OnBagContainerUpdate", "OnCombinedBagSettingChanged", "QueryFilterFlags", "SetFilterFlag",
+            "SetMoneyFrameOwner", "SetTokenTrackerOwner", "SetUsingCombinedBags", "SetupBagsCombined",
+            "SetupBagsIndividual",
+        },
+        ContinuableContainer = {
+            "AddContinuable", "AddContinuables", "AreAnyLoadsOutstanding", "Cancel",
+            "CheckIfSatisfied", "ContinueOnLoad", "GetNumOutstandingLoads", "RecheckEvictableContinuables",
+        },
+        ControlsOverrides = {
+            "AdjustCameraSettings", "RunSettingsCallback", "SetupAutoDismountSetting", "SetupCombinedBagsSetting",
+        },
+        CovenantCallings = {
+            "Create",
+        },
+        CovenantChoiceToasts = {
+            "GetSwirlEffectsByTextureKit",
+        },
+        CustomizationUtil = {
+            "ShouldShowDebugTooltipInfo", "UpdateShowDebugTooltipInfo",
+        },
+        DEFAULT_PET_BATTLE_ABILITY_INFO = {
+            "GetAbilityID", "GetAttackStat", "GetCooldown", "GetHealth",
+            "GetMaxHealth", "GetPadState", "GetPetOwner", "GetPetType",
+            "GetRemainingDuration", "GetSpeedStat", "GetState", "GetWeatherState",
+            "HasAura", "IsInBattle",
+        },
+        Dispatcher = {
+            "ClearDebugEvents", "DebugAllEvents", "DebugFrame", "DebugVerbose",
+            "DumpEvents", "EventFrame", "Events", "FindKeyByValue",
+            "Functions", "Initialize", "NextEventID", "NextFunctionID",
+            "NextScriptID", "OnDebugEvent", "OnEvent", "OnScript",
+            "OnSecureFunc", "OnSlash_Event", "OnSlash_Verbose", "RegisterDebugEvent",
+            "RegisterEvent", "RegisterFunction", "RegisterScript", "Scripts",
+            "ToggleDebugEvent", "UnregisterAll", "UnregisterAllEvents", "UnregisterAllFunctions",
+            "UnregisterAllScripts", "UnregisterDebugEvent", "UnregisterEvent", "UnregisterFunction",
+            "UnregisterScript", "_CreateCallbackData",
+        },
+        ErrorLookupInterface = {
+            "GetCombinedMessage", "GetErrorMessage", "GetMessage", "HasError",
+            "IsUserFixableError",
+        },
+        Event = {
+            "RegisterCallback", "RegisterUnitCallback",
+        },
+        EventSchedulerReminderManager = {
+            "AnnounceEvent", "CanDoWarningForEvent", "CanRefresh", "ClearReminder",
+            "Refresh", "ResetWarningForEvent", "SetBlockRefresh", "SetReminder",
+        },
+        FrameCloneManager = {
+            "AcquireClonedRegion", "Clone", "CloneCommonProperties", "CloneFrameProperties",
+            "CloneHierarchy", "CloneProperties", "CloneRegionHierarchy", "CloneRegionProperties",
+            "CloneSingleFrame", "Init", "Release", "ReleaseAll",
+        },
+        FrameWatcher = {
+            "Init", "StopWatchingFrame", "WatchFrame",
+        },
+        GameEvent = {
+            "CheckNPETutorial", "CheckPlayerEnteringWorldDeath", "HandleActionBlocked", "HandleActionWillBindItem",
+            "HandleAddonActionForbidden", "HandleAdventureMapOpen", "HandleAlertAgeVerificationRestricted", "HandleAlertRegionalChatDisabled",
+            "HandleAlliedRaceOpen", "HandleAnimaDiversionOpen", "HandleArchaeologySurveyCast", "HandleArchaeologyToggle",
+            "HandleAreaSpiritHealerInRange", "HandleAreaSpiritHealerOutOfRange", "HandleArtifactEndgameRefund", "HandleArtifactRelicForgeUpdate",
+            "HandleArtifactRespecPrompt", "HandleArtifactUpdate", "HandleAuctionHouseClosed", "HandleAuctionHouseDisabled",
+            "HandleAuctionHouseNotification", "HandleAuctionHouseScriptDeprecated", "HandleAuctionHouseShow", "HandleBagOverflowWithFullInventory",
+            "HandleBarberShopClose", "HandleBarberShopOpen", "HandleBehavioralNotification", "HandleBillingNagDialog",
+            "HandleBindEnchant", "HandleCancelSummon", "HandleChallengeModeCompleted", "HandleChallengeModeKeystoneReceptableOpen",
+            "HandleChannelInviteRequest", "HandleChannelPasswordRequest", "HandleConfirmBeforeUse", "HandleConfirmBinder",
+            "HandleConfirmDisenchantRoll", "HandleConfirmLootRoll", "HandleConfirmSummon", "HandleConfirmTalentWipe",
+            "HandleConfirmXpLoss", "HandleConvertToBindToAccountConfirm", "HandleCorpseInInstance", "HandleCorpseInRange",
+            "HandleCorpseOutOfRange", "HandleCovenantPreviewOpen", "HandleCraftingHouseDisabled", "HandleCraftingOrdersHideCustomer",
+            "HandleCraftingOrdersShowCustomer", "HandleCurrentSpellCastChanged", "HandleCursorChanged", "HandleCvarUpdate",
+            "HandleDailyResetInstanceWelcome", "HandleDeleteItemConfirm", "HandleDisableTaxiBenchmark", "HandleDuelFinished",
+            "HandleDuelInBounds", "HandleDuelOutOfBounds", "HandleDuelRequested", "HandleDuelToTheDeathRequested",
+            "HandleEnableTaxiBenchmark", "HandleEnchantSpellSelected", "HandleEndBoundTradeable", "HandleEquipBindConfirm",
+            "HandleEquipBindRefundableConfirm", "HandleEquipBindTradeableConfirm", "HandleExperimentalCVarConfirmationNeeded", "HandleGMChatWhisper",
+            "HandleGarrisonFollowerTargetSpell", "HandleGarrisonMissionNpcClosed", "HandleGarrisonMissionNpcOpened", "HandleGarrisonRecruitmentNpcOpened",
+            "HandleGarrisonShipyardNpcClosed", "HandleGarrisonShipyardNpcOpened", "HandleGarrisonTalentNpcOpened", "HandleGlobalMouseEvent",
+            "HandleGossipConfirm", "HandleGossipConfirmCancel", "HandleGossipEnterCode", "HandleGroupInviteConfirmation",
+            "HandleGroupRosterUpdate", "HandleHeirloomUpgradeTargetingChanged", "HandleHeirloomsUpdated", "HandleHideHyperlinkTooltip",
+            "HandleIgrBillingNagDialog", "HandleInstanceBootStart", "HandleInstanceBootStop", "HandleInstanceLockStart",
+            "HandleInstanceLockStop", "HandleInstanceLockWarning", "HandleInstanceResetWarning", "HandleInviteToPartyConfirmation",
+            "HandleIslandCompleted", "HandleLFGEnabledStateChanged", "HandleLeavingTutorialArea", "HandleLoadingScreenDisabled",
+            "HandleLoadingScreenEnabled", "HandleLogoutCancel", "HandleLootBindConfirm", "HandleMacroActionForbidden",
+            "HandleNotchedDisplayModeChanged", "HandlePartyInviteCancel", "HandlePartyInviteRequest", "HandlePerksProgramDisabled",
+            "HandlePerksProgramOpen", "HandlePetBattlePvpDuelRequestCancel", "HandlePetBattlePvpDuelRequested", "HandlePetBattleQueueProposalResult",
+            "HandlePetBattleQueueProposeMatch", "HandlePingSystemError", "HandlePlayerAlive", "HandlePlayerCamping",
+            "HandlePlayerChoiceUpdate", "HandlePlayerControlLost", "HandlePlayerDead", "HandlePlayerEnteringWorld",
+            "HandlePlayerGuildUpdate", "HandlePlayerLogin", "HandlePlayerPlunderstormTransfering", "HandlePlayerQuiting",
+            "HandlePlayerSkinned", "HandlePlayerSoftInteractChanged", "HandlePlayerUnghost", "HandleProductDistributionsUpdated",
+            "HandleProfessionEquipmentChanged", "HandleProfessionRespecConfirmation", "HandleQuestAcceptConfirm", "HandleQuestLogUpdate",
+            "HandleRaidInstanceWelcome", "HandleRemixArtifactUpdate", "HandleRemixEndOfEvent", "HandleReplaceEnchant",
+            "HandleReplaceTradeskillEnchant", "HandleReportPlayerResult", "HandleResurrectRequest", "HandleRuneforgeLegendaryCraftingOpened",
+            "HandleSavedVariablesTooLarge", "HandleScenarioUpdate", "HandleScriptedAnimationsUpdate", "HandleSelfResSpellChanged",
+            "HandleSettingsLoaded", "HandleShardTransferEvent", "HandleShipmentCrafterOpened", "HandleShowHyperlinkTooltip",
+            "HandleShowJourneysUi", "HandleShowPartyPoseUi", "HandleSocketInfoUpdate", "HandleSpecInvoluntarilyChanged",
+            "HandleSpellConfirmationPrompt", "HandleSpellConfirmationTimeout", "HandleStartLootRoll", "HandleSurveyDelivered",
+            "HandleTalentsInvoluntarilyReset", "HandleTaxiMapOpened", "HandleTokenAuctionSold", "HandleToysUpdated",
+            "HandleTradeReplaceEnchant", "HandleTradeRequest", "HandleTradeRequestCancel", "HandleTradeSkillShow",
+            "HandleTrainerShow", "HandleTraitSystemInteractionStarted", "HandleTransmogCollectionUpdated", "HandleTrialCapReached",
+            "HandleUiErrorPopup", "HandleUiScaleChanged", "HandleUpdateBattlefieldStatus", "HandleUpdateSpellTargetItemContext",
+            "HandleUseBindConfirm", "HandleUseGlyph", "HandleUseNoRefundConfirm", "HandleVariablesLoaded",
+            "HandleWarfrontCompleted", "HandleWorldCursorTooltipUpdate", "HandleWowMouseNotFound", "InitEvents",
+            "RegisterCamelotEvents", "RegisterHardcoreEvents", "RegisterInternalEvent", "RegisterInternalEvents",
+            "RegisterMainlineEvents", "RegisterSharedEvents", "UnregisterInternalEvent",
+        },
+        GameTooltipUnitHealthBarSecureMixin = {
+            "ResetUnitHealth", "UpdateUnitHealth",
+        },
+        GameTutorials = {
+            "Initialize", "OnTutorialsDisabled", "OnTutorialsEnabled", "OnTutorialsInit",
+            "Shutdown",
+        },
+        GamepadBagSlotMixin = {
+            "HasBag", "IsAmmunitionBag", "TryOpenBagMenu", "UpdateBorderAtlases",
+            "UpdateItemCount",
+        },
+        GamepadClassActionButtonMixin = {
+            "ApplyExtraButtonStylesForState", "ApplyPressedStyle", "OnHide", "OnLoad",
+            "OnShow", "OnUpdate", "ReapplyStyle",
+        },
+        GamepadMode = {
+            "ActivateBindingGroup", "AddGamepadIconToButton", "CacheBindingGroup", "CreateBindingGroup",
+            "CreateHoldButtonWithTextFromTemplate", "DeactivateBindingGroup", "FrameControlsManager", "GetBindingKeyIconsFromNames",
+            "GetHudModifierUsesToggle", "GetLeftTargetModifierFlag", "GetOverrideAllowLeftRightModifiers", "GetRightTargetModifierFlag",
+            "GetTargetingModifierVisualState", "HasTargetingModifierVisualState", "IsBindingDown", "IsBindingGroupActive",
+            "IsHUDBindingModifierDown", "IsLeftModifierDown", "IsRightModifierDown", "IsTargetingModifierDown",
+            "OnCrossBarModifierChanged", "OnHUDBindingModifierChanged", "OnLeftTargetModifierChanged", "OnRightTargetModifierChanged",
+            "OnTargetModifierChanged", "OpenRadial", "RegisterCrossBarModifierStateChanged", "RegisterInputModifierStateChangeCallback",
+            "RegisterTargetModifierChanged", "RegisterTargetModifierStateCancelled", "RegisterTargetModifierStateChanged", "RegisterTargetModifierVisualStateChanged",
+            "ResetModifiers", "SetGamepadIconShown", "SetHUDBindingModifier", "SetOverrideAllowLeftRightModifiers",
+            "SetTargetModifier", "TogglePingSystem", "ToggleUIFocus", "UncacheBindingGroup",
+            "UnregisterCrossBarModifierStateChanged", "UnregisterInputModifierStateChangeCallback", "UnregisterTargetModifierChanged", "UnregisterTargetModifierStateCancelled",
+            "UnregisterTargetModifierStateChanged", "UnregisterTargetModifierVisualStateChanged", "UpdateGamepadIconAnchor",
+        },
+        GamepadPetActionFlyoutButtonMixin = {
+            "GetPetActionID", "OnClick", "OnEvent", "OnHide",
+            "OnLoad", "OnShow", "SetPetActionID", "SetTooltip",
+            "UpdateArrowShown", "UpdateCooldown", "UpdateRange", "UpdateState",
+            "UpdateUsable",
+        },
+        GamepadPetActionFlyoutMixin = {
+            "AttachToButton", "OnLoad", "UpdateButtons",
+        },
+        GamepadPetSpellFlyoutMixin = {
+            "AttachToButton", "OnHide", "OnLoad", "OnShow",
+            "UpdateButtons", "UpdateRange",
+        },
+        GamepadPopupHandler = {
+            "ClearFocus", "DisablePopupBindings", "EnableBindings", "FocusPopup",
+            "Init", "InitializeBindings", "InitializePopup", "IsStaticPopupShowing",
+            "TrackPopupFrames", "TryClickOrHoldButton", "UpdateVisiblePopups",
+        },
+        GamepadSharedUtility = {
+            "BindingStack", "ClearIgnoreSuspendFooter", "CreateDoublePromptedBinding", "CreateDownClickButton",
+            "CreateExtensiblePromptedBinding", "CreateHoldClickHandler", "CreateMoreActionsPromptedBinding", "CreatePromptedBinding",
+            "CreatePromptedBindingFooter", "CreateTapOrHoldPromptedBinding", "HideAndUnlockSuspendFooter", "HideSuspendFooter",
+            "InputBindingManager", "IsSuspendFooterLocked", "IsSuspendFooterShown", "SetIgnoreSuspendFooter",
+            "ShowAndLockSuspendFooterOnFrame", "ShowSuspendFooterOnFrame",
+        },
+        GarrisonFollowerListButton = {
+            "GetFollowerList",
+        },
+        GenericTraitUtil = {
+            "AddFrameLayoutInfo", "GetCurrencyTutorialInfo", "GetEdgeTemplateType", "GetFrameLayoutInfo",
+            "GetFrameTutorialInfo", "GetKnownTreeIDs",
+        },
+        GhostFrameMixin = {
+            "OnEvent", "OnLoad",
+        },
+        GraphicsOverrides = {
+            "AdjustAdvancedQualityControls", "CreateAdvancedRaidSettingsTable", "CreateAdvancedSettingsTable", "CreateHiResOptions",
+            "GetTextureResolutionOptions", "RunSettingsCallback",
+        },
+        GridLayoutMixin = {
+            "Direction", "GetCustomOffset", "Init", "SetCustomOffsetFunction",
+        },
+        GridLayoutUtilCrossSectionStrategy = {
+            "CalculateFlatCrossSections", "CalculateGridCrossSections",
+        },
+        GridLayoutUtilPrimaryPaddingStrategy = {
+            "AllPaddingToFirst", "AllSpacingToLast", "EvenSpacing",
+        },
+        GridLayoutUtilSecondaryPaddingStrategy = {
+            "AllPadding", "AllSpacing", "Equal",
+        },
+        GridLayoutUtilSectionStrategy = {
+            "SplitRegionsIntoGridSections", "SplitRegionsIntoGridSectionsInternal", "SplitRegionsIntoGridSectionsVertical", "SplitRegionsIntoSectionsByCellSize",
+            "SplitRegionsIntoSectionsByNaturalSize", "SplitRegionsIntoSectionsBySize",
+        },
+        HelpPlate = {
+            "GetEffectiveScale", "Hide", "HideTooltip", "IsShowingHelpInfo",
+            "IsShowingTutorialTooltip", "Show", "ShowTutorialTooltip",
+        },
+        InputIconTextureSetUtility = {
+            "GetActiveInputIconButtonTextures", "GetInputIconNameFromBindingKey", "GetNormalActiveInputIconButtonTexture",
+        },
+        InterfaceOverrides = {
+            "AdjustDisplaySettings", "AdjustInGameNavigationSettings", "CanResetTutorials", "CreateCoordinatesSettings",
+            "CreateHousingSettings", "CreatePvpFrameSettings", "CreateQuestSettings", "CreateRaidFrameSettings",
+            "HasAssistedCombat", "HasBossWarnings", "HasCooldownViewer", "HasExternalDefensives",
+            "HasSwingTimer", "RegisterOutlineSettings", "RunSettingsCallback", "SetupToastSettings",
+            "ShowTutorialsOnButtonClick",
+        },
+        KeybindingsOverrides = {
+            "AddBindingCategories", "CreateBindingButtonSettings", "HasHousingCategory", "RunSettingsCallback",
+        },
+        LFGWhoListFilterUtil = {
+            "GetTopMostMapID", "GetTopMostUIMapType", "GetWhoFilters", "InitClassFilters",
+            "InitMapFilters", "InitRaceFilters", "InitSortOptions", "MapHasSelectableChildren",
+            "ResetFilters", "SetAllClassesFiltered", "SetAllMapsFiltered", "SetAllRacesFiltered",
+            "SetupFilterMenu",
+        },
+        LandingPageMajorFactionList = {
+            "Create",
+        },
+        LandingSoulbind = {
+            "Create",
+        },
+        LanguagesOverrides = {
+            "CreateSocialSettings",
+        },
+        LegacySystem = {
+            "GetChallengeIndices", "GetCurrencyInfo", "GetFilteredChallenges", "IsChallengeVisible",
+            "RegisterCurrencyInfoCallback", "UpdateCurrencyInfo",
+        },
+        LegacyTreeUtil = {
+            "GetEdgeTemplateType", "GetSpecializedMixin", "GetTemplateForTalentType",
+        },
+        LineMixin = {
+            "Draw", "SetEndPoint", "SetStartPoint", "SetThickness",
+        },
+        MainActionBarSwappableButtonMixin = {
+            "SwapToAlternateAtlas", "SwapToDefaultAtlas",
+        },
+        MainMenuBarBagManager = {
+            "EnumerateBagButtons", "Init", "IsBarUserExpanded", "OnExpandBarChanged",
+            "RegisterBagButton", "SetExpandBar", "SetExpandBarAuto", "ShouldBarExpand",
+            "ToggleExpandBar",
+        },
+        MenuTemplates = {
+            "AttachAutoHideCancelButton", "AttachAutoHideGearButton", "AttachBasicButton", "AttachNewFeatureFrame",
+            "AttachTexture", "AttachUtilityButton", "CreateButton", "CreateCheckbox",
+            "CreateColorSwatch", "CreateDivider", "CreateFrame", "CreateHighlightButton",
+            "CreateHighlightRadio", "CreateRadio", "CreateRedHighlightButton", "CreateSearchEntry",
+            "CreateSelectionTextures", "CreateSpacer", "CreateTemplate", "CreateTitle",
+            "RecurseSetupFontString", "SetHierarchyEnabled", "SetUtilityButtonAnchor", "SetUtilityButtonClickHandler",
+            "SetUtilityButtonLockedEnabledState", "SetUtilityButtonTooltipText",
+        },
+        MenuVariants = {
+            "CancelButtonAnchor", "CancelButtonTexture", "CreateCheckbox", "CreateDivider",
+            "CreateFontString", "CreateHighlight", "CreateRadio", "CreateSearchEntry",
+            "CreateSubmenuArrow", "DisabledHighlightOpacity", "GearButtonAnchor", "GearButtonTexture",
+            "GetButtonSoundKit", "GetCheckboxCheckSoundKit", "GetCheckboxUncheckSoundKit", "GetDefaultContextMenuMixin",
+            "GetDefaultMenuMixin", "GetDropdownCloseSoundKit", "GetDropdownOpenSoundKit",
+        },
+        MessageFrameScrollButtonMixin = {
+            "OnLoad", "OnUpdate", "ScrollDown", "ScrollUp",
+        },
+        NPE_QuestManager = {
+            "AreQuestsPending", "Events", "Initialize", "QUEST_ACCEPTED",
+            "QUEST_LOG_UPDATE", "RegisterForCallbacks", "ReinitializeExistingQuests", "Shutdown",
+            "SimulateEvents", "UnregisterForCallbacks", "_DoCallback",
+        },
+        NPE_RangeManager = {
+            "Initialize", "Mode", "Shutdown", "StartWatching",
+            "Type", "_Check", "_Update",
+        },
+        NPE_TutorialCallout = {
+            "Hide", "Initialize", "Show", "_GetFrame",
+        },
+        NPE_TutorialKeyboardMouseFrame = {
+            "ActionBarHitFrame_OnEnter", "ActionBarHitFrame_OnExit", "BtnShow_OnClick", "Dim",
+            "Hide", "HideHelpFrame", "Initialize", "LocalizeMovementKeyText",
+            "MainFrame_OnHide", "Show", "ShowHelpFrame", "UI_SCALE_CHANGED",
+            "UnDim", "UpdateScale", "_Dim", "_UnDim",
+        },
+        NPE_TutorialMainFrame = {
+            "CINEMATIC_START", "CINEMATIC_STOP", "FramePositions", "Hide",
+            "Initialize", "OnUpdate", "Show", "States",
+            "_AnimateIn", "_AnimateOut", "_HookUpdate", "_SetContent",
+            "_SetDesiredContent", "_SetDesiredPosition", "_SetPosition", "_UnhookUpdate",
+        },
+        NPE_TutorialPointerFrame = {
+            "Direction", "DirectionData", "Hide", "Initialize",
+            "Show", "_DoesFrameFit", "_GetFrame", "_GetTotalEffectiveHeight",
+            "_GetTotalEffectiveWidth", "_RetireFrame",
+        },
+        NamePlateBaseMixin = {
+            "AcquireUnitFrame", "ApplyFrameOptions", "ClearUnit", "GetFrameOptions",
+            "GetUnit", "GetUnitFrameTemplate", "Init", "OnSizeChanged",
+            "ReleaseUnitFrame", "SetUnit",
+        },
+        NameplatesOverrides = {
+            "AdjustNameplateSettings", "GetNPCNamesOptionDefault", "GetNameplateStyleOptions", "ShowClassColorSetting",
+            "ShowHighlightImportantCastsOption", "ShowRealmOption",
+        },
+        NarrationForwardDescriptionToParentMixin = {
+            "NarrationGetDescription",
+        },
+        NarrationForwardNameToParentMixin = {
+            "NarrationGetName",
+        },
+        NewPlayerExperience = {
+            "Begin", "GetIsActive", "Initialize", "OnSkipTutorial",
+            "OnTutorialsDisabled", "OnTutorialsEnabled", "PLAYER_LEVEL_UP", "RegisterComplete",
+            "ShouldNPEShutdownOnLevelUp", "Shutdown",
+        },
+        POIButtonHighlightManager = {
+            "ClearHighlight", "GetQuestID", "HasHighlight", "SetHighlight",
+        },
+        PVPHonorRewardInfoMixin = {
+            "GetIcon", "GetQuantity", "Set", "SetTooltip",
+            "SetUpFrame",
+        },
+        PVPMatchStyle = {
+            "GetFactionPanelTheme", "GetFactionPanelThemeByIndex", "GetLocalPlayerFactionTheme", "GetNeutralPanelTheme",
+            "GetTeamColor", "PanelColors", "PurpleColor", "Theme",
+        },
+        PartyPoseUtil = {
+            "AddDismissClickHandler",
+        },
+        PerksProgramUtil = {
+            "ItemAppearancesHaveSameCategory",
+        },
+        PingManager = {
+            "CancelPendingPing", "DeterminePingTarget", "DeterminePingTargetAndSend", "Initialize",
+            "OnPingPinFrameAdded", "OnPingPinFrameRemoved", "OnPingPinFrameScreenClampStateUpdated", "SendContextualWorldPing",
+            "SendMacroPing", "SendPing", "SetupDefaultPingOptions", "ShowPingSpot",
+        },
+        PlayerInteractionFrameManagerMixin = {
+            "HideFrame", "OnEvent", "OnLoad", "ShowFrame",
+        },
+        PlayerMovementFrameFader = {
+            "AddDeferredFrame", "AddFrame", "RemoveFrame",
+        },
+        PrivateAuraAnchorContainerMixin = {
+            "AddBlockedAura", "CheckAddDispel", "CheckExistingDispelHasCorrectType", "CheckUpdateBuffFrames",
+            "CheckUpdateDebuffFrames", "CheckUpdateDispelIndicatorFrames", "ClearBlockedAura", "ClearBlockedAuras",
+            "ClearPriorityTables", "CreatePriorityTables", "GetContainer", "GetUpdatedAuraByInstance",
+            "HandleUpdateInfo", "HideFrameCollection", "IsAuraInstanceIDBlocked", "IsPartyFrame",
+            "LayoutContainerFrameElement", "LayoutContainerFrames", "OnAnchorAdded", "OnAnchorRemoved",
+            "ParseAllAuras", "ProcessAura", "ReadContainerSettings", "RegisterContainerEventFrame",
+            "RegisterSettingsChangeHandler", "RegisterUnitEvents", "ReleaseAuraFrames", "RemoveAura",
+            "ReserveAuraFramesForContainer", "ReserveContainedAuraFrames", "ReserveSingleAuraFrame", "ResetReservedAuraFramesForContainer",
+            "ResizeReservedAuraFramesForContainer", "SetDispelDebuff", "SetDispelOverlayAura", "ShouldDisplayDispelIndicator",
+            "UnregisterContainerEventFrame", "UnregisterSettingsChangeHandler", "UnregisterUnitEvents", "Update",
+            "UpdateAuraFrameLayout", "UpdateContainerAnchor", "UpdateFromSettings", "UpdateSingleAuraFrame",
+        },
+        PrivateAuraAnchorSingleMixin = {
+            "HandleUpdateInfo", "OnAnchorAdded", "OnAnchorRemoved", "ParseAllAuras",
+            "ReserveAuraFramesForContainer", "ResetReservedAuraFramesForContainer", "Update",
+        },
+        Professions = {
+            "AddTooltipInfo", "AllocateAllBasicReagents", "AllocateBasicReagents", "AnyRecraftablePredicate",
+            "ApplySortOrder", "ApplyfilterSet", "AreAllSourcesFiltered", "AreAllSourcesUnfiltered",
+            "CanAllocateReagents", "CanTrackRecipe", "ClearSlotFilter", "CreateCraftingReagent",
+            "CreateCraftingReagentInfo", "CreateCraftingReagentInfoBonusTbl", "CreateCurrencyReagent", "CreateItemReagent",
+            "CreateNewOrderInfo", "CreateReagentFromLink", "DoesModificationContainReagent", "DoesSchematicIncludeReagentQualities",
+            "EnumerateRecipes", "EraseRecraftingTransitionData", "FindFirstQualityAllocated", "FindItemsInInventorySlots",
+            "FindReagentInTable", "ForEachItemReagent", "GenerateCraftingDataProvider", "GenerateItemsFromEligibleItemSlots",
+            "GetAtlasKitSpecifier", "GetChatIconMarkupForQuality", "GetCraftingOrderRemainingTime", "GetCurrencyTypesID",
+            "GetCurrentFilterSet", "GetCurrentProfessionCurrencyInfo", "GetDefaultOrderDuration", "GetDefaultOrderRecipient",
+            "GetDefaultShowUnlearned", "GetEffectiveSkillLineID", "GetFirstRecipe", "GetHighestLearnedRecipe",
+            "GetNewestKnownProfessionInfo", "GetNextRecipe", "GetOrderDurationText", "GetOrderReagentsSummaryText",
+            "GetProfessionBackgroundAtlas", "GetProfessionBackgroundFormat", "GetProfessionCategories", "GetProfessionInfo",
+            "GetProfessionSpecializationBackgroundAtlas", "GetProfessionType", "GetQuantitiesAllocated", "GetReagentDisplayData",
+            "GetReagentInputMode", "GetReagentName", "GetReagentQualityInfo", "GetReagentSlotStatus",
+            "GetRecipeRank", "GetRecipeRankLearned", "GetRecraftingTransitionData", "HandleCurrencyReagentLink",
+            "HandleFixedReagentLink", "HandleItemReagentLink", "HandleQualityReagentLink", "HandleReagentLink",
+            "HasRecipeRanks", "InLocalCraftingMode", "InitChildProfessionFilter", "InitFilterMenu",
+            "InitFirstCraftFilter", "InitLearnedFilters", "InitMakeableFilter", "InitSkillUpFilter",
+            "InitSlotsFilter", "InitSourcesFilter", "InspectRecipe", "IsRecipeOnCooldown",
+            "IsSelectedProfession", "IsUsingDefaultFilters", "IsValidModification", "IsValidReagent",
+            "IsViewingExternalCraftingList", "LayoutAndShowReagentSlotContainer", "LayoutFinishingSlots", "LayoutReagentSlots",
+            "OnRecipeListSearchTextChanged", "OrderTimeLeftFormatter", "PrepareRecipeRecraft", "ProfessionType",
+            "ReagentContents", "ReagentInputMode", "ReagentToString", "SetAllInventorySlotsFiltered",
+            "SetAllSourcesFiltered", "SetDefaultFilters", "SetDefaultOrderDuration", "SetDefaultOrderRecipient",
+            "SetInventorySlotFilter", "SetRecraftingTransitionData", "SetShouldAllocateBestQualityReagents", "SetupFilterMenu",
+            "SetupOptionalReagentTooltip", "SetupOutputIcon", "SetupOutputIconCommon", "SetupProfessionsCurrencyTooltip",
+            "SetupReagentQualityPickerTooltip", "SetupReagentTooltip", "ShouldAllocateBestQualityReagents", "TransitionToRecraft",
+            "TranslateSearchSort", "TriggerReagentClickedEvent", "UpdateRankBarVisibility",
+        },
+        ProfessionsTableBuilderMixin = {
+            "AddColumnInternal", "AddFillColumn", "AddFixedWidthColumn", "AddUnsortableColumnInternal",
+            "AddUnsortableFillColumn", "AddUnsortableFixedWidthColumn",
+        },
+        QuestLogSettingsButtonMixin = {
+            "OnMouseDown", "OnMouseUp",
+        },
+        QuestMapFrameOverrides = {
+            "GetQuestsTabAnchorOffset", "eventsTabHidden", "mapLegendTabHidden", "questTabHidden",
+            "titleFrameLeftPadding",
+        },
+        QuestTextContrast = {
+            "GetBackgroundAtlas", "GetDefaultBackgroundAtlas", "GetDefaultDetailsBackgroundAtlas", "GetTextureKitBackgroundAtlas",
+            "IsEnabled", "UseLightText",
+        },
+        QuestUtilsOverrides = {
+            "GetQuestTagText", "GetQuestTitleDifficultyColor", "GetQuestTitlePrefix", "questTagIconHidden",
+        },
+        RaidFrameManagerRestrictPingsButtonMixin = {
+            "OnClick", "OnEvent", "OnHide", "OnShow",
+            "ShouldShow", "UpdateCheckedState", "UpdateLabel",
+        },
+        ReportInfo = {
+            "CreateClubFinderReportInfo", "CreateCraftingOrderReportInfo", "CreateDecorReportInfo", "CreateGroupFinderApplicantReportInfo",
+            "CreateGroupFinderPostingReportInfo", "CreateMailReportInfo", "CreateNeighborhoodReportInfo", "CreatePetReportInfo",
+            "CreateReportInfoFromType",
+        },
+        RequestPreferredPlaySettings = {
+            "Setup",
+        },
+        RogueComboPointTransitions = {
+            "GetTransitionAnim", "Init",
+        },
+        ScriptAnimatedModelSceneActorMixin = {
+            "DeltaUpdate", "GetModelScene", "IsActive", "OnFinish",
+            "SetDynamicOffsets", "SetEffect", "SetEffectActorOffset",
+        },
+        ScriptBenchmarkGarbageCollectorControlMixin = {
+            "OnIterationFinish", "OnIterationStart",
+        },
+        ScriptBenchmarkMixin = {
+            "OnFinish", "OnIterationFinish", "OnIterationStart", "OnStart",
+            "RunIteration",
+        },
+        ScriptErrorsFrameSecureMixin = {
+            "SetDisplayedIndex", "Update",
+        },
+        ScriptedAnimationEffectsDebug = {
+            "GetAllEffectIDs", "GetBehavior", "GetDB", "GetEnumFromBehavior",
+            "GetEnumFromTrajectory", "GetTrajectory", "LoadEffectsDBCopy", "RestoreDBCopy",
+        },
+        ScrollingMessageFrameSecureMixin = {
+            "AddMessage", "AddOnDisplayRefreshedCallback", "AdjustMessageColors", "BackFillMessage",
+            "Clear", "MarkDisplayDirty", "MarkLayoutDirty", "PageDown",
+            "PageUp", "RemoveMessagesByPredicate", "ResetAllFadeTimes", "ResetSelectingText",
+            "ScrollByAmount", "ScrollDown", "ScrollToBottom", "ScrollToTop",
+            "ScrollUp", "SetFadeDuration", "SetFading", "SetFont",
+            "SetFontObject", "SetIndentedWordWrap", "SetInsertMode", "SetJustifyH",
+            "SetJustifyV", "SetMaxLines", "SetOnLineRightClickedCallback", "SetOnScrollChangedCallback",
+            "SetOnTextCopiedCallback", "SetScrollAllowed", "SetScrollOffset", "SetShadowColor",
+            "SetShadowOffset", "SetSpacing", "SetTextColor", "SetTextCopyable",
+            "SetTimeVisible", "TransformMessages",
+        },
+        SecureTypes = {
+            "CreateSecureStack",
+        },
+        Settings = {
+            "AssignLayoutToCategory", "AssignTutorialToCategory", "CallWhenRegistered", "CannotDefault",
+            "CategorySet", "CommitFlag", "ControlType", "CreateCVarAccessorClosures",
+            "CreateCallbackHandleContainer", "CreateCategory", "CreateCheckbox", "CreateCheckboxInitializer",
+            "CreateCheckboxWithOptions", "CreateColorSwatch", "CreateColorSwatchInitializer", "CreateControlInitializer",
+            "CreateControlTextContainer", "CreateDropdown", "CreateDropdownButton", "CreateDropdownCheckbox",
+            "CreateDropdownInitializer", "CreateDropdownOptionInserter", "CreateElementInitializer", "CreateModifiedClickOptions",
+            "CreateOptionsInitTooltip", "CreatePanelInitializer", "CreateSettingInitializer", "CreateSettingInitializerData",
+            "CreateSlider", "CreateSliderInitializer", "CreateSliderOptions", "Default",
+            "GetCVarMask", "GetCategory", "GetColorblindSettingsLabel", "GetOrCreateSettingsGroup",
+            "GetSetting", "GetValue", "InitDropdown", "InitTooltip",
+            "IsCommitInProgress", "LoadAddOnCVarWatcher", "NotifyUpdate", "OpenToCategory",
+            "RegisterAddOnCategory", "RegisterAddOnSetting", "RegisterCVarSetting", "RegisterCanvasLayoutCategory",
+            "RegisterCanvasLayoutSubcategory", "RegisterCategory", "RegisterInitializer", "RegisterModifiedClickSetting",
+            "RegisterProxySetting", "RegisterVerticalLayoutCategory", "RegisterVerticalLayoutSubcategory", "SafeLoadBindings",
+            "SelectAccountBindings", "SelectCharacterBindings", "SetKeybindingsCategory", "SetOnValueChangedCallback",
+            "SetValue", "SetupCVarCheckbox", "SetupCVarColorSwatch", "SetupCVarDropdown",
+            "SetupCVarSlider", "SetupModifiedClickDropdown", "TryChangeBindingSet", "VarType",
+            "WrapTooltipWithBinding",
+        },
+        SettingsButtonNarrationContextMixin = {
+            "NarrationGetContext",
+        },
+        SettingsDropdownNarrationContextMixin = {
+            "NarrationGetContext",
+        },
+        SettingsInbound = {
+            "AssignLayoutToCategory", "AssignLayoutToCategoryAttribute", "AssignTutorialToCategory", "AssignTutorialToCategoryAttribute",
+            "CreateAddOnSetting", "CreateAddOnSettingAttribute", "CreateElementInitializer", "CreateElementInitializerAttribute",
+            "CreatePanelInitializer", "CreatePanelInitializerAttribute", "CreateProxySetting", "CreateProxySettingAttribute",
+            "CreateSettingInitializer", "CreateSettingInitializerAttribute", "OnSettingValueChangedAttribute", "RegisterCanvasLayoutCategory",
+            "RegisterCanvasLayoutCategoryAttribute", "RegisterCanvasLayoutSubcategory", "RegisterCanvasLayoutSubcategoryAttribute", "RegisterCategory",
+            "RegisterCategoryAttribute", "RegisterInitializer", "RegisterInitializerAttribute", "RegisterOnSettingValueChanged",
+            "RegisterSetting", "RegisterSettingAttribute", "RegisterVerticalLayoutCategory", "RegisterVerticalLayoutCategoryAttribute",
+            "RegisterVerticalLayoutSubcategory", "RegisterVerticalLayoutSubcategoryAttribute", "RepairDisplay", "RepairDisplayAttribute",
+            "SetCurrentLayout", "SetCurrentLayoutAttribute", "SetKeybindingsCategory", "SetKeybindingsCategoryAttribute",
+        },
+        SettingsRegistrar = {
+            "AddRegistrant", "OnLoad",
+        },
+        SettingsSliderNarrationContextMixin = {
+            "NarrationGetContext",
+        },
+        SimpleCheckoutInboundInterface = {
+            "EscapePressed", "IsShown",
+        },
+        SocialOverrides = {
+            "AdjustSocialSettings", "CreateBlockNeighborhoodInvitesSetting", "CreateCensorMessagesSetting", "SetupToastWindowSetting",
+        },
+        SocialUIControl = {
+            "Hide", "IsEnabled", "OpenToTab", "Toggle",
+            "ToggleToTab", "ToggleToTabAndSideWindow",
+        },
+        Soulbinds = {
+            "ClearPreviewConduit", "GetConduitEmblemAtlas", "GetConduitName", "GetDefaultSoulbindID",
+            "GetOpenSoulbindID", "GetPreviewConduit", "GetSoulbindAppearingActive", "GetSoulbindIDActivationPending",
+            "HasConduitAtCursor", "HasNewSoulbindTutorial", "IsConduitCommitPending", "IsConduitResetPending",
+            "SetConduitInstallPending", "SetConduitResetPending", "SetPreviewConduit", "SetSoulbindIDActivationPending",
+        },
+        StableUtils = {
+            "ClearPetCursor",
+        },
+        StaticModelInfo = {
+            "CreateModelSceneEntry", "SetupModelScene",
+        },
+        StatusTrayManager = {
+            "UpdateLayout", "UpdateTrayAndBuffFrameLayout",
+        },
+        TexelSnappingVisualizerMixin = {
+            "OnCreated",
+        },
+        TextureInfoGeneratorMixin = {
+            "CheckFormatTextureInfo", "CheckGetRegionsTextureInfo", "GetCurrentTextureAssets", "HandleTextureCommand",
+            "SetCheckIsMouseOverRegion", "SetCurrentTextureAssets", "ShouldCheckIsMouseOverRegion", "ShouldGenerateRegionInfo",
+        },
+        TooltipComparisonManager = {
+            "AnchorShoppingTooltips", "Clear", "CompareAzeritePower", "CompareItem",
+            "CreateComparisonItem", "CycleItem", "GetAzeritePowerComparisonInfo", "GetComparisonItemData",
+            "GetSecondaryItem", "Initialize", "IsComparisonItemDifferent", "RefreshItems",
+            "SetItemTooltip",
+        },
+        TooltipDataProcessor = {
+            "AddLinePostCall", "AddLinePreCall", "AddTooltipPostCall", "AddTooltipPreCall",
+            "AllTypes",
+        },
+        TooltipDataRules = {
+            "AccountForCloseButtonOnItems", "AzeriteEssencePower", "AzeriteEssenceSlot", "BattlePet",
+            "FinalizeItemTooltip", "GemSocket", "GemSocketEnchantment", "HealthBar",
+            "LearnableSpell", "LeftOffsetPowerDescription", "QuestObjective", "SellPrice",
+            "Separator", "UnitName", "UnitThreat", "WorldLootObjectPickUpIndicator",
+        },
+        TutorialDragButton = {
+            "Animate", "Hide", "OnUpdate", "Show",
+        },
+        TutorialHelper = {
+            "CloseAllBags", "DoQuestsInBundleNeedPickup", "FilterByClass", "FilterByRace",
+            "FindEmptyButton", "FindItemInContainer", "FormatString", "GetActionButtonBySpellID",
+            "GetBagBinding", "GetBundleByQuestID", "GetCharacterBinding", "GetClass",
+            "GetClassString", "GetCreatureIDFromGUID", "GetFaction", "GetFrameButtonEdgeOffset",
+            "GetGossipBindIndex", "GetItemContainerFrame", "GetMapBinding", "GetRace",
+            "GetRacialData", "IsMeleeClass", "IsQuestCompleteOrActive", "OpenAllBags",
+            "RegisterTutorialForEvents", "UnregisterTutorialForEvents",
+        },
+        TutorialLogic = {
+            "AddTutorials", "Begin", "CheckFormSpells", "ContainsQuest",
+            "IsNPEAllowed", "PLAYER_LEVEL_CHANGED", "PLAYER_UNGHOST", "Quest_Accepted",
+            "Quest_ObjectivesComplete", "Quest_TurnedIn", "Quest_Updated", "Shutdown",
+            "UPDATE_SHAPESHIFT_FORM",
+        },
+        TutorialManager = {
+            "AddTutorial", "AddWatcher", "Begin", "CanBootstrapNPE",
+            "CanShowSupertrackTutorial", "CanShutdownTutorial", "CheckHasCompletedFrameTutorial", "CheckHasCompletedTutorial",
+            "DebugLog", "Finished", "GetIsActive", "GetTutorial",
+            "GetWatcher", "Initialize", "IsDebugging", "NPE_AchievementID",
+            "OnCVARsUpdated", "OnSettingsLoaded", "Queue", "RemoveTutorial",
+            "RemoveWatcher", "ResetTutorials", "Shutdown", "ShutdownTutorial",
+            "ShutdownWatcher", "StartWatcher", "StopWatcher", "TutorialStatus",
+        },
+        TutorialPointerFrame = {
+            "Direction", "DirectionData", "Hide", "Initialize",
+            "Show", "_DoesFrameFit", "_GetFrame", "_GetTotalEffectiveHeight",
+            "_GetTotalEffectiveWidth", "_RetireFrame",
+        },
+        TutorialQuestBangGlow = {
+            "GetExisting", "Hide", "Show",
+        },
+        TutorialQueue = {
+            "Add", "CheckQueue", "Initialize", "NotifyDone",
+            "Reset", "Status",
+        },
+        TutorialRangeManager = {
+            "Initialize", "Mode", "Shutdown", "StartWatching",
+            "Type", "_Check", "_Update",
+        },
+        Tutorials = {
+            "AbilityUse_AbilityReminder", "AbilityUse_SpellInterrupted", "AbilityUse_Watcher", "AcceptMoreQuests",
+            "AcceptQuest", "AcceptQuestWatcher", "ActionBarCallout", "Begin",
+            "BloodElf_8346", "ChatFrame", "CloseCharacterSheet", "Death_MapPrompt",
+            "Death_ReleaseCorpse", "Death_ResurrectPrompt", "Death_Watcher", "Draenei_9283",
+            "EquipFirstItemWatcher", "EquipItem", "GossipBindPointer", "GossipBindPrompt",
+            "GossipQuestPointer", "GossipWatcher", "HealthBarCallout", "HighlightEquippedItem",
+            "HighlightItem", "InteractThenGossipA", "InteractThenGossipB", "Intro_Interact",
+            "Intro_KeyboardMouse", "Intro_MapHighlights", "Intro_OpenMap", "Level3Ability",
+            "LootCorpse", "LootCorpseWatcher", "LootFromObject", "LootPointer",
+            "NPCInteractQuest", "OpenCharacterSheet", "QuestCompleteOpenMap", "QuestRewardChoice",
+            "Quest_Accepted", "Quest_ObjectivesComplete", "Quest_TurnedIn", "SelectMobWatcher",
+            "SelectQuestDifferentZone", "ShowBags", "ShowMapQuestTurnIn", "Shutdown",
+            "TargetMob", "Taxi", "TurnInQuest", "TurnInQuestWatcher",
+            "UseHearthstone", "UseQuestItem", "UseQuestObject",
+        },
+        UiMapPoint = {
+            "CreateFromCoordinates", "CreateFromVector2D", "CreateFromVector3D",
+        },
+        UnitPopupManager = {
+            "GetMenu", "OpenMenu", "RegisterMenu",
+        },
+        UnitPositionFrameUpdateSecureMixin = {
+            "SetAppearanceField", "SetupSecureData", "UpdatePlayerPins",
+        },
+        WardrobeCustomSetManager = {
+            "ClosePopups", "ContinueWithSave", "EvaluateAppearance", "EvaluateAppearances",
+            "EvaluateSaveState", "NameCustomSet", "NewCustomSet", "OverwriteCustomSet",
+            "SaveLastCustomSet", "SetItemTransmogInfoList", "ShowPopup", "StartCustomSetSave",
+            "popups",
+        },
+        WorldMapActionButtonMixin = {
+            "Clear", "GetDisplayLocation", "IsUsingAction", "OnClick",
+            "OnEnter", "OnEvent", "OnLeave", "OnLoad",
+            "OnWorldQuestsUpdate", "Refresh", "SetHasWorldQuests", "SetMapAreaID",
+            "SetOnCastChangedCallback", "UpdateCastingState", "UpdateCooldown",
+        },
+        WorldMapNavBarButtonMixin = {
+            "GetDropdownList", "OnClick",
+        },
+        ZoneAbilityFrameUpdater = {
+            "AddDirtyFrame", "Clean",
+        },
     },
     uiColorGlobals = {
         "ACCOUNT_WIDE_FONT_COLOR", "ACCOUNT_WIDE_FONT_COLOR_CODE", "ACHIEVEMENT_BLUE_BORDER_COLOR_CODE", "ACHIEVEMENT_COLOR",
@@ -13131,7 +13942,7 @@ return {
             "Animation",
         },
         Region = {
-            "Region",
+            "ScriptRegion",
         },
         Rotation = {
             "Animation",
@@ -23935,6 +24746,7 @@ return {
         frameXMLGlobals = 3556,
         frameXMLTables = 119,
         frameXMLExtraGlobals = 5912,
+        frameXMLExtraTables = 161,
         uiColorGlobals = 407,
         frameXMLLoadOnDemandGlobals = 977,
         frameXMLLoadOnDemandTables = 9,

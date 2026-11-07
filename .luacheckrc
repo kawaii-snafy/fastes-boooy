@@ -86,8 +86,19 @@ local function buildForeverStd()
     end
     rg.Constants = { fields = constFields }
 
+    -- FrameXML function-library tables with enumerated members (Settings, UiMapPoint, ...):
+    -- closed top level => Settings.RegisterBogusCategory is reported; members stay open
+    -- (their own shape is not enumerated)
+    for t, names in pairs(api.frameXMLExtraTables or {}) do
+        if rg[t] == nil then
+            local f = {}
+            for _, name in ipairs(names) do f[name] = OPEN end
+            rg[t] = { fields = f }
+        end
+    end
+
     -- global objects/tables whose members are not enumerated: allow any field
-    addPlain(api.frameXMLExtraGlobals, OPEN)   -- Settings, SlashCmdList, RAID_CLASS_COLORS, Minimap, ...
+    addPlain(api.frameXMLExtraGlobals, OPEN)   -- SlashCmdList, RAID_CLASS_COLORS, Minimap, ...
     addPlain(api.uiColorGlobals, OPEN)         -- NORMAL_FONT_COLOR, ...
     addPlain(api.frames, OPEN)                 -- UIParent, GameTooltip, WorldMapFrame, ...
     addPlain(api.fonts, OPEN)                  -- GameFontNormal, ...
@@ -150,8 +161,10 @@ files["tools/**/*.lua"] = {
     std = "lua51",
 }
 
--- Tests run under busted with a WoW API mock that installs globals.
-files["tests/**/*.lua"] = {
+-- Specs, the WoW API mock and the test helpers run under busted; the mock installs
+-- WoW globals. (Only these paths get the relaxed rules: route-module fixtures below must
+-- not inherit them -- luacheck merges every matching `files` block.)
+local TEST_CODE = {
     std = "lua51+busted",
     allow_defined = true,
     allow_defined_top = true,
@@ -164,7 +177,18 @@ files["tests/**/*.lua"] = {
         "212", -- unused argument (mock signatures mirror the real API)
     },
 }
--- Validator fixtures are route modules too.
-files["tests/fixtures/**/*.lua"] = {
+files["tests/spec/**/*.lua"] = TEST_CODE
+files["tests/mocks/**/*.lua"] = TEST_CODE
+files["tests/fixtures/core/helpers.lua"] = TEST_CODE
+-- Generated data tables of the WoW API mock (one entry per line, can be long).
+files["tests/mocks/wow/signatures.lua"] = {
+    max_line_length = false,
+}
+-- Test fixtures are route modules (content-only addons): exactly the rules of
+-- addons/FastesBoooy_*/ (std fastesboooy_route, no ignores).
+files["tests/fixtures/FastesBoooy_*/**/*.lua"] = {
+    std = "fastesboooy_route",
+}
+files["tests/fixtures/*/FastesBoooy_*/**/*.lua"] = {
     std = "fastesboooy_route",
 }

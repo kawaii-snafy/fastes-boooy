@@ -1,0 +1,48 @@
+# FastesBoooy CI: lint (luacheck with the generated Forever std), busted specs,
+# route validator, route simulation, generated-data freshness and packaging.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Lua 5.1, LuaRocks, luacheck, busted
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends lua5.1 liblua5.1-0-dev luarocks zip
+          sudo luarocks --lua-version=5.1 install luacheck 1.1.2
+          sudo luarocks --lua-version=5.1 install busted 2.2.0
+          lua5.1 -v
+          luacheck --version
+          busted --version
+
+      - name: make check (lint + test + validate + simulate)
+        run: make check
+
+      - name: Generated route data is up to date
+        run: make routedata-check
+
+      - name: Validation report
+        run: |
+          make report
+          test -f docs/VALIDATION.md
+
+      - name: Package addons
+        run: make package
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: addons
+          path: |
+            dist/*.zip
+            docs/VALIDATION.md
+          if-no-files-found: warn

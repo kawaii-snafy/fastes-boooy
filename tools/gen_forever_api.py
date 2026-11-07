@@ -13,12 +13,21 @@ Optional input (--wowui): the Blizzard FrameXML source tree of the Forever clien
 ``_G.NAME = ...``) of the files that load in Forever are collected as
 ``frameXMLExtraGlobals`` (global tables/constants such as Settings, SlashCmdList,
 RAID_CLASS_COLORS, DEFAULT_CHAT_FRAME that the BIR function lists do not contain).
+Function-library tables among them (initialized at column 0 with a table constructor,
+given at least one ``function Name.Field(`` and never extended through ``Mixin``),
+such as Settings or UiMapPoint, also get their member list as
+``frameXMLExtraTables`` (constructor keys + column-0 ``Name.Field =`` /
+``function Name.Field(`` / ``function Name:Field(``), so .luacheckrc can close them.
+
+WidgetAPI quirk: the dump lists ``Region`` as inheriting itself; the client's Region
+derives from ScriptRegion, so that self-reference is written as "ScriptRegion" and the
+inheritance graph is checked to be acyclic.
 
 The output is deterministic: every list is sorted, maps are written in sorted key
 order, and no timestamp other than the dump's own build date is written.
 
 usage:
-    python3 -I tools/gen_forever_api.py [--bir DIR] [--wowui DIR] [--out FILE]
+    python3 -I tools/gen_forever_api.py --bir DIR --wowui DIR|none [--out FILE]
 """
 import argparse
 import os
@@ -26,9 +35,6 @@ import re
 import sys
 from collections import OrderedDict
 
-SCRATCH = "/tmp/claude-0/-home-user-fastes-boooy/e4d4b6bd-70f3-5485-82ac-1b20055ab157/scratchpad"
-DEFAULT_BIR = SCRATCH + "/ext/BIR/Resources"
-DEFAULT_WOWUI = SCRATCH + "/ext/wowui/Interface/AddOns"
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_OUT = os.path.join(HERE, "data", "forever_api.lua")
 
@@ -254,9 +260,27 @@ def parse_bir(bir):
             widgets[cur][sub].append(m.group(1))
     n_lines = sum(1 for ln in w_lines if re.match(r'^\t\t\t"[^"]+",\s*$', ln))
     check(n_lines == sum(len(w["methods"]) + len(w["handlers"]) for w in widgets.values()), "WidgetAPI parse mismatch")
+    # Dump quirk: Region = { inherits = {"Region"} }; in the client Region derives from ScriptRegion.
+    for n, w in widgets.items():
+        if n in w["inherits"]:
+            check(n == "Region" and "ScriptRegion" in widgets, "unexpected widget self-inheritance: " + n)
+            w["inherits"] = ["ScriptRegion" if p == n else p for p in w["inherits"]]
+            checks["WidgetAPI.selfInheritanceFixed"] = n
     for w in widgets.values():
         for parent in w["inherits"]:
             check(parent in widgets, "unknown widget parent " + parent)
+    state = {}
+
+    def visit(n, path):
+        if state.get(n) == "done":
+            return
+        check(state.get(n) != "open", "widget inheritance cycle: " + " -> ".join(path + [n]))
+        state[n] = "open"
+        for parent in widgets[n]["inherits"]:
+            visit(parent, path + [n])
+        state[n] = "done"
+    for n in widgets:
+        visit(n, [])
     res["widgetMethods"] = OrderedDict((n, sorted(set(w["methods"]))) for n, w in sorted(widgets.items()))
     res["widgetHandlers"] = OrderedDict((n, sorted(set(w["handlers"]))) for n, w in sorted(widgets.items()))
     res["widgetInherits"] = OrderedDict((n, list(w["inherits"])) for n, w in sorted(widgets.items()))
@@ -478,10 +502,65 @@ def camelot_lua_files(addons_dir):
     return out
 
 
-def scan_globals(addons_dir):
-    """Return (column-0 global names, DB-driven *_COLOR names, number of files)."""
+TABLE_FUNC = re.compile(r'^function\s+([A-Za-z_][A-Za-z0-9_]*)[.:]([A-Za-z_][A-Za-z0-9_]*)\s*\(')
+TABLE_FIELD = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)\s*=(?!=)')
+TABLE_INIT = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\s*=(?!=)\s*(.*?)\s*$')
+CTOR_KEY = re.compile(r'^\s+([A-Za-z_][A-Za-z0-9_]*)\s*=(?!=)')
+
+
+def scan_tables(lines, tables):
+    """Collect member names of column-0 global tables into `tables`:
+    tables[name] = {"fields": set, "funcs": int, "ctor": bool (every column-0 init is a table
+    constructor), "inits": int}."""
+    i = 0
+    n = len(lines)
+    while i < n:
+        ln = lines[i]
+        m = TABLE_FUNC.match(ln)
+        if m:
+            t = tables.setdefault(m.group(1), {"fields": set(), "funcs": 0, "ctor": True, "inits": 0})
+            t["fields"].add(m.group(2))
+            t["funcs"] += 1
+            i += 1
+            continue
+        m = TABLE_FIELD.match(ln)
+        if m:
+            t = tables.setdefault(m.group(1), {"fields": set(), "funcs": 0, "ctor": True, "inits": 0})
+            t["fields"].add(m.group(2))
+            i += 1
+            continue
+        m = TABLE_INIT.match(ln)
+        if m and m.group(1) not in LUA_KEYWORDS:
+            name, rhs = m.group(1), m.group(2)
+            t = tables.setdefault(name, {"fields": set(), "funcs": 0, "ctor": True, "inits": 0})
+            t["inits"] += 1
+            j = i
+            if rhs == "" and i + 1 < n and lines[i + 1].strip().startswith("{"):
+                j, rhs = i + 1, lines[i + 1].strip()
+            if not rhs.startswith("{"):
+                t["ctor"] = False
+            elif not re.match(r'^\{\s*\}\s*;?\s*(--.*)?$', rhs):
+                # multi-line constructor: top-level keys up to the closing brace at column 0
+                if re.match(r'^\{\s*(--.*)?$', rhs):
+                    k = j + 1
+                    while k < n and not re.match(r'^\}', lines[k]):
+                        cm = CTOR_KEY.match(lines[k])
+                        if cm and lines[k].startswith("\t") and not lines[k].startswith("\t\t"):
+                            t["fields"].add(cm.group(1))
+                        k += 1
+                    i = k
+                else:
+                    t["ctor"] = False  # one-line constructor with content: keys not parsed
+        i += 1
+
+
+def scan_globals(addons_dir, tables=None):
+    """Return (column-0 global names, DB-driven *_COLOR names, number of files).
+    With `tables` (dict), also collect member names of column-0 tables (see scan_tables)."""
     names = set()
     colors = set()
+    mixed = set()
+    mixin_ref = re.compile(r'\bMixin\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*,')
     color_ref = re.compile(r'\b([A-Z][A-Z0-9_]*_COLOR)(_CODE)?\b')
     files = camelot_lua_files(addons_dir)
     assign = re.compile(r'^(?:_G\.)?([A-Za-z_][A-Za-z0-9_]*)\s*=(?!=)')
@@ -491,6 +570,9 @@ def scan_globals(addons_dir):
         with open(path, "r", encoding="utf-8", errors="replace") as fh:
             text = fh.read()
         text = re.sub(r'--\[(=*)\[.*?\]\1\]', "", text, flags=re.S)
+        if tables is not None:
+            scan_tables(text.split("\n"), tables)
+            mixed.update(mixin_ref.findall(text))
         for ln in text.split("\n"):
             m = assign.match(ln) or assign_g.match(ln) or func.match(ln)
             if m and m.group(1) not in LUA_KEYWORDS:
@@ -510,6 +592,10 @@ def scan_globals(addons_dir):
             if not m or re.search(r'\bvirtual\s*=\s*"true"', attrs):
                 continue
             names.add(m.group(1))
+    if tables is not None:
+        for name in mixed:
+            if name in tables:
+                tables[name]["ctor"] = False  # members also come from mixins: not enumerable
     return sorted(names), sorted(colors), len(files)
 
 
@@ -593,33 +679,47 @@ def lua_value(v, indent):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--bir", default=DEFAULT_BIR, help="BlizzardInterfaceResources/Resources dir (branch forever)")
-    ap.add_argument("--wowui", default=DEFAULT_WOWUI,
-                    help="Blizzard FrameXML Interface/AddOns dir of the Forever client (optional; 'none' to skip)")
+    ap.add_argument("--bir", required=True, help="BlizzardInterfaceResources/Resources dir (branch forever)")
+    ap.add_argument("--wowui", required=True,
+                    help="Blizzard FrameXML Interface/AddOns dir of the Forever client, or 'none' to skip "
+                         "frameXMLExtraGlobals/frameXMLExtraTables/uiColorGlobals")
     ap.add_argument("--out", default=DEFAULT_OUT)
     args = ap.parse_args()
 
     if not os.path.isdir(args.bir):
         sys.exit("BIR Resources dir not found: %s (pass --bir)" % args.bir)
+    if args.wowui != "none" and not os.path.isdir(args.wowui):
+        # Without the FrameXML tree frameXMLExtraGlobals/uiColorGlobals would silently become
+        # empty and luacheck would then reject Settings, SlashCmdList, RAID_CLASS_COLORS, ...
+        sys.exit("FrameXML dir not found: %s (pass --wowui <Interface/AddOns>, or --wowui none to "
+                 "skip frameXMLExtraGlobals/uiColorGlobals on purpose)" % args.wowui)
     build, build_meta = read_build(args.bir)
     branch, commit = read_git_commit(args.bir)
     res, checks = parse_bir(args.bir)
 
     extra, colors, n_files, wowui_version = [], [], 0, None
-    if args.wowui and args.wowui != "none" and os.path.isdir(args.wowui):
+    extra_tables = OrderedDict()
+    if args.wowui != "none" and os.path.isdir(args.wowui):
         known = set(res["globals"]) | set(res["frameXMLGlobals"]) | set(res["luaGlobals"]) | set(res["leGlobals"])
         known |= set(res["namespaces"]) | set(res["frameXMLTables"]) | set(res["frames"]) | set(res["mixins"])
-        scanned, color_refs, n_files = scan_globals(args.wowui)
+        tables = {}
+        scanned, color_refs, n_files = scan_globals(args.wowui, tables)
         extra = [n for n in scanned if n not in known]
+        for n in extra:
+            t = tables.get(n)
+            if t and t["ctor"] and t["inits"] >= 1 and t["funcs"] >= 1:
+                extra_tables[n] = sorted(t["fields"])
         # Colors are created at load time from C_UIColor.GetColors() (Blizzard_SharedXMLBase/Color.lua:
         # envTbl[dbColor.baseTag] = color; envTbl[baseTag.."_CODE"] = hex). We keep those referenced by
         # camelot FrameXML that are not assigned statically anywhere.
         colors = [n for n in color_refs if n not in known and n not in set(extra)]
         wowui_version = read_wowui_version(args.wowui)
     res["frameXMLExtraGlobals"] = extra
+    res["frameXMLExtraTables"] = extra_tables
     res["uiColorGlobals"] = colors
     checks["wowui.camelotLuaFiles"] = n_files
     checks["frameXMLExtraGlobals"] = len(extra)
+    checks["frameXMLExtraTables"] = len(extra_tables)
     checks["uiColorGlobals"] = len(colors)
 
     out = OrderedDict()
@@ -637,7 +737,7 @@ def main():
     out["meta"] = meta
     order = [
         "globals", "namespaces", "luaGlobals", "luaNamespaces", "events",
-        "frameXMLGlobals", "frameXMLTables", "frameXMLExtraGlobals", "uiColorGlobals",
+        "frameXMLGlobals", "frameXMLTables", "frameXMLExtraGlobals", "frameXMLExtraTables", "uiColorGlobals",
         "frameXMLLoadOnDemandGlobals", "frameXMLLoadOnDemandTables",
         "frames", "framesLoadOnDemand", "templates", "templateTypes", "fonts", "mixins",
         "widgetMethods", "widgetHandlers", "widgetInherits", "scriptObjectMethods",
@@ -663,6 +763,8 @@ def main():
     if wowui_version:
         header.append("-- frameXMLExtraGlobals: column-0 global assignments in Blizzard FrameXML %s files" % wowui_version)
         header.append("--         that load for game type camelot (%d files, TOC directives resolved)." % n_files)
+        header.append("-- frameXMLExtraTables: member names of the function-library tables among them (Settings,")
+        header.append("--         UiMapPoint, ...): constructor keys + column-0 Name.Field = / function Name.Field(.")
         header.append("-- uiColorGlobals: *_COLOR / *_COLOR_CODE globals created from C_UIColor.GetColors() at load")
         header.append("--         time (Blizzard_SharedXMLBase/Color.lua), as referenced by camelot FrameXML code.")
     header += [
@@ -673,7 +775,8 @@ def main():
         "--   luaNamespaces               { string = {...}, table = {...}, math = {...}, bit = {...}, ... }",
         "--   frameXMLGlobals/Tables      FrameXML functions / { SomeUtil = {fields} }",
         "--   widgetMethods/Handlers      OWN methods/script handlers per widget type;",
-        "--   widgetInherits              parents per widget type (resolve recursively for the full set)",
+        "--   widgetInherits              parents per widget type (resolve recursively for the full set;",
+        "--                               the dump's Region -> Region self-loop is written as ScriptRegion)",
         "--   leGlobals / leValues        LE_* and NUM_LE_* constants (names / values)",
         "--   enums / constants           Enum.X.Y and Constants.X.Y values",
         "",

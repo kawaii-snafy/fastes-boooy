@@ -1,0 +1,10 @@
+## Interface: 16001
+## Title: FastesBoooy fixture: clean route
+## Notes: Validator test fixture (real Forever quest data, Deathknell). Not a playable guide.
+## Dependencies: FastesBoooy
+## Version: 0.0.1
+
+Route.lua
+Data.lua
+Segments\01_Deathknell.lua
+Segments\02_Brill.lua
