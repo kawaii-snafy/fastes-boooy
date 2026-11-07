@@ -11,8 +11,11 @@
 --   * a step is done when it is marked (cdb.manual / cdb.skipped), or it is
 --     `optional` and forwarded, or ALL of its actions are done (ns.Steps);
 --   * forwarded = the step lies before the "forward limit":
---       anchor = last non-bg step that has an accept/turnin/complete/level action
+--       anchor = last non-bg step that has an accept/turnin/complete action
 --                and whose stateful actions are all done (or that is marked);
+--                `level` is no evidence (a level reached early through rested
+--                XP must not forward an earlier sethearth/train/fp), so a lone
+--                level step never anchors;
 --       hint   = saved high-water mark of the natural cursor (cdb.cursorHint,
 --                validated through cdb.cursorHintId / cdb.cursorHintRoute);
 --       limit  = max(anchor, hint); transient actions and optional steps before
@@ -23,6 +26,12 @@
 --                game, so a cold start with empty SavedVariables still lands on
 --                the right step (only transient steps after the last done
 --                stateful step are unknown and shown again);
+--   * a quest the player GAVE UP -- a later non-bg step with its complete/turnin
+--     is marked (Skip / Next) or is `optional` and forwarded -- keeps its earlier
+--     `accept` done when the player then abandons it by hand (ctx.givenUp, see
+--     Core/Steps.lua): the cursor does not jump back and the quest is not
+--     auto-accepted again. A quest abandoned by hand WITHOUT such a mark still
+--     sends the cursor back to its accept (the route needs it);
 --   * background (`bg`) steps are NOT forwarded by that limit: a bg step passed
 --     by the cursor stays in the "along the way" list until its actions are really
 --     done or its quests are turned in / left the log (ns.Steps:IsBackgroundRelevant).
@@ -73,6 +82,8 @@ local Engine = {
     bindBase = {},       -- [stepId] = bind location when the step became observed (false = unknown)
     turninSet = {},      -- [questID] = true for every turnin action of the filtered steps
     abandonAfter = {},   -- [index] = { [questID] = true } quests abandoned by a later step
+    questEnds = {},      -- { { index, questID }, ... } complete/turnin actions of the non-bg steps
+    givenUp = {},        -- [questID] = last index of a marked / forwarded optional step ending it (last evaluation)
     segFirst = {},       -- [index] = index of the first filtered step of the same segment
     windows = {},        -- [actionType] = { open, openedAt, closedAt, ids } trainer/merchant/taxi window state
     started = false,
@@ -210,6 +221,7 @@ function Engine:GetContext(step)
         forwarded = forwarded,
         manual = id and (isMarked(id) or isBgDone(s)) and true or false,
         abandonedLater = i and self.abandonAfter[i] or nil,
+        givenUp = self.givenUp, index = i,
         cache = {}, items = {},
     }
 end
@@ -260,8 +272,19 @@ function Engine:BuildSteps()
             end
         end
     end
+    -- questEnds = complete/turnin actions of the non-bg steps (for the given-up set)
+    local questEnds = {}
+    for i, s in ipairs(steps) do
+        if not s.bg then
+            for _, a in ipairs(s.actions) do
+                if a.type == "complete" or a.type == "turnin" then
+                    questEnds[#questEnds + 1] = { i, a.quest }
+                end
+            end
+        end
+    end
     self.steps, self.indexById, self.turninSet = steps, byId, turnins
-    self.abandonAfter = abandonAfter
+    self.abandonAfter, self.questEnds, self.givenUp = abandonAfter, questEnds, {}
     self.done, self.bg = {}, {}
     self.needRebuild = false
 end
@@ -389,12 +412,27 @@ function Engine:Evaluate()
     local hint = self:ValidHint()
     local limit = max(anchor, hint)
 
+    -- given up: quests whose complete/turnin step the player marked (Skip / Next) or
+    -- passed as `optional` -- an earlier accept of such a quest stays done once the
+    -- player abandons it (see Steps:IsActionDone)
+    local givenUp = {}
+    for _, e in ipairs(self.questEnds) do
+        local j, q = e[1], e[2]
+        local s = steps[j]
+        if (isMarked(s.id) or (s.optional and j < limit)) and (givenUp[q] or 0) < j then
+            givenUp[q] = j
+        end
+    end
+    self.givenUp = givenUp
+    ctx.givenUp = givenUp
+
     -- non-bg steps first (bg steps never influence them), giving the natural cursor
     local done = {}
     local natural
     for i = 1, n do
         local s = steps[i]
         if not s.bg then
+            ctx.index = i
             ctx.flags = self.flags[s.id] or EMPTY
             ctx.forwarded = i < limit
             ctx.manual = isMarked(s.id) and true or false
@@ -421,6 +459,7 @@ function Engine:Evaluate()
     for i = 1, n do
         local s = steps[i]
         if s.bg then
+            ctx.index = i
             ctx.flags = self.flags[s.id] or EMPTY
             ctx.forwarded = (self.bgHome[i] or i) < bgLimit
             ctx.manual = (isMarked(s.id) or isBgDone(s)) and true or false
@@ -432,7 +471,7 @@ function Engine:Evaluate()
             end
         end
     end
-    ctx.flags, ctx.forwarded, ctx.manual, ctx.abandonedLater = EMPTY, false, false, nil
+    ctx.flags, ctx.forwarded, ctx.manual, ctx.abandonedLater, ctx.index = EMPTY, false, false, nil, nil
     self.done = done
 
     local bg = {}
@@ -492,12 +531,15 @@ local function setFlag(self, step, actionType)
     return true
 end
 
--- Does a bind location name designate the step's place? (enUS name, or the
--- localized name from route data `places`)
+-- Does a bind location name designate the step's place? (enUS name, the client's
+-- localized area name of route data `places[place].area`, or the localized text of
+-- route data `places`)
 function Engine:PlaceMatches(place, bind)
     if type(place) ~= "string" or type(bind) ~= "string" then return false end
     local b = bind:lower()
     if b == place:lower() then return true end
+    local area = ns.Compat.AreaName(ns.Registry:PlaceArea(self.route, place))
+    if area and area:lower() == b then return true end
     local loc = ns.Registry:Lookup(self.route, "places", place)
     return loc ~= nil and loc:lower() == b
 end

@@ -17,7 +17,9 @@
 --   turnin    QUEST_PROGRESS / QUEST_COMPLETE / gossip / greeting; the automation must
 --             complete and take the reward (the step `reward` choice is asserted); quest XP
 --             comes from tools/data/forever_db.lua (unknown XP: median of the quest level)
---   complete  quest objectives are progressed (only the listed ones when given)
+--   complete  quest objectives are progressed (only the listed ones when given); exploration /
+--             escort objectives (DB objectives.event) and quests the route completes but whose
+--             objectives the DB does not list stay incomplete until this step (mock event objective)
 --   abandon   the quest is removed from the log
 --   collect   items are added to the bags
 --   level     level / XP are set
@@ -606,6 +608,18 @@ local function startPosition(route)
     return 1420, 50, 50
 end
 
+-- quests the route completes with a `complete` step: the mock keeps such a quest incomplete on
+-- accept even when the DB lists no objective for it (event objectives always stay incomplete)
+local function routeCompletes(route)
+    local out = {}
+    for _, s in ipairs(route.steps or {}) do
+        for _, a in ipairs(s.actions or {}) do
+            if a.type == "complete" and a.quest then out[a.quest] = true end
+        end
+    end
+    return out
+end
+
 local function newMock(S, extra)
     local route, p = S.route, S.profile
     local mapID, x, y = startPosition(route)
@@ -619,7 +633,7 @@ local function newMock(S, extra)
     }
     for k, v in pairs(extra or {}) do opts[k] = v end
     local m = Mock.new(opts)
-    if S.db then m:UseForeverDB(S.db) end
+    if S.db then m:UseForeverDB(S.db, { routeCompletes = routeCompletes(route) }) end
     return m
 end
 

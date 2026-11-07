@@ -36,6 +36,10 @@ L.UI_STEP_FALLBACK_FMT = "Step %s"
 -- arrow ----------------------------------------------------------------------
 L.UI_YARDS_FMT = "%d yd"
 
+-- item button -------------------------------------------------------------------
+L.UI_TT_ITEM_USE = "Click to use (macro: /click FastesBoooyItemButton)."
+L.UI_TT_ITEM_DRAG = "Right-drag to move. Lock the frames in the settings."
+
 -- settings panel ---------------------------------------------------------------
 L.UI_OPT_SUBTITLE = "Leveling guide for World of Warcraft: Forever."
 L.UI_OPT_SECTION_AUTOMATION = "Automation"
@@ -52,7 +56,8 @@ L.UI_OPT_autoTurnin = "Auto turn-in route quests"
 L.UI_OPT_autoTurnin_TT = "Turn in completed route quests. The reward is chosen "
     .. "automatically only when the route specifies it or there is a single choice."
 L.UI_OPT_autoGossip = "Auto-select dialog options"
-L.UI_OPT_autoGossip_TT = "Pick route quests and the step's dialog option in NPC dialogs."
+L.UI_OPT_autoGossip_TT = "Select the dialog option given by the current step in NPC dialogs. Route quests "
+    .. "listed in a dialog follow the auto-accept / auto turn-in switches."
 L.UI_OPT_arrow = "Show navigation arrow"
 L.UI_OPT_arrow_TT = "Small arrow pointing to the current step's location."
 L.UI_OPT_blizzWaypoint = "Set Blizzard map waypoint"

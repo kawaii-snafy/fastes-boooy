@@ -15,15 +15,19 @@
 --   start : 853 Apothecary Zamah is TIMED (45 min) and was accepted at the end of ud-04 -> Thunder
 --           Bluff first: fly Camp Taurajo, 3261 > 882 (Jorn), walk to Thunder Bluff,
 --           853, level-18 training (Seal of Righteousness R3), flight path, fly to Ratchet.
---   east  : Ratchet 1483 (Sputtervalve), 865 > 1069 (Mebok), 888 (Gazlowe); zhevra carcass ->
---           Ishamuhale 882; Stagnant Oasis 880 shells + Verog 851 (+ Kolkar bracers 855); hearth.
---   CT    : 882 > 907 (Jorn), 878 (Mangletooth); quilboars 878 + Stormsnout blood 907; 878 > 5052;
---           907 > 913, a Thunderhawk Cloudscraper for 913; fly to the Crossroads.
---   XR/W  : 880 > 1489 (Tonga); 851 > 852 (Regthar); Lushwater: Hezrul 852 + bracers 855; Regthar.
+--   east  : Ratchet 1483 (Sputtervalve), 865 > 1069 (Mebok), 888 (Gazlowe); 821 (keg, bg: matriarch
+--           tusks + plainstrider kidneys at Ishamuhale); zhevra carcass -> Ishamuhale 882; Stagnant Oasis
+--           880 shells + Verog 851 (+ Kolkar bracers 855); hearth.
+--   CT    : 882 > 907 (Jorn), 878 (Mangletooth); main Bristleback camp NE of the camp: 878 + 899 tusks,
+--           Stormsnout blood 907 (+ 821 horn); 878 > 5052; 907 > 913, a Thunderhawk Cloudscraper for 913;
+--           fly to the Crossroads.
+--   XR/W  : 899 + 880 > 1489 (Mankrik, Tonga); 851 > 852 (Regthar); Lushwater: Hezrul 852 + bracers 855;
+--           Regthar.
 --   ST 1  : Seereth 1062 + Makaba 6548; Grimtotems; 6548 > 6629; Grundig 6629 + Kaya escort 6523;
 --           6629/6523 > 6401; Xen'Zilla 6461; creepers; Ziz 1483 > 1093; Windshear Crag: loggers 1062,
 --           operators 1093, venomspitters 6461, eggs 1069; Ziz 1093 > 1094; Sun Rock: 6562, 6401,
---           flight path; fly Thunder Bluff (training 20, hearth); fly Ratchet: 1094 > 1095, 1069.
+--           flight path; fly Thunder Bluff (training 20, hearth); fly Ratchet: 821 (keg), 1094 > 1095,
+--           1069.
 --   ST 2  : fly Crossroads; Seereth 1062 > 1063; Xen'Zilla 6461; Windshear Mine: Piznik 1090 > 1092;
 --           Ziz 1095 + 1092; Talondeep Path north to Ashenvale.
 --   Ash   : Va'xug 98251 > 98252; road west past Astranaar; Zoram'gar 6562, 6442, 6462, flight
@@ -32,21 +36,28 @@
 -- Skipped: 875 > 876 > 1060 (harpies and Serena need two extra Crossroads round trips; ud-04 does not
 --   take 875), 1068 Shredding Machines (needs 1062 turned in first, then a third Stonetalon border
 --   trip), 4021 Counterattack (elite), 1491 Smart Drinks / 959 / 962 (Wailing Caverns), 868 Egg Hunt
---   (silithid swarms south of Camp Taurajo), 899 (60 tusks), 6284 Arachnophobia (Besseleth, elite),
+--   (silithid swarms south of Camp Taurajo), 822 (third keg quest, 24), 6284 Arachnophobia (Besseleth, elite),
 --   6421/6481 (Boulderslide Ravine, two Sun Rock round trips), 6301 (seeds north of Sun Rock), 6563 and
 --   95042 (elite naga/satyrs at the Blackfathom Deeps entrance), 6641 Vorsha (group escort), 97250
 --   (elite pillagers), 264 / 3301 (deliveries to Silverpine), 1096 Gerenzo (27), Splintertree.
 -- Carried past the route end: 1065 Journey to Tarren Mill (free pickup for the Hillsbrad continuation).
 -- Hearthstone: bound to Camp Taurajo (ud-04) and used from the Stagnant Oasis; re-bound to Thunder
 --   Bluff on the training-20 visit and used from Zoram'gar at the end.
--- Training: 18 (Seal of Righteousness R3) on the forced first Thunder Bluff visit, 20 (Consecration,
---   Holy Strike R3, Blessing of Kings, Devotion Aura R3) from Sun Rock, 22 (Blessing of Might R3, Holy
---   Light R4) at the end. Alodan the Hopeful wanders inside the Pools of Vision.
--- Level gates (real requirements): 19 + 88% before leaving Windshear (the Ziz/Sun Rock turn-ins then
---   give 20 for training), 20 at Tammra, 21 for 216 (with the naga), 21 + 85% at Thistlefur and 22 at the
---   last Zoram'gar turn-in (training 22). The solo quest content of these zones ends near 21.2 in the
---   validator (RestedXP gets ~21.9 only with group quests: Vorsha, Counterattack!, Bruuz), so the
---   Thistlefur gate is a real grind of ~16k XP unless kills along the way / rested XP covered it.
+-- Training: 18 (Seal of Righteousness R3) on the forced first Thunder Bluff visit (the validator arrives
+--   at ~18.0 with no margin, with the optional keg quest 819 counted, so the note falls back to 20),
+--   20 (Consecration, Holy Strike R3, Blessing of Kings, Devotion Aura R3, + SoR R3 if missed) from Sun
+--   Rock, 22 (Blessing of Might R3, Holy Light R4) at the end. Alodan the Hopeful (ruRU Алодан
+--   Жизнерадостный) wanders inside the Pools of Vision.
+-- Level gates (real requirements, re-checked against the Classic XP table): 19 + 88% before leaving
+--   Windshear (Ziz 1093 1650 + Tammra 6401 1000 = 2650 >= 12% of 21300: exactly 20 for training), 20 at
+--   Tammra, 21 for 216 (with the naga), 21 + 85% at Thistlefur (216 + 6462 = 3900 >= 15% of 25200) and
+--   22 at the last Zoram'gar turn-in (training 22).
+-- XP budget: the validator credits 878's 30 kills and 899's 90 tusk kills (1.5 per tusk) separately,
+--   although every 878 kill also drops a tusk, and it counts the optional keg quests 819/821 as done.
+--   Re-run with 899 = 45-60 kills beyond 878 and without 821 (scratch copies, see the route doc): the
+--   pre-20 gate is met (the former Windshear grind of ~47 kills is gone), the level-21 gate may need up
+--   to ~13 naga kills, and the solo quest content (899 included, taken in ud-04 like RestedXP does) ends
+--   near 21.15 at Thistlefur: a real grind of ~115 furbolg kills (~100 with 821, ~123 without any keg).
 --
 -- Automation notes: transient steps (fp, fly, hearth, sethearth, train) come after the quest steps at
 -- the same place; a background goal is only followed by its stateful `complete` with no transient step
@@ -54,9 +65,13 @@
 -- Bracers 855 and the Verog head 851 only appear in combined steps here ({880, 851} at the Stagnant Oasis,
 -- {852, 855} at Lushwater): the ud-04 bg goals for 851/855 may already be done, and a lone `complete 851`
 -- would then be done at once and fast-forward the Thunder Bluff steps (flight path, training, flights).
--- 878 is accepted only when the route comes back to Camp Taurajo for the same reason, and every level gate
--- shares its step with a quest action that cannot be done early (a lone `level` step is an anchor too: an
--- early level-up would skip the training / hearth steps before it).
+-- The same goes for 899 (accepted in ud-04, tusks may drop early): it is only completed together with 878
+-- (accepted at Camp Taurajo here) and turned in together with 880 (finished at the Stagnant Oasis here),
+-- never in a step of its own. 821 (optional keg quest) only has bg steps (never anchors, hidden without
+-- the quest): its items from Ratchet on, its turn-in at Drohn on the Ratchet visit after training 20.
+-- A level gate never anchors on its own (Core/Engine.lua: `level` is no evidence of progress); next to a
+-- quest action it anchors only once both are done, and every gate here shares its step with a quest action
+-- that cannot be done early, so an early level-up never forwards the training / hearth steps before it.
 FastesBoooy.AddSegment("horde-undead-paladin", {
     id = "ud-05-stonetalon-ashenvale",
     title = { ru = "18-22 Степи, Когтистые горы, Ясеневый лес", en = "18-22 Barrens, Stonetalon, Ashenvale" },
@@ -73,7 +88,7 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
                        .. "straight to Devrak on the tower and fly to Camp Taurajo; walk on to Thunder "
                        .. "Bluff from there." } },
         { turnin = 3261, accept = 882, npc = 3387, at = { 1413, 44.86, 59.14 },
-          note = { ru = "Йорн Небесный Провидец. Ишамухале (882) — позже, у Кабестана. Mangletooth в клетке "
+          note = { ru = "Йорн Небесный Провидец. Ишамухале (882) — позже, у Кабестана. Кривозуб в клетке "
                        .. "рядом — его задание возьмёте, когда вернётесь сюда.",
                    en = "Jorn Skyseer. Ishamuhale (882) is for later, near Ratchet. Mangletooth in the cage "
                        .. "next to him: take his quest when you come back here." } },
@@ -93,10 +108,13 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
                        .. "Timer ran out: abandon 853 and skip this step." } },
         { id = "ud05-train-18", train = true, npc = 246344, at = { 1456, 25.81, 19.03 },
           spells = { { ru = "Печать праведности (ранг 3)", en = "Seal of Righteousness (Rank 3)" } },
-          note = { ru = "Тренер паладинов Alodan the Hopeful бродит по этой же пещере. На 18-м главное — Печать праведности 3; "
-                       .. "Освящение и Благословение королей будут на 20-м.",
-                   en = "Alodan the Hopeful wanders in the same cave. At 18 the key spell is Seal of "
-                       .. "Righteousness R3; Consecration and Blessing of Kings come at 20." } },
+          note = { ru = "Тренер паладинов Алодан Жизнерадостный бродит по этой же пещере. Нужен 18-й уровень "
+                       .. "(Печать праведности 3 — главный ранг урона); не хватает — выучите на 20-м вместе с "
+                       .. "остальным. Пропустили Свет небес 3 на 14-м — возьмите здесь. Освящение и "
+                       .. "Благословение королей будут на 20-м.",
+                   en = "Alodan the Hopeful wanders in the same cave. Needs level 18 (Seal of Righteousness R3, "
+                       .. "the main damage rank); not there yet: train it at 20 with the rest. Missed Holy "
+                       .. "Light R3 at 14: train it here. Consecration and Blessing of Kings come at 20." } },
         { id = "ud05-fp-tb", fp = "Thunder Bluff", npc = 2995, at = { 1456, 47.00, 49.83 },
           note = { ru = "На центральную вершину: Тал у вышки — откройте карту полётов.",
                    en = "Up to the central mesa: Tal at the tower, open the flight map." } },
@@ -110,9 +128,18 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
           note = { ru = "Спаттервальв у полётов.", en = "Sputtervalve by the flight master." } },
         { turnin = 865, accept = 1069, npc = 3446, at = { 1413, 62.37, 37.62 },
           note = { ru = "Мебок Миззирикс. «Умные напитки» не берите (Пещеры Стенаний). Яйца пауков (1069) — в "
-                       .. "Когтистых горах.",
+                       .. "Когтистых горах. Бочонок Чэня нашёлся только после прошлого визита в Кабестан? "
+                       .. "Начните задание из него и сдайте пивовару Дрону рядом; возьмите и 821.",
                    en = "Mebok Mizzyrix. Skip Smart Drinks (Wailing Caverns). The spider eggs (1069) are in "
-                       .. "Stonetalon." } },
+                       .. "Stonetalon. Found Chen's Empty Keg only after the last Ratchet visit? Start the quest "
+                       .. "from it and hand it to Brewmaster Drohn next door; take 821 as well." } },
+        { complete = 821, bg = true, at = { 1413, 61.4, 33.0 },
+          note = { ru = "Если взяли 821 (бочонок Чэня): 5 клыков равнинного льва — с матриархов саванны у сухого "
+                       .. "дерева Ишамухале, 5 почек долгонога — с долгоногов там же, рог рокочущей ящерицы — "
+                       .. "с грозорылов у Лагеря Таурахо (907).",
+                   en = "If you took 821 (Chen's keg): 5 Savannah Lion Tusks from the Savannah Matriarchs around "
+                       .. "Ishamuhale's dead tree, 5 Plainstrider Kidneys from the plainstriders there, the "
+                       .. "Thunder Lizard Horn from the Stormsnouts near Camp Taurajo (907)." } },
         { turnin = 888, npc = 3391, at = { 1413, 62.68, 36.23 },
           note = { ru = "Газлоу. Награда: Сапоги из пластин (кольчуга). Ещё держите 896 с изумрудом — сдайте "
                        .. "Диззивигу на пристани; без изумруда бросьте 896.",
@@ -142,21 +169,26 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
         ------------------------------------------------------------------
         { turnin = 882, accept = 907, npc = 3387, at = { 1413, 44.86, 59.14 } },
         { accept = 878, npc = 3430, at = { 1413, 44.55, 59.26 },
-          note = { ru = "Кабан Mangletooth в клетке рядом.", en = "Mangletooth in the cage next to him." } },
-        { complete = 878, at = { 1413, 47.8, 52.8 },
-          note = { ru = "К северу от лагеря — кабаны Щетиноспины (Bristleback): 6 искателей воды, 12 колючников, "
-                       .. "12 геомантов. Сохраните один Осколок крови.",
-                   en = "North of the camp, the Bristleback quilboars: 6 Water Seekers, 12 Thornweavers, "
-                       .. "12 Geomancers. Keep one Blood Shard." } },
+          note = { ru = "Свинобраз Кривозуб в клетке рядом.", en = "Mangletooth in the cage next to him." } },
+        { complete = { 878, 899 }, at = { 1413, 51.5, 55.0 },
+          note = { ru = "Главный лагерь Дыбогривов к северо-востоку от Лагеря Таурахо: 6 водоискателей, "
+                       .. "12 терноплетов, 12 геомантов (878). С каждого Дыбогрива (иногда и с налётчиков "
+                       .. "Иглогривых) падают клыки — бейте всех, пока не наберёте 60 (899). Сохраните один "
+                       .. "Осколок крови.",
+                   en = "The main Bristleback camp north-east of Camp Taurajo: 6 Water Seekers, 12 Thornweavers, "
+                       .. "12 Geomancers (878). Every Bristleback (and maybe the Razormane Raiders) drops "
+                       .. "Bristleback Quilboar Tusks: keep killing until you have 60 (899). Keep one Blood "
+                       .. "Shard." } },
         { complete = 907, at = { 1413, 47.40, 52.96 },
-          note = { ru = "Громорылы (громовые ящеры) бродят между лагерями кабанов: 3 крови. Серый кодо "
-                       .. "Лакота'мани тоже ходит тут — его копыто начинает задание для Йорна.",
-                   en = "Stormsnouts (thunder lizards) roam between the quilboar camps: 3 Thunder Lizard "
-                       .. "Blood. The grey kodo Lakota'mani walks here too: his hoof starts a quest for "
-                       .. "Jorn." } },
+          note = { ru = "На обратном пути на запад: грозорылы (громовые ящеры) бродят между лагерями Дыбогривов "
+                       .. "— 3 крови (и рог рокочущей ящерицы, если взяли 821). Серый кодо Лакота'мани тоже "
+                       .. "ходит тут — его копыто начинает задание для Йорна.",
+                   en = "On the way back west: Stormsnouts (thunder lizards) roam between the Bristleback camps "
+                       .. "- 3 Thunder Lizard Blood (and the Thunder Lizard Horn if you took 821). The grey kodo "
+                       .. "Lakota'mani walks here too: his hoof starts a quest for Jorn." } },
         { turnin = 878, accept = 5052, npc = 3430, at = { 1413, 44.55, 59.26 } },
         { complete = 5052, turnin = 5052, npc = 3430, at = { 1413, 44.55, 59.26 },
-          note = { ru = "Сразу отдайте один Осколок крови. Лишние осколки — на усиления у Mangletooth.",
+          note = { ru = "Сразу отдайте один Осколок крови. Лишние осколки — на усиления у Кривозуба.",
                    en = "Hand over one Blood Shard right away. Spare shards buy buffs from Mangletooth." } },
         { turnin = 907, accept = 913, npc = 3387, at = { 1413, 44.86, 59.14 } },
         { complete = 913, at = { 1413, 47.33, 62.40 },
@@ -176,9 +208,11 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
         ------------------------------------------------------------------
         -- The Crossroads, Regthar, the Lushwater Oasis (level 19)
         ------------------------------------------------------------------
-        { turnin = 880, accept = 1489, npc = 3448, at = { 1413, 52.26, 31.93 },
-          note = { ru = "Тонга Рунный Тотем. 1489 сдаётся в Громовом Утёсе в конце сегмента.",
-                   en = "Tonga Runetotem. 1489 is turned in at Thunder Bluff at the end of the segment." } },
+        { turnin = { 899, 880 }, accept = 1489, npc = { 3432, 3448 }, at = { 1413, 52.26, 31.93 },
+          note = { ru = "Сначала Манкрик (899, клыки), потом Тонга Рунный Тотем рядом (880). 1489 сдаётся в "
+                       .. "Громовом Утёсе в конце сегмента.",
+                   en = "Mankrik first (899, the tusks), then Tonga Runetotem next to him (880). 1489 is turned "
+                       .. "in at Thunder Bluff at the end of the segment." } },
         { turnin = 851, accept = 852, npc = 3389, at = { 1413, 45.34, 28.41 },
           note = { ru = "На запад к Регтару Вратам Смерти.", en = "West to Regthar Deathgate." } },
         { complete = { 852, 855 }, npc = 3396, at = { 1413, 46.04, 41.14 },
@@ -187,8 +221,8 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
                    en = "South to the Lushwater Oasis: Hezrul Bloodmark (19) with guards walks around the "
                        .. "water. Finish the 15 Centaur Bracers on the Kolkar here." } },
         { turnin = { 852, 855 }, npc = 3389, at = { 1413, 45.34, 28.41 },
-          note = { ru = "Регтар. Награда за 855: Каменный молот (двуручная булава, лучше Дробителя). "
-                       .. "«Контратаку!» (элитный) не берите.",
+          note = { ru = "Регтар. Награда за 855: Молот Каменного леса (двуручная булава, лучше Плавникового "
+                       .. "крушителя). «Контратаку!» (элитный) не берите.",
                    en = "Regthar. Reward for 855: Stonewood Hammer (2H mace, better than the Driftwood "
                        .. "Smasher). Skip Counterattack! (elite)." } },
 
@@ -241,13 +275,20 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
                    en = "Windshear Crag (Venture Co. logging): 15 Venture Co. Loggers; Operators drop the "
                        .. "Super Reaper 6000 Blueprints. Shredders XT:4 and XT:9 (23) patrol the camp: avoid "
                        .. "them." } },
-        { id = "ud05-lvl-pre20", complete = { 6461, 1069 }, level = { 19, 0.88 }, at = { 1442, 61.63, 61.56 },
-          note = { ru = "Доберите пауков и яйца по дороге обратно к Зизу. Проверка перед тренировкой: сдачи у Зиза "
-                       .. "и в Приюте дадут ~12% уровня, а тренеру нужен 20-й. Ниже 19-го + 88% — добейте "
-                       .. "пауков, лесорубов и операторов здесь, в Приюте бить некого.",
-                   en = "Finish the spiders and the eggs on the way back to Ziz. Pre-training check: the Ziz and "
-                       .. "Sun Rock turn-ins add ~12% of a level and the trainer needs 20. Below 19 + 88%: kill "
-                       .. "more spiders, loggers and operators here, there is nothing to kill at Sun Rock." } },
+        -- Safety gate: normally already met after the Camp Taurajo quilboar block (899); 6461 objective 1
+        -- (Deepmoss Creepers) is not part of it: no creeper spawns near Ziz (the nearest are 340 yd south).
+        { id = "ud05-lvl-pre20", complete = { [6461] = { 2 }, 1069 }, level = { 19, 0.88 }, at = { 1442, 61.63, 61.56 },
+          note = { ru = "Доберите моховых ядоплюев и коконы по дороге обратно к Зизу. Проверка перед тренировкой: "
+                       .. "сдачи у Зиза и в Приюте дадут ~12% уровня, а тренеру нужен 20-й. Обычно уже есть "
+                       .. "19-й + 88%; не хватает — добейте ядоплюев, лесорубов и операторов здесь, в Приюте "
+                       .. "бить некого. Ползуны из густого мха (6461) — только к югу от Зиза (60.8, 71.9) и у "
+                       .. "Малака'джина: доберите их по дороге к Ксен'Зилле.",
+                   en = "Finish the Deepmoss Venomspitters and the eggs on the way back to Ziz. Pre-training "
+                       .. "check: the Ziz and Sun Rock turn-ins add ~12% of a level and the trainer needs 20. "
+                       .. "Normally you already have 19 + 88%; if short, kill more venomspitters, loggers and "
+                       .. "operators here, there is nothing to kill at Sun Rock. Deepmoss Creepers (6461) are "
+                       .. "only south of Ziz (60.8, 71.9) and around Malaka'jin: finish them on the way back "
+                       .. "to Xen'Zilla." } },
         { turnin = 1093, accept = 1094, npc = 4201, at = { 1442, 58.99, 62.60 },
           note = { ru = "1094 — в Кабестан (полетите туда из Громового Утёса).",
                    en = "1094 goes to Ratchet (you fly there from Thunder Bluff)." } },
@@ -274,16 +315,23 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
           note = { ru = "Пруды Видений под Вершиной Духов.", en = "The Pools of Vision under Spirit Rise." } },
         { id = "ud05-train-20", train = true, npc = 246344, at = { 1456, 25.81, 19.03 },
           spells = { { ru = "Освящение", en = "Consecration" },
-                     { ru = "Удар воина Света (ранг 3)", en = "Holy Strike (Rank 3)" },
+                     { ru = "Священный удар (ранг 3)", en = "Holy Strike (Rank 3)" },
                      { ru = "Благословение королей", en = "Blessing of Kings" },
-                     { ru = "Аура благочестия (ранг 3)", en = "Devotion Aura (Rank 3)" } },
-          note = { ru = "Тренер паладинов Alodan the Hopeful: обучение 20-го уровня. Талант — Стремление к справедливости.",
-                   en = "Alodan the Hopeful: level-20 training. Talent: Pursuit of Justice." } },
+                     { ru = "Аура благочестия (ранг 3)", en = "Devotion Aura (Rank 3)" },
+                     { ru = "Печать праведности (ранг 3)", en = "Seal of Righteousness (Rank 3)" } },
+          note = { ru = "Тренер паладинов Алодан Жизнерадостный: обучение 20-го уровня (и Печать праведности 3, "
+                       .. "если не выучили на 18-м). Талант — Стремление к справедливости.",
+                   en = "Alodan the Hopeful: level-20 training (plus Seal of Righteousness R3 if you missed it "
+                       .. "at 18). Talent: Pursuit of Justice." } },
         { id = "ud05-sethearth-tb", sethearth = "Thunder Bluff", npc = 6746, at = { 1456, 45.81, 64.71 },
           note = { ru = "Трактирщица Пала: сделайте Громовой Утёс домом (в конце вернётесь сюда камнем).",
                    en = "Innkeeper Pala: make Thunder Bluff your home (you hearth back here at the end)." } },
         { id = "ud05-fly-ratchet-2", fly = "Ratchet", at = { 1413, 63.08, 37.16 },
           note = { ru = "Тал: летите в Кабестан.", en = "Tal: fly to Ratchet." } },
+        { turnin = 821, bg = true, npc = 3292, at = { 1413, 62.26, 38.39 },
+          note = { ru = "Если брали 821: сдайте его пивовару Дрону рядом с Мебоком (следующее, 822, не берите).",
+                   en = "If you took 821: turn it in to Brewmaster Drohn next to Mebok (skip the next one, "
+                       .. "822)." } },
         { turnin = 1094, accept = 1095, npc = 3442, at = { 1413, 62.98, 37.22 },
           note = { ru = "Спаттервальв. 1095 — обратно Зизу.", en = "Sputtervalve. 1095 goes back to Ziz." } },
         { turnin = 1069, npc = 3446, at = { 1413, 62.37, 37.62 },
@@ -380,8 +428,9 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
           note = { ru = "Северо-восточный край деревни, у входа в логово: 8 амулетов троллей из сундуков.",
                    en = "The north-east end of the village by the hold: 8 Troll Charms from the Troll "
                        .. "Chests." } },
-        -- Grind gate: the solo quest content ends near 21.2; RXP grinds to the same point (21 + ~87%) here.
-        { id = "ud05-lvl-grind", complete = 216, level = { 21, 0.85 }, at = { 1440, 36.5, 36.0 }, -- WARN-OK: level-grind, quests end ~21.2
+        -- Grind gate: the solo quest content (899 included) ends near 21.15 here; RXP grinds to the same point
+        -- (21 + ~87%). The validator's ~85 kills are low (878 kills counted twice, keg quest 821 counted).
+        { id = "ud05-lvl-grind", complete = 216, level = { 21, 0.85 }, at = { 1440, 36.5, 36.0 }, -- WARN-OK: level-grind, ~115 kills
           note = { ru = "До 22-го квестов не хватает: добивайте фурболгов в деревне (23-24 — больше всего опыта; "
                        .. "по 2 с Освящением) до 21-го + 85%. Сдача 216 и 6462 в Зорам'гаре добавит ещё ~15% — "
                        .. "это и есть 22-й. Убивали всё по пути — шаг уже выполнен.",
@@ -420,7 +469,7 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
         { id = "ud05-end", train = true, npc = 246344, at = { 1456, 25.81, 19.03 },
           spells = { { ru = "Благословение могущества (ранг 3)", en = "Blessing of Might (Rank 3)" },
                      { ru = "Свет небес (ранг 4)", en = "Holy Light (Rank 4)" } },
-          note = { ru = "Тренер паладинов Alodan the Hopeful: обучение 22-го уровня. Маршрут 1-22 пройден!",
+          note = { ru = "Тренер паладинов Алодан Жизнерадостный: обучение 22-го уровня. Маршрут 1-22 пройден!",
                    en = "Alodan the Hopeful: level-22 training. The 1-22 route is done!" } },
     },
 })

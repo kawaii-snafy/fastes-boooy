@@ -54,6 +54,17 @@ m:AssertClean()                            -- no script errors, no contract viol
   (also a warning), invalid anchor point / relative region / self anchor, frame strata, draw layer,
   justification, blend mode, orientation, tooltip anchor, unknown font object.
 * `m:Fire` validates the event name and documented payload types.
+* **Protected frames** (minimal model): a frame created from `SecureActionButtonTemplate` is
+  explicitly protected; a frame that has a protected descendant, or that a protected frame is
+  anchored to, is implicitly protected (`IsProtected()` → `true, explicit`; `UIParent` /
+  `WorldFrame` left out). While `m.player.inCombat` (`EnterCombat`; `PLAYER_REGEN_DISABLED` fires
+  before the lockdown starts), `Show/Hide/SetShown`, anchors, size, scale, `SetParent`,
+  `StartMoving`, `SetAttribute`, `EnableMouse`, strata / level, `RegisterForClicks` on a protected
+  frame record an `ADDON_ACTION_BLOCKED` violation and raise (`Mock.RESTRICTED_METHODS`).
+  The template's `OnClick` runs the secure action of the `type` / `typeN` attribute on the
+  press or the release (`m.actionButtonUseKeyDown`, default `true` like the client CVar) and
+  records `{ "SecureAction", type, value, mouseButton }` in `m.actions`; `m:Click(button)` sends
+  the press and/or the release registered with `RegisterForClicks` (one release without it).
 * Errors that reach the error handler (script errors, `C_Timer` callbacks, `geterrorhandler()(...)`)
   are recorded in `m.errors`; the outermost mock call (`m:Fire`, `m:Advance`, helpers, `Mock.boot`)
   then raises with all new errors and violations (`Mock.new{ raiseErrors = false }` to only record).
@@ -121,8 +132,13 @@ shift, ctrl, alt, guid` } (raceID / classID / faction derived; Skyborne = 95 All
   `CloseTrainer`, `OpenMerchant` / `CloseMerchant`, `OpenTaxi(nodes, npcID)` (nodes: `name, x, y`
   (0-1), `state`, `mapID, destX, destY, flightTime`) / `CloseTaxi` / `Land`,
   `OpenBinder(name, npcID, mapID, x, y)` / `ConfirmBinder`, `SetBindLocation`, `UseHearthstone`.
-* **Forever DB**: `m:UseForeverDB(dofile("tools/data/forever_db.lua"))` makes undefined quests,
-  NPCs, objects and items come from the snapshot (objectives, prerequisites, race/class masks).
+* **Forever DB**: `m:UseForeverDB(dofile("tools/data/forever_db.lua")[, { routeCompletes = {[id] = true} }])`
+  makes undefined quests, NPCs, objects and items come from the snapshot (objectives,
+  prerequisites, race/class masks). `objectives.event` (exploration / escort) becomes an `"event"`
+  objective that stays incomplete until fulfilled (`CompleteObjectives` / `ProgressObjective`);
+  a quest listed in `routeCompletes` (the route has a `complete` step for it) without any DB
+  objective gets one placeholder `"event"` objective; other objective-less quests are complete
+  on accept (deliveries). `tools/simulate_routes.lua` passes the route's `complete` quests.
 * **UI**: `Click(button)`, `Enter(region)` / `Leave`, `TypeText(editBox, s)`, `DragSlider(s, v)`,
   `TooltipLines()`, `VisibleTexts([root])`, `FindWidgets(pred)`, `WidgetState(w)`,
   `IsWidgetVisible(w)`, `PopupClick(which, "button1")`, `PopupVisible(which)`, `m.chat`,

@@ -33,6 +33,16 @@ Map sizes: zones[uiMapID].size = {width, height} in yards, from the Forever map 
 |left - right|, height = |top - bottom|), so the validator can measure distances in yards.
 Maps without known bounds (e.g. Zephras Isle 2521) get no size.
 
+Objective icons: creature / killCredit objectives keep QuestieDB's objective icon when it is
+not the default (`icon = N`, enums.iconTypes: 3 EVENT, 5 TALK, 17 INTERACT; 0/1 = slay), so the
+validator can tell "kill 8" from "speak with" / "heal" / "free" objectives (no kill XP).
+
+Transport NPCs: zeppelin / boat / skycutter NPCs (TRANSPORT_SUBNAMES, TRANSPORT_IDS) with a known
+spawn on any map, and the friendly NPCs at transport landings without a dock NPC
+(TRANSPORT_LANDINGS, e.g. Skywatcher Plateau where the Valanaar skycutter lands), are full NPC
+records with `transport = "zeppelin|boat|skycutter|landing"`, so routes can anchor travel steps
+on them (research/mechanics.md "Zeppelins", "Skyborne leaving Zephras Isle").
+
 Spawn thinning: objective mobs / drop sources with many spawns keep ONE spawn per
 SPAWN_GRID x SPAWN_GRID map-unit cell (the one nearest the cell centre), so every cluster
 keeps a representative; such records carry `spawnsGrid = SPAWN_GRID` (every real spawn is
@@ -91,6 +101,23 @@ ALL_FLAGS = OrderedDict([
     ("petitioner", 512), ("tabard", 1024), ("battlemaster", 2048), ("auctioneer", 4096),
     ("stablemaster", 8192), ("repair", 16384),
 ])
+# Transport NPCs (zeppelins, boats, skycutters): matched on the lower-case subName (substring) or
+# by id, included as full records (with `transport = kind`) wherever they spawn.
+TRANSPORT_SUBNAMES = OrderedDict([
+    ("zeppelin master", "zeppelin"), ("zeppelin operator", "zeppelin"),
+    ("shipmaster", "boat"), ("boat operator", "boat"), ("dockmaster", "boat"),
+    ("captain of the skycutter", "skycutter"),
+])
+TRANSPORT_IDS = OrderedDict([
+    (275270, "skycutter"),  # Windshapers Dockmaster, Valanaar Skydocks (Horde skycutter to Mulgore)
+    (275269, "skycutter"),  # High Order Dockmaster, Zephras Isle (Alliance side)
+])
+# Transport landings without a dock NPC: every friendly (friendlyToFaction set) NPC spawning in
+# the box (AreaID, x1, y1, x2, y2 in that AreaID's map percent) is included as transport="landing".
+TRANSPORT_LANDINGS = [
+    # Skywatcher Plateau (AreaID 17045, spawns keyed to Mulgore 215): the Valanaar skycutter lands here
+    (215, 31.0, 19.5, 35.5, 25.5, "Skywatcher Plateau"),
+]
 # UnitRace() raceFile -> QuestieDB/Forever race bit. Skyborne shares one raceFile for both
 # factions (raceID 95 = Alliance, 96 = Horde): resolved by faction.
 RACEFILE_TO_KEY = OrderedDict([
@@ -226,6 +253,26 @@ def sort_keys(d):
     return sorted(keys, key=lambda k: (0, k) if isinstance(k, int) else (1, str(k)))
 
 
+class LuaList(list):
+    """A list with named fields: written as one Lua constructor `{a, b, k = v}` (array part
+    first, then the fields in insertion order), e.g. an objective `{251902, icon = 5}`."""
+
+    def __init__(self, items, fields=None):
+        super().__init__(items)
+        self.fields = OrderedDict(fields or ())
+
+    def __eq__(self, other):
+        if not isinstance(other, list):
+            return NotImplemented
+        return list(self) == list(other) and self.fields == getattr(other, "fields", OrderedDict())
+
+    def __ne__(self, other):
+        r = self.__eq__(other)
+        return r if r is NotImplemented else not r
+
+    __hash__ = None
+
+
 def lua_inline(v):
     """Single-line Lua constructor."""
     if v is None:
@@ -234,6 +281,10 @@ def lua_inline(v):
         return lua_num(v)
     if isinstance(v, str):
         return lua_str(v)
+    if isinstance(v, LuaList):
+        parts = [lua_inline(x) for x in v]
+        parts += [lua_key(k) + "=" + lua_inline(x) for k, x in v.fields.items() if x is not None]
+        return "{" + ",".join(parts) + "}"
     if is_array(v):
         return "{" + ",".join(lua_inline(x) for x in v) + "}"
     if isinstance(v, dict):
@@ -344,6 +395,7 @@ class Builder:
                 if isinstance(q.get("xpForever"), int) and q["xpForever"] > 0:
                     self.dungeon_xp[q["id"]] = (q["xpForever"], dkey)
         self.stats = OrderedDict()
+        self.transport = OrderedDict()
 
     # -- quest helpers -----------------------------------------------------
 
@@ -545,6 +597,14 @@ class Builder:
             return "new"
         return "same"
 
+    @staticmethod
+    def objective_icon(o):
+        """[("icon", N)] for a non-default objective icon (0 = unset, 1 = slay), else []."""
+        icon = o.get("icon")
+        if isinstance(icon, int) and icon not in (0, 1):
+            return [("icon", icon)]
+        return []
+
     def convert_quest(self, qid, q, counts):
         rec = OrderedDict()
         rec["name"] = q.get("name") or ("quest %d" % qid)
@@ -589,7 +649,7 @@ class Builder:
         cr = []
         for c in obj.get("creature") or []:
             n = counts.get(("creature", c["id"]))
-            cr.append([c["id"], n] if n else [c["id"]])
+            cr.append(LuaList([c["id"], n] if n else [c["id"]], self.objective_icon(c)))
         if cr:
             objectives["creatures"] = cr
         kc = []
@@ -600,6 +660,7 @@ class Builder:
             n = counts.get(("killCredit", k.get("baseId")))
             if n:
                 e["count"] = n
+            e.update(self.objective_icon(k))
             if e["ids"]:
                 kc.append(e)
         if kc:
@@ -784,7 +845,25 @@ class Builder:
             rec["areaSpawns"] = raw
         if n.get("zoneID"):
             rec["zone"] = n["zoneID"]
+        kind = self.transport.get(nid)
+        if kind:
+            rec["transport"] = kind
         return rec
+
+    def transport_kind(self, nid, n):
+        """Transport role of an NPC ("zeppelin" / "boat" / "skycutter" / "landing") or None."""
+        if nid in TRANSPORT_IDS:
+            return TRANSPORT_IDS[nid]
+        sub = (n.get("subName") or "").lower()
+        for pat, kind in TRANSPORT_SUBNAMES.items():
+            if pat in sub:
+                return kind
+        if n.get("friendlyToFaction"):
+            for area, x1, y1, x2, y2, _label in TRANSPORT_LANDINGS:
+                for p in (n.get("spawns") or {}).get(str(area)) or []:
+                    if isinstance(p, list) and len(p) >= 2 and x1 <= p[0] <= x2 and y1 <= p[1] <= y2:
+                        return "landing"
+        return None
 
     def convert_object(self, oid, cap):
         o = self.oraw[oid]
@@ -849,8 +928,16 @@ class Builder:
             sub = (n.get("subName") or "").lower()
             if any((c.lower() + " trainer") in sub for c in SCOPE_CLASSES):
                 service.add(nid)
+        # zeppelin / boat / skycutter NPCs with a known spawn (any map: the Grom'gol and Booty Bay
+        # ends of Horde transports too) and the NPCs at transport landings
+        self.transport = OrderedDict()
+        for nid in sorted(self.nraw):
+            n = self.effective_npc(self.nraw[nid])
+            kind = self.transport_kind(nid, n)
+            if kind and n.get("spawns"):
+                self.transport[nid] = kind
 
-        full_npcs = (refs["npcs"] | service)
+        full_npcs = (refs["npcs"] | service | set(self.transport))
         mob_npcs = (refs["mobs"] | drop_npcs) - full_npcs
         npcs = OrderedDict()
         for nid in sorted(full_npcs | mob_npcs):
@@ -865,6 +952,7 @@ class Builder:
             objects[oid] = self.convert_object(oid, None if oid in full_objs else MAX_MOB_SPAWNS_PER_MAP)
         self.stats["npcs.questGivers"] = len(refs["npcs"])
         self.stats["npcs.service"] = len(service)
+        self.stats["npcs.transport"] = len(self.transport)
         self.stats["npcs.mobsAndDropSources"] = len(mob_npcs)
         self.stats["npcs.missingFromDB"] = len([n for n in full_npcs | mob_npcs if n not in self.nraw])
         self.stats["objects.missingFromDB"] = len([o for o in full_objs | refs["mobObjects"] | drop_objs
@@ -973,6 +1061,7 @@ class Builder:
         npc_flags = OrderedDict((k, nf[k]) for k in sorted(nf) if k != "NONE")
         qf = self.enums["questFlags"]
         quest_flags = OrderedDict((k, qf[k]) for k in sorted(qf) if k != "NONE")
+        it = self.enums.get("iconTypes") or {}
         sk = self.enums.get("sortKeys") or {}
         class_sorts = OrderedDict((name, sk[name]) for name in sorted(sk)
                                   if name in ("WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN",
@@ -986,6 +1075,7 @@ class Builder:
             ("questFlags", quest_flags),
             ("classSorts", class_sorts),
             ("specialFlags", OrderedDict([("REPEATABLE", 1)])),
+            ("iconTypes", OrderedDict((k, it[k]) for k in sorted(it))),
         ])
 
     def build_xp(self):
@@ -1145,12 +1235,15 @@ def main():
         "-- Layout (see tools/README.md):",
         "--   quests[id]   = {name, level, reqLevel, races, classes, side=\"H|A|AH\", start={npcs,objects,items},",
         "--                   finish={npcs,objects}, preGroup, preSingle, exclusive, next, breadcrumbFor, breadcrumbs,",
-        "--                   parent, children, objectives={creatures={{id,count?}}, killCredit={{ids,base,count}},",
-        "--                   objects={{id,count?}}, items={{id,count?}}}, sourceItem, zone, uiMap, flags, special,",
-        "--                   xp, xpSrc, status=\"same|new|changed\", byClass={CLASS={overridden fields}}}",
+        "--                   parent, children, objectives={creatures={{id,count?,icon=?}},",
+        "--                   killCredit={{ids,base,count,icon}},",
+        "--                   objects={{id,count?}}, items={{id,count?}}, event=true}, sourceItem, zone, uiMap, flags,",
+        "--                   special, xp, xpSrc, status=\"same|new|changed\", byClass={CLASS={overridden fields}}}",
+        "--                   (objective icon only when not slay: enums.iconTypes 3 EVENT, 5 TALK, 17 INTERACT;",
+        "--                   event = completes on an area trigger / scripted event: exploration, escort)",
         "--   npcs[id]     = {name, sub, minLevel, maxLevel, rank, faction=\"A|H|AH|\", flags={trainer=true,...},",
         "--                   spawns={[uiMapID]={{x,y},...}}, spawnsGrid (thinned: one spawn per grid cell),",
-        "--                   instance={AreaID,...}, zone}",
+        "--                   instance={AreaID,...}, zone, transport=\"zeppelin|boat|skycutter|landing\"}",
         "--   zones[uiMapID] = {name, areaId, dungeon, scope, size={widthYards, heightYards}}",
         "--   objects[id]  = {name, spawns, instance, zone};  items[id] = {name, npcDrops, objectDrops, vendors, ...}",
         "--   questIndex[id] = {name, level, reqLevel, races, classes, zoneOrSort}  (quests outside the scope)",

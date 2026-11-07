@@ -1,5 +1,5 @@
 -- FastesBoooy_SkyborneDruid / Segments / 04_Barrens.lua
--- Segment "sd-04-barrens": The Barrens, levels 14-18.
+-- Segment "sd-04-barrens": The Barrens, levels 15-18.
 -- Orgrimmar (hearthstone on cooldown) -> Razor Hill (840) -> Far Watch Post (842) -> the Crossroads
 -- (bind, flight point, the hub quests) -> Thorn Hill (871) -> Crossroads -> the second Razormane camp
 -- (872 + 5041) -> Ratchet (flight point, pirates, the Missing Shipment chain) -> walk back west through
@@ -13,24 +13,21 @@
 -- objective mob / object spawns. The Orgrimmar gate and the coast point north of Ratchet are terrain
 -- points cross-checked with the reference; the Forgotten Pools point is the midpoint of the two Laden
 -- Mushroom spawns at the pools (870 is an exploration objective without a DB position).
--- Skipped on purpose: 1061 (breadcrumb in Orgrimmar, 1062 is taken without it), 3921/3922 (back north for
--- 490 + 1050 XP), 97003 / 92706 / 4021 (group or elite fights), 866 (herbalism), 959 / 1491 / 1486 /
--- 1487 (Wailing Caverns), 868 (17+ escort-like egg run, next segment), 6541 / 6543 (Mor'shan, off the
--- path), 924 (needs the Durotar 809 chain).
+-- 1061 (optional, taken from Zor Lonetree in Orgrimmar in sd-03 at level 13+) is handed in at Seereth right
+-- before 1062. Skipped on purpose: 3921/3922 (back north for 490 + 1050 XP), 97003 / 92706 / 4021 (group or
+-- elite fights), 866 (herbalism), 959 / 1491 / 1486 / 1487 (Wailing Caverns), 868 (17+ escort-like egg run,
+-- next segment), 6541 / 6543 (Mor'shan, off the path), 924 (needs the Durotar 809 chain).
 FastesBoooy.AddSegment("horde-skyborne-druid", {
     id = "sd-04-barrens",
     title = {
-        ru = "14-18 Степи: Перекрёсток, Кабестан, лагерь Таурахо",
-        en = "14-18 The Barrens: the Crossroads, Ratchet, Camp Taurajo",
+        ru = "15-18 Степи: Перекрёсток, Кабестан, лагерь Таурахо",
+        en = "15-18 The Barrens: the Crossroads, Ratchet, Camp Taurajo",
     },
     zone = "The Barrens",
-    -- WARN-OK (levels): segment-level -- the validator starts this segment ~1.5 levels high (unknown
-    -- Forever quest XP and friendly talk objectives simulated as kills in sd-01/sd-02) and counts the
-    -- Beaten Corpse of 4921 as 8 kills; a real run ends here at ~18.
-    levels = { 14, 18 }, -- WARN-OK: segment-level (estimate artifact, see above)
+    levels = { 15, 18 },
     steps = {
         ---------------------------------------------------------------------
-        -- Orgrimmar -> Razor Hill -> Far Watch Post (14)
+        -- Orgrimmar -> Razor Hill -> Far Watch Post (15)
         ---------------------------------------------------------------------
         { id = "sd04-start", go = true, at = { 1454, 48.97, 92.84 }, radius = 20,
           note = {
@@ -50,7 +47,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "West along the road and over the bridge into the Barrens: Kargal Battlescar at Far Watch Post.",
           } },
         ---------------------------------------------------------------------
-        -- The Crossroads, first visit (14-15)
+        -- The Crossroads, first visit (15)
         ---------------------------------------------------------------------
         { id = "sd04-sethearth-xroads", sethearth = "The Crossroads", npc = 3934, at = { 1413, 51.99, 29.89 },
           note = {
@@ -111,7 +108,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
         { accept = 867, npc = 3449, at = { 1413, 51.62, 30.90 } },
         { turnin = 871, accept = 872, npc = 3429, at = { 1413, 51.50, 30.87 } },
         ---------------------------------------------------------------------
-        -- The second Razormane camp -> Ratchet (15-16)
+        -- The second Razormane camp -> Ratchet (16)
         ---------------------------------------------------------------------
         { complete = { 872, 5041 }, object = 175708, at = { 1413, 58.6, 25.6 },
           note = {
@@ -196,7 +193,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
           } },
         { turnin = { 5041, 872 }, npc = 3429, at = { 1413, 51.50, 30.87 } },
         ---------------------------------------------------------------------
-        -- West: Regthar, the Forgotten Pools, Barak (16)
+        -- West: Regthar, the Forgotten Pools, Barak (16-17)
         ---------------------------------------------------------------------
         { accept = { 850, 855 }, npc = 3389, at = { 1413, 45.34, 28.41 },
           note = {
@@ -230,7 +227,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Back to Regthar. Keep the bracers (handed in at the end of the segment).",
           } },
         ---------------------------------------------------------------------
-        -- North-west: harpies, Vrang Wildgore, Walton (16-17)
+        -- North-west: harpies, Vrang Wildgore, Walton (17)
         ---------------------------------------------------------------------
         { complete = 867, at = { 1413, 40.8, 17.2 },
           note = {
@@ -316,8 +313,8 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Escort the shredder out of the camp: mercenaries and Overseer Glibby attack. Failed - take it again "
                   .. "from the shredder.",
           } },
-        -- level 16 = the Moonglade training right after (Swipe); merged here, not a standalone level step, so it can
-        -- only anchor once 896 is done at the mine (no transient step before it can be skipped by an early ding)
+        -- level 16 = the Moonglade training right after (Swipe); merged with the mine objective so the grind hint
+        -- sits where the Venture Co. mobs are (the validator reaches ~17.6 here)
         { complete = 896, level = 16, at = { 1413, 60.84, 3.99 },
           note = {
               ru = "На северо-восток к руднику: Venture Co. Enforcer / Overseer, пока не выпадет "
@@ -328,7 +325,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
                   .. "- kill more Venture Co. here.",
           } },
         ---------------------------------------------------------------------
-        -- Moonglade: training at 16, hearth to the Crossroads (17)
+        -- Moonglade: training at 16, hearth to the Crossroads (17-18)
         ---------------------------------------------------------------------
         { id = "sd04-train-16", train = true, npc = 12042, at = { 1450, 52.53, 40.57 },
           spells = {
@@ -382,7 +379,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Fly to Ratchet.",
           } },
         ---------------------------------------------------------------------
-        -- Ratchet, second visit (17)
+        -- Ratchet, second visit (18)
         ---------------------------------------------------------------------
         { turnin = { 902, 863 }, accept = 1483, npc = 3442, at = { 1413, 62.98, 37.22 }, -- carried: 1483 -> sd-05
           note = {
@@ -394,7 +391,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
         { accept = { 865, 1069 }, npc = 3446, at = { 1413, 62.37, 37.62 } }, -- carried: 865, 1069 -> sd-05
         { turnin = 896, npc = 3453, at = { 1413, 63.35, 38.45 } },
         ---------------------------------------------------------------------
-        -- South sweep: booty, silver, the Stagnant Oasis, Verog, nests (17-18)
+        -- South sweep: booty, silver, the Stagnant Oasis, Verog, nests (18)
         ---------------------------------------------------------------------
         { complete = 865, bg = true,
           note = {
@@ -513,10 +510,17 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               ru = "На северо-запад: 6 колец с Witchwing Slayer (16-17) в западной части гнезда гарпий.",
               en = "North-west: 6 rings from Witchwing Slayers (16-17) in the western part of the harpy nest.",
           } },
+        { turnin = 1061, optional = true, npc = 4049, at = { 1413, 35.26, 27.88 },
+          note = {
+              ru = "На юго-запад к входу в Когтистые горы: Seereth Stonebreak. Сдайте «Духов Когтистых гор», "
+                  .. "если взяли их в Оргриммаре; нет - пропустите шаг.",
+              en = "South-west to the entrance of Stonetalon Mountains: Seereth Stonebreak. Hand in The Spirits of "
+                  .. "Stonetalon if you took it in Orgrimmar; otherwise skip the step.",
+          } },
         { accept = 1062, npc = 4049, at = { 1413, 35.26, 27.88 }, -- carried: 1062 -> sd-05
           note = {
-              ru = "На юго-запад к входу в Когтистые горы: Seereth Stonebreak.",
-              en = "South-west to the entrance of Stonetalon Mountains: Seereth Stonebreak.",
+              ru = "Seereth Stonebreak: «Гоблины-захватчики».",
+              en = "Seereth Stonebreak: Goblin Invaders.",
           } },
         { id = "sd04-end", accept = 6548, npc = 11857, at = { 1413, 35.19, 27.76 }, -- carried: 6548 -> sd-05
           note = {

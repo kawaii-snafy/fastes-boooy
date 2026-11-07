@@ -1,15 +1,18 @@
 -- FastesBoooy_SkyborneDruid / Segments / 01_Zephras_1_9.lua
 -- Segment "sd-01-zephras": Zephras Isle (uiMap 2521), levels 1-9, Horde (Windshaper) side.
--- Thendal Grove (start, druid class quest 92485, training at 1 and 4) -> ursera den ->
--- Al'Aketh camp -> Shen'dar Village (hearth, training at 6 and 8; loops: NE highlands,
--- SW hippogryph vale, Falaath + western watchtower) -> ends at Constable Aonda with
--- 92579 + 93948 (both lead to Valanaar) in the quest log.
+-- Thendal Grove (start, druid class quest 92485, training at 1 and 4; hearth back to the camp at 3) ->
+-- ursera den -> Al'Aketh camp -> Shen'dar Village (training at 6 and 8; loops: NE highlands, SW
+-- hippogryph vale + Vulgara, then straight down to Falaath and back up for one combined Shen'dar
+-- visit, western watchtower + Falaath) -> ends at Constable Aonda with 92579 + 93948 (both lead to
+-- Valanaar) in the quest log.
 -- Coordinates: Forever DB snapshot (tools/data/forever_db.lua): NPC / object spawns and
 -- centroids of the objective mob / object spawns. Glide points (Walk on Air) are terrain
 -- points cross-checked with the reference. Every Zephras quest is Forever-new, so its XP is
 -- unknown offline: the xp-unknown WARN on each turn-in is expected (estimated XP is used).
--- The hearthstone is NOT used before the end: bound to Shen'dar at ~6, it saves the run back
--- from Falaath at ~9.
+-- Hearthstone: used once at level 3 from Yala back to the camp (default bind Thendal Village, as the
+-- reference does), then left alone: it is not bound to Shen'dar, the run back up from Falaath (~12 map
+-- units) goes through the Prideclaws for 92515, and the stone is ready again (>1 h later) for the
+-- Valanaar hearth at the end of sd-02 (sd02-hearth is ~45-60 min after Falaath).
 FastesBoooy.AddSegment("horde-skyborne-druid", {
     id = "sd-01-zephras",
     title = {
@@ -17,9 +20,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
         en = "1-9 Zephras Isle: Thendal Grove and Shen'dar",
     },
     zone = "Zephras Isle",
-    -- WARN-OK (levels): segment-level -- the validator overestimates (unknown Forever quest XP, talk
-    -- objectives simulated as 8 kills); the reference run ends this part at ~9.
-    levels = { 1, 9 }, -- WARN-OK: segment-level (estimate artifact, see above)
+    levels = { 1, 9 },
     steps = {
         ---------------------------------------------------------------------
         -- Thendal Grove: first kills (1-2)
@@ -65,7 +66,12 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
                   .. "«Шаг по воздуху» (Walk on Air).",
               en = "Jump off the tower westwards towards Rorian and press the Walk on Air racial while falling.",
           } },
-        { turnin = { 92461, 92474 }, accept = { 92464, 92485 }, npc = 251361, at = { 2521, 42.05, 23.49 } }, -- WARN-OK: xp-unknown
+        { turnin = { 92461, 92474 }, accept = { 92464, 92485 }, npc = 251361, at = { 2521, 42.05, 23.49 }, -- WARN-OK: xp-unknown
+          reward = { [92461] = 1 },
+          note = {
+              ru = "Награда за 92461 выбирается автоматически: 1-й предмет.",
+              en = "The 92461 reward is picked automatically: item 1.",
+          } },
         { id = "sd01-92485", turnin = 92485, use = 282420, npc = 251373, at = { 2521, 41.66, 23.33 }, -- WARN-OK: xp-unknown
           note = {
               ru = "Классовое задание: прочитайте «Сложенный пергамент» (сумка), "
@@ -126,20 +132,38 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
         ---------------------------------------------------------------------
         -- Back in the camp: turn-ins, training at 4
         ---------------------------------------------------------------------
+        -- no earlier sethearth: the stone is still on the character's default bind (Thendal Village);
+        -- the validator only reports an INFO (hearth-unbound) for it
+        { id = "sd01-hearth-3", hearth = "Thendal Village", at = { 2521, 43.0, 23.5 }, radius = 120,
+          note = {
+              ru = "Камень возвращения в лагерь (деревня Тендал). Следующий раз он нужен только в конце "
+                  .. "sd-02 (Валанаар) - больше чем через час, откат успеет пройти.",
+              en = "Hearth back to the camp (Thendal Village). The stone is next needed at the end of sd-02 "
+                  .. "(Valanaar), more than an hour from now, so the cooldown is over by then.",
+          } },
         { turnin = 93552, npc = 251363, at = { 2521, 43.37, 23.98 }, -- WARN-OK: xp-unknown (Forever-new)
           note = {
-              ru = "Бегом обратно в лагерь. Камень возвращения не трогайте - "
-                  .. "он нужен в конце.",
-              en = "Run back to the camp. Keep the hearthstone - it is used at the end of the segment.",
+              ru = "Dalia the Collector в лагере.",
+              en = "Dalia the Collector in the camp.",
           } },
-        { turnin = 92463, npc = 251368, at = { 2521, 43.44, 24.79 } }, -- WARN-OK: xp-unknown (Forever-new)
+        { turnin = 92463, npc = 251368, at = { 2521, 43.44, 24.79 }, -- WARN-OK: xp-unknown (Forever-new)
+          reward = { [92463] = 3 },
+          note = {
+              ru = "Награда выбирается автоматически: 3-й предмет.",
+              en = "The reward is picked automatically: item 3.",
+          } },
         { turnin = 92598, npc = 251487, at = { 2521, 42.61, 24.38 } }, -- WARN-OK: xp-unknown (Forever-new)
         { id = "sd01-level-4", level = 4,
           note = {
               ru = "Нужен 4-й уровень: Rorian выдаёт «Aetheen of the Gales» только с 4-го.",
               en = "Level 4 is required: Rorian offers Aetheen of the Gales only from level 4.",
           } },
-        { turnin = 92469, accept = 92471, npc = 251361, at = { 2521, 42.05, 23.49 } }, -- WARN-OK: xp-unknown (Forever-new)
+        { turnin = 92469, accept = 92471, npc = 251361, at = { 2521, 42.05, 23.49 }, -- WARN-OK: xp-unknown (Forever-new)
+          reward = { [92469] = 1 },
+          note = {
+              ru = "Награда выбирается автоматически: 1-й предмет.",
+              en = "The reward is picked automatically: item 1.",
+          } },
         { id = "sd01-train-4", train = true, optional = true, npc = 251373, at = { 2521, 41.66, 23.33 },
           spells = { { ru = "Лунный огонь", en = "Moonfire" }, { ru = "Омоложение", en = "Rejuvenation" } },
           note = {
@@ -174,7 +198,12 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               ru = "Награда выбирается автоматически: 2-й предмет.",
               en = "The reward is picked automatically: item 2.",
           } },
-        { turnin = 92473, npc = 257551, at = { 2521, 42.41, 25.17 } }, -- WARN-OK: xp-unknown (Forever-new)
+        { turnin = 92473, npc = 257551, at = { 2521, 42.41, 25.17 }, -- WARN-OK: xp-unknown (Forever-new)
+          reward = { [92473] = 1 },
+          note = {
+              ru = "Награда выбирается автоматически: 1-й предмет.",
+              en = "The reward is picked automatically: item 1.",
+          } },
         ---------------------------------------------------------------------
         -- Al'Aketh camp (5)
         ---------------------------------------------------------------------
@@ -215,12 +244,12 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Talk to Illaya Amberwind and listen to her.",
           } },
         { accept = 94411, npc = 251902, at = { 2521, 43.51, 44.77 } },
-        { id = "sd01-sethearth", complete = { [92514] = { 2 } }, sethearth = "Shen'dar Village", npc = 254089,
-          at = { 2521, 43.01, 43.23 },
+        { id = "sd01-innkeeper", complete = { [92514] = { 2 } }, npc = 254089, at = { 2521, 43.01, 43.23 },
           note = {
-              ru = "Трактирщица Coriella Calmbreeze: поговорите и привяжите "
-                  .. "камень к Шен'дару.",
-              en = "Innkeeper Coriella Calmbreeze: talk to her and bind your hearthstone to Shen'dar.",
+              ru = "Трактирщица Coriella Calmbreeze: поговорите с ней (цель задания). Камень к Шен'дару "
+                  .. "не привязывайте - он на откате, следующая привязка в Валанааре.",
+              en = "Innkeeper Coriella Calmbreeze: talk to her (quest objective). No need to bind the hearthstone "
+                  .. "here - it is on cooldown and is next bound in Valanaar.",
           } },
         { turnin = 96638, accept = 96101, npc = 263664, at = { 2521, 41.66, 44.80 } }, -- WARN-OK: xp-unknown (Forever-new)
         { complete = 96101, object = 460003, at = { 2521, 41.73, 44.78 },
@@ -282,14 +311,24 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Finish 10 Highlands Bandits and the windstones on the way out.",
           } },
         ---------------------------------------------------------------------
-        -- Shen'dar, second visit (7)
+        -- Shen'dar, second visit (8)
         ---------------------------------------------------------------------
         { turnin = 92517, accept = 93036, npc = 251523, at = { 2521, 45.67, 45.50 }, -- WARN-OK: xp-unknown (Forever-new)
+          reward = { [92517] = 3 },
           note = {
-              ru = "Назад в деревню.",
-              en = "Back to the village.",
+              ru = "Назад в деревню. Награда выбирается автоматически: 3-й предмет.",
+              en = "Back to the village. The reward is picked automatically: item 3.",
           } },
         { turnin = 93036, accept = 92529, npc = 251904, at = { 2521, 44.88, 45.53 } }, -- WARN-OK: xp-unknown (Forever-new)
+        { id = "sd01-mark", manual = true, optional = true, npc = 251904, at = { 2521, 44.88, 45.53 },
+          note = {
+              ru = "Sania дала «Знак Акира» (маскировка культиста) - он нужен в Фалаате, куда вы пойдёте "
+                  .. "прямо из долины, без захода в деревню. Не умирайте в долине и у Vulgara; потеряли "
+                  .. "баф - перед Фалаатом вернитесь к Sania. Прочитали - жмите «Дальше».",
+              en = "Sania gave you the Mark of Akir (cultist disguise) - you need it in Falaath, where you go "
+                  .. "straight from the vale without coming back to the village. Do not die in the vale or at "
+                  .. "Vulgara; lost the buff - see Sania again before Falaath. Read it - press Next.",
+          } },
         { turnin = 93319, npc = 251906, at = { 2521, 44.46, 44.96 } }, -- WARN-OK: xp-unknown (Forever-new)
         { turnin = 94411, npc = 251902, at = { 2521, 43.51, 44.77 } }, -- WARN-OK: xp-unknown (Forever-new)
         { accept = 93318, object = 610954, at = { 2521, 43.38, 45.84 },
@@ -298,7 +337,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Bounty board: WANTED: Vulgara.",
           } },
         ---------------------------------------------------------------------
-        -- Loop 2: south-west hippogryph vale (7-8)
+        -- Loop 2: south-west hippogryph vale, Vulgara (8)
         ---------------------------------------------------------------------
         { go = true, at = { 2521, 36.4, 50.9 }, radius = 25,
           note = {
@@ -326,15 +365,44 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
                   .. "too hard - skip the step and abandon the quest.",
           } },
         ---------------------------------------------------------------------
-        -- Shen'dar, third visit (8)
+        -- Falaath Village straight from Vulgara (8)
         ---------------------------------------------------------------------
-        { turnin = 92516, npc = 251906, at = { 2521, 44.46, 44.96 }, -- WARN-OK: xp-unknown (Forever-new)
+        { go = true, at = { 2521, 45.4, 53.5 }, radius = 25,
           note = {
-              ru = "Обратно в деревню (на север).",
-              en = "Back north to the village.",
+              ru = "Из логова Vulgara на восток к краю плато (не в деревню); спрыгните к Jasaan, "
+                  .. "планируя «Шагом по воздуху». Нет «Знака Акира» - сначала к Sania в Шен'дар (44.9, 45.5).",
+              en = "From Vulgara's lair east to the plateau edge (not back to the village); jump down to Jasaan "
+                  .. "gliding with Walk on Air. No Mark of Akir - go to Sania in Shen'dar (44.9, 45.5) first.",
           } },
-        { turnin = 92553, npc = 251905, at = { 2521, 43.85, 43.84 } }, -- WARN-OK: xp-unknown (Forever-new)
-        { turnin = 93951, npc = 251991, at = { 2521, 44.88, 44.18 } }, -- WARN-OK: xp-unknown (Forever-new)
+        { turnin = 92529, accept = 92528, npc = 257065, at = { 2521, 46.89, 56.23 } }, -- WARN-OK: xp-unknown (Forever-new)
+        { complete = 92528, at = { 2521, 48.84, 53.93 },
+          note = {
+              ru = "Осмотрите деревню Фалаат: шкаф в доме на севере деревни (48.8, 53.9).",
+              en = "Look around Falaath Village: the wardrobe in a house in the north of the village (48.8, 53.9).",
+          } },
+        { go = true, at = { 2521, 46.4, 51.3 }, radius = 25,
+          note = {
+              ru = "Подъём обратно на плато - здесь, затем на север в Шен'дар.",
+              en = "The way back up to the plateau is here, then north to Shen'dar.",
+          } },
+        ---------------------------------------------------------------------
+        -- Shen'dar, third visit: all turn-ins, training at 8 (8-9)
+        ---------------------------------------------------------------------
+        { turnin = 92528, accept = { 92550, 93926 }, npc = 251523, at = { 2521, 45.67, 45.50 }, -- WARN-OK: xp-unknown
+          reward = { [92528] = 1 },
+          note = {
+              ru = "Constable Aonda. Награда выбирается автоматически: 1-й предмет.",
+              en = "Constable Aonda. The reward is picked automatically: item 1.",
+          } },
+        { turnin = 93318, npc = 252172, at = { 2521, 45.24, 45.18 }, -- WARN-OK: xp-unknown (Forever-new)
+          reward = { [93318] = 1 },
+          note = {
+              ru = "Danarii Bellowveil. Награда выбирается автоматически: 1-й предмет. Пропустили "
+                  .. "Vulgara - пропустите и этот шаг.",
+              en = "Danarii Bellowveil. The reward is picked automatically: item 1. Skipped Vulgara - skip this "
+                  .. "step too.",
+          } },
+        { accept = 92551, npc = 252172, at = { 2521, 45.24, 45.18 } },
         { id = "sd01-train-8", train = true, optional = true, npc = 254081, at = { 2521, 45.16, 44.22 },
           spells = {
               { ru = "Гнев деревьев", en = "Entangling Roots" },
@@ -345,47 +413,18 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
                   .. "(не 8 - пропустите).",
               en = "Level 8: Entangling Roots and Healing Touch 2 (not 8 yet - skip).",
           } },
-        { turnin = 93318, npc = 252172, at = { 2521, 45.24, 45.18 }, -- WARN-OK: xp-unknown (Forever-new)
+        { vendor = true, optional = true, npc = 257421, at = { 2521, 44.79, 44.17 },
           note = {
-              ru = "Пропустили Vulgara - пропустите и этот шаг.",
-              en = "Skipped Vulgara - skip this step too.",
+              ru = "Tephri Thriceforged: Walking Stick (посох, 4.2 DPS, ур. 3, ~5 с), если ваше "
+                  .. "оружие слабее. Иначе пропустите.",
+              en = "Tephri Thriceforged: buy the Walking Stick (staff, 4.2 DPS, level 3, ~5s) if your weapon is "
+                  .. "weaker. Otherwise skip.",
           } },
-        { id = "sd01-mark", manual = true, optional = true, npc = 251904, at = { 2521, 44.88, 45.53 },
-          note = {
-              ru = "Нет бафа «Знак Акира» (маскировка культиста)? Поговорите с Sania "
-                  .. "и получите его снова - он нужен в Фалаате. "
-                  .. "Баф есть - жмите «Дальше».",
-              en = "No Mark of Akir buff (cultist disguise)? Talk to Sania to get it again - you need it "
-                  .. "in Falaath. Have it - press Next.",
-          } },
+        { turnin = 93951, npc = 251991, at = { 2521, 44.88, 44.18 } }, -- WARN-OK: xp-unknown (Forever-new)
+        { turnin = 92553, npc = 251905, at = { 2521, 43.85, 43.84 } }, -- WARN-OK: xp-unknown (Forever-new)
+        { turnin = 92516, npc = 251906, at = { 2521, 44.46, 44.96 } }, -- WARN-OK: xp-unknown (Forever-new)
         ---------------------------------------------------------------------
-        -- Falaath Village (8)
-        ---------------------------------------------------------------------
-        { go = true, at = { 2521, 45.4, 53.5 }, radius = 25,
-          note = {
-              ru = "На юг к краю плато; спрыгните к Jasaan, планируя «Шагом по воздуху».",
-              en = "South to the plateau edge; jump down to Jasaan gliding with Walk on Air.",
-          } },
-        { turnin = 92529, accept = 92528, npc = 257065, at = { 2521, 46.89, 56.23 } }, -- WARN-OK: xp-unknown (Forever-new)
-        { complete = 92528, at = { 2521, 48.84, 53.93 },
-          note = {
-              ru = "Осмотрите деревню Фалаат: шкаф в доме на севере деревни (48.8, 53.9).",
-              en = "Look around Falaath Village: the wardrobe in a house in the north of the village (48.8, 53.9).",
-          } },
-        { go = true, at = { 2521, 46.4, 51.3 }, radius = 25,
-          note = {
-              ru = "Подъём обратно на плато - здесь, затем на север к Aonda.",
-              en = "The way back up to the plateau is here, then north to Aonda.",
-          } },
-        { turnin = 92528, accept = { 92550, 93926 }, npc = 251523, at = { 2521, 45.67, 45.50 }, -- WARN-OK: xp-unknown
-          reward = { [92528] = 1 },
-          note = {
-              ru = "Награда выбирается автоматически: 1-й предмет.",
-              en = "The reward is picked automatically: item 1.",
-          } },
-        { accept = 92551, npc = 252172, at = { 2521, 45.24, 45.18 } },
-        ---------------------------------------------------------------------
-        -- Loop 3: western watchtower + Falaath (8-9)
+        -- Loop 3: western watchtower + Falaath (9)
         ---------------------------------------------------------------------
         { go = true, at = { 2521, 44.0, 50.0 }, radius = 25,
           note = {
@@ -420,14 +459,14 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
           } },
         { complete = 92551, at = { 2521, 49.35, 55.77 } },
         -- no separate "complete 92515" step here: the pelts are a bg goal since the first Shen'dar visit, so a
-        -- finish step done early would become the forward anchor and silently skip sd01-train-8, sd01-mark and the
-        -- glide hints; the finish is merged into the turn-in below (Prideclaws surround Shen'dar)
-        { id = "sd01-hearth", hearth = "Shen'dar Village", at = { 2521, 43.01, 43.23 }, radius = 120,
+        -- finish step done early would become the forward anchor and silently skip the glide / ramp hints; the
+        -- finish is merged into the turn-in below (Prideclaws on the ramp and around Shen'dar)
+        { id = "sd01-ramp", go = true, at = { 2521, 46.4, 51.3 }, radius = 25,
           note = {
-              ru = "Камень возвращения в Шен'дар (он ещё ни разу не использовался - готов). "
-                  .. "Не хватает шкур Prideclaw - не страшно, они водятся вокруг деревни.",
-              en = "Hearth to Shen'dar (not used yet - it is ready). Short of Prideclaw pelts - fine, Prideclaws "
-                  .. "roam all around the village.",
+              ru = "Пешком обратно на плато по подъёму (камень возвращения бережём для Валанаара), по пути "
+                  .. "бейте Prideclaw ради шкур (92515).",
+              en = "Walk back up the ramp to the plateau (the hearthstone is saved for Valanaar), killing "
+                  .. "Prideclaws for the pelts (92515) on the way.",
           } },
         ---------------------------------------------------------------------
         -- Shen'dar, final turn-ins (9)
@@ -440,10 +479,12 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
           } },
         { turnin = 92551, npc = 252172, at = { 2521, 45.24, 45.18 } }, -- WARN-OK: xp-unknown (Forever-new)
         { id = "sd01-end", turnin = { 92550, 93927 }, accept = { 92579, 93948 }, -- WARN-OK: xp-unknown; both continue in sd-02
-          npc = 251523, at = { 2521, 45.67, 45.50 },
+          npc = 251523, at = { 2521, 45.67, 45.50 }, reward = { [92550] = 3 },
           note = {
-              ru = "Сдайте и возьмите оба задания в Валанаар (отчёт и перстень).",
-              en = "Turn in and take both quests to Valanaar (the report and the signet).",
+              ru = "Сдайте и возьмите оба задания в Валанаар (отчёт и перстень). Награда за 92550 "
+                  .. "выбирается автоматически: 3-й предмет.",
+              en = "Turn in and take both quests to Valanaar (the report and the signet). The 92550 reward is "
+                  .. "picked automatically: item 3.",
           } },
     },
 })

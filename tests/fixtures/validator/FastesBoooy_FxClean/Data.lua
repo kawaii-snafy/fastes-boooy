@@ -21,4 +21,7 @@ FastesBoooy.AddRouteData("fx-clean", {
         [5688] = "Innkeeper Renee",
         [244808] = "Aramis Hammerhand",
     },
+    places = {
+        ["Brill"] = { area = 159, en = "Brill", ru = "Брилл" },
+    },
 })

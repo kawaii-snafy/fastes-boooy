@@ -34,7 +34,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
     levels = { 18, 22 },
     steps = {
         ---------------------------------------------------------------------
-        -- Stonetalon south: Camp Aparaje, Grundig, Kaya (18)
+        -- Stonetalon south: Camp Aparaje, Grundig, Kaya (18-19)
         ---------------------------------------------------------------------
         { id = "sd05-start", complete = 6548, at = { 1442, 82.1, 87.5 },
           note = {
@@ -68,7 +68,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
                   .. "take the quest from Kaya again.",
           } },
         ---------------------------------------------------------------------
-        -- Malaka'jin -> Webwinder Path -> Sun Rock Retreat (18-19)
+        -- Malaka'jin -> Webwinder Path -> Sun Rock Retreat (19)
         ---------------------------------------------------------------------
         { accept = 6461, npc = 12816, at = { 1442, 71.25, 95.02 },
           note = {
@@ -240,7 +240,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Bragok: fly to the Crossroads.",
           } },
         ---------------------------------------------------------------------
-        -- The Crossroads (20)
+        -- The Crossroads (20-21)
         ---------------------------------------------------------------------
         { turnin = 875, npc = 3449, at = { 1413, 51.62, 30.90 },
           note = {
@@ -264,7 +264,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Devrak: fly to Camp Taurajo.",
           } },
         ---------------------------------------------------------------------
-        -- Camp Taurajo: Mangletooth, Jorn's chain (20)
+        -- Camp Taurajo: Mangletooth, Jorn's chain (20-21)
         ---------------------------------------------------------------------
         { turnin = 878, accept = 5052, npc = 3430, at = { 1413, 44.55, 59.26 },
           note = {
@@ -300,9 +300,8 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               ru = "Только если взяли «Оватанку».",
               en = "Only if you have Owatanka.",
           } },
-        -- The level 20 gate (reqLevel of 98340) is merged into this turn-in: a standalone level step would become the
-        -- forward anchor as soon as the player dings 20 and silently skip the fly hints and the optional 821 / 884
-        -- turn-ins before it; merged, it can only anchor once 913 is handed in.
+        -- The level 20 gate (reqLevel of 98340) is merged into this turn-in, the last stop with mobs before Thunder
+        -- Bluff; it anchors only once 913 is handed in and the player is 20. The validator reaches ~21.1 here.
         { id = "sd05-level-20", turnin = 913, level = 20, npc = 3387, at = { 1413, 44.86, 59.14 },
           note = {
               ru = "Следующие задания Jorn не берите. Облик кошки выдаётся только с 20-го уровня: не хватает - "
@@ -316,7 +315,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Omusa Thunderhorn: fly to Thunder Bluff.",
           } },
         ---------------------------------------------------------------------
-        -- Thunder Bluff (20)
+        -- Thunder Bluff (21)
         ---------------------------------------------------------------------
         { id = "sd05-sethearth-tb", sethearth = "Thunder Bluff", npc = 6746, at = { 1456, 45.81, 64.71 },
           note = {
@@ -361,7 +360,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Zamah down in the Pools of Vision. Do not take Journey to Tarren Mill.",
           } },
         ---------------------------------------------------------------------
-        -- Moonglade: the Cat Form chain (20)
+        -- Moonglade: the Cat Form chain (21)
         ---------------------------------------------------------------------
         { id = "sd05-cat-dendrite", turnin = 98340, accept = 98341, npc = 11802, at = { 1450, 56.21, 30.64 }, -- WARN-OK: xp-unknown
           note = {
@@ -404,12 +403,13 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
           } },
         { id = "sd05-catform", turnin = 98362, npc = 3033, at = { 1456, 76.48, 27.22 }, -- WARN-OK: xp-unknown
           note = {
-              ru = "Через мост на Вершину Старейшин: Turak. Награда - облик кошки.",
-              en = "Over the bridge to Elder Rise: Turak. The reward is Cat Form.",
+              ru = "Через мост на Вершину Старейшин: Turak. Награда - облик кошки, «Цапнуть», «Разорвать» "
+                  .. "и «Крадущийся зверь».",
+              en = "Over the bridge to Elder Rise: Turak. The reward is Cat Form plus Claw, Rip and Prowl.",
           } },
         { id = "sd05-train-20", train = true, npc = 3033, at = { 1456, 76.48, 27.22 },
           spells = {
-              { ru = "Цапнуть, Разорвать, Крадущийся зверь, Полоснуть", en = "Claw, Rip, Prowl, Shred" },
+              { ru = "Полоснуть", en = "Shred" },
               { ru = "Знамение ясности", en = "Omen of Clarity" },
               { ru = "Звёздный огонь", en = "Starfire" },
               { ru = "Деморализующий рёв (ранг 2)", en = "Demoralizing Roar (Rank 2)" },
@@ -418,10 +418,11 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               { ru = "Возрождение", en = "Rebirth" },
           },
           note = {
-              ru = "Обучение 20-го уровня (главное - «Цапнуть», «Полоснуть» и «Знамение ясности»). "
-                  .. "Таланты: Звериная атака (Feral Charge). Дальше бегайте в облике кошки.",
-              en = "Level 20 training (Claw, Shred and Omen of Clarity matter most). Talents: Feral Charge. Travel in "
-                  .. "Cat Form from now on.",
+              ru = "Обучение 20-го уровня. «Цапнуть», «Разорвать» и «Крадущегося зверя» уже дал облик кошки "
+                  .. "(98362); у тренера главное - «Полоснуть» и «Знамение ясности». Таланты: Звериная атака "
+                  .. "(Feral Charge). Дальше бегайте в облике кошки.",
+              en = "Level 20 training. Claw, Rip and Prowl come with Cat Form (98362); at the trainer Shred and Omen of "
+                  .. "Clarity matter most. Talents: Feral Charge. Travel in Cat Form from now on.",
           } },
         { id = "sd05-fly-sunrock", fly = "Sun Rock Retreat", npc = 4312, at = { 1442, 45.12, 59.84 },
           note = {
@@ -429,7 +430,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Back to Tal on the tower: fly to Sun Rock Retreat.",
           } },
         ---------------------------------------------------------------------
-        -- Stonetalon, second trip: Sun Rock, Piznik, Ziz, Talondeep Path (20-21)
+        -- Stonetalon, second trip: Sun Rock, Piznik, Ziz, Talondeep Path (21)
         ---------------------------------------------------------------------
         { turnin = 6401, accept = 6301, npc = 11864, at = { 1442, 47.46, 58.38 },
           note = {
@@ -558,8 +559,9 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               ru = "Только если сопровождали Muglash: Warsong Runner в Зорамгаре.",
               en = "Only if you escorted Muglash: the Warsong Runner in Zoram'gar.",
           } },
-        -- The level 22 gate is merged into the last turn-in for the same anchor reason as sd05-level-20 (a standalone
-        -- level step would forward the Ashenvale hints and the Zoram'gar flight point on an early ding).
+        -- The level 22 gate is merged into the last turn-in, next to the naga grind. The validator reaches ~22.1 here
+        -- with every optional step done; with none of them (Vorsha, Piznik, the random 883 / 884 / 821 drops,
+        -- 93165, 97326, 1061) it needs ~9.5k XP of grind (~63 kills) at this step.
         { id = "sd05-level-22", turnin = 6442, level = 22, npc = 12719, at = { 1440, 11.69, 34.91 },
           note = {
               ru = "Цель маршрута - 22-й уровень (и обучение 22-го уровня). Не хватает - добивайте наг на "

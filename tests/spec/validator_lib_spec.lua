@@ -130,6 +130,42 @@ describe("fbdb", function()
             assert.is_nil(DB.Nearest(n.spawns, 1458, 50, 50))
         end)
 
+        it("keeps non-slay objective icons (talk / interact / event)", function()
+            local ic = db.enums.iconTypes
+            assert.are.equal(5, ic.ICON_TYPE_TALK)
+            assert.are.equal(3, ic.ICON_TYPE_EVENT)
+            assert.are.equal(17, ic.ICON_TYPE_INTERACT)
+            local talk = db.quests[92514].objectives.creatures
+            assert.are.equal(251902, talk[1][1])
+            assert.is_nil(talk[1][2])
+            assert.are.equal(ic.ICON_TYPE_TALK, talk[1].icon)
+            local heal = db.quests[90902].objectives.creatures[1]
+            assert.are.same({ 259377, 5 }, { heal[1], heal[2] })
+            assert.are.equal(ic.ICON_TYPE_INTERACT, heal.icon)
+            assert.are.equal(ic.ICON_TYPE_EVENT, db.quests[98389].objectives.killCredit[1].icon)
+            assert.is_nil(db.quests[364].objectives.creatures[1].icon) -- slay: no icon stored
+            assert.is_true(db.quests[870].objectives.event)              -- exploration
+            assert.is_true(DB.IsQuestNpc(db, 1569))
+            assert.is_false(DB.IsQuestNpc(db, 1501))
+        end)
+
+        it("includes transport NPCs (zeppelins, boats, skycutter, landings)", function()
+            local function t(id) return db.npcs[id] and db.npcs[id].transport end
+            assert.are.equal("zeppelin", t(9566))   -- Zapetta, Tirisfal tower (UC <-> Orgrimmar)
+            assert.are.equal("zeppelin", t(9564))   -- Frezza, Durotar tower
+            assert.are.same({ { 60.74, 58.87 } }, db.npcs[9566].spawns[1420])
+            assert.are.same({ { 50.82, 13.54 } }, db.npcs[9564].spawns[1411])
+            assert.are.equal("zeppelin", t(3150))   -- Hin Denburg (UC <-> Grom'gol)
+            assert.are.equal("zeppelin", t(3149))   -- Nez'raz, Grom'gol (outside the scope areas)
+            assert.are.equal("boat", t(9558))       -- Grimble, Ratchet
+            assert.are.equal("skycutter", t(275270)) -- Windshapers Dockmaster, Valanaar
+            assert.is_not_nil(db.npcs[275270].spawns[2521])
+            assert.are.equal("landing", t(264287))  -- Galestrider Handler, Skywatcher Plateau (Mulgore)
+            assert.are.equal("landing", t(259119))  -- Alaana Stormwalker (also a quest giver)
+            assert.is_nil(t(1569))
+            assert.is_nil(db.npcIndex[9566])
+        end)
+
         it("indexes quests and NPCs outside the scope", function()
             local b = DB.QuestBrief(db, 1097) -- Elmore's Task (Stormwind)
             assert.is_not_nil(b)

@@ -80,9 +80,9 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
           note = { ru = "Шари Стилвелл — тренер паладинов. Поговорите с ней и сдайте задание.",
                    en = "Shari Stilwell, the paladin trainer: talk to her and turn in." } },
         { id = "ud02-train-6", train = true, npc = 246152, at = { 1420, 60.22, 52.66 },
-          spells = { { ru = "Удар воина Света", en = "Holy Strike" },
+          spells = { { ru = "Священный удар", en = "Holy Strike" },
                      { ru = "Свет небес (ранг 2)", en = "Holy Light (Rank 2)" } },
-          note = { ru = "Нужен 6-й уровень. Удар воина Света — главная кнопка: жмите по откату вместе "
+          note = { ru = "Нужен 6-й уровень. Священный удар — главная кнопка: жмите по откату вместе "
                        .. "с Правосудием.",
                    en = "Needs level 6. Holy Strike is your key button: use it on cooldown together "
                        .. "with Judgement." } },
@@ -264,13 +264,13 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
         { id = "ud02-91282", accept = 91282, npc = 246152, at = { 1420, 60.22, 52.66 },
           note = { ru = "Шари Стилвелл: задание паладина в крепость Бандарион.",
                    en = "Shari Stilwell: the paladin quest to Bandarion Keep." } },
-        -- level 10: the training and the 96895 chain (reqLevel 10) need it; realistic simulation ~10.4 here.
+        -- level 10: the training and the 96895 chain (reqLevel 10) need it; validator: ~10.3 here.
         { id = "ud02-train-10", train = true, level = 10, npc = 246152, at = { 1420, 60.22, 52.66 },
           spells = { { ru = "Печать праведности (ранг 2)", en = "Seal of Righteousness (Rank 2)" },
                      { ru = "Аура благочестия (ранг 2)", en = "Devotion Aura (Rank 2)" },
                      { ru = "Возложение рук", en = "Lay on Hands" } },
           note = { ru = "Нужен 10-й уровень (не хватает — добейте мобов у Брилла). Выучите и Молот правосудия, "
-                       .. "если пропустили. Таланты: первое очко — в Возмездие.",
+                       .. "если пропустили. Таланты: первое очко — в Воздаяние.",
                    en = "Needs level 10 (if short, kill a few mobs near Brill). Also train Hammer of Justice if "
                        .. "you missed it. Talents: first point in Retribution." } },
         { accept = 96895, npc = 1738, at = { 1420, 61.50, 53.50 },
@@ -344,10 +344,12 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
           note = { ru = "Лагерь мурлоков на берегу озера сразу к востоку от крепости: 8 налётчиков и 8 провидцев.",
                    en = "Murloc camp on the lake shore just east of the keep: 8 Vile Fin Attackers and 8 Seers." } },
         { id = "ud02-smasher", turnin = 91285, accept = 91294, npc = 246349, at = { 1420, 21.85, 45.23 }, -- WARN-OK: xp-unknown
-          note = { ru = "Награда: Дробитель из плавника (двуручная булава) — главное оружие до 20+.",
-                   en = "Reward: Driftwood Smasher (two-handed mace) - your weapon well into the 20s." } },
+          note = { ru = "Награда: Плавниковый крушитель (двуручная булава; не Головолом) — главное оружие до "
+                       .. "Молота Каменного леса (855, ~19 ур.).",
+                   en = "Reward: Driftwood Smasher (two-handed mace; not Skullthumper) - your main weapon until "
+                       .. "the Stonewood Hammer from 855 (~level 19)." } },
         { id = "ud02-91294", complete = { [91294] = { 1 } }, accept = 99152, npc = 246389, at = { 1420, 21.96, 47.25 },
-          note = { ru = "Хильда Крушительница у южной стены крепости: поговорите с ней и возьмите задание.",
+          note = { ru = "Хильда Сокрушительница у южной стены крепости: поговорите с ней и возьмите задание.",
                    en = "Hilda the Breaker by the south wall of the keep: talk to her and take her quest." } },
         { complete = { [91294] = { 3 } }, npc = 246394, at = { 1420, 25.41, 50.41 },
           note = { ru = "Андер Соллиден патрулирует дорогу к юго-востоку от крепости.",
@@ -392,10 +394,10 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
         { id = "ud02-95803", turnin = 91317, accept = 95803, npc = 246378, at = { 1420, 22.09, 44.66 }, -- WARN-OK: xp-unknown
           note = { ru = "Данита: голову Рудольфа нужно отнести леди Сильване в Подгород.",
                    en = "Danitha: Rudolph's head goes to Lady Sylvanas in the Undercity." } },
-        -- 94427 needs level 12 (realistic simulation: ~12.6 here); only its first two steps are on the path.
-        -- A lone level step is an engine anchor: reaching 12 earlier only forwards the two go steps to the keep
-        -- (their straight line is the same path). Merging it into the accept makes the simulator mock refuse
-        -- the quest (it applies `level` after the dialogs), so the gate stays separate.
+        -- 94427 needs level 12 (validator: ~12.6 here); only its first two steps are on the path. A lone
+        -- level step never anchors (Core/Engine.lua), so reaching 12 early forwards nothing. Merging it into
+        -- the accept makes the simulator mock refuse the quest (it applies `level` after the dialogs), so the
+        -- gate stays separate.
         { id = "ud02-xp-12", level = 12, optional = true, at = { 1420, 22.09, 44.66 },
           note = { ru = "12-й уровень для «Урока божественности». Не хватает — пропустите два шага.",
                    en = "Level 12 for A Lesson in Divinity. Not there yet: skip these two steps." } },
@@ -410,7 +412,7 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
           note = { ru = "Камень возвращения в Брилл.", en = "Hearth to Brill." } },
         { turnin = 95314, npc = 2132, at = { 1420, 59.43, 52.19 } }, -- WARN-OK: xp-unknown, Forever-new
         { id = "ud02-train-12", train = true, npc = 246152, at = { 1420, 60.22, 52.66 },
-          spells = { { ru = "Удар воина Света (ранг 2)", en = "Holy Strike (Rank 2)" },
+          spells = { { ru = "Священный удар (ранг 2)", en = "Holy Strike (Rank 2)" },
                      { ru = "Благословение могущества (ранг 2)", en = "Blessing of Might (Rank 2)" } },
           note = { ru = "Нужен 12-й уровень. Не хватает — выучите эти ранги у Гарена Ларго в Подгороде вместе "
                        .. "с 14-м (конец Серебряного бора).",

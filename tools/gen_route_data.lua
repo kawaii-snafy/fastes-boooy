@@ -12,11 +12,17 @@
 --       quests = { [id] = "enUS name", ... },
 --       npcs = { [id] = "enUS name", ... },
 --       objects = {...}, items = {...},   -- only when referenced
+--       places = { ["Brill"] = { area = 159, en = "Brill", ru = "Брилл" }, ... },
 --   })
 --
--- Names come from tools/data/forever_db.lua (enUS). The output is deterministic
--- (sorted ids). --check exits 1 if a Data.lua would change (CI), --stdout prints
--- instead of writing.
+-- Names come from tools/data/forever_db.lua (enUS). `places` covers the place names of
+-- the fp / fly / sethearth / hearth actions: `area` = the AreaTable id of that enUS
+-- name in the DB snapshot (areaNames) -- the addon asks the client for the localized
+-- name (C_Map.GetAreaInfo), which also matches GetBindLocation() in any locale -- and
+-- `ru` from PLACE_NAMES_RU below (fallback when the client has no name). A place with
+-- neither is left out (shown in enUS) and reported on stderr. The output is
+-- deterministic (sorted ids / names). --check exits 1 if a Data.lua would change (CI),
+-- --stdout prints instead of writing.
 
 local here = (arg and arg[0] or ""):match("^(.*)[/\\][^/\\]*$") or "."
 package.path = here .. "/?.lua;" .. package.path
@@ -26,6 +32,27 @@ local DB = require("lib.fbdb")
 local Loader = require("lib.route_loader")
 
 local M = {}
+
+-- ruRU names of the places used by the routes (official client names; verified against
+-- Wowhead ruRU quest titles / texts where marked). Add a place here when a route starts
+-- using it; Forever-new places whose ruRU name is unknown stay out (the client's
+-- C_Map.GetAreaInfo name is used in game anyway).
+M.PLACE_NAMES_RU = {
+    ["Brill"] = "Брилл",
+    ["Camp Taurajo"] = "Лагерь Таурахо",
+    ["Orgrimmar"] = "Оргриммар",                 -- quest 2380 "В Оргриммар!"
+    ["Ratchet"] = "Кабестан",                    -- quest 2382 "Реникс из Кабестана"
+    ["Sun Rock Retreat"] = "Приют Солнечного Камня",
+    ["The Crossroads"] = "Перекресток",          -- quest 854 "Путешествие в Перекресток"
+    ["The Sepulcher"] = "Гробница",
+    ["Thunder Bluff"] = "Громовой Утес",         -- quest 775 "Путешествие в Громовой Утес"
+    ["Undercity"] = "Подгород",                  -- quest 441 "Роли, который живет в Подгороде"
+    ["Valanaar"] = "Валанаар",                   -- quest 92579 "В Валанаар" (Forever)
+    ["Zoram'gar Outpost"] = "Застава Зорам'гар",
+}
+
+-- action types whose `place` names a location
+M.PLACE_ACTIONS = { fp = true, fly = true, sethearth = true, hearth = true }
 
 local function sortedIds(set)
     local out = {}
@@ -40,11 +67,12 @@ end
 
 --- Collect referenced ids of a normalized route.
 function M.CollectIds(route)
-    local ids = { quests = {}, npcs = {}, objects = {}, items = {} }
+    local ids = { quests = {}, npcs = {}, objects = {}, items = {}, places = {} }
     for _, step in ipairs(route.steps) do
         for _, a in ipairs(step.actions) do
             if a.quest then ids.quests[a.quest] = true end
             if a.item then ids.items[a.item] = true end
+            if M.PLACE_ACTIONS[a.type] and type(a.place) == "string" then ids.places[a.place] = true end
         end
         for _, n in ipairs(step.npc or {}) do ids.npcs[n] = true end
         for _, o in ipairs(step.object or {}) do ids.objects[o] = true end
@@ -56,8 +84,35 @@ function M.CollectIds(route)
     return ids
 end
 
+--- AreaTable id per enUS area name of the DB snapshot (the smallest id when a name repeats).
+function M.AreaIds(db)
+    local out = {}
+    for id, name in pairs(db.areaNames or {}) do
+        if type(name) == "string" and (out[name] == nil or id < out[name]) then out[name] = id end
+    end
+    return out
+end
+
+--- `places` entries of a route: { { name, area, ru }, ... } sorted by name, plus the names
+-- that have neither an area id nor a ruRU name.
+function M.Places(ids, areaIds)
+    local list, unknown = {}, {}
+    local names = {}
+    for name in pairs(ids.places or {}) do names[#names + 1] = name end
+    table.sort(names)
+    for _, name in ipairs(names) do
+        local area, ru = areaIds[name], M.PLACE_NAMES_RU[name]
+        if area or ru then
+            list[#list + 1] = { name = name, area = area, ru = ru }
+        else
+            unknown[#unknown + 1] = name
+        end
+    end
+    return list, unknown
+end
+
 --- Render the Data.lua text for the routes of a loaded module.
--- @return text, missing (array of "kind id" not found in the DB)
+-- @return text, missing (array of "kind id" not found in the DB), notes (array of strings)
 function M.Render(mod, db)
     local meta = db.meta or {}
     local out = {
@@ -67,7 +122,8 @@ function M.Render(mod, db)
         "-- Regenerate: make routedata",
         "",
     }
-    local missing = {}
+    local missing, notes = {}, {}
+    local areaIds = M.AreaIds(db)
     local lookups = {
         { "quests", function(id) local b = DB.QuestBrief(db, id) return b and b.name end },
         { "npcs", function(id) local b = DB.NpcBrief(db, id) return b and b.name end },
@@ -102,10 +158,26 @@ function M.Render(mod, db)
                 end
             end
         end
+        local places, unknown = M.Places(ids, areaIds)
+        if #places > 0 then
+            out[#out + 1] = "    places = {"
+            for _, p in ipairs(places) do
+                local parts = {}
+                if p.area then parts[#parts + 1] = string.format("area = %d", p.area) end
+                parts[#parts + 1] = "en = " .. luaString(p.name)
+                if p.ru then parts[#parts + 1] = "ru = " .. luaString(p.ru) end
+                out[#out + 1] = string.format("        [%s] = { %s },", luaString(p.name), table.concat(parts, ", "))
+            end
+            out[#out + 1] = "    },"
+        end
+        for _, name in ipairs(unknown) do
+            notes[#notes + 1] = string.format("route %s: place %q has no area id in the DB snapshot and no "
+                .. "ruRU name in PLACE_NAMES_RU (shown in enUS)", route.id, name)
+        end
         out[#out + 1] = "})"
         out[#out + 1] = ""
     end
-    return table.concat(out, "\n"), missing
+    return table.concat(out, "\n"), missing, notes
 end
 
 --- Data.lua path of a module: the TOC entry named Data.lua (default <dir>/Data.lua).
@@ -171,9 +243,12 @@ function M.Main(argv)
             io.stderr:write("gen_route_data: " .. mod.name .. ": no routes registered\n")
             status = 1
         else
-            local text, missing = M.Render(mod, db)
+            local text, missing, notes = M.Render(mod, db)
             for _, m in ipairs(missing) do
                 io.stderr:write(string.format("gen_route_data: %s: %s not found in the DB snapshot\n", mod.name, m))
+            end
+            for _, n in ipairs(notes) do
+                io.stderr:write(string.format("gen_route_data: %s: note: %s\n", mod.name, n))
             end
             local path, rel = M.DataPath(mod)
             if opts.stdout then

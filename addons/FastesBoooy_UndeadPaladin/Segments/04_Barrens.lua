@@ -15,25 +15,34 @@
 --             (Helbrim), 869 (Gazrog), flight path, hearth.
 --   east 1  : 871 camp (54.8,26), plainstrider beaks 844, raptor heads 869 (all segment).
 --   XR2     : 844 > 845, 871 > 872.
---   east 2  : 872 + 5041 + Kreenig (58.5,25.5), zhevra 845 on the way to Ratchet.
+--   east 2  : Chen's Empty Keg spot (55.7,27.3, optional), 872 + 5041 + Kreenig (58.5,25.5), zhevra 845 on
+--             the way to Ratchet.
 --   RA1     : 97253, 887, 895 (poster), 894, flight path, 1492 > 896.
 --   pirates : 97253 parts, 887 Southsea, 895 Baron Longshore. RA2: 887/895 > 890 > 892 > 888, 97253.
 --   XR3     : fly; 872/5041, 845 > 903.  west: Regthar 850/855, Barak 850, Forgotten Pools 870 +
 --             848 spores, prowlers 903; Regthar 850 > 851.  XR3b: 870 > 877, 903 > 881.
 --   north   : Echeyakee 881, Boulder Lode Mine 896, Sludge Fen 858 > 863 escort, Samophlange
 --             894 > 900 > 901 > 902, Vrang 95494/95507 > 95495 > Walton 95621 > 95508, harpies 867.
---   XR4     : hearth; 881 > 905, 867 (875 not taken), 869 > 3281, 4921 + 95774 (Mankrik).
---   RA3     : fly; 902 + 863, 896, 865 (Mebok), 819 if the keg was found.
+--   XR4     : hearth; 881 > 905, 867 (875 not taken), 869 > 3281, 4921 + 95774 + 899 (Mankrik).
+--   RA3     : fly; 902 + 863, 896, 865 (Mebok), 819 > 821 if the keg was found.
 --   south   : 888 crates, 3281 silver, Stagnant Oasis 877 + 848 + Verog 851, nests 905 (+865 horns),
 --             Beaten Corpse 4921, Razormane Raiders 95774, Camp Taurajo flight path + hearth.
 --   XR5     : fly; 4921 + 95774, 877 > 880, 905 > 3261, 3281, 848 > 853 (timed, accepted last).
--- Skipped: 899 (60 tusks), 97003 Chol'aruk (elite, group), 4021 (elite), 1061 (breadcrumb, Orgrimmar
---   Valley of Wisdom), 821 (needs a Thunder Lizard Horn from the far south, turned in at Ratchet),
---   3921 > 3922 (Wenikee, back north), 1069 / 1483 (Stonetalon), 883 Lakota'mani (22), Orgrimmar
---   Forever-new deliveries 97246/97249/97326/97242 (unknown XP, off the path), dungeon quests.
+-- Skipped: 97003 Chol'aruk (elite, group), 4021 (elite), 1061 (breadcrumb, Orgrimmar Valley of Wisdom),
+--   822 (third keg quest, level 24), 3921 > 3922 (Wenikee, back north), 1069 / 1483 (Stonetalon),
+--   883 Lakota'mani (22), Orgrimmar Forever-new deliveries 97246/97249/97326/97242 (unknown XP, off the
+--   path), dungeon quests.
+-- Chen's Empty Keg (object 3238, 9 spawn points in the DB; item 4926 starts 819): checked on the leg to
+--   the 872 camp (55.7,27.3) and mentioned in the notes where the route passes the other spots
+--   (Echeyakee 55.8,20.0; Sludge Fen 57.2,9.0; Vrang 43.8,12.2; Stagnant Oasis 56.5,43.7). 819 is
+--   turned in and 821 taken at RA3 (one place only: a second 819 step would be a duplicate accept);
+--   821's items are all on the next segment's path (lion tusks from the Savannah Matriarchs at
+--   Ishamuhale, plainstrider kidneys there, the Thunder Lizard Horn from the Camp Taurajo Stormsnouts)
+--   and it is turned in at the second Ratchet visit of ud-05.
 -- Carried into the next segment: 851 Verog (if he did not spawn), 855 Centaur Bracers, 865 Raptor Horns
 --   (Mebok, Ratchet), 888 Stolen Booty (Gazlowe, Ratchet), 880 Altered Beings, 3261 Jorn Skyseer
---   (Camp Taurajo), 853 Apothecary Zamah (Thunder Bluff, TIMED 45 min).
+--   (Camp Taurajo), 853 Apothecary Zamah (Thunder Bluff, TIMED 45 min), 899 Consumed by Hatred (tusks
+--   with 878 at Camp Taurajo; Mankrik), 821 Chen's Empty Keg (if the keg was found; Drohn, Ratchet).
 -- 875 Harpy Lieutenants (867 follow-up) is not taken: with 876 Serena it needs two extra Crossroads trips.
 -- Hearthstone: bound to The Crossroads on the first visit, used once from the harpies back to the
 --   Crossroads, re-bound to Camp Taurajo at the end for the next segment.
@@ -131,14 +140,18 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
         { complete = 845, bg = true, at = { 1413, 59.5, 21.0 },
           note = { ru = "Попутно: 4 копыта зебр (бегуны-зебры повсюду к востоку).",
                    en = "Along the way: 4 Zhevra Hooves (Zhevra Runners all over the east)." } },
+        { id = "ud04-keg", collect = { [4926] = 1 }, object = 3238, optional = true, at = { 1413, 55.70, 27.30 },
+          note = { ru = "По пути на северо-восток: здесь может лежать Пустой бочонок Чэня (задание пивовару Дрону в "
+                       .. "Кабестане, 1050 + 1350 опыта). Есть — подберите. Нет — «Пропуск»: бочонок бывает и в "
+                       .. "других местах маршрута (подсказки в заметках).",
+                   en = "On the way north-east: Chen's Empty Keg may lie here (a quest for Brewmaster Drohn in "
+                       .. "Ratchet, 1050 + 1350 XP). There: loot it. Not there: press Skip, the keg can also lie "
+                       .. "at other spots on the route (see the notes)." } },
         { complete = { 872, 5041 }, at = { 1413, 58.6, 25.4 },
           note = { ru = "Дальний лагерь Иглогривых: 8 геомантов, 8 защитников, Кринег Злобное Рыло (15) на юге "
-                       .. "лагеря (58.5, 27.0) — его клык. Ящики снабжения Перекрёстка — по краям лагеря. "
-                       .. "Увидите на земле Пустой бочонок Чена — подберите (задание пивовару в Кабестане).",
+                       .. "лагеря (58.5, 27.0) — его клык. Ящики снабжения Перекрёстка — по краям лагеря.",
                    en = "The far Razormane camp: 8 Geomancers, 8 Defenders, Kreenig Snarlsnout (15) on the south "
-                       .. "side (58.5, 27.0) for his tusk. The Crossroads' Supply Crates are around the camp. If "
-                       .. "you see Chen's Empty Keg on the ground, loot it (a quest for the brewmaster in "
-                       .. "Ratchet)." } },
+                       .. "side (58.5, 27.0) for his tusk. The Crossroads' Supply Crates are around the camp." } },
         { complete = 845, at = { 1413, 60.5, 21.5 },
           note = { ru = "Не хватает копыт — зебры сразу к северо-востоку от лагеря. Потом на юго-восток в Кабестан.",
                    en = "Missing hooves? Zhevra right north-east of the camp. Then south-east to Ratchet." } },
@@ -202,7 +215,7 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
         ------------------------------------------------------------------
         { accept = { 850, 855 }, npc = 3389, at = { 1413, 45.34, 28.41 }, -- 855 is carried: Regthar, ud-05
           note = { ru = "Регтар Врата Смерти в форте на западе. 855 (15 наручей) — попутно до конца сегмента; "
-                       .. "награда — Каменный молот (двуручная булава).",
+                       .. "награда — Молот Каменного леса (двуручная булава).",
                    en = "Regthar Deathgate at the fort to the west. 855 (15 bracers) runs along the way to the "
                        .. "end of the segment; reward: Stonewood Hammer (2H mace)." } },
         { complete = 903, bg = true, at = { 1413, 42.5, 26.0 },
@@ -237,9 +250,10 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
         -- North-east: Echeyakee, Boulder Lode Mine, the Sludge Fen (level 16-17)
         ------------------------------------------------------------------
         { complete = 881, use = 10327, npc = 3475, at = { 1413, 55.86, 17.19 },
-          note = { ru = "Протрубите в Рог Эчеяки на этом месте: появится белый лев Эчеяки (16), заберите шкуру.",
+          note = { ru = "Протрубите в Рог Эчеяки на этом месте: появится белый лев Эчеяки (16), заберите шкуру. "
+                       .. "Нет ещё бочонка Чэня — гляньте к югу (55.8, 20.0).",
                    en = "Blow the Horn of Echeyakee at this spot: the white lion Echeyakee (16) appears; loot "
-                       .. "his hide." } },
+                       .. "his hide. No Chen's Empty Keg yet: look just south (55.8, 20.0)." } },
         { complete = 896, optional = true, at = { 1413, 60.8, 4.0 },
           note = { ru = "Рудник Валунов: громилы и надсмотрщики Торговой компании до изумруда «Кошачий глаз» "
                        .. "(редкая добыча). Босса Копперплага (19) обходите. Нет камня после ~20 убийств — "
@@ -248,9 +262,10 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
                        .. "(rare drop). Avoid Boss Copperplug (19). No emerald after ~20 kills: move on, the step "
                        .. "is skipped by itself." } },
         { accept = 858, npc = 3439, at = { 1413, 56.52, 7.45 },
-          note = { ru = "Илистая топь: крошшер Виззлкранка у вышки. Осторожно: Бригадир Гриллс (19, редкий).",
+          note = { ru = "Илистая топь: крошшер Виззлкранка у вышки. Осторожно: Бригадир Гриллс (19, редкий). "
+                       .. "Бочонок Чэня бывает к юго-востоку (57.2, 9.0).",
                    en = "The Sludge Fen: Wizzlecrank's Shredder by the derrick. Beware Foreman Grills (19, "
-                       .. "rare)." } },
+                       .. "rare). Chen's Empty Keg can lie to the south-east (57.2, 9.0)." } },
         { complete = 858, npc = 3445, at = { 1413, 56.27, 8.58 },
           note = { ru = "Надсмотрщик Лагвиззл (18) ходит по платформе — заберите ключ зажигания.",
                    en = "Supervisor Lugwizzle (18) patrols the platform: loot the Ignition Key." } },
@@ -280,8 +295,10 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
         -- North-west: Vrang Wildgore and Walton (level 17)
         ------------------------------------------------------------------
         { accept = { 95494, 95507 }, npc = 3682, at = { 1413, 43.80, 12.21 },
-          note = { ru = "Вранг Дикий Клык (торговец оружием) на холме: продайте хлам, почините снаряжение.",
-                   en = "Vrang Wildgore (weaponsmith) on the hill: sell junk and repair." } },
+          note = { ru = "Вранг Дикозлоб (торговец оружием) на холме: продайте хлам, почините снаряжение. Бочонок "
+                       .. "Чэня бывает прямо здесь.",
+                   en = "Vrang Wildgore (weaponsmith) on the hill: sell junk and repair. Chen's Empty Keg can lie "
+                       .. "right here." } },
         { complete = { 95494, 95507 }, at = { 1413, 44.6, 14.6 },
           note = { ru = "К югу: 6 шкур с саванных патриархов и 8 добычи из сработавших капканов на земле. "
                        .. "Серпокоготные ящеры (16-18) бьют по нескольку раз подряд.",
@@ -303,7 +320,7 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
           note = { ru = "Сценка около минуты: встаньте за домом и ждите, Уолтон справится сам.",
                    en = "About a one-minute scene: stand behind the house and wait, Walton handles it." } },
         { turnin = 95508, npc = 261366, at = { 1413, 42.02, 11.45 }, -- WARN-OK: xp-unknown, Forever-new
-          note = { ru = "Награда: Великий меч Дикого Клыка, если умеете двуручные мечи, иначе продайте.",
+          note = { ru = "Награда: Большой меч Дикозлоба, если умеете двуручные мечи, иначе продайте.",
                    en = "Reward: Wildgore Greatsword if you can use two-handed swords, otherwise sell it." } },
 
         ------------------------------------------------------------------
@@ -329,8 +346,13 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
                    en = "Darsok. Skip the Harpy Lieutenants follow-up: the harpies and Serena need two extra "
                        .. "Crossroads round trips." } },
         { turnin = 881, accept = 905, npc = 3338, at = { 1413, 52.23, 31.01 } },
-        { accept = { 4921, 95774 }, npc = 3432, at = { 1413, 51.95, 31.58 },
-          note = { ru = "Манкрик. 899 (60 клыков) не берите.", en = "Mankrik. Skip 899 (60 tusks)." } },
+        { accept = { 4921, 95774, 899 }, npc = 3432, at = { 1413, 51.95, 31.58 }, -- 899 is carried: tusks with 878, ud-05
+          note = { ru = "Манкрик: возьмите все три. 899 (60 клыков дыбогривых свинобразов) — с любых Дыбогривов; "
+                       .. "основной сбор — в следующем сегменте вместе с 878 у Лагеря Таурахо. Клыки начинайте "
+                       .. "собирать уже сейчас.",
+                   en = "Mankrik: take all three. 899 (60 Bristleback Quilboar Tusks) drops from any Bristleback; "
+                       .. "most are collected next segment together with 878 near Camp Taurajo. Start looting "
+                       .. "tusks right away." } },
         { id = "ud04-fly-ratchet", fly = "Ratchet", at = { 1413, 63.08, 37.16 },
           note = { ru = "Летите в Кабестан у Деврака.", en = "Fly to Ratchet from Devrak." } },
 
@@ -347,13 +369,17 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
           note = { ru = "Мебок Миззирикс: 5 рогов серпокоготных ящеров — на юге, у гнёзд.",
                    en = "Mebok Mizzyrix: 5 horns from Sunscale Scytheclaws, in the south by the nests." } },
         { accept = 819, use = 4926, optional = true, at = { 1413, 62.26, 38.39 },
-          note = { ru = "Нашли Пустой бочонок Чена? Начните задание из бочонка. Нет бочонка — «Пропуск» на "
+          note = { ru = "Нашли Пустой бочонок Чэня? Начните задание из бочонка. Нет бочонка — «Пропуск» на "
                        .. "этом и следующем шаге.",
                    en = "Found Chen's Empty Keg? Start the quest from the keg. No keg: press Skip on this and "
                        .. "the next step." } },
-        { turnin = 819, npc = 3292, optional = true, at = { 1413, 62.26, 38.39 },
-          note = { ru = "Пивовар Дрон. Следующее задание (рог громового ящера с юга) не берите.",
-                   en = "Brewmaster Drohn. Skip the follow-up (a thunder lizard horn from the far south)." } },
+        { turnin = 819, accept = 821, npc = 3292, optional = true, at = { 1413, 62.26, 38.39 }, -- 821 is carried: Drohn, ud-05
+          note = { ru = "Пивовар Дрон: сдайте и возьмите 821 — 5 клыков равнинного льва, 5 почек долгонога и рог "
+                       .. "рокочущей ящерицы. Всё это по пути в следующем сегменте (Ишамухале, Лагерь Таурахо), "
+                       .. "сдача здесь же после обучения 20.",
+                   en = "Brewmaster Drohn: turn in and take 821 - 5 Savannah Lion Tusks, 5 Plainstrider Kidneys "
+                       .. "and a Thunder Lizard Horn. All of it is on the next segment's path (Ishamuhale, Camp "
+                       .. "Taurajo); turned in here after the level-20 training." } },
 
         ------------------------------------------------------------------
         -- South: pirate crates, Stolen Silver, Stagnant Oasis, nests (level 17-18)
@@ -379,9 +405,11 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
                        .. "Stagnant Oasis. Not there: do not wait, the quest carries over to the next segment." } },
         { complete = { 877, 848 }, object = 3737, at = { 1413, 55.61, 42.75 },
           note = { ru = "Застойный оазис: нырните к бурлящей расщелине (сухие семена). Доберите споры с грибов "
-                       .. "вокруг оазиса. Колкары — для наручей.",
+                       .. "вокруг оазиса. Колкары — для наручей. Бочонок Чэня бывает к востоку (56.5, 43.7) — "
+                       .. "его возьмёт Дрон в начале следующего сегмента.",
                    en = "The Stagnant Oasis: dive to the Bubbling Fissure (Dried Seeds). Finish the spores from "
-                       .. "the mushrooms around the oasis. Kolkar for the bracers." } },
+                       .. "the mushrooms around the oasis. Kolkar for the bracers. Chen's Empty Keg can lie to the "
+                       .. "east (56.5, 43.7): Drohn takes it early next segment." } },
         { complete = 905, object = { 6907, 6908, 6906 }, at = { 1413, 52.36, 46.38 },
           note = { ru = "Убивайте серпокоготных ящеров ради 3 перьев и положите их в синее, жёлтое и красное "
                        .. "гнёзда.",
@@ -395,10 +423,12 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
         -- Mankrik's wife, Razormane raiders, Camp Taurajo (level 18)
         ------------------------------------------------------------------
         { complete = 95774, at = { 1413, 49.6, 51.3 },
-          note = { ru = "Налётчики Иглогривых к юго-западу: украшения Ольгры.",
-                   en = "Razormane Raiders to the south-west: Olgra's Adornments." } },
+          note = { ru = "Налётчики Иглогривых к юго-западу: украшения Ольгры. С налётчиков могут падать и клыки "
+                       .. "дыбогривых свинобразов для 899 — подбирайте.",
+                   en = "Razormane Raiders to the south-west: Olgra's Adornments. The Raiders may also drop "
+                       .. "Bristleback Quilboar Tusks for 899: loot them." } },
         { complete = 4921, npc = 10668, at = { 1413, 49.33, 50.32 },
-          note = { ru = "Избитый труп в траве: поговорите с ним. Громорылы (18-19) западнее — обходите.",
+          note = { ru = "Избитый труп в траве: поговорите с ним. Грозорылы (18-19) западнее — обходите.",
                    en = "The Beaten Corpse in the grass: talk to it. Stormsnouts (18-19) to the west: go "
                        .. "around." } },
         { id = "ud04-taurajo-fp", fp = "Camp Taurajo", npc = 10378, at = { 1413, 44.45, 59.15 },
@@ -416,7 +446,9 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
         -- Loop from the flight tower: Mankrik -> Tonga -> Sergra -> Gazrog -> Helbrim (next to the flight master),
         -- so the timed 853 is accepted last and the next segment starts with the flight to Camp Taurajo.
         { turnin = { 4921, 95774 }, npc = 3432, at = { 1413, 51.95, 31.58 }, -- WARN-OK: xp-unknown, 95774 Forever-new
-          note = { ru = "Манкрик.", en = "Mankrik." } },
+          note = { ru = "Манкрик. 899 (клыки) сдаётся в следующем сегменте, после Дыбогривов у Лагеря Таурахо.",
+                   en = "Mankrik. 899 (tusks) is turned in next segment, after the quilboars near Camp "
+                       .. "Taurajo." } },
         { turnin = 877, accept = 880, npc = 3448, at = { 1413, 52.26, 31.93 }, -- 880 is carried: Tonga, ud-05
           note = { ru = "Тонга Рунный Тотем. 880 (панцири в Застойном оазисе) — в следующем сегменте.",
                    en = "Tonga Runetotem. 880 (shells at the Stagnant Oasis) is done in the next segment." } },

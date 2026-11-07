@@ -279,6 +279,7 @@ ns.DEFAULTS = {
         frames = {
             steps = { point = "RIGHT", relativePoint = "RIGHT", x = -80, y = 120 },
             arrow = { point = "TOP", relativePoint = "TOP", x = 0, y = -140 },
+            item = { point = "RIGHT", relativePoint = "RIGHT", x = -388, y = 120 }, -- left of the steps window
         },
         xpLog = {},        -- [questID] = xp reward observed in game (max seen)
         xpLogLevel = {},   -- [questID] = player level when xpLog[questID] was recorded

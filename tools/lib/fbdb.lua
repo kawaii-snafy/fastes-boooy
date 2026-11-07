@@ -9,6 +9,8 @@
 --   DB.Npc(db, id) / DB.NpcBrief(db, id) / DB.Object(db, id)
 --   DB.Nearest(spawns, uiMap, x, y)      -- distance in map percent to the nearest spawn on uiMap
 --   DB.ExclusiveOf(db, id)               -- quests listing id in their exclusive group (reverse index)
+--   DB.IsQuestNpc(db, id)                -- the NPC starts or ends a quest of the snapshot
+--   DB.SpawnCount(npcOrObject)           -- number of spawn points (all maps)
 --   DB.QuestXp(db, baseXp, questLevel, playerLevel)
 --   DB.MobXp(db, playerLevel, mobLevel, rank)
 --   DB.AddXp(db, state, amount)          -- state = {level=, xp=}; returns levels gained
@@ -59,6 +61,18 @@ function DB.Prepare(db)
     end
     for _, t in pairs(rev) do table.sort(t) end
     db._exclusiveOf = rev
+    -- NPCs that start / end a quest (class overrides included): quest givers are never kill targets
+    local qnpc = {}
+    local function addEnds(q)
+        for _, k in ipairs({ "start", "finish" }) do
+            for _, id in ipairs(q[k] and q[k].npcs or {}) do qnpc[id] = true end
+        end
+    end
+    for _, q in pairs(db.quests) do
+        addEnds(q)
+        for _, ov in pairs(q.byClass or {}) do addEnds(ov) end
+    end
+    db._questNpcs = qnpc
     -- cumulative XP at the start of each level
     db._cum = { [1] = 0 }
     local levels = db.xp and db.xp.levels or {}
@@ -66,6 +80,19 @@ function DB.Prepare(db)
         db._cum[lvl + 1] = db._cum[lvl] + (levels[lvl] or 0)
     end
     return db
+end
+
+--- True when the NPC starts or ends any quest of the snapshot.
+function DB.IsQuestNpc(db, id)
+    DB.Prepare(db)
+    return db._questNpcs[id] == true
+end
+
+--- Number of spawn points of an NPC / object record on all maps (thinned lists count kept points).
+function DB.SpawnCount(ent)
+    local c = 0
+    for _, list in pairs(ent and ent.spawns or {}) do c = c + #list end
+    return c
 end
 
 --- Quests that list `id` as exclusive (reverse of quests[x].exclusive; sorted).

@@ -66,6 +66,29 @@ describe("engine", function()
         assert.equal("tr-363-364", H.cur(ns), "the route quest must be taken again")
     end)
 
+    it("keeps the cursor when the player skips a quest's step and then abandons the quest", function()
+        m, ns = H.boot()
+        H.playTo(m, ns, "tr-complete-364")
+        E():Skip()
+        H.settle(m)
+        assert.equal("tr-turnin-364", H.cur(ns))
+        m:AbandonQuest(364)
+        H.settle(m)
+        assert.equal("tr-turnin-364", H.cur(ns), "the given-up quest does not send the cursor back")
+        assert.is_true(E():IsDone("tr-363-364"))
+        assert.is_nil(E():GetAcceptQuests()[364], "a given-up quest is not auto-accepted again")
+        assert.same({}, E():GetBackground())
+        -- the description agrees with the evaluation
+        local lines = ns.Steps:Describe(E():GetSteps()[idx("tr-363-364")])
+        assert.equal("accept", lines[2].kind)
+        assert.is_true(lines[2].done)
+        -- Prev un-marks the skipped step: the quest is needed again, back to its accept
+        E():Prev()
+        H.settle(m)
+        assert.is_false(E():IsPinned())
+        assert.equal("tr-363-364", H.cur(ns))
+    end)
+
     it("observes transient actions only on the displayed step", function()
         m, ns = H.boot()
         -- trainer visited too early: does not count for the train step
@@ -182,10 +205,13 @@ describe("engine", function()
     end)
 
     it("fast-forwards on a cold start with EMPTY SavedVariables from the game state", function()
+        -- 380 in the log, 3902 not: "accept 3902" (abandoned by step 17) is proven only by a LATER done
+        -- accept/turnin/complete step -- the reached level of the optional level step 16 is no evidence
         m, ns = H.boot({ player = { level = 2, xp = 600 }, mock = { completedQuests = { 363, 364, 3901, 376 } },
             setup = function(mm) mm:_addToLog(380) end })
-        assert.equal("tr-complete-380", H.cur(ns))
-        for i = 1, idx("tr-complete-380") - 1 do
+        assert.equal("tr-turnin-3901-376", H.cur(ns))
+        assert.equal(idx("tr-complete-3901"), E().anchor)
+        for i = 1, idx("tr-turnin-3901-376") - 1 do
             if H.STEP_IDS[i] ~= "tr-bg-collect" then
                 assert.is_true(E():IsDone(i), "step " .. H.STEP_IDS[i])
             end
@@ -193,6 +219,13 @@ describe("engine", function()
         -- a quest-less bg goal of the CURRENT segment is not forwarded: still "along the way"
         assert.is_false(E():IsDone("tr-bg-collect"))
         assert.same({ "tr-bg-collect" }, H.ids(E():GetBackground()))
+        -- 380 completed: the complete step anchors, the accept of 3902 and the optional step are forwarded
+        m:CompleteObjectives(380)
+        H.settle(m)
+        assert.equal(idx("tr-complete-380"), E().anchor)
+        assert.equal("tr-turnin-380", H.cur(ns))
+        assert.is_true(E():IsDone("tr-turnin-3901-376"))
+        assert.is_true(E():IsDone("tr-optional"))
 
         -- in a later segment the bg goals of the segments left behind are forwarded
         m, ns = H.boot({ player = { level = 4, xp = 700 }, mock = { completedQuests = { 363, 364, 3901, 376, 380 } } })

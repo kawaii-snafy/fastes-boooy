@@ -12,6 +12,7 @@ local ADDON_DIR = "addons/FastesBoooy/"
 local OWN_GLOBALS = {
     FastesBoooy = true, FastesBoooyDB = true, FastesBoooyCharDB = true,
     SLASH_FASTESBOOOY1 = true, SLASH_FASTESBOOOY2 = true,
+    FastesBoooyItemButton = true, -- UI/ItemButton.lua (named for /click macros)
 }
 -- fields the addon may add to Blizzard tables
 local OWN_FIELDS = {
@@ -121,7 +122,7 @@ describe("static API scan of the core addon", function()
     for _, f in ipairs(files) do results[f] = scan(f) end
 
     it("compiles every file listed in the TOC (Lua 5.1)", function()
-        assert.equal(15, #files)
+        assert.equal(16, #files)
         for _, f in ipairs(files) do
             local chunk, err = loadfile(f)
             assert.is_function(chunk, err)

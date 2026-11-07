@@ -12,12 +12,18 @@
 --                     high-water mark): transient actions count as done, optional steps are done
 --   manual            true when the step is marked done ("Next") or skipped
 --   abandonedLater    { [questID] = true } quests abandoned by a LATER step of the route
+--   givenUp           { [questID] = j } quests the player gave up: j = last index of a non-bg
+--                     step with its complete/turnin that is marked or `optional` and forwarded
+--   index             index of the step in the engine's filtered list (compared with givenUp)
 --   cache             per-evaluation memo table for quest state (shared between steps)
 --   items             per-evaluation memo table for item counts
 --
 -- Non-monotonic stateful actions behind the forward limit (ctx.forwarded) stay done:
 -- `collect` (the items are normally consumed by a later turn-in) and `accept` of a
 -- quest that a later step abandons -- otherwise the cursor would jump back to them.
+-- `accept` of a quest the player gave up (a later complete/turnin step of it skipped,
+-- marked done or passed as optional; ctx.givenUp) also stays done after the player
+-- abandons it by hand: the route notes say "skip this step, then abandon Q".
 -- `complete` is not forwarded (its state is readable while the quest is in the log and
 -- turned-in quests count as complete); neither is `abandon` (a route that takes the
 -- same quest again later would make that second accept an anchor and skip the abandon).
@@ -35,9 +41,11 @@ local EMPTY = {}
 
 -- action types whose completion counts as evidence that the player progressed
 -- to a step (used for fast-forwarding transient/optional steps). `abandon` is
--- excluded (vacuously true for never-accepted quests) and so is `collect`
--- (items may be in the bags by accident).
-Steps.ANCHOR_ACTIONS = { accept = true, turnin = true, complete = true, level = true }
+-- excluded (vacuously true for never-accepted quests), so is `collect` (items may
+-- be in the bags by accident) and so is `level` (a level can be reached early --
+-- rested XP, grinding, a group -- without having done the earlier steps: a lone
+-- level step must not forward an earlier sethearth / train / fp).
+Steps.ANCHOR_ACTIONS = { accept = true, turnin = true, complete = true }
 
 -- actions completed by arriving at step.at
 Steps.ARRIVAL_ACTIONS = { go = true, fly = true, hearth = true }
@@ -117,7 +125,8 @@ end
 ---------------------------------------------------------------------------
 
 --- Is one normalized action done?
--- accept:   quest in the log or turned in (or forwarded and abandoned by a later step)
+-- accept:   quest in the log or turned in (or forwarded and abandoned by a later step,
+--           or given up: a later complete/turnin step of it is marked / forwarded optional)
 -- turnin:   quest turned in
 -- complete: quest turned in, or in the log with the listed objectives (all when
 --           none listed) finished
@@ -128,11 +137,17 @@ end
 function Steps:IsActionDone(action, step, ctx)
     local t = action.type
     if t == "accept" then
-        local s = questState(ctx, action.quest)
+        local q = action.quest
+        local s = questState(ctx, q)
         if s.on or s.turnedIn then return true end
+        if not ctx then return false end
         -- accepted, then abandoned by a later step the player already passed
-        local later = ctx and ctx.forwarded and ctx.abandonedLater
-        return (later and later[action.quest]) and true or false
+        local later = ctx.forwarded and ctx.abandonedLater
+        if later and later[q] then return true end
+        -- given up: a later complete/turnin step of the quest was skipped / marked
+        -- (or passed as optional), then the quest was abandoned by hand
+        local j = ctx.givenUp and ctx.givenUp[q]
+        return (j and ctx.index and j > ctx.index) and true or false
     elseif t == "turnin" then
         return questState(ctx, action.quest).turnedIn
     elseif t == "complete" then
@@ -197,7 +212,8 @@ function Steps:IsStatefulDone(step, ctx)
     return true
 end
 
---- Can the step anchor fast-forwarding? (non-bg, with accept/turnin/complete/level)
+--- Can the step anchor fast-forwarding? (non-bg, with accept/turnin/complete; a level
+-- action alone never anchors, a level next to an accept/turnin/complete must be done too)
 function Steps:IsAnchorStep(step)
     if step.bg then return false end
     for _, a in ipairs(step.actions or EMPTY) do
@@ -263,10 +279,14 @@ function Steps:ItemName(item)
     return L().ITEM_FALLBACK:format(item)
 end
 
---- Localized place name (fp/fly/sethearth/hearth): route data `places` -> the enUS name.
+--- Localized place name (fp/fly/sethearth/hearth): the client's area name (route data
+-- `places[place].area`) -> route data `places` text -> the enUS name.
 function Steps:PlaceName(place)
     if type(place) ~= "string" then return L().UNKNOWN_PLACE end
-    return ns.Registry:Lookup(activeRoute(), "places", place) or place
+    local route = activeRoute()
+    local n = ns.Compat.AreaName(ns.Registry:PlaceArea(route, place))
+    if n then return n end
+    return ns.Registry:Lookup(route, "places", place) or place
 end
 
 ---------------------------------------------------------------------------

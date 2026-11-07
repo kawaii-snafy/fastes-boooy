@@ -99,7 +99,8 @@ function H.reload(m, opts)
     local U = Mock.util
     local m2, ns2 = H.new({
         locale = opts.locale, savedVariables = sv, quests = false, fixture = opts.fixture,
-        player = { level = m.player.level, xp = m.player.xp, mapID = m.player.mapID, x = m.player.x, y = m.player.y },
+        player = { level = m.player.level, xp = m.player.xp, mapID = m.player.mapID, x = m.player.x, y = m.player.y,
+            inCombat = m.player.inCombat },
         setup = function(n)
             n.questDB = U.deepcopy(m.questDB)
             n.questCache = U.deepcopy(m.questCache)

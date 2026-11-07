@@ -436,6 +436,21 @@ function Compat.GetMapName(mapID)
     return nil
 end
 
+local areaNames = {} -- [areaID] = localized name (static per session)
+--- Localized AreaTable name (C_Map.GetAreaInfo), nil when unknown. The same names
+-- GetBindLocation() returns, in the client's language.
+function Compat.AreaName(areaID)
+    if type(areaID) ~= "number" then return nil end
+    local n = areaNames[areaID]
+    if n then return n end
+    n = pub(try(C_Map.GetAreaInfo, areaID))
+    if type(n) == "string" and n ~= "" then
+        areaNames[areaID] = n
+        return n
+    end
+    return nil
+end
+
 --- Is the "Map" add-on restriction active (instances)? Positions may be unavailable.
 function Compat.IsMapRestricted()
     if not (C_RestrictedActions and C_RestrictedActions.IsAddOnRestrictionActive) then return false end

@@ -350,6 +350,122 @@ describe("validator fixtures", function()
         assert.is_nil(codes(ok, "WARN")["turnin-partial"])
     end)
 
+    -- kills simulated by 'complete' steps (sum of the complete-kill-xp INFO messages)
+    local function kills(r)
+        local n = 0
+        for _, m in ipairs(messagesWith(r, "complete-kill-xp")) do n = n + tonumber(m.msg:match("~(%d+) kills")) end
+        return n
+    end
+    local SKY_DRUID = { api = 1, id = "mem-sky", title = "s", faction = "Horde", races = { "Skyborne" },
+        classes = { "DRUID" }, levels = { 1, 9 } }
+    local NO_XP_WARN = { ignore = { ["xp-unknown"] = true } }
+
+    describe("kill XP of 'complete' objectives", function()
+        it("talk objectives (friendly NPCs, innkeeper, trainer) give no kill XP", function()
+            -- repro sd01: 92514 "speak with Illaya and Coriella" was simulated as 2 x 8 kills
+            local r = memRun(SKY_DRUID, {
+                { level = 4 },
+                { accept = 92514, npc = 251523, at = { 2521, 45.67, 45.50 } },
+                { complete = 92514, npc = 251902, at = { 2521, 43.51, 44.77 } },
+                { turnin = 92514, npc = 251523, at = { 2521, 45.67, 45.50 } },
+            }, NO_XP_WARN)
+            assert.are.equal(0, r.summary.xpKill)
+            assert.are.equal(0, kills(r))
+            local m = messagesWith(r, "complete-no-kill")
+            assert.are.equal(1, #m)
+            assert.matches("251902 \"Illaya Amberwind\": talk objective", m[1].msg)
+            assert.matches("254089 \"Coriella Calmbreeze\": talk objective", m[1].msg)
+            -- repro sd02: 93159 "speak with the Strange Hermit" (friendly trainer) was 8 kills
+            local r2 = memRun(SKY_DRUID, {
+                { level = 8 },
+                { accept = 93159, complete = 93159, turnin = 93159, npc = 251684, at = { 2521, 53.96, 38.90 } },
+            }, NO_XP_WARN)
+            assert.are.equal(0, r2.summary.xpKill)
+            assert.are.equal(1, #messagesWith(r2, "complete-no-kill"))
+        end)
+
+        it("heal / free / punish objectives and killCredit events are not kills", function()
+            local r = memRun(UNDEAD_PALADIN, {
+                { accept = 90902 }, { complete = 90902 },  -- heal 5 Injured Deathguard (interact icon)
+                { accept = 98389 }, { complete = 98389 },  -- free 6 Webbed Victims (killCredit, event icon)
+                { abandon = 90902 }, { abandon = 98389 },
+            }, { ignore = { ["level-too-low"] = true, ["level-too-low-estimated"] = true } })
+            assert.are.equal(0, r.summary.xpKill)
+            local m = messagesWith(r, "complete-no-kill")
+            assert.are.equal(2, #m)
+            assert.matches("interact objective", m[1].msg)
+            assert.matches("event objective", m[2].msg)
+        end)
+
+        it("NPC faction / flags decide when the objective icon does not: friendly, service, quest giver", function()
+            -- 91208 "Find the Frightened Paladin": slay icon, but the NPC is friendly to the Horde
+            local r = memRun(UNDEAD_PALADIN, { { level = 3 }, { accept = 91208 }, { complete = 91208 },
+                { abandon = 91208 } }, NO_XP_WARN)
+            assert.are.equal(0, r.summary.xpKill)
+            assert.matches("friendly NPC %(faction 'H'%)", messagesWith(r, "complete-no-kill")[1].msg)
+            -- the same talk quests with the icons stripped: flags / quest-giver index still decide
+            local q92514, q93159 = db.quests[92514], db.quests[93159]
+            local function stripped(q)
+                local c = {}
+                for k, v in pairs(q) do c[k] = v end
+                c.objectives = { creatures = {} }
+                for i, e in ipairs(q.objectives.creatures) do c.objectives.creatures[i] = { e[1], e[2] } end
+                return c
+            end
+            local fake = setmetatable({ quests = setmetatable({ [92514] = stripped(q92514), [93159] = stripped(q93159) },
+                { __index = db.quests }) }, { __index = db })
+            local route = assert(schema.NormalizeRoute(SKY_DRUID))
+            schema.AddSegment(route, { id = "s", title = "s", steps = {
+                { level = 8 },
+                { accept = 92514 }, { complete = 92514 }, { turnin = 92514 },
+                { accept = 93159 }, { complete = 93159 }, { turnin = 93159 },
+            } })
+            local rf = V.NewRun(fake, schema, route, V.Profiles(route)[1], NO_XP_WARN):execute()
+            assert.are.equal(0, rf.summary.xpKill)
+            local text = {}
+            for _, m in ipairs(messagesWith(rf, "complete-no-kill")) do text[#text + 1] = m.msg end
+            text = table.concat(text, "\n")
+            assert.matches("251902 \"Illaya Amberwind\": quest giver", text)  -- gives 92595
+            assert.matches("254089 \"Coriella Calmbreeze\": service NPC %(innkeeper, vendor%)", text)
+            assert.matches("251684 \"Strange Hermit\": service NPC %(trainer%)", text)
+        end)
+
+        it("counted kill objectives of neutral / mis-flagged mobs still give kill XP", function()
+            -- 1501/1502 Mindless / Wretched Zombie carry faction "AH" in the DB; 5 + 5 kills (WCLBox counts)
+            local r = memRun(UNDEAD_PALADIN, {
+                { accept = 363, npc = 1568, at = { 1420, 30.2, 71.7 } },
+                { turnin = 363, accept = 364, npc = 1569, at = { 1420, 30.8, 66.2 } },
+                { complete = 364 },
+                { turnin = 364, npc = 1569, at = { 1420, 30.8, 66.2 } },
+            })
+            assert.are.equal(10, kills(r))
+            assert.is_true(r.summary.xpKill > 0)
+            assert.are.same({}, messagesWith(r, "complete-no-kill"))
+        end)
+
+        it("missing counts: 1 kill for a named / unique NPC, a small default otherwise", function()
+            -- 370: Captain Perrine (no count, single spawn) + 3 Scarlet Zealots + 3 Scarlet Missionaries
+            local r = memRun(UNDEAD_PALADIN, { { level = 4 }, { accept = 370 }, { complete = 370 },
+                { abandon = 370 } }, NO_XP_WARN)
+            assert.are.equal(7, kills(r))
+            assert.matches("objective counts partly assumed", messagesWith(r, "complete-kill-xp")[1].msg)
+            -- 92462: Pesky Cirrusfly (no count, hostile, many spawns) -> defaultKillCount
+            local r2 = memRun(SKY_DRUID, { { accept = 92462 }, { complete = 92462 }, { abandon = 92462 } },
+                NO_XP_WARN)
+            assert.are.equal(V.DEFAULTS.defaultKillCount, kills(r2))
+            local r3 = memRun(SKY_DRUID, { { accept = 92462 }, { complete = 92462 }, { abandon = 92462 } },
+                { ignore = NO_XP_WARN.ignore, defaultKillCount = 2 })
+            assert.are.equal(2, kills(r3))
+        end)
+
+        it("drop items from friendly NPCs give no kill XP", function()
+            -- 99141 "Patience": the three items come from Deathguards / Gordo (friendly, quest givers)
+            local r = memRun(UNDEAD_PALADIN, { { level = 6 }, { accept = 99141 }, { complete = 99141 },
+                { abandon = 99141 } }, NO_XP_WARN)
+            assert.are.equal(0, r.summary.xpKill)
+        end)
+    end)
+
     it("a Skyborne route without faction is validated for both sides", function()
         local _, all = memRun({ api = 1, id = "mem-nf", title = "n", races = { "Skyborne" }, classes = { "DRUID" } },
             { { accept = 363, npc = 1568, at = { 1420, 30.2, 71.7 } } })

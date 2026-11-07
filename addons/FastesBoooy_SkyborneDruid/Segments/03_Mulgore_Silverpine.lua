@@ -1,8 +1,8 @@
 -- FastesBoooy_SkyborneDruid / Segments / 03_Mulgore_Silverpine.lua
--- Segment "sd-03-mulgore-silverpine": levels 12-14.
+-- Segment "sd-03-mulgore-silverpine": levels 13-15.
 -- Skywatcher Plateau (Mulgore) -> deathskip into Thunder Bluff (94911 -> 94913) -> fly to Orgrimmar
 -- (hearth, five Forever-new city quests, Thrall 95350 -> 98024) -> zeppelin to Tirisfal (Brill: 96895
--- + 445; Argent Dawn camp 96897/96898) -> Undercity flight path -> Silverpine Forest 12-14 (Ivar Patch,
+-- + 445; Argent Dawn camp 96897/96898) -> Undercity flight path -> Silverpine Forest 14-15 (Ivar Patch,
 -- the Sepulcher: Arugal, Dead Fields, Wild Eyes, Border Crossings) -> fly to the Undercity (turn-ins,
 -- 97891, 1359 -> 1358) -> Teleport: Moonglade (94913, training at 14) -> hearth to Orgrimmar.
 -- Why this way and not straight into the Barrens: the Barrens/Stonetalon/Ashenvale quests are used by
@@ -13,23 +13,24 @@
 -- Coordinates: Forever DB snapshot (tools/data/forever_db.lua): NPC / object spawns and centroids of
 -- the objective mob / object spawns. The cliff edge, the Thunder Bluff bridge, the zeppelin towers and
 -- the Undercity sewer exit are terrain points cross-checked with the reference.
--- Skipped on purpose: 93739 (capital tour, Cairne/Sylvanas far off the path), 1061 (needs 13 in
--- Orgrimmar), 356/97558 (Tirisfal, low XP per minute), 440 (ends in Brill), 443/479 (17+),
--- 99 (Pyrewood elites), 98298/98299/95981 (Forever-new, 16-20, south Silverpine), 450 (back to
--- Silverpine), 5726 (dungeon).
+-- Skipped on purpose: 93739 (capital tour, Cairne/Sylvanas far off the path), 356/97558 (Tirisfal, low
+-- XP per minute), 440 (ends in Brill), 443/479 (17+), 99 (Pyrewood elites), 98298/98299/95981
+-- (Forever-new, 16-20, south Silverpine), 450 (back to Silverpine), 5726 (dungeon).
+-- 1061 is taken (optional, needs level 13, like the reference) from Zor Lonetree on the way out of the
+-- Valley of Wisdom and handed in at Seereth on the Stonetalon border at the end of sd-04.
 FastesBoooy.AddSegment("horde-skyborne-druid", {
     id = "sd-03-mulgore-silverpine",
     title = {
-        ru = "12-14 Громовой Утёс, Оргриммар, Серебряный бор",
-        en = "12-14 Thunder Bluff, Orgrimmar, Silverpine Forest",
+        ru = "13-15 Громовой Утёс, Оргриммар, Серебряный бор",
+        en = "13-15 Thunder Bluff, Orgrimmar, Silverpine Forest",
     },
     zone = "Silverpine Forest",
-    -- WARN-OK (levels): segment-level -- the validator starts this segment ~1.5 levels high (unknown
-    -- Forever quest XP and talk objectives simulated as kills in sd-01/sd-02); a real run is ~14.5 here.
-    levels = { 12, 14 }, -- WARN-OK: segment-level (estimate artifact, see above)
+    -- the validator runs this segment from ~12.9 to ~15.3; what is left of the uncertainty is the unknown XP of
+    -- the Forever-new quests (estimated by the validator), so the plan follows the estimate
+    levels = { 13, 15 },
     steps = {
         ---------------------------------------------------------------------
-        -- Skywatcher Plateau -> Thunder Bluff (12)
+        -- Skywatcher Plateau -> Thunder Bluff (12-13)
         ---------------------------------------------------------------------
         { id = "sd03-cliff", go = true, at = { 1412, 35.03, 24.33 }, radius = 20,
           note = {
@@ -40,10 +41,10 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
           } },
         { id = "sd03-spirit", go = true, optional = true, npc = 6491, at = { 1456, 56.69, 19.11 }, radius = 20,
           note = {
-              ru = "Отпустите дух и воскресните у Духа-целителя (слабость ~2 мин на 12 - пройдёт в "
+              ru = "Отпустите дух и воскресните у Духа-целителя (слабость ~2-3 мин на 12-13 - пройдёт в "
                   .. "полёте). Не хотите умирать - спланируйте вниз и идите к подъёмникам (дольше).",
-              en = "Release, then resurrect at the Spirit Healer (~2 min of sickness at 12 - it runs out during the "
-                  .. "flight). Rather not die - glide down and walk to the lifts (slower).",
+              en = "Release, then resurrect at the Spirit Healer (~2-3 min of sickness at 12-13 - it runs out during "
+                  .. "the flight). Rather not die - glide down and walk to the lifts (slower).",
           } },
         { go = true, at = { 1456, 55.36, 35.55 }, radius = 15,
           note = {
@@ -91,7 +92,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Fly to Orgrimmar. Not on the flight map - run there via the Crossroads (long).",
           } },
         ---------------------------------------------------------------------
-        -- Orgrimmar (12-13)
+        -- Orgrimmar (13)
         ---------------------------------------------------------------------
         { id = "sd03-sethearth", sethearth = "Orgrimmar", npc = 6929, at = { 1454, 54.10, 68.41 },
           note = {
@@ -113,8 +114,8 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
           } },
         { complete = 97242, object = { 661093, 661092 }, at = { 1454, 69.4, 30.7 },
           note = {
-              ru = "Аллея Чести: рогоз и острая трава у ручьёв (по 1).",
-              en = "Valley of Honor: one Cattail and one Speargrass along the streams.",
+              ru = "Аллея Чести: 2 пучка рогоза и 4 побега острой травы у ручьёв.",
+              en = "Valley of Honor: 2 Handfuls of Cattails and 4 Speargrass Cuttings along the streams.",
           } },
         { turnin = 97242, npc = 3348, at = { 1454, 56.05, 34.12 } }, -- WARN-OK: xp-unknown (Forever-new)
         { accept = 97275, npc = 3347, at = { 1454, 56.84, 33.03 },
@@ -142,20 +143,28 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               ru = "Thrall в Аллее Мудрости. «Путь на Перекрёсток» - на следующий сегмент.",
               en = "Thrall in the Valley of Wisdom. Journey to the Crossroads is for the next segment.",
           } },
-        { id = "sd03-zeppelin", go = true, at = { 1411, 50.80, 13.80 }, radius = 15,
+        { accept = 1061, optional = true, npc = 4047, at = { 1454, 38.93, 38.40 }, -- carried: 1061 -> sd-04 (Seereth)
+          note = {
+              ru = "Zor Lonetree по пути из Аллеи Мудрости к воротам: «Духи Когтистых гор» (сдадите у "
+                  .. "Seereth на границе в конце Степей). Нужен 13-й уровень - ещё не 13, пропустите шаг.",
+              en = "Zor Lonetree on the way out of the Valley of Wisdom: The Spirits of Stonetalon (handed in at "
+                  .. "Seereth on the Stonetalon border at the end of the Barrens). Needs level 13 - not 13 yet, skip "
+                  .. "the step.",
+          } },
+        { id = "sd03-zeppelin", go = true, npc = 9564, at = { 1411, 50.80, 13.80 }, radius = 15,
           note = {
               ru = "Из Оргриммара через главные ворота (юг), затем на восток к башне дирижаблей: "
-                  .. "площадка до Тирисфаля (Подгород).",
+                  .. "площадка до Тирисфаля (Подгород), Frezza.",
               en = "Leave Orgrimmar through the main gate (south), then east to the zeppelin tower: the platform "
-                  .. "for Tirisfal (Undercity).",
+                  .. "for Tirisfal (Undercity), Frezza.",
           } },
         ---------------------------------------------------------------------
-        -- Tirisfal Glades: Brill, the Argent Dawn camp, Undercity (12-13)
+        -- Tirisfal Glades: Brill, the Argent Dawn camp, Undercity (13-14)
         ---------------------------------------------------------------------
-        { go = true, at = { 1420, 60.74, 58.87 }, radius = 40,
+        { go = true, npc = 9566, at = { 1420, 60.74, 58.87 }, radius = 40,
           note = {
-              ru = "Дирижабль до Тирисфальских лесов.",
-              en = "Ride the zeppelin to Tirisfal Glades.",
+              ru = "Дирижабль до Тирисфальских лесов (на прибытии - Zapetta).",
+              en = "Ride the zeppelin to Tirisfal Glades (Zapetta at the arrival tower).",
           } },
         { accept = 96895, npc = 1738, at = { 1420, 61.50, 53.50 },
           note = {
@@ -210,13 +219,13 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
           } },
         { complete = 429, collect = { [730] = 3 }, at = { 1421, 59.5, 13.5 },
           note = {
-              ru = "Восточнее: 6 сердец с воргов (Mottled Worg) и 3 глаза мурлока с Vile Fin Shredder "
+              ru = "Восточнее: 3 сердца с воргов (Mottled Worg) и 3 глаза мурлока с Vile Fin Shredder "
                   .. "на берегу (60-65, 12-17). Глаза оставьте - для задания позже.",
-              en = "To the east: 6 hearts from worgs (Mottled Worgs) and 3 Murloc Eyes from Vile Fin Shredders on "
+              en = "To the east: 3 hearts from worgs (Mottled Worgs) and 3 Murloc Eyes from Vile Fin Shredders on "
                   .. "the shore (60-65, 12-17). Keep the eyes - they are for a later quest.",
           } },
         ---------------------------------------------------------------------
-        -- The Sepulcher (13)
+        -- The Sepulcher (14)
         ---------------------------------------------------------------------
         { accept = 421, npc = 1938, at = { 1421, 44.20, 39.81 },
           note = {
@@ -238,7 +247,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
           } },
         { turnin = 421, accept = 422, npc = 1938, at = { 1421, 44.20, 39.81 } },
         ---------------------------------------------------------------------
-        -- North loop: spellbooks, Quinn, Dead Field, Moss Stalkers (13-14)
+        -- North loop: spellbooks, Quinn, Dead Field, Moss Stalkers (14)
         ---------------------------------------------------------------------
         { complete = 422, object = 1571, at = { 1421, 52.83, 28.58 },
           note = {
@@ -281,6 +290,11 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               ru = "Севернее и северо-западнее Гробницы: оковы с Moonrage Glutton (6) и Darksoul (3).",
               en = "North and north-west of the Sepulcher: shackles from Moonrage Gluttons (6) and Darksouls (3).",
           } },
+        { turnin = 423, accept = 424, npc = 1938, at = { 1421, 44.20, 39.81 },
+          note = {
+              ru = "Сразу назад к Dalar в Гробницу: тогда от парома можно идти прямо к Grimson.",
+              en = "Straight back to Dalar at the Sepulcher: then you can go from the ferry straight to Grimson.",
+          } },
         { turnin = 91921, npc = 1951, at = { 1421, 53.43, 12.59 }, -- WARN-OK: xp-unknown (Forever-new)
           note = {
               ru = "На северо-восток к Quinn Yorick.",
@@ -298,23 +312,13 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               ru = "На юг вдоль озера к старому парому: лодка с трупами (Corpse Laden Boat).",
               en = "South along the lake to the Decrepit Ferry: the Corpse Laden Boat.",
           } },
-        { turnin = 423, accept = 424, npc = 1938, at = { 1421, 44.20, 39.81 },
-          note = {
-              ru = "На запад в Гробницу: Dalar.",
-              en = "West to the Sepulcher: Dalar.",
-          } },
-        { turnin = 439, npc = 1952, at = { 1421, 43.42, 40.86 },
-          note = {
-              ru = "Следующие задания Hadrec не берите.",
-              en = "Do not take Hadrec's follow-up quests.",
-          } },
         ---------------------------------------------------------------------
-        -- Grimson, Border Crossings, final turn-ins (14)
+        -- Grimson, Border Crossings, final turn-ins (15)
         ---------------------------------------------------------------------
         { complete = 424, npc = 1972, at = { 1421, 58.58, 44.86 },
           note = {
-              ru = "На восток: Grimson the Pale (15) среди Darksoul - голова.",
-              en = "East: Grimson the Pale (15) among the Darksouls - his head.",
+              ru = "От парома на юг: Grimson the Pale (15) среди Darksoul - голова.",
+              en = "South from the ferry: Grimson the Pale (15) among the Darksouls - his head.",
           } },
         { turnin = 477, accept = 478, object = 1627, at = { 1421, 49.89, 60.33 },
           note = {
@@ -332,6 +336,11 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Do not take Dalar's next quest (Pyrewood elites).",
           } },
         { turnin = 482, npc = 2121, at = { 1421, 43.98, 40.93 } },
+        { turnin = 439, npc = 1952, at = { 1421, 43.42, 40.86 },
+          note = {
+              ru = "Hadrec рядом. Следующие задания Hadrec не берите.",
+              en = "Hadrec next door. Do not take Hadrec's follow-up quests.",
+          } },
         { id = "sd03-fp-sepulcher", fp = "The Sepulcher", npc = 2226, at = { 1421, 45.62, 42.60 } },
         { id = "sd03-fly-uc", fly = "Undercity", npc = 4551, at = { 1458, 63.25, 48.56 },
           note = {
@@ -339,7 +348,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Fly to the Undercity.",
           } },
         ---------------------------------------------------------------------
-        -- Undercity (14)
+        -- Undercity (15)
         ---------------------------------------------------------------------
         { accept = 97891, npc = 7683, at = { 1458, 58.61, 54.68 },
           note = {
@@ -362,7 +371,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Sample for Helbrim is handed in at the Crossroads.",
           } },
         ---------------------------------------------------------------------
-        -- Moonglade, hearth to Orgrimmar (14)
+        -- Moonglade, hearth to Orgrimmar (15)
         ---------------------------------------------------------------------
         { id = "sd03-moonglade", turnin = 94913, npc = 11802, at = { 1450, 56.21, 30.64 }, -- WARN-OK: xp-unknown
           note = {

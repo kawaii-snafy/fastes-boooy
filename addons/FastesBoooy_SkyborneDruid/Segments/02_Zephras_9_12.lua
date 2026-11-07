@@ -1,5 +1,5 @@
 -- FastesBoooy_SkyborneDruid / Segments / 02_Zephras_9_12.lua
--- Segment "sd-02-zephras": Zephras Isle (uiMap 2521), levels 9-12, Horde (Windshaper) side.
+-- Segment "sd-02-zephras": Zephras Isle (uiMap 2521), levels 9-13, Horde (Windshaper) side.
 -- Shen'dar -> glide down to the lowlands -> Valanaar (hearth, turn in 92579 + 93948, story to the
 -- Skydocks) -> Windfield orchard (Aamelia chain) and the bandit hill -> Valanaar: training at 10 +
 -- Bear Form chain (94006 Urs'endris -> 94638 Ur'endra) with Construct Parts, Fendaal's assassins
@@ -16,16 +16,15 @@
 FastesBoooy.AddSegment("horde-skyborne-druid", {
     id = "sd-02-zephras",
     title = {
-        ru = "9-12 Остров Зефрас: Валанаар, облик медведя, Лес Теневетра",
-        en = "9-12 Zephras Isle: Valanaar, Bear Form, Shadowwind Forest",
+        ru = "9-13 Остров Зефрас: Валанаар, облик медведя, Лес Теневетра",
+        en = "9-13 Zephras Isle: Valanaar, Bear Form, Shadowwind Forest",
     },
     zone = "Zephras Isle",
-    -- WARN-OK (levels): segment-level -- the validator overestimates (unknown Forever quest XP, talk
-    -- objectives of friendly NPCs simulated as 8 kills each); the reference run leaves the island at ~12.
-    levels = { 9, 12 }, -- WARN-OK: segment-level (estimate artifact, see above)
+    -- the validator ends this segment at ~12.9 (the reference calls its part "9-13" too)
+    levels = { 9, 13 },
     steps = {
         ---------------------------------------------------------------------
-        -- Shen'dar -> Valanaar (9)
+        -- Shen'dar -> Valanaar (9-10)
         ---------------------------------------------------------------------
         { id = "sd02-start", go = true, at = { 2521, 49.40, 58.76 }, radius = 25,
           note = {
@@ -81,6 +80,13 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               ru = "Endaria Mistgaze рядом с Ayessa.",
               en = "Endaria Mistgaze next to Ayessa.",
           } },
+        { vendor = true, optional = true, npc = 271465, at = { 2521, 59.40, 75.73 },
+          note = {
+              ru = "По пути на север к Riaani: Falfaan Halfwind - Zephrali Greatstaff (8.48 DPS, ур. 9, ~22 с), "
+                  .. "если оружие слабее 8.5 DPS и хватает денег. Иначе пропустите.",
+              en = "On the way north to Riaani: Falfaan Halfwind - Zephrali Greatstaff (8.48 DPS, level 9, ~22s) if "
+                  .. "your weapon is below 8.5 DPS and you can afford it. Otherwise skip.",
+          } },
         { turnin = 93735, accept = 93737, complete = { [93737] = { 1 } }, npc = 256083, -- WARN-OK: xp-unknown
           at = { 2521, 59.06, 72.98 },
           note = {
@@ -88,7 +94,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Riaani Nightwind north of the docks: turn in, accept and talk to her.",
           } },
         ---------------------------------------------------------------------
-        -- Windfield orchard (9-10)
+        -- Windfield orchard (10-11)
         ---------------------------------------------------------------------
         { complete = 92679, turnin = 92679, accept = { 92682, 92684, 92683 }, npc = 252800, -- WARN-OK: xp-unknown
           at = { 2521, 46.70, 81.95 },
@@ -134,10 +140,9 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Bandit hill to the north-west: masks from Bandit Highwaymen (7, some are stealthed) and "
                   .. "the Construct Parts on the hill (construct core).",
           } },
-        -- The level 10 gate (reqLevel of 94006 and the level 10 training) is merged into this turn-in on purpose:
-        -- a standalone level step is a forward anchor as soon as the player dings 10 (rested XP can do that before
-        -- Valanaar) and would silently skip sd02-sethearth and the glide hints. Merged, it can only anchor after
-        -- 92685 is handed in. For the same reason there is no separate glide "go" step before it.
+        -- The level 10 gate (reqLevel of 94006 and the level 10 training) is merged into this turn-in: the step
+        -- anchors only once 92685 is handed in AND the player is 10 (the engine never anchors on a lone level
+        -- step either), and the grind hint sits where the grinding happens. The validator reaches ~11 here.
         { id = "sd02-level-10", turnin = 92685, level = 10, npc = 252800, at = { 2521, 46.70, 81.95 }, -- WARN-OK: xp-unknown
           note = {
               ru = "С юго-восточного края холма (44.1, 76.2) спланируйте «Шагом по воздуху» "
@@ -149,7 +154,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
                   .. "and training): not there yet - kill galestriders and crabs on the way east.",
           } },
         ---------------------------------------------------------------------
-        -- Valanaar: training at 10, Bear Form chain (10-11)
+        -- Valanaar: training at 10, Bear Form chain (11)
         ---------------------------------------------------------------------
         { id = "sd02-train-10", train = true, npc = 252359, at = { 2521, 63.99, 75.08 },
           spells = {
@@ -280,15 +285,15 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
         { accept = 93165, npc = 254151, at = { 2521, 63.81, 36.01 } },
         { complete = 93165, bg = true,
           note = {
-              ru = "Уши с Al'Aketh Footsoldier и Stormchaser (до 10).",
-              en = "Ears from Al'Aketh Footsoldiers and Stormchasers (up to 10).",
+              ru = "Уши с Al'Aketh Footsoldier и Stormchaser (5).",
+              en = "Ears from Al'Aketh Footsoldiers and Stormchasers (5).",
           } },
         { complete = { 94485, 94486, 94487 }, at = { 2521, 62.2, 37.8 },
           note = {
-              ru = "Вокруг Elegael: 8 Lady's Tear Moss на земле, перо с Shadowgale "
-                  .. "Shriekling, Bloody Heirloom с Footsoldier/Stormchaser.",
-              en = "Around Elegael: 8 Lady's Tear Moss on the ground, a feather from Shadowgale Shrieklings, "
-                  .. "the Bloody Heirloom from Footsoldiers / Stormchasers.",
+              ru = "Вокруг Elegael: 8 Lady's Tear Moss на земле, 20 перьев с Shadowgale "
+                  .. "Shriekling, 10 Bloody Heirloom с Footsoldier/Stormchaser.",
+              en = "Around Elegael: 8 Lady's Tear Moss on the ground, 20 feathers from Shadowgale Shrieklings, "
+                  .. "10 Bloody Heirlooms from Footsoldiers / Stormchasers.",
           } },
         { turnin = { 94485, 94486, 94487 }, accept = { 94488, 94489 }, npc = 257944, -- WARN-OK: xp-unknown
           at = { 2521, 61.70, 39.22 } },
@@ -335,9 +340,8 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
           } },
         { id = "sd02-hearth", hearth = "Valanaar", at = { 2521, 62.19, 72.61 }, radius = 100,
           note = {
-              ru = "Камень возвращения в Валанаар (если ещё на откате после Шен'дара - бегите на юг, ~35 "
-                  .. "единиц карты).",
-              en = "Hearth to Valanaar (if it is still on cooldown since Shen'dar - run south, ~35 map units).",
+              ru = "Камень возвращения в Валанаар (последний раз он использовался на 3-м уровне - готов).",
+              en = "Hearth to Valanaar (last used at level 3 - it is ready).",
           } },
         ---------------------------------------------------------------------
         -- Valanaar: turn-ins, training at 12, skycutter (12)
@@ -369,7 +373,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Listen to Ayessa's speech (~75 s; if it does not start, talk to her) and turn it in while "
                   .. "you wait for the skycutter. Not working - skip the step and abandon the quest.",
           } },
-        { id = "sd02-skycutter", go = true, at = { 2521, 57.92, 80.78 }, radius = 15,
+        { id = "sd02-skycutter", go = true, npc = 275270, at = { 2521, 57.92, 80.78 }, radius = 15,
           note = {
               ru = "Причал рядом (Windshapers Dockmaster): садитесь на небесный "
                   .. "корабль до Мулгора.",
@@ -378,7 +382,7 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
         ---------------------------------------------------------------------
         -- Mulgore: Skywatcher Plateau (12)
         ---------------------------------------------------------------------
-        { id = "sd02-plateau", go = true, at = { 1412, 33.40, 22.55 }, radius = 40,
+        { id = "sd02-plateau", go = true, npc = 259119, at = { 1412, 33.40, 22.55 }, radius = 40,
           note = {
               ru = "Корабль прилетает на плато Skywatcher в Мулгоре.",
               en = "The skycutter lands on Skywatcher Plateau in Mulgore.",

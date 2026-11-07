@@ -41,6 +41,151 @@ describe("regressions", function()
         m, ns = nil, nil
     end)
 
+    describe("forward anchors", function()
+        local function steps()
+            return {
+                { id = "a363", accept = 363 },
+                { id = "sh", sethearth = "Brill", npc = 5688 },
+                { id = "tr", train = true, npc = 244808 },
+                { id = "lv", level = 3 },
+                { id = "a364", accept = 364 },
+                { id = "lva", level = 4, accept = 3901 },
+                { id = "m1", manual = true },
+            }
+        end
+
+        it("a level reached early (rested XP) does not forward earlier transient steps", function()
+            boot(steps())
+            m:AddQuestToLog(363)
+            H.settle(m)
+            assert.equal("sh", H.cur(ns))
+            m:SetLevel(3)
+            H.settle(m)
+            assert.equal(3, m.player.level)
+            assert.is_true(E():IsDone("lv"), "the level step itself is done")
+            assert.equal(1, E().anchor, "a lone level step is no anchor")
+            assert.equal("sh", H.cur(ns), "sethearth not skipped")
+            assert.is_false(E():IsDone("tr"), "train not skipped")
+            m:SetLevel(5)
+            H.settle(m)
+            assert.equal("sh", H.cur(ns))
+            -- a later accept is evidence: everything transient before it is forwarded
+            m:AddQuestToLog(364)
+            H.settle(m)
+            assert.equal(5, E().anchor)
+            assert.is_true(E():IsDone("sh"))
+            assert.is_true(E():IsDone("tr"))
+            assert.equal("lva", H.cur(ns))
+        end)
+
+        it("a level next to an accept anchors only when both are done", function()
+            boot(steps())
+            m:AddQuestToLog(363)
+            m:AddQuestToLog(3901)
+            H.settle(m)
+            assert.equal(1, E().anchor, "level 4 not reached: the accept alone does not anchor that step")
+            assert.equal("sh", H.cur(ns))
+            m:SetLevel(4)
+            H.settle(m)
+            assert.equal(6, E().anchor)
+            assert.is_true(E():IsDone("sh"))
+            assert.is_true(E():IsDone("tr"))
+            -- stateful actions are always re-derived from the game: 364 was never accepted
+            assert.equal("a364", H.cur(ns))
+        end)
+    end)
+
+    describe("place names", function()
+        it("uses the client's localized area name of the generated `places` area id", function()
+            m, ns = H.new({ fixture = false, locale = "ruRU",
+                mock = { areaNames = { [159] = "Брилл" }, bind = { name = "Брилл" } } })
+            local FB = m.env.FastesBoooy
+            FB.RegisterRoute({ api = 1, id = "rg", title = "Regression", faction = "Horde", default = true })
+            FB.AddSegment("rg", { id = "s", title = "S", steps = {
+                { id = "go", go = true, at = { 1420, 60.5, 52.6 } },
+                { id = "sh", sethearth = "Brill", npc = 5688 },
+                { id = "fp", fp = "Undercity" },
+            } })
+            -- what tools/gen_route_data.lua writes (no ruRU text for Brill here: the client name wins)
+            FB.AddRouteData("rg", { places = { ["Brill"] = { area = 159, en = "Brill" },
+                ["Undercity"] = { area = 1497, en = "Undercity", ru = "Подгород" } } })
+            Mock.boot(m, { "FastesBoooy" })
+            H.settle(m)
+            local step = E():GetSteps()[2]
+            assert.equal("Брилл", ns.Steps:PlaceName("Brill"))
+            assert.equal("Подгород", ns.Steps:PlaceName("Undercity"), "no client name: the route text")
+            assert.equal("Unknown", ns.Steps:PlaceName("Unknown"))
+            assert.is_true(E():PlaceMatches("Brill", "Брилл"))
+            assert.is_true(E():PlaceMatches("Brill", "Brill"))
+            assert.is_false(E():PlaceMatches("Brill", "Подгород"))
+            -- already bound to Brill when the step comes up: done by name
+            m:MoveTo(1420, 60.5, 52.6)
+            H.settle(m)
+            assert.equal("fp", H.cur(ns))
+            assert.is_true(E():IsDone(step))
+        end)
+    end)
+
+    describe("quests the player gave up", function()
+        it("an optional complete/turnin passed by the forward limit counts as given up", function()
+            boot({
+                { id = "a363", accept = 363 },
+                { id = "t363a364", turnin = 363, accept = 364 },
+                { id = "c364", complete = 364, optional = true },
+                { id = "t364", turnin = 364, optional = true },
+                { id = "a376", accept = 376 },
+                { id = "t376", turnin = 376 },
+            })
+            m:AddQuestToLog(363)
+            H.settle(m)
+            m:CompleteObjectives(363)
+            m:TurnInQuest(363)
+            m:AddQuestToLog(364)
+            m:AddQuestToLog(376)
+            H.settle(m)
+            assert.equal("t376", H.cur(ns), "the optional 364 steps are forwarded")
+            -- "without the item, abandon 364": the accept of 364 must not come back
+            m:AbandonQuest(364)
+            H.settle(m)
+            assert.equal("t376", H.cur(ns))
+            assert.is_true(E():IsDone("t363a364"))
+            assert.is_nil(E():GetAcceptQuests()[364])
+        end)
+
+        it("abandon before skipping still goes back; a later accept of the same quest is not given up", function()
+            boot({
+                { id = "a364", accept = 364 },
+                { id = "c364", complete = 364 },
+                { id = "a376", accept = 376 },
+                { id = "r364", accept = 364 },
+                { id = "m1", manual = true },
+            })
+            m:AddQuestToLog(364)
+            H.settle(m)
+            assert.equal("c364", H.cur(ns))
+            m:AbandonQuest(364)
+            H.settle(m)
+            assert.equal("a364", H.cur(ns), "no mark on c364 yet: the route quest must be taken again")
+            m:AddQuestToLog(364)
+            H.settle(m)
+            E():Skip() -- skip c364 first ...
+            H.settle(m)
+            assert.equal("a376", H.cur(ns))
+            m:AbandonQuest(364) -- ... then abandon
+            H.settle(m)
+            assert.equal("a376", H.cur(ns))
+            assert.is_true(E():IsDone("a364"))
+            assert.is_false(E():IsDone("r364"), "the accept after the given-up step is still needed")
+            m:AddQuestToLog(376)
+            H.settle(m)
+            assert.equal("r364", H.cur(ns))
+            assert.is_true(E():GetAcceptQuests()[364])
+            m:AddQuestToLog(364)
+            H.settle(m)
+            assert.equal("m1", H.cur(ns))
+        end)
+    end)
+
     describe("background goals", function()
         it("a bg collect step stays 'along the way' until collected, then stays done", function()
             boot({

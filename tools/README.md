@@ -14,9 +14,9 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 | `build_db_snapshot.py` | снимок БД Forever из research-JSON → `data/forever_db.lua` |
 | `data/forever_db.lua` | (генерируется, коммитится) квесты, NPC, объекты, предметы, зоны, правила опыта |
 | `validate_routes.lua` | **валидатор маршрутов** (CLI; логика в `lib/validator.lua`) |
-| `gen_route_data.lua` | генерирует `<модуль>/Data.lua` (enUS-имена квестов/NPC маршрута) |
+| `gen_route_data.lua` | генерирует `<модуль>/Data.lua` (enUS-имена квестов/NPC маршрута, `places` — id зон и ruRU-имена мест) |
 | `package_addons.py` | `dist/<Аддон>-<версия>.zip` для каждого каталога `addons/*` |
-| `simulate_routes.lua` | прогон маршрутов через настоящий движок на моке (принадлежит ядру) |
+| `simulate_routes.lua` | прогон маршрутов через настоящий движок на моке (принадлежит ядру; цели-события exploration/escort и квесты с шагом `complete` без целей в БД не выполнены при взятии — их выполняет шаг `complete`) |
 | `lib/route_loader.lua` | загрузка модуля маршрута в песочнице + нормализация через `Core/Schema.lua` |
 | `lib/fbdb.lua` | доступ к снимку БД: маски рас/классов, поиск, расстояния, формулы опыта |
 | `lib/json.lua` | детерминированный JSON-энкодер |
@@ -125,12 +125,26 @@ python3 -I tools/build_db_snapshot.py --research <research> \
   представителя — любой настоящий спавн не дальше 2·√2 единиц от оставленного; такие записи
   помечены `spawnsGrid = 2`), а также все тренеры/полётчики/трактирщики/торговцы/
   ремонт/банкиры/стойла в этих зонах и все тренеры паладинов и друидов.
+  **Транспорт** (`transport = "zeppelin" | "boat" | "skycutter" | "landing"`): NPC
+  дирижаблей/кораблей/небесного корабля по `subName` (Zeppelin Master/Operator, Shipmaster,
+  Boat Operator, Dockmaster, Captain of the Skycutter) или id (`TRANSPORT_IDS`: 275270
+  Windshapers Dockmaster и 275269 High Order Dockmaster, Валанаар) — на любой карте со
+  спавном (Zapetta 9566 и Hin Denburg 3150 в Тирисфале, Frezza 9564 и Snurk 12136 в
+  Дуротаре, Nez'raz 3149 и Squibby 12137 в Гром'голе, Grimble 9558 в Кабестане, …), плюс все
+  дружелюбные NPC места посадки без NPC причала (`TRANSPORT_LANDINGS`: плато Skywatcher в
+  Мулгоре, куда прилетает корабль из Валанаара: Galestrider Handler 264287, Alaana
+  Stormwalker 259119, Muln Earthfury 259118, …).
   Вне охвата — компактные индексы `questIndex`/`npcIndex`/`objectIndex`, чтобы отличать
   «не существует в Forever» от «вне снимка».
 * Overlay Horde Dynamic (QuestieDB dynamic corrections для Орды) применён; различия
   PALADIN/DRUID — в `byClass`.
 * **Количество целей** — из WCLBox (данные Wowhead Forever: например, 364 — 5+5 зомби, а
   не 8+8 как в тексте Classic), иначе из текста цели.
+* **Иконка цели** (`icon`) — у целей creature/killCredit хранится иконка QuestieDB, если это не
+  «убить» (0/1 не пишутся): `enums.iconTypes` — 3 EVENT («освободить», кредит-болванка),
+  5 TALK («поговорить»), 17 INTERACT («вылечить», «применить предмет на»). Цель-существо
+  записывается как `{id, count?, icon = N}`. `objectives.event = true` — квест завершается
+  триггером области / скриптом (исследование, сопровождение).
 * **Опыт квеста** (`xp`, `xpSrc`): опыт данжевых квестов Forever (`forever-dungeon`),
   иначе WCLBox (`wclbox-classic`, равен Classic), иначе QuestieDB XP (`questie-classic`);
   для ~720 новых квестов Forever опыт неизвестен (`xp = nil`) — валидатор оценивает его, а
@@ -151,7 +165,8 @@ python3 -I tools/build_db_snapshot.py --research <research> \
   10 133 × 6 756 ярдов, Undercity 959 × 640, Tirisfal 4 519 × 3 013. У Zephras Isle (2521)
   границ офлайн нет — размера нет.
 * Размер ≈ 2.6 МБ, загрузка ≈ 0.1 с. Счётчики (снимок 2026-11-07): квестов 2 040 (+3 193 в
-  индексе), NPC 4 548 (+8 869), объектов 487 (+6 556), предметов 1 429, карт 98.
+  индексе), NPC 4 565 (+8 852; из них 28 транспортных), объектов 487 (+6 556), предметов
+  1 429, карт 98.
 
 Структура (подробно — в шапке файла):
 
@@ -167,10 +182,12 @@ return {
   xp = { levels = {[1] = 400, ...}, questRule = {...}, mobRule = {...}, typicalQuestXpByLevel = {...} },
   quests = { [364] = { name, level, reqLevel, races, classes, side = "H", start = {npcs = {1569}},
                        finish = {npcs = {1569}}, breadcrumbs = {363}, objectives = {creatures = {{1501, 5}, {1502, 5}}},
-                       zone = 154, uiMap = 1420, xp = 170, xpSrc = "wclbox-classic", status = "same" } },
+                       zone = 154, uiMap = 1420, xp = 170, xpSrc = "wclbox-classic", status = "same" },
+             [92514] = { ..., objectives = {creatures = {{251902, icon = 5}, {254089, icon = 5}}} } },  -- talk
   npcs = { [1569] = { name, sub, minLevel, maxLevel, rank, faction = "H", flags = {questgiver = true},
-                      spawns = { [1420] = { {30.84, 66.2} } } } },   -- spawns[uiMapID] = {{x, y}, ...}
+                      spawns = { [1420] = { {30.84, 66.2} } } },    -- spawns[uiMapID] = {{x, y}, ...}
                                                                    -- (+ spawnsGrid = 2 when thinned)
+           [9566] = { name = "Zapetta", sub = "Zeppelin Master", ..., transport = "zeppelin" } },
   objects = {...}, items = {...}, questIndex = {...}, npcIndex = {...}, objectIndex = {...},
 }
 ```
@@ -191,8 +208,18 @@ lua5.1 tools/gen_route_data.lua --stdout <каталог>        # напеча�
 (все файлы модуля получают одну общую приватную таблицу `local _, ns = ...`, как в клиенте),
 собирает id квестов (`accept/turnin/complete/abandon`, ключи `reward`), NPC (`npc`),
 объектов (`object`), предметов (`collect`, `use`) и пишет для каждого маршрута
-`FastesBoooy.AddRouteData("<id>", { quests = {[id] = "enUS"}, npcs = {...}, objects = ..., items = ... })`.
-Вывод детерминирован (сортировка по id). Если у модуля есть ошибки загрузки/схемы,
+`FastesBoooy.AddRouteData("<id>", { quests = {[id] = "enUS"}, npcs = {...}, objects = ..., items = ..., places = ... })`.
+
+`places` — места действий `fp`/`fly`/`sethearth`/`hearth`:
+`["Brill"] = { area = 159, en = "Brill", ru = "Брилл" }`. `area` — id зоны (AreaTable) с этим
+enUS-именем из `areaNames` снимка БД: в игре аддон берёт локализованное имя у клиента
+(`C_Map.GetAreaInfo`) — так `sethearth` узнаёт точку привязки по имени
+(`GetBindLocation()`) на любом языке клиента, в том числе для мест Forever. `ru` — из таблицы
+`PLACE_NAMES_RU` в начале `gen_route_data.lua` (запасной вариант, если клиент имени не дал);
+новое место маршрута добавляйте туда. Место без `area` и без `ru` не пишется (показывается
+по-английски), генератор сообщает о нём в stderr (`note:`).
+
+Вывод детерминирован (сортировка по id / имени). Если у модуля есть ошибки загрузки/схемы,
 `Data.lua` не пишется (и не печатается) и код выхода — 1.
 
 ## 5. Валидатор: `validate_routes.lua`
@@ -242,10 +269,23 @@ lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
    * старт: уровень 1, 0 опыта; таблица опыта = Classic Era (`xp.levels`);
    * `turnin`: опыт квеста × штраф за разницу уровней Classic (`mult = clamp(2*(qL-pL)+20, 1, 10)/10`,
      округление клиента); неизвестный опыт → медиана известных квестов того же уровня (WARN `xp-unknown`);
-   * `complete`: убийства целей-существ (`count` × опыт моба, при неизвестном количестве — 8)
-     и добыча предметов целей (≈1.5 убийства источника на предмет); опыт моба — формула Classic
+   * `complete`: убийства **враждебных** целей-существ (`count` × опыт моба) и добыча предметов
+     целей (≈1.5 убийства источника на предмет); опыт моба — формула Classic
      (`(5·pL+45)`, +5%/уровень выше, серые = 0, элита ×2) со штрафом Forever за «зелёных»
-     мобов (−4% за уровень разницы, максимум −20%) — это **оценка** (INFO);
+     мобов (−4% за уровень разницы, максимум −20%) — это **оценка** (INFO `complete-kill-xp`).
+     Цель — **не** убийство (опыта нет, INFO `complete-no-kill` с причиной), если: иконка цели
+     в БД — talk / interact / event (поговорить, вылечить, освободить, применить предмет;
+     killCredit-«события» с болванкой-кредитом тоже); NPC нет в снимке; у NPC есть любой
+     флаг (questgiver, trainer, vendor, innkeeper, gossip, …) или он выдаёт/принимает квест
+     снимка; NPC дружелюбен стороне маршрута (`faction` содержит букву стороны, в т. ч. `AH`)
+     — кроме целей с известным количеством ≥ 2 (у ряда семейств мобов Forever в БД неверная
+     или «нейтральная» фракция: 1501 Mindless Zombie `AH`, 259434 Tarnished Drudge `H`).
+     killCredit: засчитывается первый враждебный NPC со спавнами из `base, ids…`.
+     Неизвестное количество: 1 убийство для именного/уникального NPC (`rank` > 0 или не
+     больше 5 точек спавна без прореживания), иначе 4 (`defaultKillCount`, осторожно; в
+     оптимистичной симуляции ×1.5). Источник предмета — первый NPC из `npcDrops` со спавнами,
+     без флагов, не выдающий квесты и не дружелюбный только стороне маршрута (`H` для Орды;
+     нейтральные звери `AH` — годятся);
    * `level`: если опыта не хватает — гринд мобами своего уровня, число убийств (INFO,
      WARN если > 30);
    * параллельно идёт **оптимистичная** симуляция: неизвестный опыт квестов × `--xp-optimism`
@@ -302,6 +342,7 @@ lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
 | `hearth-mismatch` / `hearth-unbound` | WARN / INFO | камень привязан к другому месту / не было `sethearth` |
 | `xp-unknown` | WARN | опыт квеста неизвестен — использована оценка |
 | `complete-kill-xp` | INFO | оценка убийств и опыта за цели |
+| `complete-no-kill` | INFO | цели, за которые опыт убийств не начисляется (поговорить/вылечить/событие, дружелюбный или служебный NPC, выдающий квест), с причиной |
 | `level-grind` | INFO / WARN | сколько убийств нужно до уровня шага `level` (WARN если > 30) |
 | `segment-level` / `route-level` | WARN | симулированный уровень в конце сегмента / маршрута отличается от плана больше чем на 1 |
 | `step-skipped` | INFO | шаг отфильтрован по классу/расе/фракции |

@@ -4,8 +4,10 @@
 -- Brill -> Undercity (turn-ins, level-14 training) -> zeppelin to Durotar, levels 13-15.
 -- Coordinates: Forever uiMap 1421 (Silverpine Forest) / 1420 (Tirisfal Glades) / 1458 (Undercity) /
 -- 1411 (Durotar), map percent, from tools/data/forever_db.lua (NPC/object spawns; centroids of the
--- objective mob spawns of the chosen area for complete steps). Zeppelin towers: research/mechanics.md
--- (Zapetta 9566 Tirisfal 60.74,58.87; Frezza 9564 Durotar 50.82,13.54; not in the DB snapshot).
+-- objective mob spawns of the chosen area for complete steps). Zeppelin masters: tools/data/forever_db.lua
+-- (transport NPCs: Zapetta 9566 Tirisfal 60.74,58.87; Frezza 9564 Durotar 50.82,13.54).
+-- 429 Wild Hearts needs 3 hearts in Forever (Wowhead Forever tooltip; the DB snapshot still says 6 from
+-- the Classic text, so the validator's kill XP for it is a little high).
 --
 -- Hub plan (Forever DB; Sepulcher NPCs all within ~60 yd of 44,41):
 --   T1 Ivar Patch (arrival from the Tirisfal road): 435 escort > 449 + 429 (Rane Yorick), worg hearts,
@@ -55,7 +57,7 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
           note = { ru = "Сопровождение: идите с Эрландом к Рейну Йорику на ферму Ивара. По пути нападают ворги.",
                    en = "Escort: walk Erland to Rane Yorick at the Ivar Patch. Worgs attack on the way." } },
         { turnin = 435, accept = { 429, 449 }, npc = 1950, at = { 1421, 53.46, 13.43 },
-          note = { ru = "Рейн Йорик. Награда — Короткий меч следопыта: оставьте Дробитель из плавника.",
+          note = { ru = "Рейн Йорик. Награда — Короткий меч стража смерти: оставьте Плавниковый крушитель.",
                    en = "Rane Yorick. Reward: Deathstalker Shortsword - keep the Driftwood Smasher." } },
         { collect = { [730] = 3 }, bg = true, at = { 1421, 60.0, 15.5 },
           note = { ru = "Попутно: 3 глаза мурлока с мурлоков Гиблого Плавника к востоку от фермы. Они нужны "
@@ -63,9 +65,9 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
                    en = "Along the way: 3 Murloc Eyes from the Vile Fin murlocs east of the farm. Quinn's later "
                        .. "quest needs them: do not sell." } },
         { complete = 429, at = { 1421, 58.0, 11.5 },
-          note = { ru = "Пятнистые ворги и ворги вокруг фермы: 6 бесцветных сердец. Редкий Кровавый Клык "
+          note = { ru = "Пятнистые ворги и ворги вокруг фермы: 3 бесцветных сердца. Редкий Кровавый Клык "
                        .. "бродит к северо-востоку.",
-                   en = "Mottled Worgs and Worgs around the farm: 6 Discolored Worg Hearts. Gorefang (rare) "
+                   en = "Mottled Worgs and Worgs around the farm: 3 Discolored Worg Hearts. Gorefang (rare) "
                        .. "roams to the north-east." } },
         { go = true, at = { 1421, 49.8, 31.0 },
           note = { ru = "По дороге на юг к Гробнице, убивая воргов по пути.",
@@ -130,9 +132,9 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
                    en = "Fewer than 3 Murloc Eyes? Vile Fin murlocs east of the farm." } },
         { complete = 437, npc = 1983, at = { 1421, 44.67, 20.67 },
           note = { ru = "Мёртвое поле: убивайте гноллов Гнилошкуры, пока не появится Ночная Плеть (14). Убейте "
-                       .. "её и заберите сущность. Гноллы не боятся страха. Медведи рядом — для сердец.",
+                       .. "её и заберите сущность. Медведи рядом — для сердец.",
                    en = "The Dead Field: kill Rot Hide gnolls until Nightlash (14) appears. Kill her and loot "
-                       .. "her essence. The gnolls are immune to fear. Bears nearby for the hearts." } },
+                       .. "her essence. Bears nearby for the hearts." } },
         { complete = { [447] = { 2 } }, at = { 1421, 35.3, 12.5 },
           note = { ru = "Пауки на северо-западе (мшистые охотники и туманные ползуны): 6 проб крови. Редкая "
                        .. "Кретис Тенепряд (15) ставит щит — обходите её.",
@@ -239,13 +241,13 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
         ------------------------------------------------------------------
         { go = true, at = { 1420, 61.92, 64.85 },
           note = { ru = "Выйдите из Подгорода на лифте.", en = "Leave the Undercity by the lift." } },
-        { id = "ud03-zeppelin", go = true, radius = 15, at = { 1420, 60.74, 58.87 },
-          note = { ru = "Башня дирижаблей к северу от Руин. Садитесь на дирижабль до Оргриммара (у Запетты), "
+        { id = "ud03-zeppelin", go = true, radius = 15, npc = 9566, at = { 1420, 60.74, 58.87 },
+          note = { ru = "Башня дирижаблей к северу от Руин. Садитесь на дирижабль до Оргриммара (у Запоты), "
                        .. "а не до Гром'гола.",
                    en = "Zeppelin tower north of the Ruins. Board the zeppelin to Orgrimmar (Zapetta's side), "
                        .. "not the one to Grom'gol." } },
-        { id = "ud03-end", go = true, radius = 40, at = { 1411, 50.82, 13.54 },
-          note = { ru = "Прибытие к башне дирижаблей в Дуротаре, у Оргриммара.",
-                   en = "Arrival at the Durotar zeppelin tower outside Orgrimmar." } },
+        { id = "ud03-end", go = true, radius = 40, npc = 9564, at = { 1411, 50.82, 13.54 },
+          note = { ru = "Прибытие к башне дирижаблей в Дуротаре, у Оргриммара (Фрезза).",
+                   en = "Arrival at the Durotar zeppelin tower outside Orgrimmar (Frezza)." } },
     },
 })

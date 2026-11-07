@@ -32,6 +32,19 @@ FastesBoooy.AddSegment("sky", { id = "s1", title = "S1", steps = {
     { turnin = 90002, npc = 101, at = { 2521, 60, 61 } },
 } })
 ]],
+    -- 870 "The Forgotten Pools": exploration only (DB objectives.event) -- must not be complete on accept
+    ["FastesBoooy_Event/FastesBoooy_Event.toc"] = "## Interface: 16001\n## Dependencies: FastesBoooy\nRoute.lua\n",
+    ["FastesBoooy_Event/Route.lua"] = [[
+FastesBoooy.RegisterRoute({ api = 1, id = "event", title = "Event", faction = "Horde",
+    races = { "Orc" }, classes = { "WARRIOR" }, levels = { 10, 12 } })
+FastesBoooy.AddSegment("event", { id = "e1", title = "E1", steps = {
+    { accept = 870, npc = 3448, at = { 1413, 52.26, 31.93 } },
+    { fp = "The Crossroads", npc = 3615, at = { 1413, 51.50, 30.34 } },
+    { go = true, at = { 1413, 48.0, 26.0 } },
+    { complete = 870, at = { 1413, 44.97, 22.56 } },
+    { turnin = 870, npc = 3448, at = { 1413, 52.26, 31.93 } },
+} })
+]],
     ["FastesBoooy_Schema/FastesBoooy_Schema.toc"] = "## Interface: 16001\nRoute.lua\n",
     ["FastesBoooy_Schema/Route.lua"] = [[
 FastesBoooy.RegisterRoute({ api = 1, id = "schema", title = "S" })
@@ -70,6 +83,15 @@ describe("tools/simulate_routes.lua", function()
         assert.equal(0, code, out)
         assert.is_truthy(out:find("OK   sky (Skyborne DRUID Horde)", 1, true), out)
         assert.is_truthy(out:find("race Skyborne (raceID 96), class DRUID (classID 11), faction Horde", 1, true), out)
+    end)
+
+    it("keeps exploration / escort quests incomplete until the route's complete step", function()
+        local code, out = run("--verbose '" .. root .. "/FastesBoooy_Event'")
+        assert.equal(0, code, out)
+        assert.is_truthy(out:find("OK   event (Orc WARRIOR Horde): 5 steps, 5 iterations", 1, true), out)
+        assert.is_truthy(out:find("[2/5] e1:2 [fp The Crossroads]", 1, true), out)
+        assert.is_truthy(out:find("[4/5] e1:4 [complete 870]", 1, true), out)
+        assert.is_falsy(out:find("cursor 1 -> 5", 1, true), out)
     end)
 
     it("fails a route that cannot be followed", function()

@@ -624,8 +624,17 @@ end
 
 --- Use a Forever DB snapshot (tools/data/forever_db.lua table) as the fallback for
 -- quests, NPCs, objects and items that the spec did not define explicitly.
-function M:UseForeverDB(db)
+-- Objective model: creatures / killCredit / objects / items become counted objectives;
+-- `objectives.event` (exploration, escort: an area trigger / scripted event) becomes an
+-- "event" objective that stays incomplete until it is fulfilled (CompleteObjectives /
+-- ProgressObjective, i.e. the route's `complete` step in tools/simulate_routes.lua).
+-- opts.routeCompletes = { [questID] = true }: quests a route completes with a `complete`
+-- step. Such a quest WITHOUT any objective in the DB (Forever-new quests whose objectives
+-- are not known offline, e.g. 95508) gets one placeholder "event" objective, so it is not
+-- complete on accept either; other objective-less quests (deliveries) are complete at once.
+function M:UseForeverDB(db, opts)
     self.foreverDB = db
+    self._dbRouteCompletes = opts and opts.routeCompletes or {}
     local starts, ends, ostarts, oends = {}, {}, {}, {}
     local function add(index, id, qid)
         index[id] = index[id] or {}
@@ -676,6 +685,15 @@ function M:_questFromDB(id)
         if not self.items[c[1]] then self:DefineItem(c[1], { name = it and it.name or nil }) end
         objectives[#objectives + 1] = { text = it and it.name or ("Item " .. c[1]), required = c[2] or 1,
             type = "item", itemID = c[1] }
+    end
+    if o.event then
+        -- exploration / escort: done only when the event happens (never on accept)
+        objectives[#objectives + 1] = { text = q.name .. ": event", required = 1, type = "event" }
+    elseif #objectives == 0 and self._dbRouteCompletes[id] then
+        -- objectives unknown offline (or not modelled: spell / reputation), but the route has a
+        -- `complete` step for the quest
+        objectives[#objectives + 1] = { text = q.name .. ": objective (not in the DB)", required = 1,
+            type = "event" }
     end
     local zoneName = q.uiMap and self.maps[q.uiMap] and self.maps[q.uiMap].name or "Quests"
     return {

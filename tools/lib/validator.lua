@@ -28,7 +28,8 @@ V.DEFAULTS = {
     tolerance = 3.0,          -- map percent (approximate): WARN above
     hardTolerance = 8.0,      -- map percent (approximate): ERROR above
     grindWarnKills = 30,    -- level step: WARN when more estimated kills are needed
-    defaultKillCount = 8,   -- creature objective without a known count
+    defaultKillCount = 4,   -- hostile creature objective without a known count (conservative)
+    uniqueSpawnMax = 5,     -- ...but 1 kill for a named/unique NPC: rank > 0 or at most this many spawn points
     dropKillFactor = 1.5,   -- kills per required drop item (drop rates are not in the DB)
     -- optimistic parallel simulation: a level requirement is an ERROR only when even the
     -- optimistic level is too low, otherwise a WARN (the shortfall may be an estimation artifact)
@@ -268,9 +269,12 @@ end
 local function objectiveList(q)
     local out = {}
     local o = q.objectives or {}
-    for _, e in ipairs(o.creatures or {}) do out[#out + 1] = { kind = "creature", id = e[1], count = e[2] } end
+    for _, e in ipairs(o.creatures or {}) do
+        out[#out + 1] = { kind = "creature", id = e[1], count = e[2], icon = e.icon }
+    end
     for _, e in ipairs(o.killCredit or {}) do
-        out[#out + 1] = { kind = "killCredit", id = e.base or (e.ids and e.ids[1]), ids = e.ids, count = e.count }
+        out[#out + 1] = { kind = "killCredit", id = e.base or (e.ids and e.ids[1]), ids = e.ids, count = e.count,
+                          icon = e.icon }
     end
     for _, e in ipairs(o.objects or {}) do out[#out + 1] = { kind = "object", id = e[1], count = e[2] } end
     for _, e in ipairs(o.items or {}) do out[#out + 1] = { kind = "item", id = e[1], count = e[2] } end
@@ -280,6 +284,95 @@ end
 function Run:friendly(npc)
     if not self.letter then return true end
     return (npc.faction or ""):find(self.letter, 1, true) ~= nil
+end
+
+---------------------------------------------------------------------------
+-- objective targets: which creature objectives are kills
+---------------------------------------------------------------------------
+
+-- QuestieDB objective icons (db.enums.iconTypes) that are not kills: talk, interact (heal,
+-- use an item on, free...), event (killCredit "events": a dummy credit NPC), loot, object.
+local NON_KILL_ICON = { [2] = "loot", [3] = "event", [4] = "object", [5] = "talk", [17] = "interact" }
+
+--- Why killing `npcId` for objective `e` gives no XP; nil when it is a hostile creature.
+-- Signals: the objective icon (talk / interact / event), the NPC record (unknown NPC, any NPC
+-- flag such as questgiver / trainer / vendor / innkeeper / gossip, quest giver or ender of a DB
+-- quest), and the NPC faction: friendly to the route side (the DB letter "H"/"A"/"AH") gives no XP,
+-- unless the objective has a known count >= 2: several Forever mob families carry a wrong or
+-- "neutral" friendlyToFaction in the DB (e.g. 1501 Mindless Zombie "AH", 259434 Tarnished Drudge
+-- "H"), and a counted multi-target objective with the slay icon is a kill objective.
+function Run:nonKillReason(e, npcId)
+    if e.icon and e.icon ~= 0 and e.icon ~= 1 then
+        return NON_KILL_ICON[e.icon] and (NON_KILL_ICON[e.icon] .. " objective") or ("objective icon " .. e.icon)
+    end
+    local n = self.db.npcs[npcId or 0]
+    if not n then return "NPC not in the DB snapshot" end
+    if n.flags and next(n.flags) then
+        local f = {}
+        for k in pairs(n.flags) do f[#f + 1] = k end
+        table.sort(f)
+        return "service NPC (" .. table.concat(f, ", ") .. ")"
+    end
+    if DB.IsQuestNpc(self.db, npcId) then return "quest giver" end
+    local fac = n.faction or ""
+    local friendly
+    if self.letter then
+        friendly = fac:find(self.letter, 1, true) ~= nil
+    else
+        friendly = fac == "AH"
+    end
+    if friendly and not (e.count and e.count >= 2) then
+        return format("friendly NPC (faction '%s')", fac)
+    end
+    return nil
+end
+
+--- The NPC killed for a creature / killCredit objective, or nil and the reason it is no kill.
+-- killCredit: the first of base, ids... that is a hostile creature with spawns (credit dummies
+-- without spawns never count).
+function Run:killTarget(e)
+    if e.kind == "creature" then
+        local why = self:nonKillReason(e, e.id)
+        if why then return nil, why end
+        return e.id
+    end
+    local firstWhy
+    local cands = { e.id }
+    for _, id in ipairs(e.ids or {}) do cands[#cands + 1] = id end
+    for _, id in ipairs(cands) do
+        local why = self:nonKillReason(e, id)
+        if not why and not self.db.npcs[id].spawns then why = "credit NPC without spawns" end
+        if not why then return id end
+        firstWhy = firstWhy or why
+    end
+    return nil, firstWhy or "no credited NPC"
+end
+
+--- Kill count for an objective without a known count: 1 for a named / unique NPC (rank > 0,
+-- or at most uniqueSpawnMax spawn points of an unthinned list), else defaultKillCount.
+-- @return count, optimisticCount, unique
+function Run:assumedKills(npcId)
+    local opts = self.opts
+    local n = self.db.npcs[npcId]
+    local spawnMax = opts.uniqueSpawnMax or V.DEFAULTS.uniqueSpawnMax
+    if n and ((n.rank or 0) > 0 or (not n.spawnsGrid and DB.SpawnCount(n) <= spawnMax)) then
+        return 1, 1, true
+    end
+    local k = opts.defaultKillCount or V.DEFAULTS.defaultKillCount
+    return k, math.ceil(k * (opts.guessedKillOptimism or V.DEFAULTS.guessedKillOptimism)), false
+end
+
+--- First drop source of an item that is a killable creature with spawns: not a service NPC or
+-- quest giver, and not friendly to the route side only (an "AH" neutral beast is attackable).
+function Run:dropSource(it)
+    for _, m in ipairs(it and it.npcDrops or {}) do
+        local n = self.db.npcs[m]
+        if n and n.spawns and not (n.flags and next(n.flags)) and not DB.IsQuestNpc(self.db, m)
+            and not (self.letter and n.faction == self.letter) then
+            return m
+        end
+    end
+    return nil
 end
 
 ---------------------------------------------------------------------------
@@ -793,26 +886,28 @@ function H.complete(self, a, step)
     self.credited[id] = credited
     local opts = self.opts
     local killsTotal, xpTotal, guessed = 0, 0, false
+    local nonKill = {}
     for _, idx in ipairs(selected) do
         local e = list[idx]
         if not credited[idx] then
             credited[idx] = true
             if e.kind == "creature" or e.kind == "killCredit" then
-                local n, nOpt = e.count, e.count
-                if not n then
-                    n = opts.defaultKillCount or V.DEFAULTS.defaultKillCount
-                    nOpt = math.ceil(n * (opts.guessedKillOptimism or V.DEFAULTS.guessedKillOptimism))
-                    guessed = true
+                local mob, why = self:killTarget(e)
+                if mob then
+                    local n, nOpt = e.count, e.count
+                    if not n then
+                        n, nOpt = self:assumedKills(mob)
+                        guessed = true
+                    end
+                    local x = self:killXp(mob, n, nOpt)
+                    killsTotal, xpTotal = killsTotal + n, xpTotal + x
+                else
+                    nonKill[#nonKill + 1] = format("%d %s: %s", idx, self:nn(e.id or 0), why)
                 end
-                local x = self:killXp(e.id, n, nOpt)
-                killsTotal, xpTotal = killsTotal + n, xpTotal + x
             elseif e.kind == "item" then
                 self.collected[e.id] = true
                 local it = self.db.items[e.id]
-                local mob
-                for _, m in ipairs(it and it.npcDrops or {}) do
-                    if self.db.npcs[m] and self.db.npcs[m].spawns then mob = m break end
-                end
+                local mob = self:dropSource(it)
                 if mob then
                     local n = e.count or 1
                     if not e.count then guessed = true end
@@ -824,6 +919,10 @@ function H.complete(self, a, step)
                 end
             end
         end
+    end
+    if #nonKill > 0 then
+        self:add("INFO", "complete-no-kill", step, "complete %s: no kill XP for objective %s", self:qn(id),
+            table.concat(nonKill, "; "))
     end
     if killsTotal > 0 then
         self:add("INFO", "complete-kill-xp", step, "complete %s: ~%d kills, +%d kill XP (estimate%s); level now %s",
@@ -1260,6 +1359,43 @@ local function mdEscape(s)
     return (tostring(s):gsub("|", "\\|"):gsub("\n", " "))
 end
 
+-- What no offline check (luacheck std, strict mock, validator, simulator) can confirm: the
+-- static "only in game" section of docs/VALIDATION.md (README.md links here).
+V.IN_GAME_ONLY = {
+    "**Автоматизация без аппаратного события.** `AcceptQuest`, `CompleteQuest`, `GetQuestReward`, "
+        .. "`AcknowledgeAutoAcceptQuest`, "
+        .. "`C_GossipInfo.SelectAvailableQuest/SelectActiveQuest/SelectOption`, "
+        .. "`SelectAvailableQuest/SelectActiveQuest` (окно приветствия) "
+        .. "вызываются из обработчиков событий (`QUEST_DETAIL`, `QUEST_PROGRESS`, `QUEST_COMPLETE`, "
+        .. "`GOSSIP_SHOW`, `QUEST_GREETING`). В моке они разрешены; что Forever не требует для них "
+        .. "аппаратного события, проверяется только в клиенте.",
+    "**Кнопка предмета** (`FastesBoooyItemButton`, поле шага `use`): защищённая кнопка "
+        .. "`SecureActionButtonTemplate` — что клик использует предмет при любом значении "
+        .. "`ActionButtonUseKeyDown`, работает `/click FastesBoooyItemButton`, а смена предмета и "
+        .. "скрытие откладываются до конца боя без `ADDON_ACTION_BLOCKED`. Мок моделирует защиту "
+        .. "кадров упрощённо.",
+    "**Остров Зефрас (uiMap 2521) и прочие карты без мирового преобразования.** Стрелка и "
+        .. "расстояние там приблизительные (номинальный размер карты, `approx`); пересчёт координат "
+        .. "Зефраса и переход на Мулгор (высадка с небесного корабля / лодки) — только в игре.",
+    "**Мулгор с изменённой геометрией.** Координаты БД уже в системе Forever; совпадение точек `at` "
+        .. "с реальными NPC проверено валидатором по снимку, но не на месте.",
+    "**Опыт новых квестов Forever** офлайн неизвестен (в отчёте — оценка медианой по уровню). "
+        .. "Реальные значения записываются при сдаче (`/fb xp`).",
+    "**Имена мест на языке клиента.** `sethearth` узнаёт точку привязки по имени: `GetBindLocation()` "
+        .. "сравнивается с локализованным именем зоны (`C_Map.GetAreaInfo` по `places[...].area` из "
+        .. "`Data.lua`) — что эти имена совпадают в ruRU, проверяется в клиенте.",
+    "**События окон и цели-события.** Порядок `TRAINER_*`/`MERCHANT_*`/`TAXIMAP_*` и "
+        .. "`PLAYER_INTERACTION_MANAGER_FRAME_*` (одно окно засчитывается один раз); выполнение целей "
+        .. "исследования и сопровождения (в моке — только по явному событию).",
+    "**Метка Blizzard** (`C_Map.SetUserWaypoint` + `C_SuperTrack`) на картах Forever, где метки "
+        .. "запрещены или карта не поддерживает их.",
+    "**SavedVariables после холодного перезапуска** ранних билдов Forever: прогресс восстанавливается "
+        .. "по игре (журнал, сданные квесты, уровень), неизвестны только transient-шаги после последнего "
+        .. "опорного шага.",
+    "**Секретные значения** (`issecretvalue` и т. п.) в ограниченных контекстах (подземелья, бой): "
+        .. "аддон их не читает, но реальный набор ограничений Forever виден только в клиенте.",
+}
+
 --- Markdown report (docs/VALIDATION.md).
 function V.FormatMarkdown(all, db)
     local L = {}
@@ -1349,6 +1485,13 @@ function V.FormatMarkdown(all, db)
             end
         end
     end
+    w("## Что подтверждается только в игре")
+    w("")
+    w("Офлайн-проверки (luacheck по списку API Forever, строгий мок клиента, валидатор по снимку БД, "
+        .. "симуляция маршрутов) этого не покрывают:")
+    w("")
+    for _, item in ipairs(V.IN_GAME_ONLY) do w("* " .. item) end
+    w("")
     return L
 end
 

@@ -25,4 +25,5 @@ Core\Automation.lua
 Core\Waypoint.lua
 UI\StepFrame.lua
 UI\Arrow.lua
+UI\ItemButton.lua
 UI\Options.lua

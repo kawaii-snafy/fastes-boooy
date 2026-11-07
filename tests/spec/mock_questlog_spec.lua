@@ -320,6 +320,9 @@ describe("mock Forever DB fallback", function()
             [92460] = { name = "Coming of Age", level = 1, reqLevel = 1, races = 2 ^ 33 + 2 ^ 32,
                 start = { npcs = { 251362 } }, finish = { npcs = { 251362 } } },
             [500] = { name = "Druid only", level = 1, classes = 1024, start = { objects = { 711 } } },
+            [870] = { name = "The Forgotten Pools", level = 13, objectives = { event = true } },
+            [95508] = { name = "Unwelcome Guests", level = 18 },   -- Forever-new: no objectives in the DB
+            [96000] = { name = "A Delivery", level = 1 },          -- no objectives, no complete step
         },
         npcs = { [1568] = { name = "Undertaker Mordo", maxLevel = 5 }, [1569] = { name = "Shadow Priest Sarvis" },
             [1501] = { name = "Mindless Zombie" } },
@@ -355,5 +358,36 @@ describe("mock Forever DB fallback", function()
         assert.are.equal(500, sky.env.GetQuestID())
         assert.matches("^GameObject%-0%-%d+%-%d+%-%d+%-711%-", sky.env.UnitGUID("npc"))
         m:AssertClean()
+    end)
+
+    it("event objectives and route-completed quests without DB objectives stay incomplete on accept", function()
+        local m = Mock.new({ player = { race = "Orc", class = "WARRIOR", level = 20 } })
+            :UseForeverDB(db, { routeCompletes = { [870] = true, [95508] = true } })
+        local QL = m.env.C_QuestLog
+        for _, id in ipairs({ 870, 95508, 96000 }) do m:AddQuestToLog(id) end
+        -- exploration: an "event" objective, not complete until the event happens
+        local objs = QL.GetQuestObjectives(870)
+        assert.are.equal(1, #objs)
+        assert.are.equal("event", objs[1].type)
+        assert.is_false(objs[1].finished)
+        assert.is_false(QL.IsComplete(870))
+        -- objectives unknown offline but completed by the route: placeholder event objective
+        assert.are.equal(1, #QL.GetQuestObjectives(95508))
+        assert.is_false(QL.IsComplete(95508))
+        -- a delivery (no objectives, no complete step) is complete at once
+        assert.are.same({}, QL.GetQuestObjectives(96000))
+        assert.is_true(QL.IsComplete(96000))
+        m:CompleteObjectives(870)
+        m:ProgressObjective(95508, 1)
+        assert.is_true(QL.IsComplete(870))
+        assert.is_true(QL.IsComplete(95508))
+        -- without routeCompletes an objective-less quest is complete on accept; events never are
+        local m2 = Mock.new({ player = { race = "Orc", class = "WARRIOR", level = 20 } }):UseForeverDB(db)
+        m2:AddQuestToLog(95508)
+        m2:AddQuestToLog(870)
+        assert.is_true(m2.env.C_QuestLog.IsComplete(95508))
+        assert.is_false(m2.env.C_QuestLog.IsComplete(870))
+        m:AssertClean()
+        m2:AssertClean()
     end)
 end)

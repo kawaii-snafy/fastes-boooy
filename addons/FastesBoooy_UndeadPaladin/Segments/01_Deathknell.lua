@@ -149,8 +149,8 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
                    en = "Back in the village, click Marla's Grave by the church." } },
         { turnin = 6395, npc = 1661, at = { 1420, 30.86, 66.05 } },
         { id = "ud01-381", turnin = 381, accept = 382, npc = 1570, at = { 1420, 32.15, 66.01 },
-          note = { ru = "Награда: двуручный меч, если навык позволяет (название не красное), "
-                       .. "иначе одноручная булава.",
+          note = { ru = "Награда: Полуторный меч Отрекшихся (двуручный меч), если навык позволяет (название "
+                       .. "не красное), иначе Кувалда Отрекшихся (одноручная булава).",
                    en = "Reward: Forsaken Bastard Sword (two-hander) if your skills allow it (name not red), "
                        .. "otherwise Forsaken Maul." } },
         { complete = 382, npc = 1667, at = { 1420, 36.57, 68.54 },

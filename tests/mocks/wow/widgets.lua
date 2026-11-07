@@ -153,8 +153,49 @@ function IMPL.IsObjectType(_, _, st, t)
     return false
 end
 function IMPL.IsForbidden() return false end
-function IMPL.IsProtected() return false, false end
-function IMPL.CanChangeProtectedState() return true end
+
+-- Protected frames (minimal model): a frame created from a secure template is explicitly
+-- protected; a frame is implicitly protected when a protected frame is its descendant or is
+-- anchored to it (moving / hiding it would move / hide the protected frame). UIParent and
+-- WorldFrame are left out (Blizzard frames). During combat lockdown (m.player.inCombat) the
+-- RESTRICTED methods on a protected frame are blocked: the client fires ADDON_ACTION_BLOCKED,
+-- the mock records a violation and raises.
+local function protectedState(m, obj, st)
+    if st.protected then return true, true end
+    local list = m._protected
+    if not list or #list == 0 or st.isRegion then return false, false end
+    local env = m.env
+    if obj == rawget(env, "UIParent") or obj == rawget(env, "WorldFrame") then return false, false end
+    for _, p in ipairs(list) do
+        local pst = m._W[p]
+        if p ~= obj and pst then
+            local a = pst.parent
+            while a do
+                if a == obj then return true, false end
+                a = m._W[a] and m._W[a].parent
+            end
+            for _, pt in ipairs(pst.points) do
+                if pt[2] == obj then return true, false end
+            end
+        end
+    end
+    return false, false
+end
+M._protectedState = protectedState
+
+local RESTRICTED = {
+    Show = true, Hide = true, SetShown = true, SetPoint = true, SetAllPoints = true, ClearAllPoints = true,
+    ClearPoint = true, AdjustPointsOffset = true, SetSize = true, SetWidth = true, SetHeight = true,
+    SetScale = true, SetParent = true, StartMoving = true, StartSizing = true, SetAttribute = true,
+    EnableMouse = true, SetFrameStrata = true, SetFrameLevel = true, RegisterForClicks = true, SetID = true,
+}
+Mock.RESTRICTED_METHODS = RESTRICTED
+
+function IMPL.IsProtected(m, self, st) return protectedState(m, self, st) end
+function IMPL.CanChangeProtectedState(m, self, st)
+    if m.player.inCombat ~= true then return true end
+    return not protectedState(m, self, st)
+end
 function IMPL.HasSecretValues() return false end
 function IMPL.IsPreventingSecretValues() return false end
 function IMPL.GetParent(_, _, st) return st.parent end
@@ -691,6 +732,15 @@ function IMPL.SetEnabled(m, self, st, b)
     if b then IMPL.Enable(m, self, st) else IMPL.Disable(m, self, st) end
 end
 function IMPL.IsEnabled(_, _, st) return st.enabled end
+function IMPL.RegisterForClicks(_, _, st, ...)
+    local set = {}
+    for i = 1, select("#", ...) do
+        local v = select(i, ...)
+        if type(v) ~= "string" then err(3, "%s:RegisterForClicks(): strings expected", st.objType) end
+        set[v] = true
+    end
+    st.clicks = set
+end
 function IMPL.Click(m, self, st, button, down)
     if not st.enabled then return end
     button = button or "LeftButton"
@@ -1006,10 +1056,15 @@ function M:_methodTable(wtype)
     local methods = {}
     for name in pairs(allowed) do
         local impl = IMPL[name] or generic(name)
+        local restricted = RESTRICTED[name]
         methods[name] = function(obj, ...)
             local st = m._W[obj]
             if not st then
                 error(("%s:%s(): Attempt to find 'this' in non-table object (used '.' instead of ':' ?)"):format(wtype, name), 2)
+            end
+            if restricted and m.player.inCombat == true and protectedState(m, obj, st) then
+                m:_violation(("ADDON_ACTION_BLOCKED: %s:%s() on the protected frame %s during combat lockdown")
+                    :format(st.objType, name, tostring(st.name or "(anonymous)")), 2)
             end
             return impl(m, obj, st, ...)
         end
@@ -1248,7 +1303,35 @@ TEMPLATES.BasicFrameTemplateWithInset = function(m, f)
     child(m, f, "Texture", "InsetBg", nil, "BACKGROUND")
 end
 TEMPLATES.GameTooltipTemplate = function() end
-TEMPLATES.SecureActionButtonTemplate = function() end
+-- SecureActionButtonTemplate: explicitly protected; its OnClick (SecureActionButton_OnClick) runs
+-- the action of the `type` attribute (`typeN` / `itemN` for mouse button N first, like
+-- SecureButton_GetModifiedAttribute) on the press OR the release, whichever the
+-- ActionButtonUseKeyDown CVar selects (m.actionButtonUseKeyDown, default true as in the
+-- client): a button registered only for "LeftButtonUp" (the default) never acts then -- call
+-- RegisterForClicks("AnyUp", "AnyDown"). Replacing OnClick with SetScript loses the action, as in
+-- the client. Recorded player-intent action: { "SecureAction", type, value, mouseButton }.
+local BUTTON_SUFFIX = { LeftButton = "1", RightButton = "2", MiddleButton = "3", Button4 = "4", Button5 = "5" }
+local function secureAttribute(st, name, button)
+    local suffix = BUTTON_SUFFIX[button]
+    local v = suffix and st.attributes[name .. suffix]
+    if v == nil then v = st.attributes["*" .. name .. (suffix or "")] end
+    if v == nil then v = st.attributes[name] end
+    return v
+end
+TEMPLATES.SecureActionButtonTemplate = function(m, f)
+    local st = m._W[f]
+    st.protected = true
+    m._protected = m._protected or {}
+    m._protected[#m._protected + 1] = f
+    f:SetScript("OnClick", function(self, button, down)
+        local bst = m._W[self]
+        local useDown = m.actionButtonUseKeyDown ~= false
+        if (down and true or false) ~= useDown then return end
+        local t = secureAttribute(bst, "type", button)
+        if t == nil then return end
+        m:_action("SecureAction", t, secureAttribute(bst, t, button), button)
+    end)
+end
 
 Mock.MODELED_TEMPLATES = TEMPLATES
 
@@ -1380,7 +1463,15 @@ function M:Click(button, mouseButton)
         if not st then error("mock: Click: not a widget", 0) end
         if not A.widgetIsA[st.type].Button then error("mock: Click: not a button (" .. st.objType .. ")", 0) end
         if not isVisible(self, st) then self:_warn("Click on a hidden button " .. tostring(st.name)) end
-        button:Click(mouseButton or "LeftButton", false)
+        mouseButton = mouseButton or "LeftButton"
+        local reg = st.clicks
+        if reg == nil then
+            button:Click(mouseButton, false) -- default registration: LeftButtonUp (any button accepted here)
+            return
+        end
+        -- RegisterForClicks(...): the press and/or the release, as registered
+        if reg.AnyDown or reg[mouseButton .. "Down"] then button:Click(mouseButton, true) end
+        if reg.AnyUp or reg[mouseButton .. "Up"] then button:Click(mouseButton, false) end
     end)
 end
 
