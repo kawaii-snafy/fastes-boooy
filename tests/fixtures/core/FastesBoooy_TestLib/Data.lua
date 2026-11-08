@@ -23,4 +23,13 @@ FastesBoooy.AddLibraryData({
     places = {
         ["Brill"] = { area = 159, en = "Brill", ru = "Брилл" },
     },
+    questMeta = {
+        [363] = { level = 1, reqLevel = 1 },
+        [364] = { level = 2, reqLevel = 1 },
+        [376] = { level = 2, reqLevel = 2 },
+        [380] = { level = 4, reqLevel = 2, preAny = { 376 } },
+        [381] = { level = 4, reqLevel = 2, preAny = { 380 } },
+        [3901] = { level = 3, reqLevel = 1, preAny = { 364 } },
+        [3902] = { level = 3, reqLevel = 2, preAny = { 376 } },
+    },
 })

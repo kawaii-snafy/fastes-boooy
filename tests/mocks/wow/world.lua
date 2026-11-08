@@ -757,6 +757,11 @@ ctx.register(function(m)
     end
     m:ProvideAPI("UnitLevel", level)
     m:ProvideAPI("UnitEffectiveLevel", level)
+    -- green range for quests (tests/mocks/wow/quests.lua M:TrivialRange; the player's level for any unit)
+    m:ProvideAPI("UnitQuestTrivialLevelRange", function(unit)
+        unitArg("UnitQuestTrivialLevelRange", unit)
+        return m:TrivialRange()
+    end)
     m:ProvideAPI("UnitXP", function(unit)
         if unitArg("UnitXP", unit) ~= "player" then return 0 end
         return p.xp

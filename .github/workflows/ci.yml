@@ -25,7 +25,7 @@ jobs:
           luacheck --version
           busted --version
 
-      - name: make check (lint + test + validate + simulate)
+      - name: make check (lint + test + validate + simulate + simulate-sync)
         run: make check
 
       - name: Generated route data is up to date

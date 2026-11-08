@@ -4,7 +4,10 @@
 -- + Settings.RegisterAddOnCategory, Blizzard_Settings_Shared/Blizzard_Settings.lua),
 -- the quest-XP export window and the slash commands /fb, /fastesboooy.
 --
--- Settings are written through ns.UI.SetSetting (fires SETTINGS_CHANGED).
+-- Settings are written through ns.UI.SetSetting (fires SETTINGS_CHANGED). Level sync
+-- (settings.levelSync / levelSyncMargin / skipGray) is the engine's; the panel only edits
+-- the settings, /fb sync [undo] goes through the shared actions of UI/StepFrame.lua
+-- (UI.ApplySync / UI.UndoSync, guarded for a core without level sync).
 
 -- luacheck: ignore 212/self (singleton modules keep the colon method style)
 
@@ -66,12 +69,28 @@ local RANGES = {
     { key = "arrowScale", min = 0.5, max = 2, step = 0.05 },
 }
 
+-- right column, "Level sync": settings.levelSync (one of SYNC_MODES), the margin slider
+-- (a segment is outleveled at its top level + margin; the limits are the core's when it
+-- declares them) and settings.skipGray
+local SYNC_MODES = type(ns.SETTING_CHOICES) == "table" and ns.SETTING_CHOICES.levelSync or { "ask", "auto", "off" }
+local SYNC_MODE_SET = {}
+for _, mode in ipairs(SYNC_MODES) do SYNC_MODE_SET[mode] = true end
+local SYNC_DEFAULT_MODE = SYNC_MODES[1] -- Core/Init.lua: the first choice is the default
+local SYNC_RANGES = {}
+do
+    local r = type(ns.SETTING_RANGES) == "table" and ns.SETTING_RANGES.levelSyncMargin or { 0, 5 }
+    SYNC_RANGES[1] = { key = "levelSyncMargin", min = r[1], max = r[2], step = 1 }
+end
+local SYNC_CHECKS = { "skipGray" }
+-- shown greyed out while level sync is off
+local NEEDS_SYNC = { levelSyncMargin = true }
+
 local ALL_RANGES = {}
-for _, list in ipairs({ DELAY_RANGES, RANGES }) do
+for _, list in ipairs({ DELAY_RANGES, RANGES, SYNC_RANGES }) do
     for _, def in ipairs(list) do ALL_RANGES[#ALL_RANGES + 1] = def end
 end
 
-local MAX_ROUTE_BUTTONS = 8
+local MAX_ROUTE_BUTTONS = 6
 
 ---------------------------------------------------------------------------
 -- popups
@@ -304,6 +323,7 @@ end
 local panel, category, holder
 local checks = {}
 local sliders = {}
+local radios = {}
 local routeButtons = {}
 local routesNote, errorsNote, routesAnchor
 
@@ -334,6 +354,35 @@ local function createCheck(parent, key, x, y)
     cb:SetScript("OnLeave", UI.HideTooltip)
     checks[key] = cb
     return cb
+end
+
+--- settings.levelSync as one of SYNC_MODES (anything else reads as the default).
+local function syncMode()
+    local v = S().levelSync
+    return SYNC_MODE_SET[v] and v or SYNC_DEFAULT_MODE
+end
+
+-- one radio button of the level-sync mode (UIRadioButtonTemplate: SharedUIPanelTemplates)
+local function createRadio(parent, mode, x, y)
+    local rb = CreateFrame("CheckButton", nil, parent, "UIRadioButtonTemplate")
+    rb:SetSize(16, 16)
+    rb:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
+    local label = rb:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+    label:SetPoint("LEFT", rb, "RIGHT", 4, 0)
+    label:SetText(L["UI_OPT_levelSync_" .. mode])
+    rb.label = label
+    rb.mode = mode
+    rb:SetHitRectInsets(0, -220, 0, 0)
+    rb:SetScript("OnClick", function(self)
+        UI.SetSetting("levelSync", self.mode)
+        Options:Refresh() -- a click on the checked radio must not uncheck it
+    end)
+    rb:SetScript("OnEnter", function(self)
+        UI.ShowTooltip(self, L["UI_OPT_levelSync_" .. self.mode], { L["UI_OPT_levelSync_" .. self.mode .. "_TT"] })
+    end)
+    rb:SetScript("OnLeave", UI.HideTooltip)
+    radios[mode] = rb
+    return rb
 end
 
 local function roundToStep(value, step)
@@ -484,13 +533,17 @@ function Options:Refresh()
         sl:SetValue(v)
         sl.updating = false
         sl.label:SetText(sliderLabel(def, roundToStep(v, def.step)))
-        -- greyed out without automation; the random extra does nothing without a delay
+        -- greyed out without automation; the random extra does nothing without a delay;
+        -- the level margin does nothing while level sync is off
         local enabled = not (NEEDS_AUTOMATION[def.key] and not s.automation)
         if def.key == "autoDelayJitter" and (tonumber(s.autoDelay) or 0) <= 0 then enabled = false end
+        if NEEDS_SYNC[def.key] and syncMode() == "off" then enabled = false end
         sl:SetEnabled(enabled)
         local c = enabled and 1 or 0.5
         sl.label:SetTextColor(c, c, c)
     end
+    local mode = syncMode()
+    for m, rb in pairs(radios) do rb:SetChecked(m == mode) end
     refreshRoutes()
 end
 
@@ -504,6 +557,10 @@ local function applyDefaults()
             if defaults[key] ~= nil then UI.SetSetting(key, defaults[key]) end
         end
     end
+    for _, key in ipairs(SYNC_CHECKS) do
+        if defaults[key] ~= nil then UI.SetSetting(key, defaults[key]) end
+    end
+    if defaults.levelSync ~= nil then UI.SetSetting("levelSync", defaults.levelSync) end
     for _, def in ipairs(ALL_RANGES) do
         if defaults[def.key] ~= nil then UI.SetSetting(def.key, defaults[def.key]) end
     end
@@ -552,13 +609,27 @@ function Options:Build()
         function() Options:ShowXPExport() end, 180, 22)
     xpBtn:SetPoint("TOPLEFT", toggleBtn, "BOTTOMLEFT", 0, -4)
 
-    -- right column: sliders, then routes
+    -- right column: sliders, level sync, then routes
     local rx, ry = 330, -72
     sectionTitle(panel, L.UI_OPT_SECTION_DISPLAY, rx, ry)
     ry = ry - 28
     for _, def in ipairs(RANGES) do
         createSlider(panel, def, rx, ry)
         ry = ry - 50
+    end
+    sectionTitle(panel, L.UI_OPT_SECTION_LEVELSYNC, rx, ry - 6)
+    ry = ry - 30
+    for _, mode in ipairs(SYNC_MODES) do
+        createRadio(panel, mode, rx + 4, ry)
+        ry = ry - 20
+    end
+    for _, def in ipairs(SYNC_RANGES) do
+        createSlider(panel, def, rx, ry - 6)
+        ry = ry - 50
+    end
+    for _, key in ipairs(SYNC_CHECKS) do
+        createCheck(panel, key, rx, ry)
+        ry = ry - 26
     end
     routesAnchor = sectionTitle(panel, L.UI_OPT_SECTION_ROUTES, rx, ry - 6)
     routesNote = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
@@ -586,7 +657,7 @@ end
 local function showStandalone()
     if not holder then
         holder = UI.CreatePanel("Frame", nil, UIParent)
-        holder:SetSize(660, 630)
+        holder:SetSize(660, 700)
         holder:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
         holder:SetFrameStrata("DIALOG")
         holder:SetMovable(true)
@@ -668,8 +739,8 @@ end
 
 local function printHelp()
     out(L.UI_HELP_HEADER)
-    for _, k in ipairs({ "show", "lock", "next", "reset", "routes", "route", "config", "delay", "status", "xp",
-        "debug" }) do
+    for _, k in ipairs({ "show", "lock", "next", "sync", "reset", "routes", "route", "config", "delay", "status",
+        "xp", "debug" }) do
         out(L["UI_HELP_" .. k])
     end
 end
@@ -774,10 +845,37 @@ COMMANDS.unlock = function()
     Options:Refresh()
     out(L.UI_UNLOCKED)
 end
+-- the window's buttons: "« Back" = Engine:Prev, "Forward »" = Engine:Forward (UI.Forward);
+-- next / skip keep their own meaning (mark the step done / skipped)
 COMMANDS.next = function() if needEngine() then ns.Engine:Next() end end
-COMMANDS.prev = function() if needEngine() then ns.Engine:Prev() end end
+COMMANDS.prev = function() if needEngine() then UI.Back() end end
 COMMANDS.back = COMMANDS.prev
+COMMANDS.forward = function() if needEngine() then UI.Forward() end end
 COMMANDS.skip = function() if needEngine() then ns.Engine:Skip() end end
+-- /fb sync: jump to the segment that fits the level (the engine prints the jump; also in "off"
+-- mode or after "Stay": the player asks for it); /fb sync undo: back to where the jump started
+COMMANDS.sync = function(arg)
+    if not needEngine() then return end
+    if not UI.HasSync() then
+        out(L.UI_SYNC_UNAVAILABLE)
+        return
+    end
+    arg = (arg or ""):lower()
+    if arg == "undo" then
+        if not UI.UndoSync() then out(L.UI_SYNC_NO_UNDO) end
+        return
+    end
+    if arg ~= "" then
+        out(L.UI_SYNC_USAGE)
+        return
+    end
+    if not ns.Engine:GetRoute() then
+        out(L.UI_NO_ROUTE)
+        return
+    end
+    if UI.ApplySync() then return end
+    out(format(L.UI_SYNC_NONE_FMT, UI.PlayerLevel() or 0))
+end
 COMMANDS.reset = function() Options:ConfirmReset() end
 COMMANDS.routes = printRoutes
 COMMANDS.route = function(arg)

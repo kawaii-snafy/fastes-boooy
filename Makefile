@@ -1,13 +1,15 @@
 # FastesBoooy -- offline checks and packaging (POSIX make).
 #
-#   make check        lint + test + validate + simulate, each also on the fixture routes, + the start-state
-#                     harness on the fixture library (what CI runs)
+#   make check        lint + test + validate + simulate (+ simulate-sync), each also on the fixture routes,
+#                     + the start-state harness on the fixture library (what CI runs)
 #   make lint         luacheck with the generated 'forever' std (.luacheckrc)
 #   make test         busted specs (tests/spec)
 #   make validate     route validator against tools/data/forever_db.lua (addons/FastesBoooy_*: route
 #                     modules, composed with their library dependencies, and library modules)
 #   make simulate     run every route through the real engine on the WoW mock (addons/FastesBoooy_*
 #                     route modules; library modules are played inside the routes that use them)
+#   make simulate-sync  "player ahead of the route": every route module from a fresh character at the
+#                     levels SYNC_LEVELS (10 23 35 48), the level-sync suggestions applied (--ahead L)
 #   make validate-fixtures / simulate-fixtures   the same on the known-good fixture routes
 #   make harness-fixtures  validator (--strict) + simulator harness of the fixture library from its start state
 #   make harness PROFILE=race=Scourge,class=PALADIN,faction=Horde [LIB=addons/FastesBoooy_Horde]
@@ -36,6 +38,8 @@ FIXTURE_VALIDATE = tests/fixtures/validator/FastesBoooy_FxClean tests/fixtures/v
 	tests/fixtures/core/FastesBoooy_TestRoute tests/fixtures/core/FastesBoooy_TestLib \
 	tests/fixtures/core/FastesBoooy_TestComposed tests/fixtures/validator/FastesBoooy_FxHarnessLib
 FIXTURE_SIMULATE = tests/fixtures/core/FastesBoooy_TestRoute tests/fixtures/core/FastesBoooy_TestComposed
+# make simulate-sync: start levels of the "player ahead of the route" runs (tools/simulate_routes.lua --ahead)
+SYNC_LEVELS = 10 23 35 48
 FIXTURE_ROUTEDATA = tests/fixtures/validator/FastesBoooy_FxClean tests/fixtures/core/FastesBoooy_TestLib \
 	tests/fixtures/core/FastesBoooy_TestComposed tests/fixtures/validator/FastesBoooy_FxHarnessLib
 # Start-state harness fixture (tools/lib/harness.lua): a library module that validates /
@@ -59,15 +63,15 @@ WOWUI =
 RESEARCH =
 CONVERSION =
 
-.PHONY: all check lint test validate validate-fixtures simulate simulate-fixtures harness-fixtures harness \
+.PHONY: all check lint test validate validate-fixtures simulate simulate-sync simulate-fixtures harness-fixtures harness \
 	report routedata routedata-check api db requirements package clean help
 
 all: check
 
 help:
-	@sed -n '3,25p' Makefile
+	@sed -n '3,27p' Makefile
 
-check: lint test validate validate-fixtures simulate simulate-fixtures harness-fixtures
+check: lint test validate validate-fixtures simulate simulate-sync simulate-fixtures harness-fixtures
 
 lint:
 	$(LUACHECK) --config .luacheckrc addons tools tests
@@ -83,6 +87,12 @@ validate-fixtures:
 
 simulate:
 	$(LUA) tools/simulate_routes.lua
+
+simulate-sync:
+	@for level in $(SYNC_LEVELS); do \
+		echo "$(LUA) tools/simulate_routes.lua --ahead $$level"; \
+		$(LUA) tools/simulate_routes.lua --ahead $$level || exit 1; \
+	done
 
 simulate-fixtures:
 	$(LUA) tools/simulate_routes.lua $(FIXTURE_SIMULATE)

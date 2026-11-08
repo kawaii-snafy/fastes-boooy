@@ -19,7 +19,7 @@ local Compat = {}
 ns.Compat = Compat
 
 local type, pairs, ipairs, select, tonumber, pcall = type, pairs, ipairs, select, tonumber, pcall
-local sqrt, atan2, abs, pi = math.sqrt, math.atan2, math.abs, math.pi
+local sqrt, atan2, abs, pi, floor = math.sqrt, math.atan2, math.abs, math.pi, math.floor
 local sort = table.sort
 
 ---------------------------------------------------------------------------
@@ -229,6 +229,54 @@ function Compat.GetMaxQuests()
     local n = pubNumber(try(C_QuestLog.GetMaxNumQuestsCanAccept))
     if n and n > 0 then return n end
     return 40
+end
+
+---------------------------------------------------------------------------
+-- quest difficulty: gray (trivial) quests
+---------------------------------------------------------------------------
+
+--- Classic gray-level rule (tools/lib/fbdb.lua DB.GreyLevel): green range of a player of
+-- `level`, i.e. a quest is gray when level - questLevel > range. Gray level: 0 up to 5,
+-- level - floor(level / 10) - 5 up to 39, level - floor(level / 5) - 1 up to 59, 48 at 60.
+function Compat.FallbackTrivialRange(level)
+    level = tonumber(level) or 1
+    local grey
+    if level <= 5 then grey = 0
+    elseif level <= 39 then grey = level - floor(level / 10) - 5
+    elseif level <= 59 then grey = level - floor(level / 5) - 1
+    else grey = 48 end
+    return level - grey - 1
+end
+
+--- Green range of the player (quests more than `range` levels below the player are gray):
+-- C_QuestLog.GetTrivialRange() (Forever: the Camelot nameplate colours use it; Questie calls it the
+-- inclusive green offset), else UnitQuestTrivialLevelRange("player") (FrameXML
+-- DifficultyUtil.GetRelativeDifficultyColor), else Compat.FallbackTrivialRange(level).
+function Compat.TrivialRange(level)
+    local r = pubNumber(try(C_QuestLog.GetTrivialRange))
+    if r and r >= 0 then return r end
+    r = pubNumber(try(UnitQuestTrivialLevelRange, "player"))
+    if r and r >= 0 then return r end
+    return Compat.FallbackTrivialRange(level or Compat.PlayerFacts().level)
+end
+
+--- Is the quest gray (trivial) for the player, like the client colours it? The client's own
+-- answer C_QuestLog.IsQuestTrivial(questID) when it has the quest's data (HaveQuestData: for an
+-- uncached quest the difficulty APIs may misreport -- Questie notes the same on Forever); else
+-- the FrameXML rule (GetRelativeDifficultyColor: trivial when playerLevel - questLevel > green
+-- range) with `questLevel` (route data questMeta) and `range` (default Compat.TrivialRange).
+-- Unknown quest level, or a level <= 0 (scales with the player): not gray.
+-- @param playerLevel default: Compat.PlayerFacts().level
+function Compat.IsQuestGray(questID, questLevel, playerLevel, range)
+    if type(questID) ~= "number" then return false end
+    if pubBool(try(HaveQuestData, questID)) then
+        local v = try(C_QuestLog.IsQuestTrivial, questID)
+        if not isSecret(v) and type(v) == "boolean" then return v end
+    end
+    if type(questLevel) ~= "number" or questLevel <= 0 then return false end
+    playerLevel = tonumber(playerLevel) or Compat.PlayerFacts().level
+    range = tonumber(range) or Compat.TrivialRange(playerLevel)
+    return playerLevel - questLevel > range
 end
 
 --- XP the quest in the log would give right now (0 when unknown).

@@ -13,6 +13,7 @@
 --       npcs = { [id] = "enUS name", ... },
 --       objects = {...}, items = {...},   -- only when referenced
 --       places = { ["Brill"] = { area = 159, en = "Brill", ru = "Брилл" }, ... },
+--       questMeta = { [id] = { level = 12, reqLevel = 9, preAll = { ... }, preAny = { ... } }, ... },
 --   })
 --
 -- A route that uses library segments (UseSegments) lists only what its own segments and
@@ -33,6 +34,12 @@
 -- neither is left out (shown in enUS) and reported on stderr. The output is
 -- deterministic (sorted ids / names). --check exits 1 if a Data.lua would change (CI),
 -- --stdout prints instead of writing.
+--
+-- `questMeta` (every quest listed in `quests`, when the DB knows it): quest level (`level`, -1 =
+-- scales with the player), required level (`reqLevel`) and the prerequisites of the DB snapshot:
+-- `preAll` = preQuestGroup (all needed), `preAny` = preQuestSingle (one of them needed); each list
+-- only when non-empty. The engine uses it for the level sync / gray-quest skip / unreachable-quest
+-- rule (Core/Engine.lua); library data sits under route data like the names do.
 
 local here = (arg and arg[0] or ""):match("^(.*)[/\\][^/\\]*$") or "."
 package.path = here .. "/?.lua;" .. package.path
@@ -141,7 +148,52 @@ function M.Places(ids, areaIds)
     return list, unknown
 end
 
--- lines of one data table body: quests / npcs / objects / items / places
+local function sortedList(list)
+    local out = {}
+    for _, v in ipairs(type(list) == "table" and list or {}) do
+        if type(v) == "number" then out[#out + 1] = v end
+    end
+    table.sort(out)
+    return out
+end
+
+--- questMeta entries of the referenced quests the DB knows, sorted by id:
+-- { { id, level, reqLevel, preAll = {...} | nil, preAny = {...} | nil }, ... }.
+-- Full DB records give the prerequisites (preQuestGroup -> preAll, preQuestSingle -> preAny);
+-- quests only in the out-of-scope index give level / reqLevel.
+function M.QuestMeta(ids, db)
+    local out = {}
+    for _, id in ipairs(sortedIds(ids.quests or {})) do
+        local q = db.quests and db.quests[id]
+        local b = q or DB.QuestBrief(db, id)
+        if b and type(b.level) == "number" then
+            local e = { id = id, level = b.level, reqLevel = type(b.reqLevel) == "number" and b.reqLevel or nil }
+            if q then
+                local all, any = sortedList(q.preGroup), sortedList(q.preSingle)
+                if #all > 0 then e.preAll = all end
+                if #any > 0 then e.preAny = any end
+            end
+            out[#out + 1] = e
+        end
+    end
+    return out
+end
+
+--- One `questMeta` line: `[id] = { level = n, reqLevel = n, preAll = { ... }, preAny = { ... } }`.
+function M.RenderQuestMeta(e)
+    local parts = { string.format("level = %d", e.level) }
+    if e.reqLevel then parts[#parts + 1] = string.format("reqLevel = %d", e.reqLevel) end
+    for _, k in ipairs({ "preAll", "preAny" }) do
+        if e[k] then
+            local ids = {}
+            for i, v in ipairs(e[k]) do ids[i] = string.format("%d", v) end
+            parts[#parts + 1] = string.format("%s = { %s }", k, table.concat(ids, ", "))
+        end
+    end
+    return string.format("[%d] = { %s }", e.id, table.concat(parts, ", "))
+end
+
+-- lines of one data table body: quests / npcs / objects / items / places / questMeta
 local function renderBody(out, ids, db, label, missing, notes, areaIds)
     local lookups = {
         { "quests", function(id) local b = DB.QuestBrief(db, id) return b and b.name end },
@@ -186,6 +238,12 @@ local function renderBody(out, ids, db, label, missing, notes, areaIds)
     for _, name in ipairs(unknown) do
         notes[#notes + 1] = string.format("%s: place %q has no area id in the DB snapshot and no "
             .. "ruRU name in PLACE_NAMES_RU (shown in enUS)", label, name)
+    end
+    local meta = M.QuestMeta(ids, db)
+    if #meta > 0 then
+        out[#out + 1] = "    questMeta = {"
+        for _, e in ipairs(meta) do out[#out + 1] = "        " .. M.RenderQuestMeta(e) .. "," end
+        out[#out + 1] = "    },"
     end
 end
 

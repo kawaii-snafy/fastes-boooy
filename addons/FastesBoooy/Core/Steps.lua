@@ -18,6 +18,12 @@
 --                     (cdb.gaveUp, see Core/Engine.lua) -- the next accept of it after the
 --                     recorded one (#steps + 1 when none)
 --   index             index of the step in the engine's filtered list (compared with givenUp)
+--   void              { [action] = reason } actions that count as done whatever the game says
+--                     (Core/Engine.lua, level sync): an `accept` of a gray quest ("gray") or of a quest
+--                     whose route prerequisites can no longer be met ("unreachable"), a `complete` /
+--                     `turnin` of a quest the player never took and a `collect` of items only such quests
+--                     need ("orphan"), and the other actions of a step below the sync floor that stays an
+--                     along-the-way goal ("floor"). Keyed by the normalized action table.
 --   cache             per-evaluation memo table for quest state (shared between steps)
 --   items             per-evaluation memo table for item counts
 --
@@ -107,6 +113,7 @@ local function questComplete(ctx, q)
     end
     return s.complete
 end
+Steps.QuestComplete = questComplete
 
 local function questObjectives(ctx, q)
     local s = questState(ctx, q)
@@ -147,16 +154,21 @@ end
 ---------------------------------------------------------------------------
 
 --- Is one normalized action done?
+-- any type: void (ctx.void, see the header) -- gray / unreachable / orphan / below the sync floor
 -- accept:   quest in the log or turned in (or forwarded and abandoned by a later step,
 --           or given up: ctx.givenUp, see the header)
--- turnin:   quest turned in (or, on a non-bg step, given up and not in the log)
+-- turnin:   quest turned in (or, not in the log: void -- never taken -- or, on a non-bg
+--           step, given up)
 -- complete: quest turned in, or in the log with the listed objectives (all when
---           none listed) finished (or, on a non-bg step, given up and not in the log)
+--           none listed) finished (or, not in the log: void, or given up on a non-bg step)
 -- abandon:  quest not in the log
 -- collect:  bags hold >= count (or forwarded)
 -- level:    level > n, or level == n and xp/xpMax >= fraction
 -- go/fly/hearth/train/fp/sethearth/vendor/manual (transient): ctx.flags[type] or ctx.forwarded
 function Steps:IsActionDone(action, step, ctx)
+    -- gray / unreachable / never taken / below the sync floor (Core/Engine.lua: level sync)
+    local void = ctx and ctx.void
+    if void and void[action] then return true end
     local t = action.type
     if t == "accept" then
         local q = action.quest
@@ -172,12 +184,15 @@ function Steps:IsActionDone(action, step, ctx)
     elseif t == "turnin" then
         local s = questState(ctx, action.quest)
         if s.turnedIn then return true end
-        return (not s.on and not (step and step.bg) and givenUp(ctx, action.quest)) and true or false
+        if s.on then return false end
+        return (not (step and step.bg) and givenUp(ctx, action.quest)) and true or false
     elseif t == "complete" then
         local q = action.quest
         local s = questState(ctx, q)
         if s.turnedIn then return true end
-        if not s.on then return (not (step and step.bg) and givenUp(ctx, q)) and true or false end
+        if not s.on then
+            return (not (step and step.bg) and givenUp(ctx, q)) and true or false
+        end
         local wanted = action.objectives
         if wanted and #wanted > 0 then
             local objs = questObjectives(ctx, q)
@@ -259,7 +274,8 @@ end
 -- quests (accept/complete/turnin) stays while one of them is in the log or an
 -- `accept` quest is still to be taken (neither in the log nor turned in); it is
 -- dropped once its quests are turned in, or have left the log and none is left
--- to accept (a given-up quest -- ctx.givenUp -- is not left to accept). With
+-- to accept (a given-up quest -- ctx.givenUp -- or a void accept -- gray / unreachable,
+-- ctx.void -- is not left to accept). With
 -- ctx.forwarded (the bg step lies in a segment the player has left, see
 -- Core/Engine.lua) a quest not taken yet no longer keeps it.
 function Steps:IsBackgroundRelevant(step, ctx)
@@ -271,7 +287,8 @@ function Steps:IsBackgroundRelevant(step, ctx)
             hasQuest = true
             local s = questState(ctx, a.quest)
             if s.on then return true end
-            if t == "accept" and not s.turnedIn and not forwarded and not givenUp(ctx, a.quest) then
+            if t == "accept" and not s.turnedIn and not forwarded and not givenUp(ctx, a.quest)
+                and not (ctx and ctx.void and ctx.void[a]) then
                 return true
             end
         end
@@ -347,18 +364,24 @@ end
 -- @param ctx optional (default: ns.Engine:GetContext(step))
 -- @return array of { icon = atlas | texture path | fileID | nil, isAtlas = bool, text = string,
 --   done = bool, kind = action type | "objective" | "note" | "spells",
---   questID? (quest lines/objectives), itemID? (collect), index? (objective index) }
+--   questID? (quest lines/objectives), itemID? (collect), index? (objective index),
+--   void? (the action's ctx.void reason: "gray" | "unreachable" | "orphan" | "floor"),
+--   hint? (true on a "note" line the engine adds: a flight path skipped by the level sync,
+--   a hearthstone bound elsewhere -- Engine:FlightPathPending / Engine:HearthBindMismatch) }
 function Steps:Describe(step, ctx)
     local lines = {}
     if type(step) ~= "table" then return lines end
-    ctx = ctx or (ns.Engine and ns.Engine:GetContext(step)) or { cache = {}, items = {} }
+    local E = ns.Engine
+    ctx = ctx or (E and E:GetContext(step)) or { cache = {}, items = {} }
     local Lc = L()
     local stepDone = self:IsStepDone(step, ctx)
     local icons = self.ICONS
+    local void = ctx.void or EMPTY
 
     for _, a in ipairs(step.actions or EMPTY) do
         local t = a.type
         local done = stepDone or self:IsActionDone(a, step, ctx)
+        local first = #lines + 1
         if t == "accept" then
             line(lines, icons.accept, Lc.STEP_ACCEPT:format(self:QuestTitle(a.quest)), done, t, { questID = a.quest })
         elseif t == "turnin" then
@@ -424,14 +447,28 @@ function Steps:Describe(step, ctx)
             line(lines, icons.fp, Lc.STEP_FP:format(self:PlaceName(a.place)), done, t)
         elseif t == "fly" then
             line(lines, icons.fly, Lc.STEP_FLY:format(self:PlaceName(a.place)), done, t)
+            -- its flight path was skipped by the level sync (the fp visit is an along-the-way goal)
+            if not done and E and E.FlightPathPending and E:FlightPathPending(a.place) then
+                line(lines, nil, Lc.STEP_FLY_NO_FP:format(self:PlaceName(a.place)), false, "note", { hint = true })
+            end
         elseif t == "sethearth" then
             line(lines, icons.sethearth, Lc.STEP_SETHEARTH:format(self:PlaceName(a.place)), done, t)
         elseif t == "hearth" then
             line(lines, icons.hearth, Lc.STEP_HEARTH:format(self:PlaceName(a.place)), done, t)
+            -- after a level sync the bind point of the skipped part may be missing
+            local bind = not done and E and E.HearthBindMismatch and E:HearthBindMismatch(a.place)
+            if bind then
+                line(lines, nil, Lc.STEP_HEARTH_BIND:format(bind, self:PlaceName(a.place)), false, "note",
+                    { hint = true })
+            end
         elseif t == "vendor" then
             line(lines, icons.vendor, Lc.STEP_VENDOR, done, t)
         elseif t == "manual" then
             line(lines, icons.manual, Lc.STEP_MANUAL, done, t)
+        end
+        local why = void[a]
+        if why then
+            for k = first, #lines do lines[k].void = why end
         end
     end
 

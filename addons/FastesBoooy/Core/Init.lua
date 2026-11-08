@@ -13,7 +13,7 @@
 local ADDON, ns = ...
 -- luacheck: ignore 212/self
 
-local type, pairs, select, tostring, pcall, xpcall = type, pairs, select, tostring, pcall, xpcall
+local type, pairs, ipairs, select, tostring, pcall, xpcall = type, pairs, ipairs, select, tostring, pcall, xpcall
 local setmetatable, unpack, tonumber = setmetatable, unpack, tonumber
 local format = string.format
 
@@ -302,9 +302,13 @@ ns.DEFAULTS = {
             locked = false,
             hideInCombat = false,
             debug = false,
+            levelSync = "ask",      -- level sync (Core/Engine.lua): "ask" (suggest a jump), "auto" (jump), "off"
+            levelSyncMargin = 2,    -- a segment is outleveled at level >= segment.levels[2] + margin (0..5)
+            skipGray = true,        -- accepts of gray (trivial) route quests count as done (chains kept)
         },
         frames = {
-            steps = { point = "RIGHT", relativePoint = "RIGHT", x = -80, y = 120 },
+            -- top-anchored (UI/StepFrame.lua keeps the top edge, so the buttons do not move with the height)
+            steps = { point = "TOPRIGHT", relativePoint = "RIGHT", x = -80, y = 180 },
             arrow = { point = "TOP", relativePoint = "TOP", x = 0, y = -140 },
             item = { point = "RIGHT", relativePoint = "RIGHT", x = -388, y = 120 }, -- left of the steps window
         },
@@ -319,6 +323,11 @@ ns.DEFAULTS = {
         gaveUp = {},       -- [questID] = { accept = "<step id>", steps = { "<step id>", ... } }: quest
                            -- abandoned by hand -- its accept step and the skip marks made for it
         -- cursorHint = n, cursorHintId = "<step id>": high-water mark of the cursor
+        -- syncFloor = { route = "<route id>", stepId = "<step id>", from = "<segment id>", level = n,
+        --               at = "<step id>", hint = { n, "<step id>", "<route id>" }, prev = <older floor> }:
+        --             level sync (Core/Engine.lua) -- the steps before stepId count as done
+        -- syncDismissed = { route = "<route id>", segment = "<segment id>", level = n }: no level-sync
+        --             suggestion for that segment until the next level-up
     },
 }
 
@@ -355,18 +364,39 @@ ns.FillDefaults = fill
 ns.SETTING_RANGES = {
     autoDelay = { 0, 3 },
     autoDelayJitter = { 0, 1 },
+    levelSyncMargin = { 0, 5 },
 }
 
---- `value` clamped to the range of setting `key` (ns.SETTING_RANGES); a non-number
--- (or NaN) gives the default of the setting.
+-- Numeric settings that hold whole numbers (rounded by ns.ClampSetting).
+ns.SETTING_INTEGERS = { levelSyncMargin = true }
+
+-- String settings with a fixed set of values (first = default): other saved values are reset
+-- on load (ns:InitDB); the settings panel and /fb offer exactly these.
+ns.SETTING_CHOICES = {
+    levelSync = { "ask", "auto", "off" },
+}
+
+--- `value` clamped to the range of setting `key` (ns.SETTING_RANGES, rounded for
+-- ns.SETTING_INTEGERS); a non-number (or NaN) gives the default of the setting.
 function ns.ClampSetting(key, value)
     local v = tonumber(value)
     if v == nil or v ~= v then v = ns.DEFAULTS.db.settings[key] end
     local r = ns.SETTING_RANGES[key]
     if r and type(v) == "number" then
+        if ns.SETTING_INTEGERS[key] then v = math.floor(v + 0.5) end
         if v < r[1] then v = r[1] elseif v > r[2] then v = r[2] end
     end
     return v
+end
+
+--- `value` if it is one of the choices of setting `key` (ns.SETTING_CHOICES), else the default.
+function ns.ValidChoice(key, value)
+    local list = ns.SETTING_CHOICES[key]
+    if not list then return value end
+    for _, c in ipairs(list) do
+        if c == value then return value end
+    end
+    return ns.DEFAULTS.db.settings[key]
 end
 
 -- Until ADDON_LOADED delivers the saved tables, work on volatile defaults so
@@ -382,9 +412,13 @@ function ns:InitDB()
     fill(FastesBoooyCharDB, ns.DEFAULTS.cdb)
     local settings = FastesBoooyDB.settings
     for key in pairs(ns.SETTING_RANGES) do settings[key] = ns.ClampSetting(key, settings[key]) end
+    for key in pairs(ns.SETTING_CHOICES) do settings[key] = ns.ValidChoice(key, settings[key]) end
     local cdb = FastesBoooyCharDB
     if cdb.route ~= nil and type(cdb.route) ~= "string" then cdb.route = nil end
     if cdb.cursorHint ~= nil and type(cdb.cursorHint) ~= "number" then cdb.cursorHint = nil end
+    -- level sync records (Core/Engine.lua validates their content against the active route)
+    if cdb.syncFloor ~= nil and type(cdb.syncFloor) ~= "table" then cdb.syncFloor = nil end
+    if cdb.syncDismissed ~= nil and type(cdb.syncDismissed) ~= "table" then cdb.syncDismissed = nil end
     ns.db = FastesBoooyDB
     ns.cdb = FastesBoooyCharDB
     ns.dbReady = true

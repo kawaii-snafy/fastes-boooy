@@ -76,6 +76,29 @@ FastesBoooy.AddSegment("gossip", { id = "g1", title = "G1", steps = {
     { accept = 90902, npc = 244808, at = { 1420, 31.1, 66.4 } },
 } })
 ]],
+    -- --ahead 6: segment a1 (1-2) is outleveled, the sync jumps to a2 (6-10); 3901 needs 364 (DB preQuestSingle),
+    -- which the character never took (below the floor). With questMeta the engine skips the accept of 3901;
+    -- without it (older Data.lua) it cannot know, and the simulator refuses the accept.
+    ["FastesBoooy_Ahead/FastesBoooy_Ahead.toc"] = "## Interface: 16001\n## Dependencies: FastesBoooy\nRoute.lua\n",
+    ["FastesBoooy_Ahead/Route.lua"] = [[
+for _, id in ipairs({ "ahead", "ahead-nometa" }) do
+    FastesBoooy.RegisterRoute({ api = 1, id = id, title = "Ahead", faction = "Horde",
+        races = { "Scourge" }, classes = { "PALADIN" }, levels = { 1, 10 } })
+    FastesBoooy.AddSegment(id, { id = "a1", title = "A1", levels = { 1, 2 }, steps = {
+        { accept = 364, npc = 1569, at = { 1420, 30.8, 66.2 } },
+        { complete = 364, at = { 1420, 32.5, 63.5 } },
+        { turnin = 364, npc = 1569, at = { 1420, 30.8, 66.2 } },
+    } })
+    FastesBoooy.AddSegment(id, { id = "a2", title = "A2", levels = { 6, 10 }, steps = {
+        { accept = 3901, npc = 1569, at = { 1420, 30.8, 66.2 } },
+        { complete = 3901, at = { 1420, 32.5, 61.0 } },
+        { turnin = 3901, npc = 1569, at = { 1420, 30.8, 66.2 } },
+        { go = true, at = { 1420, 40, 40 } },
+    } })
+end
+FastesBoooy.AddRouteData("ahead", { questMeta = {
+    [364] = { level = 2, reqLevel = 1 }, [3901] = { level = 3, reqLevel = 1, preAny = { 364 } } } })
+]],
     ["FastesBoooy_Schema/FastesBoooy_Schema.toc"] = "## Interface: 16001\nRoute.lua\n",
     ["FastesBoooy_Schema/Route.lua"] = [[
 FastesBoooy.RegisterRoute({ api = 1, id = "schema", title = "S" })
@@ -161,6 +184,40 @@ describe("tools/simulate_routes.lua", function()
         assert.equal(1, code, out)
         assert.is_truthy(out:find("FAIL FastesBoooy_Schema: ", 1, true), out)
         assert.is_truthy(out:find("unknown step key 'bogus'", 1, true), out)
+    end)
+
+    describe("--ahead (player ahead of the route)", function()
+        it("applies the suggested level sync and plays on to the end", function()
+            local code, out = run("--ahead 6 tests/fixtures/core/FastesBoooy_TestComposed")
+            assert.equal(0, code, out)
+            assert.is_truthy(out:find("OK   test-composed (Scourge PALADIN Horde) ahead: level 6:", 1, true), out)
+            assert.is_truthy(out:find("sync: level 6: tc-intro -> tl-brill", 1, true), out)
+        end)
+
+        it("the engine skips an accept whose route prerequisite was never taken (questMeta)", function()
+            local code, out = run("--ahead 6 --route ahead '" .. root .. "/FastesBoooy_Ahead'")
+            assert.equal(0, code, out)
+            assert.is_truthy(out:find("OK   ahead (Scourge PALADIN Horde) ahead: level 6: 7 steps", 1, true), out)
+            assert.is_truthy(out:find("sync: level 6: a1 -> a2; at the end 0 gray / 1 unreachable accept(s)", 1, true),
+                out)
+        end)
+
+        it("refuses an unreachable accept the engine did not skip", function()
+            local code, out = run("--ahead 6 --route ahead-nometa '" .. root .. "/FastesBoooy_Ahead'")
+            assert.equal(1, code, out)
+            assert.is_truthy(out:find("unreachable accept: step a2:1 [accept 3901] accepts 3901 but its route "
+                .. "prerequisite(s) one of 364 are not turned in", 1, true), out)
+            -- a normal run of the same route is unaffected
+            code, out = run("--route ahead-nometa '" .. root .. "/FastesBoooy_Ahead'")
+            assert.equal(0, code, out)
+            assert.is_falsy(out:find("sync:", 1, true), out)
+        end)
+
+        it("checks its level", function()
+            local code, out = run("--ahead 0")
+            assert.equal(2, code, out)
+            assert.is_truthy(out:find("--ahead needs a level 1..60", 1, true), out)
+        end)
     end)
 
     it("handles its options", function()

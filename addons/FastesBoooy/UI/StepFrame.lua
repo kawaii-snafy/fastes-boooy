@@ -1,15 +1,24 @@
 -- FastesBoooy / UI / StepFrame.lua
 --
--- The guide window: route + segment title, player level / XP, the current step
--- (lines from ns.Steps:Describe), the "along the way" background steps and the
--- next N steps (dimmed), footer buttons Back / Next / Skip / Settings.
+-- The guide window, top to bottom:
+--   header      route title, player level / XP; segment title, step n/total
+--   button row  « Back / Forward » / Settings -- FIXED offsets from the window's top edge
+--   sync banner optional: "you outleveled this segment, jump?" [Jump] [Stay]
+--               (ns.Engine:GetSyncSuggestion), or "jumped to X" + an Undo link for
+--               UNDO_SECONDS after a level sync (until the next step change)
+--   content     the current step (lines from ns.Steps:Describe), the "along the way"
+--               background steps, the next N not-done steps (dimmed)
+-- The window is anchored by its TOP edge (restore, drag, saved position) and only its
+-- height follows the content, so it grows / shrinks downward and the buttons never move;
+-- nothing in the button row is anchored to a content region.
 --
--- Also defines the small shared UI toolkit (ns.UI) used by UI/Arrow.lua and
--- UI/Options.lua: locale proxy, settings setter (fires SETTINGS_CHANGED), frame
--- position save/restore, guide visibility / combat state.
+-- Also defines the small shared UI toolkit (ns.UI) used by UI/Arrow.lua,
+-- UI/ItemButton.lua and UI/Options.lua: locale proxy, settings setter (fires
+-- SETTINGS_CHANGED), frame position save/restore, guide visibility / combat state,
+-- engine actions shared with the slash commands (UI.Forward, UI.ApplySync...).
 --
 -- Consumes only the internal core contract: ns.Engine, ns.Steps, ns.Schema,
--- ns.Compat (player level/XP), ns.db, ns:Listen, ns:On. Frames are created
+-- ns.Compat (player level/XP), ns.db, ns.cdb, ns:Listen, ns:On. Frames are created
 -- lazily on DB_READY; no frame is created per refresh (rows are pooled).
 
 -- luacheck: ignore 212/self (singleton modules keep the colon method style)
@@ -84,10 +93,40 @@ local function framesDB(key)
 end
 UI.FramesDB = framesDB
 
+--- The same position expressed by the frame's TOP edge: point "TOPLEFT" / "TOP" /
+-- "TOPRIGHT" with the same horizontal side and relative point; `height` (frame units,
+-- like the offsets) moves y from a middle (LEFT / CENTER / RIGHT) or BOTTOM* point to
+-- the top edge. A frame anchored this way keeps its top edge when its height changes.
+function UI.TopAnchor(point, x, y, height)
+    point = tostring(point or "TOPLEFT"):upper()
+    local v, side = 0.5, point
+    if point:sub(1, 3) == "TOP" then
+        v, side = 0, point:sub(4)
+    elseif point:sub(1, 6) == "BOTTOM" then
+        v, side = 1, point:sub(7)
+    end
+    if side == "CENTER" then side = "" end
+    return "TOP" .. side, x or 0, (y or 0) + v * (tonumber(height) or 0)
+end
+
+local function isTopPoint(point)
+    return type(point) == "string" and point:upper():sub(1, 3) == "TOP"
+end
+
+local function setTopPoint(frame, point, relPoint, x, y)
+    local p, px, py = UI.TopAnchor(point, x, y, frame:GetHeight())
+    frame:ClearAllPoints()
+    frame:SetPoint(p, UIParent, relPoint or point, floor(px + 0.5), floor(py + 0.5))
+    return p, floor(px + 0.5), floor(py + 0.5)
+end
+
 --- Restore a frame position from ns.db.frames[key]. Accepts the named form
 -- { point=, relativePoint=, x=, y= } (what SavePosition writes) and the array
 -- form { point, relativePoint, x, y } (core defaults may use it).
-function UI.RestorePosition(frame, key, defPoint, defRelPoint, defX, defY)
+-- topAnchored: anchor the frame by its top edge (UI.TopAnchor with the current height);
+-- a saved position of another point is converted once and written back, so it does not
+-- drift with the height on the next restore.
+function UI.RestorePosition(frame, key, defPoint, defRelPoint, defX, defY, topAnchored)
     local t = framesDB(key) or EMPTY
     local point = t.point or t[1]
     local relPoint = t.relativePoint or t.relPoint or t[2]
@@ -95,6 +134,15 @@ function UI.RestorePosition(frame, key, defPoint, defRelPoint, defX, defY)
     local y = tonumber(t.y or t[4])
     if type(point) ~= "string" or type(relPoint) ~= "string" or not x or not y then
         point, relPoint, x, y = defPoint, defRelPoint, defX, defY
+    end
+    if topAnchored then
+        local converted = not isTopPoint(point)
+        local p, px, py = setTopPoint(frame, point, relPoint, x, y)
+        if converted and t ~= EMPTY then
+            t.point, t.relativePoint, t.x, t.y = p, relPoint, px, py
+            t[1], t[2], t[3], t[4] = nil, nil, nil, nil
+        end
+        return
     end
     frame:ClearAllPoints()
     frame:SetPoint(point, UIParent, relPoint, x, y)
@@ -111,8 +159,10 @@ function UI.SavePosition(frame, key)
 end
 
 --- Make a frame draggable (left button) unless settings.locked; the position
--- is saved to ns.db.frames[key] when the drag stops.
-function UI.MakeMovable(frame, key)
+-- is saved to ns.db.frames[key] when the drag stops. topAnchored: the client re-anchors
+-- a moved frame to the point nearest to it (often BOTTOM*): turn that back into a
+-- top-edge anchor before saving (see UI.TopAnchor).
+function UI.MakeMovable(frame, key, topAnchored)
     frame:SetMovable(true)
     frame:SetClampedToScreen(true)
     frame:EnableMouse(true)
@@ -127,6 +177,10 @@ function UI.MakeMovable(frame, key)
         if not self.isMoving then return end
         self.isMoving = false
         self:StopMovingOrSizing()
+        if topAnchored then
+            local point, _, relPoint, x, y = self:GetPoint(1)
+            if point then setTopPoint(self, point, relPoint, x, y) end
+        end
         UI.SavePosition(self, key)
     end)
 end
@@ -197,7 +251,13 @@ function UI.CreatePanel(frameType, name, parent)
     return f
 end
 
---- UIPanelButtonTemplate button with small font and a tooltip.
+local function richTooltip(self)
+    UI.ShowTooltip(self, self.tooltipTitle, self.tooltipLines)
+end
+
+--- UIPanelButtonTemplate button with small font and a tooltip: a string (one line,
+-- shown by the template's UIPanelButtonMixin:OnEnter) or { title, { line, ... } }
+-- (title + explanation lines, our own OnEnter).
 function UI.CreateButton(parent, text, tooltip, onClick, width, height)
     local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
     b:SetSize(width or 80, height or 20)
@@ -206,7 +266,11 @@ function UI.CreateButton(parent, text, tooltip, onClick, width, height)
     b:SetDisabledFontObject("GameFontDisableSmall")
     b:SetText(text or "")
     b:SetScript("OnClick", onClick)
-    if tooltip then
+    if type(tooltip) == "table" then
+        b.tooltipTitle, b.tooltipLines = tooltip[1], tooltip[2]
+        b:SetScript("OnEnter", richTooltip)
+        b:SetScript("OnLeave", UI.HideTooltip)
+    elseif tooltip then
         -- UIPanelButtonMixin:OnEnter shows self.tooltipText; add our own handler
         -- only when the template did not install one.
         b.tooltipText = tooltip
@@ -216,6 +280,69 @@ function UI.CreateButton(parent, text, tooltip, onClick, width, height)
         end
     end
     return b
+end
+
+---------------------------------------------------------------------------
+-- engine actions shared by the buttons, the banner and the slash commands
+---------------------------------------------------------------------------
+
+--- "Forward": the step is done or not wanted -> the next one; while an earlier step is
+-- shown (after Back) -> the view moves forward. ns.Engine:Forward does exactly this; the
+-- fallback (an older engine) does the same with Next (moves a pinned view) / Skip.
+function UI.Forward()
+    local E = ns.Engine
+    if not E then return false end
+    if E.Forward then
+        E:Forward()
+    elseif E.IsPinned and E:IsPinned() then
+        E:Next()
+    else
+        E:Skip()
+    end
+    return true
+end
+
+function UI.Back()
+    local E = ns.Engine
+    if not E then return false end
+    E:Prev()
+    return true
+end
+
+--- Current level-sync suggestion of the engine (nil: none, or an engine without level sync).
+function UI.SyncSuggestion()
+    local E = ns.Engine
+    if not (E and E.GetSyncSuggestion) then return nil end
+    local s = E:GetSyncSuggestion()
+    return type(s) == "table" and s or nil
+end
+
+--- true when the engine supports level sync (GetSyncSuggestion / ApplySync / ...).
+function UI.HasSync()
+    local E = ns.Engine
+    return E and E.GetSyncSuggestion and E.ApplySync and true or false
+end
+
+--- The level-sync floor of the active route (cdb.syncFloor), nil when none.
+function UI.SyncFloor()
+    local f = ns.cdb and ns.cdb.syncFloor
+    if type(f) ~= "table" or f.stepId == nil then return nil end
+    local route = ns.Engine and ns.Engine:GetRoute()
+    if f.route ~= nil and route and f.route ~= route.id then return nil end
+    return f
+end
+
+--- Title of a segment: a segment table, or a segment id of the active route.
+function UI.SegmentTitle(seg)
+    if type(seg) == "string" then
+        local route = ns.Engine and ns.Engine:GetRoute()
+        local s = route and route.segmentById and route.segmentById[seg]
+        return s and UI.Text(s.title) or seg
+    end
+    if type(seg) == "table" then
+        return UI.Text(seg.title) or (seg.id and tostring(seg.id)) or "?"
+    end
+    return "?"
 end
 
 ---------------------------------------------------------------------------
@@ -234,6 +361,11 @@ local function playerLevelXP()
     return level, xp, xpMax
 end
 
+--- Player level (nil when unknown).
+function UI.PlayerLevel()
+    return (playerLevelXP())
+end
+
 ---------------------------------------------------------------------------
 -- step frame
 ---------------------------------------------------------------------------
@@ -248,8 +380,17 @@ local INDENT = 14
 local ROW_GAP = 2
 local SECTION_GAP = 6
 local HEADER_H = 34
-local FOOTER_H = 22
+local BUTTON_H = 22
+local BUTTON_GAP = 4
+local BUTTON_Y = HEADER_H + 2            -- top of the button row, from the window's top edge
+local TOP_BLOCK = BUTTON_Y + BUTTON_H + 6 -- header + buttons: what never moves
+local BANNER_PAD = 5
+local BANNER_BUTTON_H = 20
 local REFRESH_INTERVAL = 1
+local UNDO_SECONDS = 30
+
+SF.TOP_BLOCK = TOP_BLOCK
+SF.UNDO_SECONDS = UNDO_SECONDS
 
 local COLORS = {
     current = { 1, 1, 1 },
@@ -260,6 +401,9 @@ local COLORS = {
     upcoming = { 0.6, 0.6, 0.6 },
     section = { 1, 0.82, 0 },
     message = { 0.9, 0.9, 0.9 },
+    banner = { 1, 0.92, 0.6 },
+    link = { 0.4, 0.75, 1 },
+    linkHover = { 0.7, 0.9, 1 },
 }
 
 local DONE_ATLAS = "UI-QuestTracker-Tracker-Check"
@@ -267,6 +411,10 @@ local DONE_ATLAS = "UI-QuestTracker-Tracker-Check"
 local frame -- created on DB_READY
 local rows = {}
 local rowsUsed = 0
+
+local function now()
+    return GetTime and GetTime() or 0
+end
 
 local function stepTooltip(row)
     local step = row.step
@@ -366,20 +514,32 @@ local function addRow(y, text, opts)
     return y + h + ROW_GAP
 end
 
--- Adds the Describe() lines of one step.
--- mode: "current" | "bg" | "upcoming"
-local function addStep(y, step, mode)
+-- Describe() lines of one step to show in `mode` ("current" | "bg" | "upcoming").
+-- Upcoming steps are a compact preview: the first line plus quest lines, no objective /
+-- note / spell lines (they are in the tooltip) and nothing already done (a partly done
+-- step shows only what is left).
+local function stepLines(step, mode)
     local lines = ns.Steps and ns.Steps.Describe and ns.Steps:Describe(step)
     if type(lines) ~= "table" or #lines == 0 then
         lines = { { text = format(L.UI_STEP_FALLBACK_FMT, tostring(step.id)), kind = "note" } }
     end
-    local upcoming = mode == "upcoming"
-    local shown = 0
+    if mode ~= "upcoming" then return lines end
+    local out = {}
     for _, line in ipairs(lines) do
         local kind = line.kind
-        -- upcoming steps are a compact preview: no objective/note lines (they are in the tooltip)
-        local skip = upcoming and shown > 0 and (kind == "objective" or kind == "note" or kind == "spells")
-        if not skip and line.text then
+        local detail = #out > 0 and (kind == "objective" or kind == "note" or kind == "spells")
+        if line.text and not line.done and not detail then out[#out + 1] = line end
+    end
+    return out
+end
+
+-- Adds the lines of one step (see stepLines).
+local function addStep(y, step, mode, lines)
+    lines = lines or stepLines(step, mode)
+    local upcoming = mode == "upcoming"
+    for _, line in ipairs(lines) do
+        local kind = line.kind
+        if line.text then
             local color
             if line.done then
                 color = COLORS.done
@@ -411,7 +571,6 @@ local function addStep(y, step, mode)
                     and "GameFontHighlight" or "GameFontHighlightSmall",
                 maxLines = upcoming and 2 or ((kind == "note") and 6 or 0),
             })
-            shown = shown + 1
         end
     end
     return y
@@ -453,8 +612,148 @@ end
 local function updateButtons(route, steps, cursor)
     local hasSteps = route and steps and #steps > 0
     frame.prevButton:SetEnabled(hasSteps and (cursor == nil or cursor > 1) and true or false)
-    frame.nextButton:SetEnabled(hasSteps and cursor ~= nil and true or false)
-    frame.skipButton:SetEnabled(hasSteps and cursor ~= nil and true or false)
+    frame.forwardButton:SetEnabled(hasSteps and cursor ~= nil and true or false)
+end
+
+-- level-sync undo window -------------------------------------------------------
+
+-- Opened by SYNC_APPLIED (ns.Engine:ApplySync: the Jump button, /fb sync, or the engine itself
+-- in "auto" mode) for the step shown right after the jump; closed after UNDO_SECONDS, when the
+-- displayed step changes, by SYNC_UNDONE, or when the jump's floor is gone (ns.Engine:GetLastSync).
+SF.pendingUndo = nil -- record of the last SYNC_APPLIED until the next refresh
+SF.undo = nil
+
+-- title of the segment a sync jumped to (record = cdb.syncFloor: { to = <segment id>, stepId })
+local function syncTitle(record)
+    if type(record) ~= "table" then return nil end
+    if type(record.to) == "string" then return UI.SegmentTitle(record.to) end
+    local E = ns.Engine
+    local i = E and E.IndexOf and record.stepId and E:IndexOf(record.stepId)
+    local step = i and E:GetSteps()[i]
+    return step and step.segment and UI.SegmentTitle(step.segment) or nil
+end
+
+local function syncStillActive(u)
+    local E = ns.Engine
+    if E and E.GetLastSync then
+        local ls = E:GetLastSync()
+        return ls ~= nil and (type(u.record) ~= "table" or ls.record == u.record)
+    end
+    return UI.SyncFloor() ~= nil
+end
+
+function SF:CheckUndo(current)
+    local record = self.pendingUndo
+    if record then
+        self.pendingUndo = nil
+        self.undo = { record = record, stepId = current and current.id, untilTime = now() + UNDO_SECONDS,
+            title = syncTitle(record) }
+    end
+    local u = self.undo
+    if u and (now() >= u.untilTime or (current and current.id) ~= u.stepId or not syncStillActive(u)) then
+        self.undo = nil
+    end
+    return self.undo
+end
+
+--- Undo window state ({ title, untilTime, ... }) after a level sync, nil when closed.
+function SF:GetUndo()
+    return self.undo
+end
+
+-- sync banner -----------------------------------------------------------------------
+
+local function bannerTooltip(self)
+    UI.ShowTooltip(self, self.tooltipTitle, self.tooltipLines)
+end
+
+local function createBanner()
+    local b = CreateFrame("Frame", nil, frame)
+    local bg = b:CreateTexture(nil, "BACKGROUND")
+    bg:SetAllPoints(b)
+    bg:SetColorTexture(0.35, 0.27, 0.05, 0.55)
+    b.bg = bg
+
+    local text = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    text:SetPoint("TOPLEFT", b, "TOPLEFT", BANNER_PAD, -BANNER_PAD)
+    text:SetJustifyH("LEFT")
+    text:SetJustifyV("TOP")
+    text:SetWordWrap(true)
+    text:SetTextColor(COLORS.banner[1], COLORS.banner[2], COLORS.banner[3])
+    b.text = text
+
+    local bw = 96
+    b.goButton = UI.CreateButton(b, L.UI_SYNC_GO, { L.UI_SYNC_GO, { L.UI_SYNC_GO_TT } }, function()
+        UI.ApplySync()
+    end, bw, BANNER_BUTTON_H)
+    b.goButton:SetPoint("TOPLEFT", text, "BOTTOMLEFT", 0, -4)
+    b.stayButton = UI.CreateButton(b, L.UI_SYNC_STAY, { L.UI_SYNC_STAY, { L.UI_SYNC_STAY_TT } }, function()
+        UI.DismissSync()
+    end, bw, BANNER_BUTTON_H)
+    b.stayButton:SetPoint("LEFT", b.goButton, "RIGHT", BUTTON_GAP, 0)
+
+    -- "Undo" link: a plain button with its own font string (no template art)
+    local link = CreateFrame("Button", nil, b)
+    local fs = link:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    fs:SetPoint("TOPRIGHT", link, "TOPRIGHT", 0, 0)
+    fs:SetJustifyH("RIGHT")
+    link:SetFontString(fs)
+    link:SetText(L.UI_SYNC_UNDO)
+    fs:SetTextColor(COLORS.link[1], COLORS.link[2], COLORS.link[3])
+    link:SetSize(max(40, (fs:GetStringWidth() or 40) + 4), 14)
+    link:SetPoint("TOPRIGHT", b, "TOPRIGHT", -BANNER_PAD, -BANNER_PAD + 1)
+    link.tooltipTitle, link.tooltipLines = L.UI_SYNC_UNDO, { L.UI_SYNC_UNDO_TT }
+    link:SetScript("OnEnter", function(self)
+        fs:SetTextColor(COLORS.linkHover[1], COLORS.linkHover[2], COLORS.linkHover[3])
+        bannerTooltip(self)
+    end)
+    link:SetScript("OnLeave", function()
+        fs:SetTextColor(COLORS.link[1], COLORS.link[2], COLORS.link[3])
+        UI.HideTooltip()
+    end)
+    link:SetScript("OnClick", function() UI.UndoSync() end)
+    b.undoButton = link
+
+    b:Hide()
+    return b
+end
+
+-- Lays out the banner at vertical offset y. @return new y
+local function layoutBanner(y, current)
+    local b = frame.banner
+    local width = WIDTH - 2 * PAD
+    local undo = SF:CheckUndo(current)
+    local sug = UI.SyncSuggestion() -- a new suggestion wins over the undo link
+    if sug then
+        b.text:SetWidth(width - 2 * BANNER_PAD)
+        b.text:SetText(format(L.UI_SYNC_BANNER_FMT, tonumber(sug.level) or 0, UI.SegmentTitle(sug.from),
+            UI.SegmentTitle(sug.to)))
+        b.goButton:Show()
+        b.stayButton:Show()
+        b.undoButton:Hide()
+        b.kind = "suggest"
+        b.suggestion = sug
+        local h = (b.text:GetStringHeight() or 12) + 4 + BANNER_BUTTON_H + 2 * BANNER_PAD
+        b:SetSize(width, h)
+    elseif undo then
+        b.text:SetWidth(width - 2 * BANNER_PAD - b.undoButton:GetWidth() - 6)
+        b.text:SetText(undo.title and format(L.UI_SYNC_DONE_FMT, undo.title) or L.UI_SYNC_DONE)
+        b.goButton:Hide()
+        b.stayButton:Hide()
+        b.undoButton:Show()
+        b.kind = "undo"
+        b.suggestion = nil
+        local h = max(b.text:GetStringHeight() or 12, 14) + 2 * BANNER_PAD
+        b:SetSize(width, h)
+    else
+        b.kind, b.suggestion = nil, nil
+        b:Hide()
+        return y
+    end
+    b:ClearAllPoints()
+    b:SetPoint("TOPLEFT", frame, "TOPLEFT", PAD, -y)
+    b:Show()
+    return y + b:GetHeight() + SECTION_GAP
 end
 
 --- Rebuild the window contents from the engine state.
@@ -468,15 +767,15 @@ function SF:Refresh()
     local route = E and E:GetRoute()
     local steps = route and E:GetSteps() or nil
     local cursor = route and E:GetCursor() or nil
+    local current = route and E:GetCurrentStep() or nil
 
     updateHeader(route, steps, cursor)
     updateButtons(route, steps, cursor)
 
-    local y = HEADER_H + PAD
+    local y = layoutBanner(TOP_BLOCK + 2, current)
     if not route then
         y = addRow(y, L.UI_NO_ROUTE, { color = COLORS.message })
     else
-        local current = E:GetCurrentStep()
         if current then
             y = addStep(y, current, "current")
         else
@@ -493,11 +792,19 @@ function SF:Refresh()
 
         local n = tonumber(UI.Settings().shownNext) or 0
         if n > 0 and current then
+            -- not-done steps only (ns.Engine:GetUpcoming); a step done meanwhile is dropped too
             local upcoming = E:GetUpcoming(min(n, 20))
-            if type(upcoming) == "table" and #upcoming > 0 then
-                y = addSection(y, L.UI_UPCOMING)
-                for _, s in ipairs(upcoming) do
-                    y = addStep(y, s, "upcoming")
+            local titled = false
+            for _, s in ipairs(type(upcoming) == "table" and upcoming or EMPTY) do
+                if not (E.IsDone and E:IsDone(s)) then
+                    local lines = stepLines(s, "upcoming")
+                    if #lines > 0 then
+                        if not titled then
+                            y = addSection(y, L.UI_UPCOMING)
+                            titled = true
+                        end
+                        y = addStep(y, s, "upcoming", lines)
+                    end
                 end
             end
         end
@@ -508,7 +815,12 @@ function SF:Refresh()
         rows[i].step = nil
     end
 
-    frame:SetHeight(floor(y + SECTION_GAP + FOOTER_H + PAD + 0.5))
+    -- only the height follows the content: the window is anchored by its top edge
+    local h = floor(y + PAD + 0.5)
+    frame:SetHeight(h)
+    -- keep the header + buttons on screen; the content may hang below the screen edge
+    -- instead of pushing the window (and its buttons) up
+    frame:SetClampRectInsets(0, 0, 0, max(0, h - TOP_BLOCK))
 end
 
 --- Request a refresh on the next frame (coalesces bursts of events; a hidden
@@ -533,7 +845,7 @@ function SF:ApplySettings()
     local scale = tonumber(s.frameScale) or 1
     if scale < 0.3 or scale > 3 then scale = 1 end
     frame:SetScale(scale)
-    UI.RestorePosition(frame, "steps", "RIGHT", "RIGHT", -80, 60)
+    UI.RestorePosition(frame, "steps", "TOPRIGHT", "RIGHT", -80, 180, true)
     self:UpdateVisibility()
     self:MarkDirty()
 end
@@ -547,7 +859,7 @@ function SF:Create()
     frame = UI.CreatePanel("Frame", nil, UIParent)
     frame:SetSize(WIDTH, 120)
     frame:SetFrameStrata("MEDIUM")
-    UI.MakeMovable(frame, "steps")
+    UI.MakeMovable(frame, "steps", true)
 
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     title:SetPoint("TOPLEFT", frame, "TOPLEFT", PAD, -PAD)
@@ -575,40 +887,34 @@ function SF:Create()
     progress:SetTextColor(0.75, 0.75, 0.75)
     frame.progress = progress
 
+    -- button row: fixed offsets from the top edge, chained only to each other
+    local bw = floor((WIDTH - 2 * PAD - 2 * BUTTON_GAP) / 3)
+    frame.prevButton = UI.CreateButton(frame, format(L.UI_BTN_BACK_FMT, L.UI_BTN_PREV),
+        { L.UI_BTN_PREV, { L.UI_TT_BACK } }, function() UI.Back() end, bw, BUTTON_H)
+    frame.forwardButton = UI.CreateButton(frame, format(L.UI_BTN_FORWARD_FMT, L.UI_BTN_FORWARD),
+        { L.UI_BTN_FORWARD, { L.UI_TT_FORWARD, { L.UI_TT_FORWARD_BACK, 0.75, 0.75, 0.75 },
+            { L.UI_TT_FORWARD_AUTO, 0.6, 0.6, 0.6 } } }, function() UI.Forward() end, bw, BUTTON_H)
+    frame.nextButton = frame.forwardButton -- older name (tools/simulate_routes.lua clicks it)
+    frame.settingsButton = UI.CreateButton(frame, L.UI_BTN_SETTINGS, { L.UI_BTN_SETTINGS, { L.UI_TT_SETTINGS } },
+        function()
+            if UI.Options and UI.Options.Open then UI.Options:Open() end
+        end, bw, BUTTON_H)
+    frame.buttons = { frame.prevButton, frame.forwardButton, frame.settingsButton }
+    for i, b in ipairs(frame.buttons) do
+        if i == 1 then
+            b:SetPoint("TOPLEFT", frame, "TOPLEFT", PAD, -BUTTON_Y)
+        else
+            b:SetPoint("LEFT", frame.buttons[i - 1], "RIGHT", BUTTON_GAP, 0)
+        end
+    end
+
     local sep = frame:CreateTexture(nil, "ARTWORK")
     sep:SetColorTexture(1, 1, 1, 0.15)
     sep:SetHeight(1)
-    sep:SetPoint("TOPLEFT", frame, "TOPLEFT", PAD, -(HEADER_H + 2))
-    sep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -PAD, -(HEADER_H + 2))
+    sep:SetPoint("TOPLEFT", frame, "TOPLEFT", PAD, -(TOP_BLOCK - 2))
+    sep:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -PAD, -(TOP_BLOCK - 2))
 
-    -- footer buttons
-    local gap = 4
-    local bw = floor((WIDTH - 2 * PAD - 3 * gap) / 4)
-    local E = function() return ns.Engine end
-    frame.prevButton = UI.CreateButton(frame, L.UI_BTN_PREV, L.UI_TT_PREV, function()
-        local eng = E()
-        if eng then eng:Prev() end
-    end, bw, FOOTER_H)
-    frame.nextButton = UI.CreateButton(frame, L.UI_BTN_NEXT, L.UI_TT_NEXT, function()
-        local eng = E()
-        if eng then eng:Next() end
-    end, bw, FOOTER_H)
-    frame.skipButton = UI.CreateButton(frame, L.UI_BTN_SKIP, L.UI_TT_SKIP, function()
-        local eng = E()
-        if eng then eng:Skip() end
-    end, bw, FOOTER_H)
-    frame.settingsButton = UI.CreateButton(frame, L.UI_BTN_SETTINGS, L.UI_TT_SETTINGS, function()
-        if UI.Options and UI.Options.Open then UI.Options:Open() end
-    end, bw, FOOTER_H)
-    local prev
-    for _, b in ipairs({ frame.prevButton, frame.nextButton, frame.skipButton, frame.settingsButton }) do
-        if prev then
-            b:SetPoint("LEFT", prev, "RIGHT", gap, 0)
-        else
-            b:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", PAD, PAD)
-        end
-        prev = b
-    end
+    frame.banner = createBanner()
 
     frame.elapsed = 0
     frame:SetScript("OnUpdate", function(_, elapsed)
@@ -619,9 +925,46 @@ function SF:Create()
     end)
     frame:SetScript("OnShow", function() SF:Refresh() end)
 
+    self:Refresh()       -- the real height first: a saved middle / bottom anchor converts with it
     self:ApplySettings()
     self:Refresh()
     return frame
+end
+
+---------------------------------------------------------------------------
+-- level sync actions (banner buttons, /fb sync)
+---------------------------------------------------------------------------
+
+--- Jump to the first segment that fits the player's level (ns.Engine:ApplySync: also without a
+-- banner -- "off" mode, a dismissed offer -- when the current segment is outleveled; it prints
+-- the chat line and fires SYNC_APPLIED, which opens the Undo link).
+-- @return true when a sync was applied
+function UI.ApplySync()
+    local E = ns.Engine
+    if not UI.HasSync() then return false end
+    local ok = E:ApplySync()
+    SF:MarkDirty()
+    return ok ~= false
+end
+
+--- Keep the current segment: no suggestion for it until the next level-up.
+function UI.DismissSync()
+    local E = ns.Engine
+    if not (E and E.DismissSync) then return false end
+    E:DismissSync()
+    SF:MarkDirty()
+    return true
+end
+
+--- Undo the last level sync (ns.Engine:UndoSync restores the previous floor; prints the chat line).
+-- @return true when there was a sync to undo
+function UI.UndoSync()
+    local E = ns.Engine
+    if not (E and E.UndoSync) or type(ns.cdb and ns.cdb.syncFloor) ~= "table" then return false end
+    local ok = E:UndoSync()
+    SF.undo, SF.pendingUndo = nil, nil
+    SF:MarkDirty()
+    return ok ~= false
 end
 
 ---------------------------------------------------------------------------
@@ -643,6 +986,15 @@ ns:Listen("DB_READY", onDBReady)
 ns:Listen("ROUTE_CHANGED", markDirty)
 ns:Listen("STEP_CHANGED", markDirty)
 ns:Listen("PROGRESS_UPDATED", markDirty)
+ns:Listen("SYNC_SUGGESTION", markDirty)
+ns:Listen("SYNC_APPLIED", function(_, record)
+    SF.pendingUndo = record or true
+    SF:MarkDirty()
+end)
+ns:Listen("SYNC_UNDONE", function()
+    SF.undo, SF.pendingUndo = nil, nil
+    SF:MarkDirty()
+end)
 ns:Listen("UI_VISIBILITY_CHANGED", function() SF:UpdateVisibility() end)
 -- scale / hide-in-combat / shownNext / debug: re-applying everything is cheap
 ns:Listen("SETTINGS_CHANGED", function() SF:ApplySettings() end)

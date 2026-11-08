@@ -16,9 +16,9 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 | `fetch_wowhead_requirements.py` | списки «Requirements:» подсказок Wowhead Forever для квестов снимка → `data/wowhead_requirements.json` (количества целей Forever; вход `build_db_snapshot.py`) |
 | `data/wowhead_requirements.json` | (генерируется, коммитится) `{"<questID>": [[имя, N или null], ...]}` — 1 958 квестов, у 1 842 есть список (снимок 2026-11-08) |
 | `validate_routes.lua` | **валидатор маршрутов** (CLI; логика в `lib/validator.lua`; `--state`/`--write-state`/`--harness` — раздел 7) |
-| `gen_route_data.lua` | генерирует `<модуль>/Data.lua` (enUS-имена квестов/NPC маршрута, `places` — id зон и ruRU-имена мест; у модуля-библиотеки — `AddLibraryData`) |
+| `gen_route_data.lua` | генерирует `<модуль>/Data.lua` (enUS-имена квестов/NPC маршрута, `places` — id зон и ruRU-имена мест, `questMeta` — уровни и предпосылки квестов; у модуля-библиотеки — `AddLibraryData`) |
 | `package_addons.py` | `dist/<Аддон>-<версия>.zip` для каждого каталога `addons/*` |
-| `simulate_routes.lua` | прогон маршрутов через настоящий движок на моке (принадлежит ядру; цели-события exploration/escort и квесты с шагом `complete` без целей в БД не выполнены при взятии — их выполняет шаг `complete`; визит `train`/`vendor`/`fp`/`sethearth` к NPC, который выдаёт квест маршрута или принимает выполненный, начинается с его диалога (`m:TalkTo`), как в игре, — если автоматика при этом перемотала обязательный визит, это предупреждение (валидатор: `lookahead-skip`); библиотеки-зависимости грузятся в мок раньше модуля, сами отдельно не прогоняются; часть библиотеки из стартового состояния — `--harness`, раздел 7) |
+| `simulate_routes.lua` | прогон маршрутов через настоящий движок на моке (принадлежит ядру; цели-события exploration/escort и квесты с шагом `complete` без целей в БД не выполнены при взятии — их выполняет шаг `complete`; визит `train`/`vendor`/`fp`/`sethearth` к NPC, который выдаёт квест маршрута или принимает выполненный, начинается с его диалога (`m:TalkTo`), как в игре, — если автоматика при этом перемотала обязательный визит, это предупреждение (валидатор: `lookahead-skip`); библиотеки-зависимости грузятся в мок раньше модуля, сами отдельно не прогоняются; часть библиотеки из стартового состояния — `--harness`, раздел 7; «игрок обогнал маршрут» — `--ahead L`, раздел 8) |
 | `lib/route_loader.lua` | загрузка модуля маршрута в песочнице (сначала его зависимости `FastesBoooy_*` из `## Dependencies`) + нормализация через `Core/Schema.lua` и сборка маршрута через `Core/Compose.lua` (общие сегменты, вставки) |
 | `lib/fbdb.lua` | доступ к снимку БД: маски рас/классов, поиск, расстояния, формулы опыта |
 | `lib/json.lua` | детерминированный JSON-энкодер и строгий декодер (файлы состояния) |
@@ -32,11 +32,12 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 
 | Цель | Команда |
 |---|---|
-| `make check` | `lint` + `test` + `validate` + `validate-fixtures` + `simulate` + `simulate-fixtures` + `harness-fixtures` (то же, что CI) |
+| `make check` | `lint` + `test` + `validate` + `validate-fixtures` + `simulate` + `simulate-sync` + `simulate-fixtures` + `harness-fixtures` (то же, что CI) |
 | `make lint` | `luacheck --config .luacheckrc addons tools tests` |
 | `make test` | `busted` (все `tests/spec/*_spec.lua`) |
 | `make validate` | `lua5.1 tools/validate_routes.lua` (флаги: `make validate VALIDATE_FLAGS=--strict`) |
 | `make simulate` | `lua5.1 tools/simulate_routes.lua` |
+| `make simulate-sync` | `lua5.1 tools/simulate_routes.lua --ahead L` для `L` из `SYNC_LEVELS` (по умолчанию `10 23 35 48`): «игрок обогнал маршрут», оба маршрута (раздел 8; ≈ 1¾ мин) |
 | `make validate-fixtures` / `make simulate-fixtures` | валидатор (0 ERROR) / симулятор на заведомо хороших фикстурах (`FxClean`, `FxNs`, `TestRoute`, библиотека `TestLib` + составной маршрут `TestComposed`; симулятор — `TestRoute`, `TestComposed`) — стадии проверяют что-то и до появления первого модуля маршрута |
 | `make harness-fixtures` | harness на фикстуре-библиотеке `FastesBoooy_FxHarnessLib` из её состояния `tests/fixtures/validator/harness_state_6.json`: валидатор (`--strict`) и симулятор, оба профиля 22-60 |
 | `make harness PROFILE=… [LIB=…] [SEGMENTS=…] [STATE=…] [OUT=…]` | часть библиотеки из стартового состояния (раздел 7): валидатор (с `--write-state OUT`), затем симулятор; `LIB` по умолчанию `addons/FastesBoooy_Horde`, пустой `SEGMENTS` — все сегменты |
@@ -309,7 +310,16 @@ lua5.1 tools/gen_route_data.lua --stdout <каталог>        # напеча�
 приватную таблицу `local _, ns = ...`, как в клиенте), собирает маршрут (`Core/Compose.lua`),
 собирает id квестов (`accept/turnin/complete/abandon`, ключи `reward`), NPC (`npc`),
 объектов (`object`), предметов (`collect`, `use`) и пишет для каждого маршрута
-`FastesBoooy.AddRouteData("<id>", { quests = {[id] = "enUS"}, npcs = {...}, objects = ..., items = ..., places = ... })`.
+`FastesBoooy.AddRouteData("<id>", { quests = {[id] = "enUS"}, npcs = {...}, objects = ..., items = ..., places = ...,
+questMeta = ... })`.
+
+`questMeta` — для каждого квеста из `quests`, который знает снимок БД:
+`[380] = { level = 4, reqLevel = 2, preAny = { 376 } }` (`level` = уровень квеста, `-1` —
+масштабируется; `reqLevel`; `preAll` = `preQuestGroup`, `preAny` = `preQuestSingle` — только
+непустые, отсортированы; у квестов вне полного снимка — только `level`/`reqLevel` из индекса).
+Движок по ним пропускает серые и недоступные квесты (синхронизация по уровню,
+`docs/ARCHITECTURE.md`); библиотечные `questMeta` подмешиваются под данные маршрута по квесту.
+Пустая таблица не пишется.
 
 **Общие сегменты** (`docs/ROUTE_FORMAT.md`, «Общие сегменты и вставки»). Модуль маршрута с
 `UseSegments` перечисляет только то, на что ссылаются его **собственные сегменты и вставки**
@@ -596,6 +606,17 @@ id, которого нет в маршруте.
   при теневых прогонах). CLI (`validator_cli_spec.lua`): строки отчёта, `--incidental-pct`
   (неверные значения — код 2), `-q` без отчёта.
 * `tests/spec/validator_lint_spec.lua` — std `forever` ловит несуществующие API.
+* `tests/spec/core_sync_spec.lua` — синхронизация по уровню и правила «пустых» квестов на
+  маршруте в памяти (`register`-хук `tests/fixtures/core/helpers.lua`: маршрут через публичный
+  API до входа в игру; четыре сегмента с уровнями, синтетические квесты с предпосылками и их
+  `questMeta`): перерос сегмент с запасом, содержание предложения, `ask`/`auto`/`off`,
+  применение / отказ (до следующего уровня) / отмена, сохранение через `/reload` и холодный
+  старт, серые квесты и защита цепочек, недоступные и не взятые квесты (цепочки, `preAny`,
+  Skip на `accept`), `Forward()`, `GetUpcoming()`, `questMeta` в `gen_route_data` и в составном
+  маршруте, миграция настроек, производительность (`Refresh` маршрута на 1 713 шагов < 60 мс).
+  `tests/spec/core_simulate_spec.lua` — `--ahead` симулятора (синхронизация на
+  `FastesBoooy_TestComposed`, пропуск недоступного `accept` движком, отказ симулятора без
+  `questMeta`, проверка аргумента).
 
 ```
 busted tests/spec/validator_*_spec.lua
@@ -706,6 +727,37 @@ lua5.1 tools/validate_routes.lua -q --route horde-skyborne-druid --profile race=
 сегменты по состояниям **валидатора**; состояние симулятора — для проверки игрового состояния
 (журнал, сданные квесты, камень, позиция). (3) Валидатор не моделирует позицию — `at` старта
 лишь переносится в конец, если в прогоне не было шагов с `at`.
+
+## 8. «Игрок обогнал маршрут»: `simulate_routes.lua --ahead L`
+
+```
+lua5.1 tools/simulate_routes.lua --ahead 23 [--route ID] [модуль ...]
+make simulate-sync                      # L = 10, 23, 35, 48 (SYNC_LEVELS), все модули маршрутов
+```
+
+Свежий персонаж уровня `L` (опыт 0, ничего не сдано) стоит в начале маршрута с настройками по
+умолчанию (`levelSync = "ask"`, `skipGray`). Если движок предлагает синхронизацию
+(`Engine:GetSyncSuggestion()`) — в начале или позже, когда игрок снова перерос сегмент, —
+симулятор «нажимает» кнопку баннера (`Engine:ApplySync()`) и проверяет, что курсор встал на
+предложенный шаг; дальше маршрут проходится до конца как обычно. Во время прохождения симулятор
+**отказывается** брать квест, чьи предпосылки-квесты маршрута (`preQuestGroup` БД — все,
+`preQuestSingle` — любой; предпосылки, которых маршрут не берёт, считаются выполненными) не сданы:
+`FAIL … unreachable accept: step … accepts Q but its route prerequisite(s) … are not turned in` —
+движок должен был пропустить такой `accept` (правило недоступных квестов). Холодный старт в
+конце снова принимает предложения синхронизации (порог был в потерянных SavedVariables).
+Строка `OK` дополняется `ahead: level L`, вторая строка — синхронизации (`level 23:
+ud-01-deathknell -> ud-05-stonetalon-ashenvale; …`) и число «пустых» действий в конце (серые /
+недоступные `accept`, не взятые `complete`/`turnin`). Без `--ahead` ничего из этого не
+происходит: обычные прогоны не изменились.
+
+Итоги (`make simulate-sync`, ≈ 1 мин 45 с на обоих маршрутах):
+
+| L | Нежить-паладин | Скайборн-друид |
+|---|---|---|
+| 10 | 1-6 → 6-13 | на 11-м: 1-9 → 9-13 |
+| 23 | 1-6 → 18-22, затем на 24-м → h-22, на 26-м → h-24 | 1-9 → 18-22 |
+| 35 | 1-6 → h-31 | 1-9 → h-31 |
+| 48 | 1-6 → h-46 | 1-9 → h-46 |
 
 ## Ограничения
 

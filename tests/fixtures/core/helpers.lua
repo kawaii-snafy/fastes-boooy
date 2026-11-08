@@ -115,7 +115,9 @@ end
 --- Create a mock with the core addon (and the test route unless opts.fixture == false) loaded.
 -- opts: locale, player = {...}, savedVariables, db (use the Forever DB snapshot), quests
 -- (define the test route quests, default true), fixture, composed (load the library +
--- composed route instead), modules (see H.modules), mock = { extra Mock.new options }.
+-- composed route instead), modules (see H.modules), mock = { extra Mock.new options },
+-- register = function(api, m) -- registers routes through the public FastesBoooy API after the
+-- modules are loaded (before ADDON_LOADED / PLAYER_LOGIN), like a route module would.
 function H.new(opts)
     opts = opts or {}
     local player = { race = "Scourge", class = "PALADIN", faction = "Horde", mapID = 1420, x = 30.2, y = 71.7 }
@@ -128,6 +130,9 @@ function H.new(opts)
     if opts.setup then opts.setup(m) end
     local ns = Mock.loadAddon(m, H.CORE_TOC)
     for _, mod in ipairs(H.modules(opts)) do Mock.loadAddon(m, mod[1], mod[2]) end
+    if opts.register then
+        m:_top(function() opts.register(rawget(m.env, "FastesBoooy"), m) end)
+    end
     return m, ns
 end
 
@@ -147,7 +152,7 @@ function H.reload(m, opts)
     local U = Mock.util
     local m2, ns2 = H.new({
         locale = opts.locale, savedVariables = sv, quests = false, fixture = opts.fixture,
-        composed = opts.composed, modules = opts.modules,
+        composed = opts.composed, modules = opts.modules, register = opts.register,
         player = { level = m.player.level, xp = m.player.xp, mapID = m.player.mapID, x = m.player.x, y = m.player.y,
             inCombat = m.player.inCombat },
         setup = function(n)

@@ -343,13 +343,24 @@ local function questUIInfo(m, id, isActive)
     }
 end
 
+--- Green range of the player (C_QuestLog.GetTrivialRange / UnitQuestTrivialLevelRange): a quest is
+-- gray (trivial) when playerLevel - questLevel > range. Classic gray-level rule (tools/lib/fbdb.lua
+-- DB.GreyLevel): range = level - greyLevel - 1.
+function M:TrivialRange(level)
+    local p = level or self.player.level
+    local grey
+    if p <= 5 then grey = 0
+    elseif p <= 39 then grey = p - math.floor(p / 10) - 5
+    elseif p <= 59 then grey = p - math.floor(p / 5) - 1
+    else grey = 48 end
+    return p - grey - 1
+end
+
 function M:_isTrivial(def)
     local p = self.player.level
     local q = def.level or p
-    local grey
-    if q <= 4 then grey = q + 5 elseif q <= 13 then grey = q + 6 elseif q <= 22 then grey = q + 7
-    elseif q <= 31 then grey = q + 8 else grey = q + 9 end
-    return p >= grey
+    if q <= 0 then return false end -- scaling quests (level -1) are never trivial
+    return p - q > self:TrivialRange(p)
 end
 
 local function setDialog(m, d)
@@ -865,6 +876,7 @@ ctx.register(function(m)
         GetMaxNumQuests = function() return m.maxQuests end,
         GetQuestDifficultyLevel = function(id) return m:_quest(id).level end,
         IsQuestTrivial = function(id) return m:_isTrivial(m:_quest(id)) end,
+        GetTrivialRange = function() return m:TrivialRange() end,
         IsRepeatableQuest = function(id) return m:_quest(id).repeatable == true end,
         GetRequiredMoney = function(id) return m:_quest(id).moneyRequired or 0 end,
         GetSuggestedGroupSize = function(id) return m:_quest(id).group or 0 end,

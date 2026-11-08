@@ -121,7 +121,11 @@ shift, ctrl, alt, guid` } (raceID / classID / faction derived; Skyborne = 95 All
   `ProgressObjective(id, i, n)`, `CompleteObjectives`, `SetObjective(id, i, { fulfilled, finished })`,
   `SetQuestComplete`, `FailQuest`, `TurnInQuest(id, choice)`, `AbandonQuest`, `SetCompletedQuests`,
   `IsOnQuest`, `IsQuestCompleted`, `QuestLogIDs`, `CanTakeQuest`, `QuestRewardXP`; `Mock.QuestXP`
-  (Classic grey penalty + rounding), `Mock.XP_TO_LEVEL`.
+  (Classic grey penalty + rounding), `Mock.XP_TO_LEVEL`. Gray (trivial) quests: one green range
+  `m:TrivialRange([level])` (Classic gray-level rule, = `tools/lib/fbdb.lua` `DB.GreyLevel`) behind
+  `C_QuestLog.GetTrivialRange`, `UnitQuestTrivialLevelRange`, `C_QuestLog.IsQuestTrivial` and the
+  gossip / greeting `isTrivial` flags: trivial when `playerLevel - questLevel > range` (level <= 0
+  never). `HaveQuestData(id)` is true for defined, cached quests only.
 * **Dialogs / NPCs**: `OpenQuestDetail(id, { npcID, startItem })`, `OpenQuestProgress(id)`,
   `OpenQuestComplete(id, numChoices)`, `OpenGossip({ available, active, options, text }, npcID)`,
   `OpenGreeting({ available, active }, npcID)`, `DefineNPC(id, { name, level, starts, ends, options,

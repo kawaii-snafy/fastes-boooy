@@ -62,6 +62,14 @@
 -- --write-state FILE writes the game state at the end (exactly one simulation). The mock gives
 -- quest XP only (no kill XP): levels of a simulator end state lag behind the validator's.
 --
+-- Player ahead of the route (level sync, Core/Engine.lua): --ahead L starts a FRESH character at
+-- level L at the route start (default settings: levelSync "ask", skipGray on). When the engine
+-- suggests a level sync (GetSyncSuggestion) -- at the start or later -- the simulator "clicks"
+-- the banner's jump button (Engine:ApplySync) and plays on to the end. While playing it refuses
+-- an accept whose route-quest prerequisites (DB preQuestGroup: all, preQuestSingle: one; quests
+-- the route does not accept count as met) are not turned in: "unreachable accept" (the engine
+-- should have skipped it). Without --ahead nothing of this happens (normal runs are unchanged).
+--
 -- Exit status: 0 = every simulation passed (or nothing to simulate), 1 = a failure,
 -- 2 = usage error.
 
@@ -102,6 +110,8 @@ usage: lua5.1 tools/simulate_routes.lua [options] [module-dir ...]
   --no-reload      skip the /reload and cold-start checks
   --state FILE     start from a character state (JSON, see tools/README.md "Harness")
   --write-state FILE  write the game state at the end (needs exactly one simulation)
+  --ahead L        player ahead of the route: a fresh character at level L at the route start;
+                   level-sync suggestions are applied, unreachable accepts fail the run
   --harness DIR    simulate a synthetic route that only uses library segments of the
                    library module DIR, for one --profile (race and class required)
   --segments ID,...   library segments of the harness route (default: all, TOC order)
@@ -121,6 +131,11 @@ local function parseArgs(argv)
         elseif a == "--db" then i = i + 1; o.db = argv[i]
         elseif a == "--no-db" then o.db = false
         elseif a == "--no-reload" then o.reload = false
+        elseif a == "--ahead" then
+            i = i + 1
+            local v = tonumber(argv[i])
+            if not v or v < 1 or v > 60 or v % 1 ~= 0 then return nil, "--ahead needs a level 1..60" end
+            o.ahead = v
         elseif a == "--state" or a == "--write-state" or a == "--harness" or a == "--segments"
             or a == "--profile" then
             i = i + 1
@@ -187,6 +202,7 @@ local function warn(S, fmt, ...)
 end
 
 local checkBgLeft -- defined below (needs engine())
+local checkReachable -- defined below (--ahead)
 
 local function vlog(S, fmt, ...)
     if S.opts.verbose then print(format(fmt, ...)) end
@@ -295,6 +311,34 @@ local function whyNotOffered(S, q)
     return table.concat(why, "; ")
 end
 
+local routeQuestSets -- defined below (needs engine())
+
+-- --ahead: an accept whose ROUTE-quest prerequisites (DB preQuestGroup = all, preQuestSingle = one of;
+-- a prerequisite the route never accepts counts as met, like the engine's rule) are not turned in
+-- cannot be taken in game: the engine should have skipped it (unreachable accept)
+checkReachable = function(S, step, q)
+    local m = S.m
+    local def = m:_quest(q)
+    local routeAccepts = routeQuestSets(S).accept
+    local missing = {}
+    for _, p in ipairs(def.pre or {}) do
+        if p ~= q and routeAccepts[p] and not m.completed[p] then missing[#missing + 1] = tostring(p) end
+    end
+    if def.preAny and #def.preAny > 0 then
+        local met = false
+        local l = {}
+        for _, p in ipairs(def.preAny) do
+            if p == q or not routeAccepts[p] or m.completed[p] then met = true end
+            l[#l + 1] = tostring(p)
+        end
+        if not met then missing[#missing + 1] = "one of " .. table.concat(l, "/") end
+    end
+    if #missing > 0 then
+        fail(S, "unreachable accept: step %s accepts %d but its route prerequisite(s) %s are not turned in "
+            .. "(the engine should have skipped it)", stepName(step), q, table.concat(missing, ", "))
+    end
+end
+
 local function prepareTurnin(S, step, q)
     local m = S.m
     if m:IsQuestCompleted(q) then return end
@@ -389,6 +433,7 @@ local function doQuests(S, step, turnins, accepts)
         if not saved[e.questID] and m.completed[e.questID] == nil then m.questLog[#m.questLog + 1] = e end
     end
     for _, q in ipairs(accepts) do
+        if S.opts.ahead then checkReachable(S, step, q) end
         local why = whyNotOffered(S, q)
         if why then warn(S, "step %s: quest %d would not be offered yet: %s", stepName(step), q, why) end
     end
@@ -533,7 +578,7 @@ local function serviceViaGossip(S, step, a)
 end
 
 -- quests the (filtered) route accepts / turns in: { accept = {[q] = true}, turnin = {[q] = true} }
-local function routeQuestSets(S)
+routeQuestSets = function(S)
     if not S.routeQuests then
         local sets = { accept = {}, turnin = {} }
         for _, s in ipairs(engine(S):GetSteps()) do
@@ -828,7 +873,7 @@ local function newMock(S, extra, fresh)
         locale = S.opts.locale,
         player = {
             race = p.race, class = p.class, faction = p.faction,
-            level = st and st.level or (route.levels and route.levels[1]) or 1,
+            level = S.opts.ahead or (st and st.level) or (route.levels and route.levels[1]) or 1,
             mapID = mapID, x = x, y = y,
         },
     }
@@ -922,6 +967,17 @@ local function restartChecks(S)
     copyGameState(S.m, m3)
     local ns3 = bootMock(S, m3)
     checkClean(S, m3, "after a cold start")
+    if S.opts.ahead then
+        -- the sync floor was in the lost SavedVariables: the engine suggests the jump again (the
+        -- player clicks it, like at the start)
+        local n = 0
+        while ns3.Engine:GetSyncSuggestion() do
+            n = n + 1
+            if n > 10 or not ns3.Engine:ApplySync() then fail(S, "cold start: the level sync does not settle") end
+            m3:Advance(SETTLE)
+        end
+        checkClean(S, m3, "after a cold start + level sync")
+    end
     local cur = ns3.Engine:GetCursor()
     local anchorIndex = anchorId and ns3.Engine:IndexOf(anchorId)
     if cur and anchorIndex and cur <= anchorIndex then
@@ -955,6 +1011,28 @@ checkBgLeft = function(S)
     end
 end
 
+local function segText(seg)
+    local t = seg and seg.title
+    return format("%s (%s)", tostring(textEn(t) or (seg and seg.id)), tostring(seg and seg.id))
+end
+
+-- --ahead: apply a level-sync suggestion like a click on the banner's jump button
+local function applySuggestedSync(S)
+    local E = engine(S)
+    local sug = E:GetSyncSuggestion()
+    if not sug then return false end
+    local level, from, to, toId = sug.level, sug.from, sug.to, sug.toStepId
+    vlog(S, "  [sync] level %d: %s -> %s (step %s)", level, segText(from), segText(to), tostring(toId))
+    if not E:ApplySync() then fail(S, "ApplySync refused the suggestion %s -> %s", segText(from), segText(to)) end
+    settle(S)
+    local cur = E:GetCurrentStep()
+    if not cur or E:GetCursor() < E:IndexOf(toId) then
+        fail(S, "after the level sync to %s the cursor is on %s", tostring(toId), stepName(cur))
+    end
+    S.syncs[#S.syncs + 1] = format("level %d: %s -> %s", level, tostring(from.id), tostring(to.id))
+    return true
+end
+
 local function simulate(S)
     local m = newMock(S, nil, true)
     S.m = m
@@ -972,6 +1050,7 @@ local function simulate(S)
     local steps = E:GetSteps()
     if #steps == 0 then fail(S, "no step matches profile %s/%s", S.profile.race, S.profile.class) end
     S.stats.steps = #steps
+    if S.opts.ahead then applySuggestedSync(S) end
 
     local maxIter = #steps * 3 + 20
     local last = 0
@@ -1023,6 +1102,7 @@ local function simulate(S)
             fail(S, "cursor moved backwards after the background steps: %d -> %d (%s)", now, after,
                 stepName(E:GetCurrentStep()))
         end
+        if S.opts.ahead and applySuggestedSync(S) then checkBgLeft(S) end
     end
     S.stats.iterations = iter
     checkBgLeft(S)
@@ -1075,10 +1155,11 @@ local function runOne(opts, module, toc, route, profile, db, extra)
         warnings = {}, bgSeen = {}, bgOpen = {}, gossipUsed = {},
         stats = { steps = 0, iterations = 0, accepted = 0, turnedIn = 0, bg = 0, gossip = 0, delayed = 0,
             estimatedXP = 0 },
-        state = opts.startState, harness = extra and extra.harness, flightPaths = {},
+        state = opts.startState, harness = extra and extra.harness, flightPaths = {}, syncs = {},
     }
     for _, fp in ipairs(S.state and S.state.flightPaths or {}) do S.flightPaths[fp] = true end
     local label = format("%s (%s %s %s)", route.id, profile.race, profile.class, profile.faction)
+    if opts.ahead then label = label .. format(" ahead: level %d", opts.ahead) end
     if opts.verbose then print("== " .. label) end
     local ok, err = pcall(simulate, S)
     if opts.verbose and S.m then
@@ -1097,6 +1178,14 @@ local function runOne(opts, module, toc, route, profile, db, extra)
             st.estimatedXP > 0 and format(", %d quest XP estimated", st.estimatedXP) or "",
             S.coldStart or "no restart checks",
             #S.warnings > 0 and format(", %d warning(s)", #S.warnings) or ""))
+        if opts.ahead then
+            local E = S.ns.Engine
+            local void = { gray = 0, unreachable = 0, orphan = 0 }
+            for _, why in pairs(E.void or {}) do void[why] = (void[why] or 0) + 1 end
+            print(format("     sync: %s; at the end %d gray / %d unreachable accept(s) and %d never-taken "
+                .. "complete/turnin action(s) skipped", #S.syncs > 0 and table.concat(S.syncs, "; ") or "none suggested",
+                void.gray, void.unreachable, void.orphan))
+        end
         if not opts.verbose then
             for _, w in ipairs(S.warnings) do print("     warning: " .. w) end
         end
