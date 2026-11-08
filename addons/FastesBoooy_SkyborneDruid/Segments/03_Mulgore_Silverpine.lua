@@ -87,11 +87,19 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Tal on the wind rider tower: open the flight map (learns the point).",
           } },
         -- The RestedXP Skyborne guide flies Thunder Bluff -> Orgrimmar right here (Skyborne start flight points are
-        -- not in the DB; the shared h-22 segment teaches Orgrimmar in any case).
+        -- not in the DB). The next step learns Orgrimmar either way (a separate step: an fp action merged into the
+        -- fly step would already be flagged by opening Tal's flight map), so the 22-60 path can fly there.
         { id = "sd03-fly-org", fly = "Orgrimmar", npc = 3310, at = { 1454, 45.12, 63.89 }, -- WARN-OK: fly-unknown-fp
           note = {
               ru = "Летите в Оргриммар. Его нет на карте полётов - бегите через Перекрёсток (долго).",
               en = "Fly to Orgrimmar. Not on the flight map - run there via the Crossroads (long).",
+          } },
+        { id = "sd03-fp-org", fp = "Orgrimmar", npc = 3310, at = { 1454, 45.12, 63.89 },
+          note = {
+              ru = "Дорас на башне в Долине Силы: откройте карту полётов (прибежали - точка изучится; "
+                  .. "прилетели - просто кликните его). Точка нужна дальше, с 22-го уровня.",
+              en = "Doras on the tower in the Valley of Strength: open the flight map (ran here: this "
+                  .. "learns the point; flew in: just click him). The point is used later, from 22 on.",
           } },
         ---------------------------------------------------------------------
         -- Orgrimmar (13)

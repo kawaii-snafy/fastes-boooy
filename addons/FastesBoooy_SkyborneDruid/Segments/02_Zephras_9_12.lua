@@ -156,6 +156,16 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
         ---------------------------------------------------------------------
         -- Valanaar: training at 10, Bear Form chain (11)
         ---------------------------------------------------------------------
+        -- The accept comes before the training at the same NPC: with the accept right after the train step, the
+        -- automation takes 94006 from the trainer's gossip and the accept (an anchor) forwards the training before
+        -- the trainer window is ever opened.
+        { id = "sd02-bear-accept", accept = 94006, npc = 252359, at = { 2521, 63.99, 75.08 },
+          note = {
+              ru = "Обратно на восток в Валанаар к Lotheluum Starbreeze: классовое задание (облик "
+                  .. "медведя). Обучение - следующим шагом, у него же.",
+              en = "Back east to Valanaar, Lotheluum Starbreeze: the druid class quest (Bear Form). "
+                  .. "The training is the next step, from him too.",
+          } },
         { id = "sd02-train-10", train = true, npc = 252359, at = { 2521, 63.99, 75.08 },
           spells = {
               { ru = "Хватка природы", en = "Nature's Grasp" },
@@ -165,16 +175,10 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               { ru = "Телепортация: Лунная поляна (если есть)", en = "Teleport: Moonglade (if offered)" },
           },
           note = {
-              ru = "Обратно на восток в Валанаар к Lotheluum Starbreeze. Уровень 10: "
-                  .. "всё из списка (+ Трепка/Рык, если уже доступны). Таланты: Свирепость "
-                  .. "(Ferocity) 5/5 с 10 по 14.",
-              en = "Back east to Valanaar, Lotheluum Starbreeze. Level 10: everything listed "
-                  .. "(+ Maul / Growl if offered already). Talents: Ferocity 5/5 from 10 to 14.",
-          } },
-        { id = "sd02-bear-accept", accept = 94006, npc = 252359, at = { 2521, 63.99, 75.08 },
-          note = {
-              ru = "Классовое задание: облик медведя.",
-              en = "Druid class quest: Bear Form.",
+              ru = "Lotheluum ещё раз (обучение в его меню). Уровень 10: всё из списка (+ Трепка/Рык, "
+                  .. "если уже доступны). Таланты: Свирепость (Ferocity) 5/5 с 10 по 14.",
+              en = "Lotheluum again (training in his menu). Level 10: everything listed (+ Maul / Growl "
+                  .. "if offered already). Talents: Ferocity 5/5 from 10 to 14.",
           } },
         { go = true, at = { 2521, 65.42, 71.47 }, radius = 20,
           note = {

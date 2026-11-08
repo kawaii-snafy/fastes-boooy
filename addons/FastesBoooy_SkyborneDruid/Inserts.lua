@@ -20,10 +20,14 @@
 --                                                      binds it there and keeps it for this visit).
 --   34+36   before h38-hearth-shadowprey  37.69/37.70  Moonglade right before the library's own hearth (no extra
 --                                                      hearth use: Teleport, train, then the library hearth).
---   38+40   after  h-40-org-arrive        40.06/40.01  fly Thunder Bluff, Turak: DIRE BEAR FORM; optional riding
---                                                      trip (Skywatcher Plateau skycutter -> Zephras Isle, Genn
---                                                      Fairweather, Apprentice Riding 100 g) and back to Tal, then
---                                                      the library flight to Camp Taurajo.
+--   38+40   after  h-40-org-arrive        40.06/40.01  fly Thunder Bluff, Turak: DIRE BEAR FORM (not 40 yet: the 38
+--                                                      set only, no riding trip); optional riding trip (Skywatcher
+--                                                      Plateau skycutter -> Zephras Isle, Genn Fairweather,
+--                                                      Apprentice Riding 100 g) and back to Tal (no ship back:
+--                                                      Teleport: Moonglade + Bunthen -> Tal; the hearthstone is on
+--                                                      cooldown since h40-hearth-shadowprey); then Tal -> Camp
+--                                                      Taurajo (own fly step: the library's next step names Doras,
+--                                                      it completes on the same landing).
 --   42+44   before h44-hearth-gromgol     44.52/44.51  Moonglade before the library hearth (instead of the plan's
 --                                                      Kargath hearth at 44.02: that would put the h44-hearth-gromgol
 --                                                      hearth half a level later on cooldown).
@@ -47,7 +51,7 @@
 -- 6 steps (the 9063 accept comes before the level 52 training, not after it); the Torwa steps are stateful.
 -- Hearthstone: only the level 32 visit uses it beyond the library (Tarren Mill, bound at h-31-tarrenmill-arrive,
 -- otherwise unused); every other Moonglade visit sits right before a library hearth step, and the bridge and the
--- level 40 trip use flights / the skycutter.
+-- level 40 trip use flights / the skycutter (its fallback is Teleport: Moonglade + Bunthen, never the hearthstone).
 
 local R = "horde-skyborne-druid"
 local TURAK = { 1456, 76.48, 27.22 }
@@ -63,12 +67,12 @@ FastesBoooy.AddInsert(R, {
           note = {
               ru = "Лунная поляна: Бунтен Ветер Равнин (44.3, 45.9; летает только с друидами) - полёт в Громовой "
                   .. "Утёс. Камень возвращения (Громовой Утёс) не тратьте: он нужен в конце Хилсбрада (Мельница Таррен "
-                  .. "-> Громовой Утёс). Если Оргриммар уже есть на карте полётов, дальше летите от Тала прямо туда и "
-                  .. "пропустите шаги через Перекрёсток.",
+                  .. "-> Громовой Утёс). Оргриммар на карте полётов с 13-го уровня: дальше летите от Тала прямо туда "
+                  .. "(шаги пути через Перекрёсток и Заставу Дальнего Дозора, если гайд их покажет, пропустите).",
               en = "Moonglade: Bunthen Plainswind (44.3, 45.9; flies druids only) - fly to Thunder Bluff. Keep the "
                   .. "hearthstone (Thunder Bluff): it is used at the end of Hillsbrad (Tarren Mill -> Thunder Bluff). "
-                  .. "If Orgrimmar is already on your flight map, fly from Tal straight there later and skip the "
-                  .. "Crossroads steps.",
+                  .. "Orgrimmar has been on your flight map since 13: fly from Tal straight there later (skip the "
+                  .. "Crossroads / Far Watch Post run steps if the guide shows them).",
           } },
     },
 })
@@ -221,29 +225,35 @@ FastesBoooy.AddInsert(R, {
           },
           note = {
               ru = "Через мосты на Вершину Старейшин: Тюрак - обучение 38-го и 40-го уровней: ОБЛИК ЛЮТОГО МЕДВЕДЯ, "
-                  .. "«Свирепый укус» 3, «Когти» 3, «Полоснуть» 3. Таланты 38-40: Rend and Tear 5/5, Переходящая сила "
-                  .. "(Shifting Power).",
+                  .. "«Свирепый укус» 3, «Когти» 3, «Полоснуть» 3. Ещё нет 40-го - выучите 38-й («Когти» 3, "
+                  .. "«Полоснуть» 3) и не начинайте поездку за ездой (ей тоже нужен 40-й): облик лютого медведя и "
+                  .. "остальное - на следующем визите к Логанаару, езда - позже из Громового Утёса. Таланты 38-40: "
+                  .. "Rend and Tear 5/5, Переходящая сила (Shifting Power).",
               en = "Over the bridges to Elder Rise: Turak - level 38 and 40 training: DIRE BEAR FORM, Ferocious Bite 3, "
-                  .. "Claw 3, Shred 3. Talents 38-40: Rend and Tear 5/5, Shifting Power.",
+                  .. "Claw 3, Shred 3. Not 40 yet: learn the 38 set (Claw 3, Shred 3) and do not start the riding trip "
+                  .. "(it needs 40 too): Dire Bear Form and the rest at the next Loganaar visit, riding later from "
+                  .. "Thunder Bluff. Talents 38-40: Rend and Tear 5/5, Shifting Power.",
           } },
         { id = "dru-riding-path", go = true, optional = true, radius = 25, at = { 1412, 40.30, 17.60 },
           note = {
-              ru = "По желанию, если есть 100 з.: верховая езда на острове Зефрас (~15-20 мин; ездовое животное даёт "
-                  .. "+60% против +40% у походного облика). На лифте вниз, на север вдоль утёса к горной тропе и по "
-                  .. "ней на Небесное плато. Нет денег - пропустите этот и 4 следующих шага (поездку можно сделать "
-                  .. "позже из Громового Утёса).",
-              en = "Optional, if you have 100 g: riding on Zephras Isle (~15-20 min; a mount is +60% against +40% for "
+              ru = "По желанию, на 40-м и со 100 з.: верховая езда на острове Зефрас (~15-20 мин; ездовое животное "
+                  .. "даёт +60% против +40% у походного облика). На лифте вниз, на север вдоль утёса к горной тропе и "
+                  .. "по ней на Небесное плато. Нет денег или 40-го - пропустите этот и 4 следующих шага, к Талу "
+                  .. "(поездку можно сделать позже из Громового Утёса).",
+              en = "Optional, at 40 with 100 g: riding on Zephras Isle (~15-20 min; a mount is +60% against +40% for "
                   .. "Travel Form). Take the lift down, run north along the bluff to the mountain path and up to "
-                  .. "Skywatcher Plateau. No gold: skip this and the next 4 steps (you can make the trip later from "
-                  .. "Thunder Bluff).",
+                  .. "Skywatcher Plateau. No gold or not 40: skip this and the next 4 steps, on to Tal (you can make "
+                  .. "the trip later from Thunder Bluff).",
           } },
         { id = "dru-riding-skycutter", go = true, optional = true, radius = 40, npc = 259119,
           at = { 1412, 33.40, 22.55 },
           note = {
               ru = "Небесное плато, причал Ваятелей ветра (Алаана Штормовой Полет): небесный корабль до острова "
-                  .. "Зефрас (Небесные доки Валанаара).",
+                  .. "Зефрас (Небесные доки Валанаара; по веб-гайдам корабль стоит чуть ниже плато, 34.3, 25.8). "
+                  .. "Корабля на Зефрас нет - пропустите 2 следующих шага и возвращайтесь к Талу (езда - позже).",
               en = "Skywatcher Plateau, the Windshaper dock (Alaana Stormwalker): the skycutter to Zephras Isle "
-                  .. "(Valanaar Skydocks).",
+                  .. "(Valanaar Skydocks; web guides put the boat just below the plateau, 34.3, 25.8). No skycutter "
+                  .. "to Zephras: skip the next 2 steps and go back to Tal (riding later).",
           } },
         -- Genn Fairweather is the Skyborne riding trainer, not a druid trainer.
         { id = "dru-riding", train = true, optional = true, npc = 265756, -- WARN-OK: train-not-class-trainer
@@ -261,19 +271,30 @@ FastesBoooy.AddInsert(R, {
           } },
         { id = "dru-riding-back", go = true, optional = true, radius = 15, npc = 275270, at = { 2521, 57.92, 80.78 },
           note = {
-              ru = "Обратно к Небесным докам (начальник порта Ваятелей ветра): небесный корабль до Мулгора. Корабля "
-                  .. "обратно нет - камень в Оргриммар и полёт в Лагерь Таурахо (следующий шаг пропустите; в конце "
-                  .. "Пылевых топей камень может быть ещё на откате - тогда летите из Деревни Гиблотопь).",
-              en = "Back to the Valanaar Skydocks (Windshapers Dockmaster): the skycutter to Mulgore. No ship back: "
-                  .. "hearth to Orgrimmar and fly to Camp Taurajo (skip the next step; at the end of Dustwallow the "
-                  .. "hearthstone may still be on cooldown - then fly from Brackenwall Village).",
+              ru = "Обратно к Небесным докам (начальник порта Ваятелей ветра): небесный корабль до Мулгора. Корабль "
+                  .. "не ходит - пропустите этот шаг: «Телепортация: Лунная поляна», Бунтен Ветер Равнин (44.3, 45.9) "
+                  .. "- полёт в Громовой Утёс, к Талу (следующий шаг). Камень не используйте: он на откате после "
+                  .. "Деревни Ночных Охотников и привязан к Оргриммару для следующего сегмента.",
+              en = "Back to the Valanaar Skydocks (Windshapers Dockmaster): the skycutter to Mulgore. Ship not "
+                  .. "running: skip this step, cast Teleport: Moonglade, and Bunthen Plainswind (44.3, 45.9) flies you "
+                  .. "to Thunder Bluff, to Tal (the next step). Do not hearth: it is on cooldown since Shadowprey and "
+                  .. "stays bound to Orgrimmar for the next segment.",
           } },
         { id = "dru-riding-tb", go = true, optional = true, radius = 15, npc = 2995, at = { 1456, 47.00, 49.83 },
           note = {
               ru = "С плато спланируйте «Шагом по воздуху» с восточного края (или спуститесь горной тропой), верхом к "
-                  .. "лифту Громового Утёса и наверх к Талу: полёт в Лагерь Таурахо.",
+                  .. "лифту Громового Утёса и наверх к Талу.",
               en = "From the plateau glide down the east edge with Walk on Air (or take the mountain path), ride to the "
-                  .. "Thunder Bluff lift and up to Tal: fly to Camp Taurajo.",
+                  .. "Thunder Bluff lift and up to Tal.",
+          } },
+        -- The next library step (h-38-orgrimmar-flight-master) is the same flight, written for Orgrimmar ("Doras"):
+        -- this step says it from Tal, and the library step completes on the same landing (fly = arrival at `at`).
+        { id = "dru-fly-taurajo-40", fly = "Camp Taurajo", npc = 10378, at = { 1413, 44.45, 59.15 },
+          note = {
+              ru = "Тал на центральной вершине Громового Утёса (не Дорас: вы не в Оргриммаре): летите в Лагерь "
+                  .. "Таурахо.",
+              en = "Tal on the central mesa of Thunder Bluff (not Doras: you are not in Orgrimmar): fly to Camp "
+                  .. "Taurajo.",
           } },
     },
 })
