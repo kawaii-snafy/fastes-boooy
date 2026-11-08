@@ -269,7 +269,7 @@ function Engine:GetContext(step)
         forwarded = (i ~= nil and i < self.forwardLimit) and true or false
     end
     return {
-        level = facts.level, xp = facts.xp, xpMax = facts.xpMax,
+        level = facts.level, xp = facts.xp, xpMax = facts.xpMax, maxLevel = facts.maxLevel,
         flags = (id and self.flags[id]) or EMPTY,
         forwarded = forwarded,
         manual = id and (isMarked(id) or isBgDone(s)) and true or false,
@@ -283,6 +283,7 @@ function Engine:BuildSteps()
     local steps, byId, turnins = {}, {}, {}
     local route = self.route
     if route then
+        ns.Registry:Finalize(route) -- a composed route changed since it was read (Core/Compose.lua)
         local facts = self.facts or ns.Compat.PlayerFacts()
         local Schema = ns.Schema
         for _, s in ipairs(route.steps) do
@@ -456,7 +457,7 @@ function Engine:Evaluate()
     self.facts = facts
 
     local ctx = {
-        level = facts.level, xp = facts.xp, xpMax = facts.xpMax,
+        level = facts.level, xp = facts.xp, xpMax = facts.xpMax, maxLevel = facts.maxLevel,
         flags = EMPTY, forwarded = false, manual = false,
         cache = {}, items = {},
     }
@@ -1090,6 +1091,7 @@ end
 function Engine:Start()
     if self.started then return end
     self.started = true
+    ns.Registry:Finalize() -- compose the routes now: composition errors are part of the report
     local errors = ns.Registry.errors
     if #errors > 0 then
         ns.Print(L().MSG_ROUTE_ERRORS, #errors, tostring(errors[1]))

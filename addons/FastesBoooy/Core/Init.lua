@@ -5,7 +5,8 @@
 --
 -- Globals created here (the only ones the core defines besides the slash
 -- command entries owned by UI/Options.lua):
---   FastesBoooy        = ns.public (route modules use RegisterRoute/AddSegment/AddRouteData)
+--   FastesBoooy        = ns.public (route modules use RegisterRoute/AddSegment/AddRouteData/
+--                        UseSegments/AddInsert, library modules AddLibrarySegment/AddLibraryData)
 --   FastesBoooyDB      account SavedVariables  (ns.db)
 --   FastesBoooyCharDB  character SavedVariables (ns.cdb)
 
@@ -53,6 +54,24 @@ end
 
 function public.AddRouteData(routeId, data)
     return ns.Registry:AddRouteData(routeId, data)
+end
+
+-- Shared library segments and class inserts (Core/Compose.lua, docs/ROUTE_FORMAT.md
+-- "Общие сегменты и вставки").
+function public.AddLibrarySegment(def)
+    return ns.Registry:AddLibrarySegment(def)
+end
+
+function public.AddLibraryData(data)
+    return ns.Registry:AddLibraryData(data)
+end
+
+function public.UseSegments(routeId, ids)
+    return ns.Registry:UseSegments(routeId, ids)
+end
+
+function public.AddInsert(routeId, def)
+    return ns.Registry:AddInsert(routeId, def)
 end
 
 function public.GetActiveRoute()

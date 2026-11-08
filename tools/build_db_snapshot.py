@@ -28,10 +28,21 @@ Zephras Isle). The result is exactly the route format's `at = {uiMapID, x, y}` s
 Spawns marked [-1, -1] ("inside the instance") are not coordinates and are listed in
 `instance = {AreaID, ...}` instead.
 
+Scope (Horde leveling 1-60): every quest available to the Horde that touches a core (1-22) area
+(CORE_AREAS, any level / class), plus every Horde quest with questLevel <= MAX_QUEST_LEVEL in any
+open-world zone of Eastern Kingdoms / Kalimdor (capitals and Forever-new zones included), 5-man
+dungeon quests up to MAX_DUNGEON_QUEST_LEVEL, uncategorized / profession / invasion quests whose
+giver or ender spawns in the world, all PALADIN / DRUID class quests, and REF_DEPTH levels of
+prerequisite / next / breadcrumb / exclusive links. Raids, battlegrounds, holidays and other
+classes stay in the brief questIndex. Service NPCs: Horde / neutral / unknown-faction ones in
+every zone and dungeon, Alliance ones only in the core areas.
+
 Map sizes: zones[uiMapID].size = {width, height} in yards, from the Forever map bounds
 (`geometry.transforms[].target_bounds` of QuestieDB data/Forever/conversion.json: width =
 |left - right|, height = |top - bottom|), so the validator can measure distances in yards.
-Maps without known bounds (e.g. Zephras Isle 2521) get no size.
+The Forever-new maps (Riverglades, Mount Hyjal, Darkspear Islands, Shen'dralas) have no bounds
+there; their size comes from the WCLBox map mirror (WCLBOX_MAP_PIXELS, records carry
+`sizeSrc = "wclbox-map"`). Zephras Isle (2521) stays without a size for now (see WCLBOX_MAP_PIXELS).
 
 Objective icons: creature / killCredit objectives keep QuestieDB's objective icon when it is
 not the default (`icon = N`, enums.iconTypes: 3 EVENT, 5 TALK, 17 INTERACT; 0/1 = slay), so the
@@ -69,9 +80,10 @@ DEFAULT_DATE = "2026-11-07"
 BUILD = ["1.60.1", "70862"]
 INTERFACE = 16001
 
-# Top-level AreaIDs whose quests / service NPCs are in scope (sub-areas are resolved through
-# the parent chain of research zones.json).
-SCOPE_AREAS = OrderedDict([
+# Core (1-22) areas: EVERY quest available to the Horde that touches them (zone or start/finish
+# spawn) is in the snapshot, whatever its level or class (sub-areas are resolved through the
+# parent chain of research zones.json). Kept from the 1-22 snapshot so it stays a superset.
+CORE_AREAS = OrderedDict([
     (85, "Tirisfal Glades"), (1497, "Undercity"), (130, "Silverpine Forest"), (14, "Durotar"),
     (1637, "Orgrimmar"), (17, "The Barrens"), (406, "Stonetalon Mountains"), (331, "Ashenvale"),
     (215, "Mulgore"), (1638, "Thunder Bluff"), (267, "Hillsbrad Foothills"),
@@ -79,15 +91,64 @@ SCOPE_AREAS = OrderedDict([
     (2437, "Ragefire Chasm"), (718, "Wailing Caverns"), (16611, "Ruins of Lordaeron"),
     (16919, "The Hall of Thanes"),
 ])
+# World scope (Horde leveling 1-60): every open-world zone of Eastern Kingdoms and Kalimdor,
+# capitals and Forever-new zones included = every native (non-override) uiMap of research
+# zones.json except the world / continent maps and the battleground maps.
+NON_ZONE_UIMAPS = OrderedDict([
+    (947, "Azeroth"), (1414, "Kalimdor"), (1415, "Eastern Kingdoms"),
+    (1459, "Alterac Valley"), (1460, "Warsong Gulch"), (1461, "Arathi Basin"),
+])
+# AreaIDs used by quests but absent from research zones.json: Blackrock Mountain (25) is the
+# open-world hub between Searing Gorge and Burning Steppes (WCLBox renwu/index.json lists it as an
+# Eastern Kingdoms zone, slug blackrock-mountain).
+EXTRA_WORLD_AREAS = OrderedDict([(25, "Blackrock Mountain")])
+# Raid and battleground AreaIDs (WCLBox renwu/index.json groups "raid" / "battleground"): their
+# quests are not leveling content and stay in questIndex. Every other dungeon of zones.json
+# (`dungeon` set, or listed as one of its alternativeAreaIds) is a 5-man dungeon.
+RAID_AREAS = OrderedDict([
+    (2717, "Molten Core"), (2159, "Onyxia's Lair"), (2677, "Blackwing Lair"), (1977, "Zul'Gurub"),
+    (3429, "Ruins of Ahn'Qiraj"), (3428, "Temple of Ahn'Qiraj"), (3456, "Naxxramas"),
+])
+BATTLEGROUND_AREAS = OrderedDict([(2597, "Alterac Valley"), (3277, "Warsong Gulch"), (3358, "Arathi Basin")])
+MAX_QUEST_LEVEL = 62          # world quests up to this questLevel (Horde, any race incl. Skyborne)
+MAX_DUNGEON_QUEST_LEVEL = 60  # dungeon quests (zoneOrSort = a 5-man dungeon) up to this questLevel
 # QuestSort keys (negative zoneOrSort) of class quests in scope.
 CLASS_SORTS = {-141: "PALADIN", -263: "DRUID"}
 SCOPE_CLASSES = ("PALADIN", "DRUID")
+# QuestSort keys never selected by the world rule (holidays / world events / legendary and epic
+# chains / other classes / battlegrounds); they stay in questIndex (enums.json sortKeys).
+EXCLUDED_SORTS = OrderedDict([
+    (-1, "EPIC"), (-21, "HALLOWS_END"), (-22, "SEASONAL"), (-25, "BATTLEGROUNDS"),
+    (-41, "DAY_OF_THE_DEAD"), (-344, "LEGENDARY"), (-364, "DARKMOON_FAIRE"), (-365, "AHN_QIRAJ_WAR"),
+    (-366, "LUNAR_FESTIVAL"), (-369, "MIDSUMMER"), (-370, "BREWFEST"), (-374, "NOBLEGARDEN"),
+    (-375, "PILGRIMS_BOUNTY"), (-376, "LOVE_IS_IN_THE_AIR"), (-378, "CHILDRENS_WEEK"),
+    (-402, "HARVEST_FESTIVAL"), (-404, "WINTER_VEIL"),
+    (-81, "WARRIOR"), (-82, "SHAMAN"), (-61, "WARLOCK"), (-161, "MAGE"), (-162, "ROGUE"),
+    (-261, "HUNTER"), (-262, "PRIEST"), (-372, "DEATHKNIGHT"), (-395, "MONK"),
+])
+# Uncategorized quests (no zone sort) and profession / reputation / invasion quests are selected
+# when a start or finish NPC/object spawns in a world zone.
 # Extra uiMaps that exist in the Forever client but have no AreaID assignment in the
 # reviewed DBC export (QuestieDB docs/forever-data.md "Outstanding export gaps").
 EXTRA_UIMAPS = {
     2665: {"name": "Zephras Isle (secondary map)", "areaId": 16593,
            "note": "unresolved in QuestieDB export; no spawns are keyed to it"},
 }
+# World size of the Forever-new maps, which conversion.json lists in geometry.added_maps WITHOUT
+# bounds: WCLBox map mirror (https://wowforever.wclbox.com/shuju/en/maps.json, `paint[].bounds` of
+# <uiMap>.webp, client build 1.60.1.70178) in map pixels at 512 px per ADT tile of 533 1/3 yards.
+# Check: pixel size * 533.333/512 reproduces conversion.json target_bounds to 0.1 yard on all 49
+# maps that have both (confidence: likely). {uiMapID: (widthPx, heightPx, source map slug)}.
+# Zephras Isle 2521 (5340 x 3560 px on map "zephras-isle" = 5562.5 x 3708.3 yd) is deliberately NOT
+# sized yet: the validator fixtures (tests/spec/validator_fixtures_spec.lua, FastesBoooy_FxNpcFar) use
+# it as the map-percent fallback example; add it here once they use another map without a size.
+WCLBOX_MAP_PIXELS = OrderedDict([
+    (2482, (3334.0, 2222.0, "kalimdor")),           # Mount Hyjal
+    (2524, (1848.0, 1232.0, "darkspear-islands")),  # Darkspear Islands
+    (2548, (4656.0, 3104.0, "eastern-kingdoms")),   # Riverglades
+    (2652, (1968.0, 1312.0, "kalimdor")),           # Shen'dralas
+])
+YARDS_PER_MAP_PIXEL = 1600.0 / 3.0 / 512.0  # 533 1/3 yards per 512-pixel tile
 REF_DEPTH = 3                 # transitive prerequisite / next / exclusive closure depth
 MAX_MOB_SPAWNS_PER_MAP = 40   # objective mobs / drop sources with more spawns per map are thinned...
 SPAWN_GRID = 2.0              # ...to one spawn per SPAWN_GRID x SPAWN_GRID map-unit cell
@@ -118,6 +179,19 @@ TRANSPORT_LANDINGS = [
     # Skywatcher Plateau (AreaID 17045, spawns keyed to Mulgore 215): the Valanaar skycutter lands here
     (215, 31.0, 19.5, 35.5, 25.5, "Skywatcher Plateau"),
 ]
+# Forever-new NPCs often come without npcFlags (QuestieDB generated rows: npcFlags 0), e.g. 255993
+# Grakna <Wind Rider Master>, the Riverglades flight master. For such NPCs the service flags are
+# inferred from the subName (records get `flagsSrc = "subName"`); placeholder / unfinished NPCs are
+# skipped. Regexes on the lower-case subName -> npcFlags bits (ALL_FLAGS).
+SUBNAME_FLAGS = [
+    (re.compile(r"(wind rider|gryphon|hippogryph|bat) (master|handler)|flight master"), ("flightmaster",)),
+    (re.compile(r"innkeeper"), ("innkeeper",)),
+    (re.compile(r"stable master"), ("stablemaster",)),
+    (re.compile(r"\btrainers?\b"), ("trainer",)),
+    (re.compile(r"armorer|weaponsmith|armorcrafter"), ("vendor", "repair")),
+    (re.compile(r"vendor|merchant|quartermaster|supplies|goods|butcher|baker|food|drink|reagents"), ("vendor",)),
+]
+SUBNAME_SKIP = re.compile(r"\bnyi\b|<ph>|\[ph\]|\bdebug\b|\bptr\b|placeholder|reuse me|unused")
 # UnitRace() raceFile -> QuestieDB/Forever race bit. Skyborne shares one raceFile for both
 # factions (raceID 95 = Alliance, 96 = Horde): resolved by faction.
 RACEFILE_TO_KEY = OrderedDict([
@@ -318,7 +392,57 @@ class Zones:
     def __init__(self, zjson):
         self.areas = {int(k): v for k, v in zjson["areas"].items()}
         self.uimaps = {int(k): v for k, v in zjson["uiMaps"].items()}
-        self._top = {}
+        self._cat = {}
+        # native zone maps of Eastern Kingdoms / Kalimdor (capitals and Forever-new zones included)
+        self.world_uimaps = set(um for um, u in self.uimaps.items()
+                                if not u.get("override") and um not in NON_ZONE_UIMAPS)
+        # dungeon alternativeAreaIds without a parent / map of their own (e.g. 1417 Sunken Temple ->
+        # 1477 The Temple of Atal'Hakkar); outdoor alternatives such as 1717 Razorfen Kraul (The
+        # Barrens) keep their world zone
+        self.alt_dungeon = {}
+        for area, a in sorted(self.areas.items()):
+            for alt in ((a.get("dungeon") or {}).get("alternativeAreaIds") or []):
+                r = self.areas.get(alt) if isinstance(alt, int) else None
+                if r is not None and not r.get("parentAreaId") and not r.get("uiMapId") and not r.get("dungeon"):
+                    self.alt_dungeon.setdefault(alt, area)
+
+    def category(self, area):
+        """'world' | 'dungeon' | 'raid' | 'battleground' | None (unknown / other) for an AreaID,
+        through its parent chain."""
+        if not isinstance(area, int) or area <= 0:
+            return None
+        if area in self._cat:
+            return self._cat[area]
+        chain = self.chain(area)
+        cat = None
+        for a in chain:
+            a = self.alt_dungeon.get(a, a)
+            if a in RAID_AREAS:
+                cat = "raid"
+            elif a in BATTLEGROUND_AREAS:
+                cat = "battleground"
+            elif (self.areas.get(a) or {}).get("dungeon"):
+                cat = "dungeon"
+            if cat:
+                break
+        if cat is None:
+            for a in chain:
+                if a in EXTRA_WORLD_AREAS or self.ui_map(a) in self.world_uimaps:
+                    cat = "world"
+                    break
+        self._cat[area] = cat
+        return cat
+
+    def in_world(self, area):
+        return self.category(area) == "world"
+
+    def top(self, area):
+        """Top-level area of the parent chain (dungeon alternative ids resolved)."""
+        chain = self.chain(area) if isinstance(area, int) and area > 0 else []
+        if not chain:
+            return None
+        t = chain[-1]
+        return self.alt_dungeon.get(t, t)
 
     def parent(self, area):
         a = self.areas.get(area)
@@ -332,16 +456,15 @@ class Zones:
             n += 1
         return out
 
-    def in_scope(self, area):
+    def in_core(self, area):
+        """In one of the core (1-22) areas."""
         if not isinstance(area, int) or area <= 0:
             return False
-        return any(a in SCOPE_AREAS for a in self.chain(area))
+        return any(a in CORE_AREAS for a in self.chain(area))
 
-    def scope_root(self, area):
-        for a in self.chain(area) if isinstance(area, int) and area > 0 else []:
-            if a in SCOPE_AREAS:
-                return a
-        return None
+    def in_scope(self, area):
+        """Open world or a 5-man dungeon (where quests / service NPCs are collected)."""
+        return self.in_core(area) or self.category(area) in ("world", "dungeon")
 
     def ui_map(self, area):
         a = self.areas.get(area)
@@ -375,6 +498,11 @@ class Builder:
         for k, p in self.paths.items():
             if not os.path.isfile(p):
                 sys.exit("missing input %s: %s (pass --research)" % (k, p))
+        # optional: WCLBox quests of the 20-60 zone lists (same format); fills quests missing from
+        # wclbox_quests.json (objective counts, status, XP)
+        p60 = os.path.join(dbdir, "wclbox_quests_60.json")
+        if os.path.isfile(p60):
+            self.paths["wclbox60"] = p60
         self.qraw = {int(k): v for k, v in load_json(self.paths["quests"])["data"].items()}
         self.nraw = {int(k): v for k, v in load_json(self.paths["npcs"])["data"].items()}
         self.oraw = {int(k): v for k, v in load_json(self.paths["objects"])["data"].items()}
@@ -383,6 +511,9 @@ class Builder:
         self.zones = Zones(self.zjson)
         self.enums = load_json(self.paths["enums"])
         self.wcl = {int(k): v for k, v in load_json(self.paths["wclbox"])["data"].items()}
+        if "wclbox60" in self.paths:
+            for k, v in load_json(self.paths["wclbox60"])["data"].items():
+                self.wcl.setdefault(int(k), v)
         self.xpt = load_json(self.paths["xp_table"])
         rk = self.enums["raceKeys"]
         self.horde_mask = sum(rk[k] for k in HORDE_RACE_KEYS)
@@ -396,6 +527,8 @@ class Builder:
                     self.dungeon_xp[q["id"]] = (q["xpForever"], dkey)
         self.stats = OrderedDict()
         self.transport = OrderedDict()
+        self.sizes = {}  # {uiMapID: [widthYards, heightYards]} (set by main before build_entities)
+        self.thin_worst = {"maps": 0, "units": 0.0, "yards": 0.0, "yardsMap": None}
 
     # -- quest helpers -----------------------------------------------------
 
@@ -462,6 +595,47 @@ class Builder:
             refs += ilist(q.get(k))
         return refs
 
+    def giver_areas(self, q):
+        """AreaIDs of the start/finish NPC/object spawns only."""
+        out = set()
+        sb, fb = q.get("startedBy") or {}, q.get("finishedBy") or {}
+        for nid in ids_of(sb.get("npcs")) + ids_of(fb.get("npcs")):
+            out.update(int(a) for a in (self.nraw.get(nid, {}).get("spawns") or {}))
+        for oid in ids_of(sb.get("objects")) + ids_of(fb.get("objects")):
+            out.update(int(a) for a in (self.oraw.get(oid, {}).get("spawns") or {}))
+        return out
+
+    def world_reason(self, q, per):
+        """Why a Horde-available quest outside the core areas is selected ("world", "dungeon",
+        "giver"), or None: questLevel <= MAX_QUEST_LEVEL, not restricted to other classes, not an
+        excluded QuestSort; zone = an open-world zone, or a 5-man dungeon with questLevel <=
+        MAX_DUNGEON_QUEST_LEVEL; no zone / sort / unknown area: a start or finish spawn in the world."""
+        ql = q.get("questLevel") or 0
+        if ql > MAX_QUEST_LEVEL:
+            return None
+        rc = q.get("requiredClasses") or 0
+        if rc:
+            ck = self.enums["classKeys"]
+            if not any(has_bit(rc, ck[c]) for c in SCOPE_CLASSES):
+                return None
+        zs = q.get("zoneOrSort") or 0
+        if zs in EXCLUDED_SORTS:
+            return None
+        if zs > 0:
+            cat = self.zones.category(zs)
+            if cat == "world":
+                return "world"
+            if cat == "dungeon":
+                return "dungeon" if ql <= MAX_DUNGEON_QUEST_LEVEL else None
+            if cat in ("raid", "battleground"):
+                return None
+        areas = self.giver_areas(q)
+        for p in per.values():
+            areas |= self.giver_areas(p)
+        if any(self.zones.in_world(a) for a in areas):
+            return "giver"
+        return None
+
     def select_quests(self):
         core = set()
         reason = {}
@@ -476,9 +650,14 @@ class Builder:
             areas = self.quest_areas(q)
             for p in per.values():
                 areas |= self.quest_areas(p)
-            if any(self.zones.in_scope(a) for a in areas):
+            if any(self.zones.in_core(a) for a in areas):
                 core.add(qid)
                 reason[qid] = "zone"
+                continue
+            r = self.world_reason(q, per)
+            if r:
+                core.add(qid)
+                reason[qid] = r
         selected = set(core)
         frontier = set(core)
         for _depth in range(REF_DEPTH):
@@ -500,6 +679,10 @@ class Builder:
                     missing_refs.add(ref)
         self.stats["questsCore"] = len(core)
         self.stats["questsByClassSort"] = sum(1 for q in core if reason.get(q) == "class")
+        self.stats["questsByCoreArea"] = sum(1 for q in core if reason.get(q) == "zone")
+        self.stats["questsByWorldZone"] = sum(1 for q in core if reason.get(q) == "world")
+        self.stats["questsByDungeon"] = sum(1 for q in core if reason.get(q) == "dungeon")
+        self.stats["questsByGiverSpawn"] = sum(1 for q in core if reason.get(q) == "giver")
         self.stats["questsByReference"] = len(selected) - len(core)
         self.stats["questRefsMissingFromDB"] = len(missing_refs)
         return sorted(selected), reason
@@ -793,13 +976,38 @@ class Builder:
         for um in sorted(per_map):
             pts = sorted(set(per_map[um]))
             if cap and len(pts) > cap:
-                pts = thin_spatial(pts, SPAWN_GRID)
+                kept = thin_spatial(pts, SPAWN_GRID)
+                self._thin_check(um, pts, kept)
+                pts = kept
                 thinned = True
             out[um] = [[x, y] for x, y in pts]
         raw = OrderedDict()
         for area in sorted(raw_areas):
             raw[area] = [[x, y] for x, y in sorted(set(raw_areas[area]))]
         return out, sorted(instance), raw, thinned
+
+    def _thin_check(self, um, pts, kept):
+        """Worst distance from a dropped spawn to the nearest kept one (map units and, when the map
+        size is known, yards), accumulated in self.thin_worst for the snapshot counts."""
+        size = self.sizes.get(um)
+        worst_u, worst_y = 0.0, 0.0
+        for x, y in pts:
+            bu, by = None, None
+            for kx, ky in kept:
+                du = ((x - kx) ** 2 + (y - ky) ** 2) ** 0.5
+                if bu is None or du < bu:
+                    bu = du
+                if size:
+                    dy = (((x - kx) * size[0] / 100.0) ** 2 + ((y - ky) * size[1] / 100.0) ** 2) ** 0.5
+                    if by is None or dy < by:
+                        by = dy
+            worst_u = max(worst_u, bu or 0.0)
+            worst_y = max(worst_y, by or 0.0)
+        t = self.thin_worst
+        t["maps"] += 1
+        t["units"] = max(t["units"], worst_u)
+        if worst_y > t["yards"]:
+            t["yards"], t["yardsMap"] = worst_y, um
 
     def npc_flags(self, flags):
         out = OrderedDict()
@@ -808,10 +1016,40 @@ class Builder:
                 out[name] = True
         return out
 
+    def subname_flags(self, n):
+        """npcFlags inferred from the subName of a flagless NPC with an open-world spawn
+        (SUBNAME_FLAGS), or 0."""
+        if n.get("npcFlags"):
+            return 0
+        if not any(self.zones.in_world(int(a)) and any(isinstance(p, list) and len(p) >= 2 and p[0] != -1
+                                                       for p in pts or [])
+                   for a, pts in (n.get("spawns") or {}).items()):
+            return 0
+        sub = (n.get("subName") or "").lower()
+        if not sub or SUBNAME_SKIP.search(sub) or SUBNAME_SKIP.search((n.get("name") or "").lower()):
+            return 0
+        bits = set()
+        for rx, names in SUBNAME_FLAGS:
+            if rx.search(sub):
+                bits.update(ALL_FLAGS[nm] for nm in names)
+        return sum(sorted(bits))
+
     def effective_npc(self, n):
         hd = n.get("hordeDynamic")
         if not hd:
+            return self._with_inferred_flags(n)
+        return self._with_inferred_flags(self._dynamic_npc(n, hd))
+
+    def _with_inferred_flags(self, n):
+        inferred = self.subname_flags(n)
+        if not inferred:
             return n
+        r = dict(n)
+        r["npcFlags"] = inferred
+        r["_flagsSrc"] = "subName"
+        return r
+
+    def _dynamic_npc(self, n, hd):
         if "fields" in hd or "deleted" in hd:
             return self._overlay(n, hd)
         # class-dependent NPC overlays do not exist in the inputs; take PALADIN's if any
@@ -834,6 +1072,8 @@ class Builder:
         fl = self.npc_flags(n.get("npcFlags") or 0)
         if fl:
             rec["flags"] = fl
+            if n.get("_flagsSrc"):
+                rec["flagsSrc"] = n["_flagsSrc"]
         spawns, instance, raw, thinned = self.convert_spawns(n.get("spawns"), cap)
         if spawns:
             rec["spawns"] = spawns
@@ -885,8 +1125,15 @@ class Builder:
             rec["zone"] = o["zoneID"]
         return rec
 
-    def npc_in_scope_areas(self, n):
-        return any(self.zones.in_scope(int(a)) for a in (n.get("spawns") or {}))
+    def service_in_scope(self, n):
+        """Service NPC wanted in the snapshot: any faction in the core areas; elsewhere in the world
+        or a dungeon only when not Alliance-only (friendlyToFaction H / AH / unknown)."""
+        areas = [int(a) for a in (n.get("spawns") or {})]
+        if any(self.zones.in_core(a) for a in areas):
+            return True
+        if (n.get("friendlyToFaction") or "") == "A":
+            return False
+        return any(self.zones.in_scope(a) for a in areas)
 
     def build_entities(self, refs):
         # items first: their drop sources join the mob set
@@ -919,9 +1166,10 @@ class Builder:
             items[iid] = rec
 
         service = set()
-        for nid, n in self.nraw.items():
-            fl = self.effective_npc(n).get("npcFlags") or 0
-            if any(has_bit(fl, b) for b in SERVICE_FLAGS.values()) and self.npc_in_scope_areas(n):
+        for nid, n0 in self.nraw.items():
+            n = self.effective_npc(n0)
+            fl = n.get("npcFlags") or 0
+            if any(has_bit(fl, b) for b in SERVICE_FLAGS.values()) and self.service_in_scope(n):
                 service.add(nid)
         # class trainers of the scope classes anywhere (e.g. Moonglade, capitals)
         for nid, n in self.nraw.items():
@@ -952,12 +1200,21 @@ class Builder:
             objects[oid] = self.convert_object(oid, None if oid in full_objs else MAX_MOB_SPAWNS_PER_MAP)
         self.stats["npcs.questGivers"] = len(refs["npcs"])
         self.stats["npcs.service"] = len(service)
+        for fac in ("H", "AH", "A", ""):
+            self.stats["npcs.service." + (fac or "unknown")] = len(
+                [n for n in service if (self.effective_npc(self.nraw[n]).get("friendlyToFaction") or "") == fac])
         self.stats["npcs.transport"] = len(self.transport)
         self.stats["npcs.mobsAndDropSources"] = len(mob_npcs)
         self.stats["npcs.missingFromDB"] = len([n for n in full_npcs | mob_npcs if n not in self.nraw])
         self.stats["objects.missingFromDB"] = len([o for o in full_objs | refs["mobObjects"] | drop_objs
                                                    if o not in self.oraw])
         self.stats["items.missingFromDB"] = len([i for i in refs["items"] if i not in self.iraw])
+        t = self.thin_worst
+        self.stats["spawnsThinned.maps"] = t["maps"]
+        self.stats["spawnsThinned.worstMapUnits"] = round(t["units"], 2)
+        self.stats["spawnsThinned.worstYards"] = round(t["yards"], 1)
+        if t["yardsMap"]:
+            self.stats["spawnsThinned.worstYardsMap"] = t["yardsMap"]
         return npcs, objects, items
 
     # -- brief indexes (existence checks for ids outside the scope) -------
@@ -1006,7 +1263,7 @@ class Builder:
                 rec["dungeon"] = True
             if alias:
                 rec["note"] = "QuestieDB legacy dungeon alias map (not a native Forever floor map)"
-            if u.get("areaId") in SCOPE_AREAS:
+            if self.zones.in_scope(u.get("areaId")):
                 rec["scope"] = True
             if um in sizes:
                 rec["size"] = sizes[um]
@@ -1028,6 +1285,9 @@ class Builder:
                 area_to_ui[area] = um
             if self.zones.in_scope(area) and a.get("name"):
                 area_names[area] = a["name"]
+        for area, name in EXTRA_WORLD_AREAS.items():
+            area_names.setdefault(area, name)
+        area_names = OrderedDict(sorted(area_names.items()))
         dungeons = OrderedDict()
         for area in sorted(self.zones.areas):
             a = self.zones.areas[area]
@@ -1045,7 +1305,17 @@ class Builder:
             if d.get("parentZone"):
                 rec["parentArea"] = d["parentZone"]
             dungeons[area] = rec
-        scope = OrderedDict((a, n) for a, n in SCOPE_AREAS.items())
+        # top-level areas whose quests / service NPCs are collected: the core areas, every open-world
+        # zone and every 5-man dungeon
+        scope = OrderedDict()
+        for area in sorted(self.zones.areas):
+            a = self.zones.areas[area]
+            if a.get("name") and not a.get("parentAreaId") and area not in self.zones.alt_dungeon \
+                    and self.zones.in_scope(area):
+                scope[area] = a["name"]
+        for area, name in EXTRA_WORLD_AREAS.items():
+            scope.setdefault(area, name)
+        scope = OrderedDict(sorted(scope.items()))
         return zones, area_to_ui, area_names, dungeons, scope
 
     def build_enums(self):
@@ -1146,6 +1416,16 @@ def load_map_sizes(path):
     return sizes
 
 
+def add_wclbox_map_sizes(sizes):
+    """Sizes of the Forever-new maps (WCLBOX_MAP_PIXELS) where conversion.json has none."""
+    added = []
+    for um, (wpx, hpx, _slug) in WCLBOX_MAP_PIXELS.items():
+        if um not in sizes:
+            sizes[um] = [round(wpx * YARDS_PER_MAP_PIXEL, 1), round(hpx * YARDS_PER_MAP_PIXEL, 1)]
+            added.append(um)
+    return added
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--research", required=True, help="research directory (contains db/ and xp_table.json)")
@@ -1161,11 +1441,16 @@ def main():
         ap.error("conversion.json not found: %s (pass --conversion none to skip zone sizes)" % args.conversion)
 
     b = Builder(args.research)
+    sizes = load_map_sizes(args.conversion)
+    wcl_sized = add_wclbox_map_sizes(sizes) if args.conversion != "none" else []
+    b.sizes = sizes
     qids, _reason = b.select_quests()
     quests, refs = b.build_quests(qids)
     npcs, objects, items = b.build_entities(refs)
-    sizes = load_map_sizes(args.conversion)
     zones, area_to_ui, area_names, dungeons, scope = b.build_zones(sizes)
+    for um in wcl_sized:
+        if um in zones:
+            zones[um]["sizeSrc"] = "wclbox-map"
     enums = b.build_enums()
     xp = b.build_xp()
     quest_brief = b.brief_quests(qids)
@@ -1206,6 +1491,7 @@ def main():
         ("questLogSize", 40),
         ("levelCap", 60),
         ("enums", enums),
+        ("coreAreas", OrderedDict(CORE_AREAS)),
         ("scopeAreas", scope),
         ("zones", zones),
         ("areaToUiMap", area_to_ui),
@@ -1242,9 +1528,11 @@ def main():
         "--                   (objective icon only when not slay: enums.iconTypes 3 EVENT, 5 TALK, 17 INTERACT;",
         "--                   event = completes on an area trigger / scripted event: exploration, escort)",
         "--   npcs[id]     = {name, sub, minLevel, maxLevel, rank, faction=\"A|H|AH|\", flags={trainer=true,...},",
+        "--                   flagsSrc=\"subName\" (flags inferred for a flagless Forever NPC),",
         "--                   spawns={[uiMapID]={{x,y},...}}, spawnsGrid (thinned: one spawn per grid cell),",
         "--                   instance={AreaID,...}, zone, transport=\"zeppelin|boat|skycutter|landing\"}",
-        "--   zones[uiMapID] = {name, areaId, dungeon, scope, size={widthYards, heightYards}}",
+        "--   zones[uiMapID] = {name, areaId, dungeon, scope, size={widthYards, heightYards}, sizeSrc=\"wclbox-map\"}",
+        "--   coreAreas / scopeAreas = {[AreaID] = name}: 1-22 core areas / every zone and 5-man dungeon in scope",
         "--   objects[id]  = {name, spawns, instance, zone};  items[id] = {name, npcDrops, objectDrops, vendors, ...}",
         "--   questIndex[id] = {name, level, reqLevel, races, classes, zoneOrSort}  (quests outside the scope)",
         "--   npcIndex[id] = {name, zoneAreaID};  objectIndex[id] = name  (entities outside the scope)",

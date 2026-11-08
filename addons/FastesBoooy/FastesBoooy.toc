@@ -17,6 +17,7 @@ Locales\UI_enUS.lua
 Locales\UI_ruRU.lua
 Core\Init.lua
 Core\Schema.lua
+Core\Compose.lua
 Core\Compat.lua
 Core\Registry.lua
 Core\Steps.lua

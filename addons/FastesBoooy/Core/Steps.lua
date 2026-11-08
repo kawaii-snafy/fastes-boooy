@@ -6,7 +6,7 @@
 -- ctx.flags.
 --
 -- ctx (built by ns.Engine; every field optional):
---   level, xp, xpMax  player facts (read from ns.Compat when absent)
+--   level, xp, xpMax, maxLevel  player facts (read from ns.Compat when absent)
 --   flags             { [actionType] = true } transient actions observed while the step was current
 --   forwarded         true when a later stateful step is done (or the step lies below the saved
 --                     high-water mark): transient actions count as done, optional steps are done
@@ -123,13 +123,13 @@ local function givenUp(ctx, q)
 end
 
 local function playerLevel(ctx)
-    local level, xp, xpMax = ctx and ctx.level, ctx and ctx.xp, ctx and ctx.xpMax
+    local level, xp, xpMax, maxLevel = ctx and ctx.level, ctx and ctx.xp, ctx and ctx.xpMax, ctx and ctx.maxLevel
     if level == nil then
         local f = ns.Compat.PlayerFacts()
-        level, xp, xpMax = f.level, f.xp, f.xpMax
-        if ctx then ctx.level, ctx.xp, ctx.xpMax = level, xp, xpMax end
+        level, xp, xpMax, maxLevel = f.level, f.xp, f.xpMax, f.maxLevel
+        if ctx then ctx.level, ctx.xp, ctx.xpMax, ctx.maxLevel = level, xp, xpMax, maxLevel end
     end
-    return level or 1, xp or 0, xpMax or 0
+    return level or 1, xp or 0, xpMax or 0, maxLevel
 end
 
 ---------------------------------------------------------------------------
@@ -190,11 +190,13 @@ function Steps:IsActionDone(action, step, ctx)
         -- behind the forward limit: the items were most likely consumed by a turn-in
         return (ctx and ctx.forwarded) and true or false
     elseif t == "level" then
-        local level, xp, xpMax = playerLevel(ctx)
+        local level, xp, xpMax, maxLevel = playerLevel(ctx)
         if level > action.level then return true end
         if level < action.level then return false end
         local frac = action.frac or 0
         if frac <= 0 then return true end
+        -- at the level cap (60) no XP is gained: a bar fraction of the cap level is reached
+        if maxLevel and level >= maxLevel then return true end
         return xpMax > 0 and (xp / xpMax) >= frac
     end
     -- transient actions

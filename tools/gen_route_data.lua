@@ -4,9 +4,9 @@
 --   lua5.1 tools/gen_route_data.lua [--db FILE] [--check] [--stdout] <module-dir> [...]
 --   lua5.1 tools/gen_route_data.lua --all            (every addons/FastesBoooy_*/ module)
 --
--- Loads the module's Route.lua + Segments (TOC order, Data.lua skipped) in the
--- validator's sandbox, collects every quest / NPC / object / item id the steps
--- reference and writes, per route:
+-- Loads the module's Route.lua + Segments (TOC order, Data.lua skipped; its FastesBoooy_*
+-- dependencies first, like the client) in the validator's sandbox, collects every quest /
+-- NPC / object / item id the steps reference and writes, per route:
 --
 --   FastesBoooy.AddRouteData("<routeId>", {
 --       quests = { [id] = "enUS name", ... },
@@ -14,6 +14,14 @@
 --       objects = {...}, items = {...},   -- only when referenced
 --       places = { ["Brill"] = { area = 159, en = "Brill", ru = "Брилл" }, ... },
 --   })
+--
+-- A route that uses library segments (UseSegments) lists only what its own segments and
+-- its inserts reference: the library steps' names come from the library module's
+-- Data.lua. A library module (FastesBoooy.AddLibrarySegment, no route) gets
+--
+--   FastesBoooy.AddLibraryData({ quests = {...}, npcs = {...}, ..., places = {...} })
+--
+-- with everything its own library segments reference.
 --
 -- Names come from tools/data/forever_db.lua (enUS). `places` covers the place names of
 -- the fp / fly / sethearth / hearth actions: `area` = the AreaTable id of that enUS
@@ -65,10 +73,11 @@ local function luaString(s)
     return string.format("%q", s):gsub("\\\n", "\\n")
 end
 
---- Collect referenced ids of a normalized route.
-function M.CollectIds(route)
+--- Collect referenced ids of a list of normalized steps.
+-- @param steps array of normalized steps (a route: its steps without the library steps)
+function M.CollectStepIds(steps)
     local ids = { quests = {}, npcs = {}, objects = {}, items = {}, places = {} }
-    for _, step in ipairs(route.steps) do
+    for _, step in ipairs(steps) do
         for _, a in ipairs(step.actions) do
             if a.quest then ids.quests[a.quest] = true end
             if a.item then ids.items[a.item] = true end
@@ -82,6 +91,25 @@ function M.CollectIds(route)
         end
     end
     return ids
+end
+
+--- Collect referenced ids of a normalized route: its own steps and inserts (library
+-- steps are covered by the library module's Data.lua).
+function M.CollectIds(route)
+    local own = {}
+    for _, step in ipairs(route.steps) do
+        if not step.library then own[#own + 1] = step end
+    end
+    return M.CollectStepIds(own)
+end
+
+--- Collect referenced ids of the library segments registered by a library module.
+function M.CollectLibraryIds(mod)
+    local steps = {}
+    for _, seg in ipairs(mod.librarySegments or {}) do
+        for _, step in ipairs(seg.steps) do steps[#steps + 1] = step end
+    end
+    return M.CollectStepIds(steps)
 end
 
 --- AreaTable id per enUS area name of the DB snapshot (the smallest id when a name repeats).
@@ -111,7 +139,56 @@ function M.Places(ids, areaIds)
     return list, unknown
 end
 
---- Render the Data.lua text for the routes of a loaded module.
+-- lines of one data table body: quests / npcs / objects / items / places
+local function renderBody(out, ids, db, label, missing, notes, areaIds)
+    local lookups = {
+        { "quests", function(id) local b = DB.QuestBrief(db, id) return b and b.name end },
+        { "npcs", function(id) local b = DB.NpcBrief(db, id) return b and b.name end },
+        { "objects", function(id) local b = DB.ObjectBrief(db, id) return b and b.name end },
+        { "items", function(id) local it = db.items[id] return it and it.name end },
+    }
+    for _, l in ipairs(lookups) do
+        local kind, fn = l[1], l[2]
+        local list = sortedIds(ids[kind])
+        local lines = {}
+        for _, id in ipairs(list) do
+            local name = fn(id)
+            if name and name ~= "" then
+                lines[#lines + 1] = string.format("        [%d] = %s,", id, luaString(name))
+            elseif kind ~= "items" then
+                missing[#missing + 1] = kind .. " " .. id
+            end
+        end
+        if #lines > 0 or kind == "quests" or kind == "npcs" then
+            if #lines == 0 then
+                out[#out + 1] = string.format("    %s = {},", kind)
+            else
+                out[#out + 1] = string.format("    %s = {", kind)
+                for _, ln in ipairs(lines) do out[#out + 1] = ln end
+                out[#out + 1] = "    },"
+            end
+        end
+    end
+    local places, unknown = M.Places(ids, areaIds)
+    if #places > 0 then
+        out[#out + 1] = "    places = {"
+        for _, p in ipairs(places) do
+            local parts = {}
+            if p.area then parts[#parts + 1] = string.format("area = %d", p.area) end
+            parts[#parts + 1] = "en = " .. luaString(p.name)
+            if p.ru then parts[#parts + 1] = "ru = " .. luaString(p.ru) end
+            out[#out + 1] = string.format("        [%s] = { %s },", luaString(p.name), table.concat(parts, ", "))
+        end
+        out[#out + 1] = "    },"
+    end
+    for _, name in ipairs(unknown) do
+        notes[#notes + 1] = string.format("%s: place %q has no area id in the DB snapshot and no "
+            .. "ruRU name in PLACE_NAMES_RU (shown in enUS)", label, name)
+    end
+end
+
+--- Render the Data.lua text of a loaded module: AddLibraryData for the library segments it
+-- registers (a library module), then AddRouteData per route it registers.
 -- @return text, missing (array of "kind id" not found in the DB), notes (array of strings)
 function M.Render(mod, db)
     local meta = db.meta or {}
@@ -124,56 +201,18 @@ function M.Render(mod, db)
     }
     local missing, notes = {}, {}
     local areaIds = M.AreaIds(db)
-    local lookups = {
-        { "quests", function(id) local b = DB.QuestBrief(db, id) return b and b.name end },
-        { "npcs", function(id) local b = DB.NpcBrief(db, id) return b and b.name end },
-        { "objects", function(id) local b = DB.ObjectBrief(db, id) return b and b.name end },
-        { "items", function(id) local it = db.items[id] return it and it.name end },
-    }
+    if #(mod.librarySegments or {}) > 0 then
+        out[#out + 1] = "FastesBoooy.AddLibraryData({"
+        renderBody(out, M.CollectLibraryIds(mod), db, "library " .. mod.name, missing, notes, areaIds)
+        out[#out + 1] = "})"
+        out[#out + 1] = ""
+    end
     local routes = {}
     for _, r in ipairs(mod.routes) do routes[#routes + 1] = r end
     table.sort(routes, function(a, b) return a.id < b.id end)
     for _, route in ipairs(routes) do
-        local ids = M.CollectIds(route)
         out[#out + 1] = string.format("FastesBoooy.AddRouteData(%s, {", luaString(route.id))
-        for _, l in ipairs(lookups) do
-            local kind, fn = l[1], l[2]
-            local list = sortedIds(ids[kind])
-            local lines = {}
-            for _, id in ipairs(list) do
-                local name = fn(id)
-                if name and name ~= "" then
-                    lines[#lines + 1] = string.format("        [%d] = %s,", id, luaString(name))
-                elseif kind ~= "items" then
-                    missing[#missing + 1] = kind .. " " .. id
-                end
-            end
-            if #lines > 0 or kind == "quests" or kind == "npcs" then
-                if #lines == 0 then
-                    out[#out + 1] = string.format("    %s = {},", kind)
-                else
-                    out[#out + 1] = string.format("    %s = {", kind)
-                    for _, ln in ipairs(lines) do out[#out + 1] = ln end
-                    out[#out + 1] = "    },"
-                end
-            end
-        end
-        local places, unknown = M.Places(ids, areaIds)
-        if #places > 0 then
-            out[#out + 1] = "    places = {"
-            for _, p in ipairs(places) do
-                local parts = {}
-                if p.area then parts[#parts + 1] = string.format("area = %d", p.area) end
-                parts[#parts + 1] = "en = " .. luaString(p.name)
-                if p.ru then parts[#parts + 1] = "ru = " .. luaString(p.ru) end
-                out[#out + 1] = string.format("        [%s] = { %s },", luaString(p.name), table.concat(parts, ", "))
-            end
-            out[#out + 1] = "    },"
-        end
-        for _, name in ipairs(unknown) do
-            notes[#notes + 1] = string.format("route %s: place %q has no area id in the DB snapshot and no "
-                .. "ruRU name in PLACE_NAMES_RU (shown in enUS)", route.id, name)
-        end
+        renderBody(out, M.CollectIds(route), db, "route " .. route.id, missing, notes, areaIds)
         out[#out + 1] = "})"
         out[#out + 1] = ""
     end
@@ -191,7 +230,7 @@ end
 local USAGE = [[
 usage: lua5.1 tools/gen_route_data.lua [--db FILE] [--check] [--stdout] (--all | <module-dir> ...)
 
-  --all       every addons/FastesBoooy_*/ module
+  --all       every addons/FastesBoooy_*/ module (route and library modules)
   --check     do not write; exit 1 if any Data.lua is out of date
   --stdout    print the generated text instead of writing it
   --db FILE   DB snapshot (default tools/data/forever_db.lua)]]
@@ -239,8 +278,8 @@ function M.Main(argv)
             io.stderr:write(string.format("gen_route_data: %s: %d load/schema error(s); Data.lua not %s\n",
                 mod.name, #mod.errors, (opts.check or opts.stdout) and "generated" or "written"))
             status = 1
-        elseif #mod.routes == 0 then
-            io.stderr:write("gen_route_data: " .. mod.name .. ": no routes registered\n")
+        elseif #mod.routes == 0 and not mod.isLibrary then
+            io.stderr:write("gen_route_data: " .. mod.name .. ": no routes (and no library segments) registered\n")
             status = 1
         else
             local text, missing, notes = M.Render(mod, db)

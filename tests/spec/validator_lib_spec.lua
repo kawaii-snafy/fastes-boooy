@@ -166,6 +166,67 @@ describe("fbdb", function()
             assert.is_nil(db.npcIndex[9566])
         end)
 
+        it("covers Horde leveling 22-60 (all Eastern Kingdoms / Kalimdor zones, 5-man dungeons)", function()
+            local tn = db.quests[4767] -- Wind Rider (Thousand Needles, Freewind Post)
+            assert.are.equal("Wind Rider", tn.name)
+            assert.are.equal(29, tn.level)
+            assert.are.equal("H", tn.side)
+            assert.are.equal(1441, tn.uiMap)
+            assert.are.same({ 10377 }, tn.start.npcs)
+            assert.is_not_nil(db.quests[98070])                 -- Forever-new Thousand Needles quest
+            assert.are.equal("new", db.quests[98070].status)
+            assert.are.equal(1717, db.quests[1109].zone)         -- Going, Going, Guano! (Razorfen Kraul)
+            assert.are.equal("H", db.quests[1048].side)          -- Into The Scarlet Monastery
+            assert.are.equal(1417, db.quests[3380].zone)         -- The Sunken Temple (dungeon quest)
+            assert.are.equal(50, db.quests[2770].level)          -- Gahz'rilla (Zul'Farrak)
+            assert.is_true(db.zones[1441].scope)
+            assert.is_true(db.zones[1434].scope)                 -- Stranglethorn Vale
+            assert.are.equal("Thousand Needles", db.scopeAreas[400])
+            assert.are.equal("Tirisfal Glades", db.coreAreas[85])
+            assert.are.equal("Freewind Post", db.areaNames[484])
+            -- raid / battleground / holiday content stays in the brief index
+            assert.is_nil(db.quests[7848])                       -- Attunement to the Core (Molten Core)
+            assert.is_false(DB.QuestBrief(db, 7848).full)
+            assert.is_nil(db.quests[8201])                       -- Zul'Gurub
+            assert.is_not_nil(DB.QuestBrief(db, 8201))
+        end)
+
+        it("includes Horde/neutral service NPCs everywhere, not Alliance ones outside the core", function()
+            local function flags(id) return db.npcs[id] and db.npcs[id].flags or {} end
+            assert.is_true(flags(4317).flightmaster)              -- Nyse, Freewind Post
+            assert.is_true(flags(2851).flightmaster)              -- Urda, Hammerfall
+            assert.is_true(flags(8020).flightmaster)              -- Shyn, Camp Mojache
+            assert.is_true(flags(1387).flightmaster)              -- Thysta, Grom'gol
+            -- Forever-new Riverglades flight master without npcFlags: inferred from the subName
+            assert.is_true(flags(255993).flightmaster)
+            assert.are.equal("subName", db.npcs[255993].flagsSrc)
+            assert.are.same({ { 59.58, 45.13 } }, db.npcs[255993].spawns[2548])
+            assert.is_nil(db.npcs[4317].flagsSrc)
+            -- Alliance flight master in Arathi (outside the core areas): brief index only
+            assert.is_nil(db.npcs[2835])
+            assert.is_not_nil(DB.NpcBrief(db, 2835))
+        end)
+
+        it("knows the world size of every zone map, Forever-new maps included", function()
+            assert.are.same({ 6381.2, 4254.2 }, db.zones[1434].size) -- conversion.json bounds
+            assert.is_nil(db.zones[1434].sizeSrc)
+            assert.are.same({ 4850, 3233.3 }, db.zones[2548].size)   -- Riverglades: WCLBox map pixels
+            assert.are.equal("wclbox-map", db.zones[2548].sizeSrc)
+            -- Zephras Isle stays unsized: the validator fixtures use it as the map-percent fallback
+            assert.is_nil(db.zones[2521].size)
+            for _, um in ipairs({ 1411, 1416, 1417, 1418, 1419, 1422, 1423, 1425, 1427, 1428, 1435, 1441,
+                1443, 1444, 1445, 1446, 1447, 1448, 1449, 1451, 1452, 2482, 2524, 2652 }) do
+                assert.is_not_nil(db.zones[um].size, "size of uiMap " .. um)
+            end
+        end)
+
+        it("keeps thinned spawn lists within the documented grid error", function()
+            local c = db.meta.counts
+            assert.is_true(c["spawnsThinned.maps"] > 0)
+            assert.is_true(c["spawnsThinned.worstMapUnits"] <= 2 * math.sqrt(2))
+            assert.is_true(c["spawnsThinned.worstYards"] < 300)
+        end)
+
         it("indexes quests and NPCs outside the scope", function()
             local b = DB.QuestBrief(db, 1097) -- Elmore's Task (Stormwind)
             assert.is_not_nil(b)

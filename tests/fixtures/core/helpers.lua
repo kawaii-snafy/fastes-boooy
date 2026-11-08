@@ -32,6 +32,36 @@ H.STEP_IDS = {
 H.INDEX = {}
 for i, id in ipairs(H.STEP_IDS) do H.INDEX[id] = i end
 
+-- Composed fixture: route "test-composed" (FastesBoooy_TestComposed) = own segments +
+-- library segments of FastesBoooy_TestLib (UseSegments) + class inserts (AddInsert).
+H.LIB_DIR = "tests/fixtures/core/FastesBoooy_TestLib"
+H.LIB_NAME = "FastesBoooy_TestLib"
+H.LIB_TOC = H.LIB_DIR .. "/" .. H.LIB_NAME .. ".toc"
+H.COMPOSED_DIR = "tests/fixtures/core/FastesBoooy_TestComposed"
+H.COMPOSED_NAME = "FastesBoooy_TestComposed"
+H.COMPOSED_TOC = H.COMPOSED_DIR .. "/" .. H.COMPOSED_NAME .. ".toc"
+H.COMPOSED_ID = "test-composed"
+-- every composed step id in route order (route.steps), with its segment
+H.COMPOSED_ALL = {
+    { "tc-welcome", "tc-intro" }, { "tc-intro-go", "tc-intro" },
+    { "tl-accept-363", "tl-deathknell" }, { "tl-363-364", "tl-deathknell" },
+    { "tc-train-1", "tl-deathknell" }, { "tc-vendor-1", "tl-deathknell" },
+    { "tl-complete-364", "tl-deathknell" }, { "tl-turnin-364", "tl-deathknell" },
+    { "tc-level-2", "tl-deathknell" }, { "tl-accept-376", "tl-deathknell" }, { "tl-bg-376", "tl-deathknell" },
+    { "tl-complete-3901", "tl-deathknell" }, { "tl-turnin-3901+1", "tl-deathknell" },
+    { "tl-turnin-3901", "tl-deathknell" }, { "tl-turnin-376", "tl-deathknell" },
+    { "tc-train-4", "tc-class" }, { "tc-vendor-4", "tc-class" },
+    { "tl-complete-3902", "tl-brill" }, { "tl-complete-380", "tl-brill" }, { "tl-turnin-3902", "tl-brill" },
+    { "tl-turnin-380", "tl-brill" }, { "tl-complete-381", "tl-brill" }, { "tl-turnin-381", "tl-brill" },
+    { "tl-optional", "tl-brill" }, { "tl-go-brill", "tl-brill" }, { "tl-sethearth", "tl-brill" },
+    { "tc-warrior-only", "tl-brill" },
+}
+-- filtered step ids for Scourge / PALADIN / Horde (tc-warrior-only is a WARRIOR insert)
+H.COMPOSED_IDS = {}
+for _, e in ipairs(H.COMPOSED_ALL) do
+    if e[1] ~= "tc-warrior-only" then H.COMPOSED_IDS[#H.COMPOSED_IDS + 1] = e[1] end
+end
+
 local dbCache
 --- tools/data/forever_db.lua (loaded once per process).
 function H.db()
@@ -63,9 +93,29 @@ function H.defineQuests(m)
     m:DefineItem(11127, { name = "Scavenged Goods" })
 end
 
+--- Route / library modules a helper boot loads after the core: { { toc, name }, ... }.
+-- opts.modules overrides; opts.composed = the library + the composed route; opts.fixture ==
+-- false = none; default = the test route.
+function H.modules(opts)
+    opts = opts or {}
+    if opts.modules then return opts.modules end
+    if opts.fixture == false then return {} end
+    if opts.composed then
+        return { { H.LIB_TOC, H.LIB_NAME }, { H.COMPOSED_TOC, H.COMPOSED_NAME } }
+    end
+    return { { H.FIXTURE_TOC, H.FIXTURE_NAME } }
+end
+
+local function bootList(opts)
+    local addons = { "FastesBoooy" }
+    for _, mod in ipairs(H.modules(opts)) do addons[#addons + 1] = mod[2] end
+    return addons
+end
+
 --- Create a mock with the core addon (and the test route unless opts.fixture == false) loaded.
 -- opts: locale, player = {...}, savedVariables, db (use the Forever DB snapshot), quests
--- (define the test route quests, default true), fixture, mock = { extra Mock.new options }.
+-- (define the test route quests, default true), fixture, composed (load the library +
+-- composed route instead), modules (see H.modules), mock = { extra Mock.new options }.
 function H.new(opts)
     opts = opts or {}
     local player = { race = "Scourge", class = "PALADIN", faction = "Horde", mapID = 1420, x = 30.2, y = 71.7 }
@@ -77,7 +127,7 @@ function H.new(opts)
     if opts.quests ~= false then H.defineQuests(m) end
     if opts.setup then opts.setup(m) end
     local ns = Mock.loadAddon(m, H.CORE_TOC)
-    if opts.fixture ~= false then Mock.loadAddon(m, H.FIXTURE_TOC, H.FIXTURE_NAME) end
+    for _, mod in ipairs(H.modules(opts)) do Mock.loadAddon(m, mod[1], mod[2]) end
     return m, ns
 end
 
@@ -85,9 +135,7 @@ end
 function H.boot(opts)
     opts = opts or {}
     local m, ns = H.new(opts)
-    local addons = { "FastesBoooy" }
-    if opts.fixture ~= false then addons[2] = H.FIXTURE_NAME end
-    Mock.boot(m, addons, { reload = opts.reload })
+    Mock.boot(m, bootList(opts), { reload = opts.reload })
     H.settle(m)
     return m, ns
 end
@@ -99,6 +147,7 @@ function H.reload(m, opts)
     local U = Mock.util
     local m2, ns2 = H.new({
         locale = opts.locale, savedVariables = sv, quests = false, fixture = opts.fixture,
+        composed = opts.composed, modules = opts.modules,
         player = { level = m.player.level, xp = m.player.xp, mapID = m.player.mapID, x = m.player.x, y = m.player.y,
             inCombat = m.player.inCombat },
         setup = function(n)
@@ -113,9 +162,7 @@ function H.reload(m, opts)
             n.bind = U.deepcopy(m.bind)
         end,
     })
-    local addons = { "FastesBoooy" }
-    if opts.fixture ~= false then addons[2] = H.FIXTURE_NAME end
-    Mock.boot(m2, addons, { reload = not opts.coldStart })
+    Mock.boot(m2, bootList(opts), { reload = not opts.coldStart })
     H.settle(m2)
     return m2, ns2
 end
@@ -174,9 +221,12 @@ function H.record(ns, msg)
 end
 
 --- Play the test route up to (not including) step `id` with the quest flow of the mock.
--- Uses the mock directly (server side) so engine specs start from a known state.
+-- Uses the mock directly (server side) so engine specs start from a known state. Any
+-- active route: the index comes from the engine (H.INDEX for the test route).
 function H.playTo(m, ns, id)
     local stop = H.INDEX[id]
+    local active = ns.Engine:GetRoute()
+    if not stop or (active and active.id ~= H.ROUTE_ID) then stop = ns.Engine:IndexOf(id) end
     assert(stop, "unknown step id " .. tostring(id))
     for _ = 1, 60 do
         local cur = ns.Engine:GetCursor()

@@ -3,11 +3,13 @@
 #   make check        lint + test + validate + simulate, each also on the fixture routes (what CI runs)
 #   make lint         luacheck with the generated 'forever' std (.luacheckrc)
 #   make test         busted specs (tests/spec)
-#   make validate     route validator against tools/data/forever_db.lua (addons/FastesBoooy_*)
-#   make simulate     run every route through the real engine on the WoW mock (addons/FastesBoooy_*)
+#   make validate     route validator against tools/data/forever_db.lua (addons/FastesBoooy_*: route
+#                     modules, composed with their library dependencies, and library modules)
+#   make simulate     run every route through the real engine on the WoW mock (addons/FastesBoooy_*
+#                     route modules; library modules are played inside the routes that use them)
 #   make validate-fixtures / simulate-fixtures   the same on the known-good fixture routes
 #   make report       write docs/VALIDATION.md (validator Markdown report)
-#   make routedata    regenerate Data.lua of every route module
+#   make routedata    regenerate Data.lua of every route / library module
 #   make api BIR=... WOWUI=...          regenerate tools/data/forever_api.lua
 #   make db RESEARCH=... CONVERSION=... regenerate tools/data/forever_db.lua
 #   make package      dist/<Addon>-<Version>.zip for every addons/* directory
@@ -21,10 +23,14 @@ PYTHON = python3
 VALIDATE_FLAGS =
 # Known-good fixture routes: must validate with 0 errors and simulate cleanly, so the
 # validate / simulate stages check something even before the first route module exists.
+# FastesBoooy_TestComposed = own segments + library segments of FastesBoooy_TestLib (UseSegments)
+# + class inserts (AddInsert); the library module itself is validated / regenerated, not simulated.
 FIXTURE_VALIDATE = tests/fixtures/validator/FastesBoooy_FxClean tests/fixtures/validator/FastesBoooy_FxNs \
-	tests/fixtures/core/FastesBoooy_TestRoute
-FIXTURE_SIMULATE = tests/fixtures/core/FastesBoooy_TestRoute
-FIXTURE_ROUTEDATA = tests/fixtures/validator/FastesBoooy_FxClean
+	tests/fixtures/core/FastesBoooy_TestRoute tests/fixtures/core/FastesBoooy_TestLib \
+	tests/fixtures/core/FastesBoooy_TestComposed
+FIXTURE_SIMULATE = tests/fixtures/core/FastesBoooy_TestRoute tests/fixtures/core/FastesBoooy_TestComposed
+FIXTURE_ROUTEDATA = tests/fixtures/validator/FastesBoooy_FxClean tests/fixtures/core/FastesBoooy_TestLib \
+	tests/fixtures/core/FastesBoooy_TestComposed
 # make api BIR=/path/to/BlizzardInterfaceResources/Resources WOWUI=/path/to/Interface/AddOns|none
 BIR =
 WOWUI =
@@ -39,7 +45,7 @@ CONVERSION =
 all: check
 
 help:
-	@sed -n '3,15p' Makefile
+	@sed -n '3,17p' Makefile
 
 check: lint test validate validate-fixtures simulate simulate-fixtures
 

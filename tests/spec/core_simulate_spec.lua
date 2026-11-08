@@ -69,6 +69,9 @@ describe("tools/simulate_routes.lua", function()
         local code, out = run("--fixtures")
         assert.equal(0, code, out)
         assert.is_truthy(out:find("OK   test-route (Scourge PALADIN Horde): 26 steps", 1, true), out)
+        -- the composed fixture (library segments + inserts); its library module is not simulated alone
+        assert.is_truthy(out:find("OK   test-composed (Scourge PALADIN Horde): 26 steps", 1, true), out)
+        assert.is_truthy(out:find("skip FastesBoooy_TestLib: library module", 1, true), out)
         assert.is_truthy(out:find("0 failed", 1, true), out)
     end)
 

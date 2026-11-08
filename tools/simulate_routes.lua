@@ -8,9 +8,12 @@
 -- TOC; plus tests/fixtures/core/FastesBoooy_*/ with --fixtures; or the directories given)
 -- and every race x class profile of each route, a fresh strict mock client
 -- (tests/mocks/wow.lua) is built with a matching player (Skyborne: raceID 96 Horde /
--- 95 Alliance), the core addon (addons/FastesBoooy) and the module are loaded and booted,
--- and the route is played step by step doing exactly what the current step asks for
--- through the client API of the mock:
+-- 95 Alliance), the core addon (addons/FastesBoooy), the module's FastesBoooy_*
+-- dependencies (## Dependencies, e.g. the shared library FastesBoooy_Horde: loaded first,
+-- like the client) and the module are loaded and booted, and the (composed) route is
+-- played step by step doing exactly what the current step asks for through the client API
+-- of the mock. Library modules (AddLibrarySegment, no route) are not simulated on their
+-- own: their segments are played inside the routes that use them.
 --
 --   accept    quest dialog (QUEST_DETAIL), gossip (by quest id) or greeting (by index);
 --             the addon's automation must accept (AcceptQuest is asserted)
@@ -640,8 +643,14 @@ end
 local function bootMock(S, m)
     local ns = Mock.loadAddon(m, CORE_TOC)
     local name = Loader.basename(S.module.dir)
+    local boot = { "FastesBoooy" }
+    for _, dep in ipairs(S.module.deps or {}) do -- dependencies first (Loader order)
+        Mock.loadAddon(m, dep.toc, dep.name)
+        boot[#boot + 1] = dep.name
+    end
     Mock.loadAddon(m, S.toc, name)
-    Mock.boot(m, { "FastesBoooy", name })
+    boot[#boot + 1] = name
+    Mock.boot(m, boot)
     m:Advance(SETTLE)
     if ns.Engine:GetRoute() ~= ns.Registry:Get(S.route.id) then
         ns.Engine:SetRoute(S.route.id)
@@ -910,7 +919,10 @@ local function main(argv)
             failed, total = failed + 1, total + 1
         else
             local mod = Loader.LoadModule(dir, { schema = schema })
-            if #mod.errors > 0 then
+            if mod.isLibrary and #mod.errors == 0 then
+                print(format("skip %s: library module (its segments are simulated in the routes that use them)",
+                    mod.name))
+            elseif #mod.errors > 0 then
                 total, failed = total + 1, failed + 1
                 print(format("FAIL %s: %d load/schema error(s)", mod.name, #mod.errors))
                 for i, e in ipairs(mod.errors) do

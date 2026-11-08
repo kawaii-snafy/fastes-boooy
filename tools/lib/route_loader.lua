@@ -3,19 +3,31 @@
 -- A route module is an addon directory (addons/FastesBoooy_<Name>/) whose TOC lists
 -- Route.lua, Data.lua and Segments/*.lua. The files are executed in a SANDBOX whose
 -- only global besides the pure Lua libraries is a stub `FastesBoooy` table that
--- captures RegisterRoute / AddSegment / AddRouteData and normalizes them with the
--- real route-format contract (addons/FastesBoooy/Core/Schema.lua), exactly like the
--- addon's Registry does (segments that arrive before their route are queued and an
--- error is recorded).
+-- captures RegisterRoute / AddSegment / AddRouteData / AddLibrarySegment /
+-- AddLibraryData / UseSegments / AddInsert and normalizes them with the real
+-- route-format contract (addons/FastesBoooy/Core/Schema.lua) and composes the routes
+-- with the real composition code (addons/FastesBoooy/Core/Compose.lua), exactly like
+-- the addon's Registry does (registrations that arrive before their route are queued
+-- and an error is recorded).
+--
+-- Dependencies: the FastesBoooy_* addons named by "## Dependencies" / "## RequiredDeps"
+-- of the module's TOC (e.g. the shared library FastesBoooy_Horde) are loaded first,
+-- recursively, from the same addons directory, each with its own private addon table
+-- -- the load order of the client. Their file names are reported as
+-- "<Dependency>/<file>" and their registrations carry `library = "<Dependency>"`.
 --
 --   local Loader = require("lib.route_loader")
---   local Schema = Loader.LoadSchema(root)
+--   local Schema = Loader.LoadSchema(root)          -- Schema.Compose = Core/Compose.lua
 --   local mod = Loader.LoadModule(dir, { schema = Schema, skip = { ["Data.lua"] = true } })
---   mod.routes        -- array of normalized routes (Schema.NormalizeRoute + AddSegment)
---   mod.errors        -- array of { file = "Segments/01.lua", msg = "..." }
---   mod.data[id]      -- merged AddRouteData tables per route id
+--   mod.routes        -- array of normalized, composed routes registered by the module itself
+--   mod.errors        -- array of { file = "Segments/01.lua", msg = "...", library = "<Dep>"|nil }
+--   mod.data[id]      -- merged AddRouteData tables per route id (+ library data under it)
 --   mod.segmentFile[id][segId] -- file that added the segment
 --   mod.toc           -- { files = {...}, meta = { Interface = "16001", ... } }
+--   mod.deps          -- { { name, dir, toc }, ... } dependency modules in load order
+--   mod.lib           -- library store (Compose.NewLibrary) of the whole load
+--   mod.librarySegments -- library segments registered by the module's own files
+--   mod.isLibrary     -- the module registers library segments / data and no route
 
 local Loader = {}
 
@@ -57,20 +69,32 @@ local function baseEnv()
 end
 Loader.baseEnv = baseEnv
 
---- Load the route-format contract.
+--- Load the route-format contract (Core/Schema.lua) and the composition code
+-- (Core/Compose.lua) with one shared `ns`, like the addon's TOC does.
 -- @param root repository root (contains addons/FastesBoooy/Core/Schema.lua)
+-- @return Schema (Schema.Compose = the Compose table), Compose
 function Loader.LoadSchema(root)
-    local path = (root or ".") .. "/addons/FastesBoooy/Core/Schema.lua"
-    local chunk, err = loadfile(path)
-    if not chunk then error("cannot load Schema: " .. tostring(err), 0) end
-    setfenv(chunk, baseEnv())
+    local core = (root or ".") .. "/addons/FastesBoooy/Core/"
     local ns = {}
-    local ret = chunk("FastesBoooy", ns)
+    local function run(file)
+        local chunk, err = loadfile(core .. file)
+        if not chunk then error("cannot load " .. file .. ": " .. tostring(err), 0) end
+        setfenv(chunk, baseEnv())
+        return chunk("FastesBoooy", ns)
+    end
+    local ret = run("Schema.lua")
     local Schema = type(ret) == "table" and ret or ns.Schema
     if type(Schema) ~= "table" or type(Schema.NormalizeRoute) ~= "function" then
         error("Schema.lua did not return the Schema table", 0)
     end
-    return Schema
+    ns.Schema = Schema
+    local cret = run("Compose.lua")
+    local Compose = type(cret) == "table" and cret or ns.Compose
+    if type(Compose) ~= "table" or type(Compose.Build) ~= "function" then
+        error("Compose.lua did not return the Compose table", 0)
+    end
+    Schema.Compose = Compose
+    return Schema, Compose
 end
 
 --- Parse a TOC file. @return { files = {relpath...}, meta = {key = value} } or nil, err
@@ -108,21 +132,52 @@ function Loader.FindToc(dir)
     return nil
 end
 
---- Execute the module's files in a sandbox and capture its registrations.
+--- FastesBoooy_* dependencies named by a parsed TOC (## Dependencies, ## RequiredDeps).
+function Loader.Dependencies(toc)
+    local out, seen = {}, {}
+    for _, key in ipairs({ "Dependencies", "RequiredDeps" }) do
+        for name in tostring(toc and toc.meta[key] or ""):gmatch("[^,%s]+") do
+            if name:match("^FastesBoooy_") and not seen[name] then
+                seen[name] = true
+                out[#out + 1] = name
+            end
+        end
+    end
+    return out
+end
+
+local function dirname(path)
+    return path:match("^(.*)[/\\][^/\\]+$") or "."
+end
+
+--- Execute the module's files (after its FastesBoooy_* dependencies) in a sandbox,
+-- capture the registrations and compose the module's routes.
 -- @param dir module directory
--- @param opts { schema = Schema (required), skip = { [relpath] = true }, files = {override list} }
+-- @param opts { schema = Schema (required), skip = { [relpath] = true } (module's own files),
+--               files = {override list}, compose = Compose (default schema.Compose),
+--               addons = directory of the dependencies (default: the parent of dir),
+--               deps = false (do not load dependencies) }
 function Loader.LoadModule(dir, opts)
     opts = opts or {}
     local Schema = assert(opts.schema, "LoadModule: opts.schema required")
+    local Compose = opts.compose or Schema.Compose
+    if not Compose then
+        local root = (debug.getinfo(1, "S").source:match("^@(.*)/tools/lib/route_loader%.lua$")) or "."
+        Compose = select(2, Loader.LoadSchema(root))
+    end
     dir = dir:gsub("[/\\]+$", "")
     local mod = {
         dir = dir, name = basename(dir), routes = {}, routeById = {}, errors = {},
-        data = {}, segmentFile = {}, files = {}, pending = {},
+        data = {}, segmentFile = {}, files = {}, pending = {}, deps = {},
+        lib = Compose.NewLibrary(), librarySegments = {}, librarySegmentFile = {}, libraryData = false,
     }
-    local currentFile = "?"
+    local lib = mod.lib
+    local currentFile, currentModule = "?", mod.name
 
     local function addError(msg, file)
-        mod.errors[#mod.errors + 1] = { file = file or currentFile, msg = msg }
+        local e = { file = file or currentFile, msg = msg }
+        if currentModule ~= mod.name then e.library = currentModule end
+        mod.errors[#mod.errors + 1] = e
     end
     local function addErrors(list, prefix)
         for _, e in ipairs(list or {}) do
@@ -133,27 +188,47 @@ function Loader.LoadModule(dir, opts)
     local api = {}
     local function addSegment(routeId, def)
         local route = mod.routeById[routeId]
-        local seg, errs = Schema.AddSegment(route, def)
+        local seg, errs = Schema.AddSegment(Compose.OwnTarget(route), def)
         addErrors(errs, "route " .. tostring(routeId))
-        if seg and seg.id ~= nil then
-            mod.segmentFile[routeId] = mod.segmentFile[routeId] or {}
-            mod.segmentFile[routeId][seg.id] = currentFile
+        if seg then
+            if route.own then route.dirty = true end
             seg.file = currentFile
             for _, step in ipairs(seg.steps) do step.file = currentFile end
+            if seg.id ~= nil then
+                mod.segmentFile[routeId] = mod.segmentFile[routeId] or {}
+                mod.segmentFile[routeId][seg.id] = currentFile
+            end
         end
         return seg
     end
     local function addData(routeId, data)
-        local dst = mod.data[routeId] or {}
-        mod.data[routeId] = dst
-        for kind, t in pairs(data) do
-            if type(t) == "table" then
-                dst[kind] = dst[kind] or {}
-                for k, v in pairs(t) do dst[kind][k] = v end
-            else
-                dst[kind] = t
-            end
+        Compose.MergeData(mod.routeById[routeId].data, data)
+    end
+    local function useSegments(routeId, ids)
+        local n, errs = Compose.AddUses(mod.routeById[routeId], ids, currentFile)
+        addErrors(errs, "route " .. tostring(routeId))
+        return n > 0
+    end
+    local function addInsert(routeId, def)
+        local ins, errs = Compose.AddInsert(mod.routeById[routeId], def, currentFile)
+        addErrors(errs, "route " .. tostring(routeId))
+        if ins then
+            for _, step in ipairs(ins.steps) do step.file = currentFile end
         end
+        return ins
+    end
+    local APPLY = { segment = addSegment, data = addData, uses = useSegments, insert = addInsert }
+
+    -- registration before RegisterRoute: error + queue (applied when the route arrives)
+    local function queue(routeId, kind, def, what)
+        if type(routeId) ~= "string" then
+            addError(("%s: invalid route id %s"):format(what, tostring(routeId)))
+            return
+        end
+        addError(("%s: route %s is not registered yet (RegisterRoute must come first)"):format(what, routeId))
+        local q = mod.pending[routeId] or {}
+        q[#q + 1] = { kind = kind, def = def, file = currentFile, module = currentModule }
+        mod.pending[routeId] = q
     end
 
     function api.RegisterRoute(def)
@@ -166,16 +241,20 @@ function Loader.LoadModule(dir, opts)
             return nil
         end
         route.file = currentFile
-        route.module = mod.name
+        route.module = currentModule
+        route.data = {}
         mod.routeById[id] = route
-        mod.routes[#mod.routes + 1] = route
+        if currentModule == mod.name then
+            mod.routes[#mod.routes + 1] = route
+            mod.data[id] = route.data
+        end
         local pending = mod.pending[id]
         mod.pending[id] = nil
         for _, p in ipairs(pending or {}) do
-            local saved = currentFile
-            currentFile = p.file
-            if p.kind == "segment" then addSegment(id, p.def) else addData(id, p.def) end
-            currentFile = saved
+            local savedFile, savedModule = currentFile, currentModule
+            currentFile, currentModule = p.file, p.module
+            APPLY[p.kind](id, p.def)
+            currentFile, currentModule = savedFile, savedModule
         end
         return route
     end
@@ -189,7 +268,7 @@ function Loader.LoadModule(dir, opts)
             addError(("AddSegment %s: route %s is not registered yet (RegisterRoute must come first)")
                 :format(tostring(type(def) == "table" and def.id), routeId))
             local q = mod.pending[routeId] or {}
-            q[#q + 1] = { kind = "segment", def = def, file = currentFile }
+            q[#q + 1] = { kind = "segment", def = def, file = currentFile, module = currentModule }
             mod.pending[routeId] = q
             return nil
         end
@@ -201,82 +280,178 @@ function Loader.LoadModule(dir, opts)
             addError(("AddRouteData %s: data must be a table"):format(tostring(routeId)))
             return false
         end
-        if type(routeId) ~= "string" then
-            addError(("AddRouteData: invalid route id %s"):format(tostring(routeId)))
-            return false
-        end
         if not mod.routeById[routeId] then
-            addError(("AddRouteData: route %s is not registered yet (RegisterRoute must come first)"):format(routeId))
-            local q = mod.pending[routeId] or {}
-            q[#q + 1] = { kind = "data", def = data, file = currentFile }
-            mod.pending[routeId] = q
+            queue(routeId, "data", data, "AddRouteData")
             return false
         end
         addData(routeId, data)
         return true
     end
 
-    local files = opts.files
-    if not files then
-        local tocPath = Loader.FindToc(dir)
-        if not tocPath then
-            addError("no TOC file found (expected " .. mod.name .. ".toc)", mod.name .. ".toc")
-            return mod
+    function api.UseSegments(routeId, ids)
+        if not mod.routeById[routeId] then
+            queue(routeId, "uses", ids, "UseSegments")
+            return false
         end
-        local toc, err = Loader.ParseToc(tocPath)
-        if not toc then
-            addError(err, basename(tocPath))
-            return mod
-        end
-        mod.toc = toc
-        mod.tocFile = basename(tocPath)
-        files = toc.files
-        local iface = toc.meta.Interface
-        if iface and not tostring(iface):match("^16%d%d%d") then
-            addError("## Interface must be 16001 (Forever), got " .. tostring(iface), mod.tocFile)
-        end
-        local deps = toc.meta.Dependencies or toc.meta.RequiredDeps or ""
-        if not deps:find("FastesBoooy", 1, true) then
-            addError("## Dependencies must include FastesBoooy", mod.tocFile)
-        end
+        return useSegments(routeId, ids)
     end
 
-    -- one private addon table shared by every file of the module (`local _, ns = ...`),
-    -- like the WoW client and Mock.loadAddon
-    local private = {}
-    for _, rel in ipairs(files) do
-        if not (opts.skip and opts.skip[rel]) then
-            currentFile = rel
-            mod.files[#mod.files + 1] = rel
-            local path = dir .. "/" .. rel
-            if not rel:match("%.lua$") then
-                addError("only .lua files are supported in route modules (got " .. rel .. ")")
-            else
-                local chunk, err = loadfile(path)
-                if not chunk then
-                    addError("load error: " .. tostring(err))
+    function api.AddInsert(routeId, def)
+        if not mod.routeById[routeId] then
+            queue(routeId, "insert", def, "AddInsert")
+            return nil
+        end
+        return addInsert(routeId, def)
+    end
+
+    function api.AddLibrarySegment(def)
+        local seg, errs = Compose.AddLibrarySegment(lib, def, { module = currentModule, file = currentFile })
+        addErrors(errs, "library")
+        if seg then
+            mod.librarySegmentFile[seg.id] = currentFile
+            if currentModule == mod.name then mod.librarySegments[#mod.librarySegments + 1] = seg end
+        end
+        return seg
+    end
+
+    function api.AddLibraryData(data)
+        local ok, err = Compose.AddLibraryData(lib, data)
+        if not ok then
+            addError("AddLibraryData: " .. tostring(err))
+            return false
+        end
+        if currentModule == mod.name then mod.libraryData = true end
+        return true
+    end
+
+    -- run the files of one module (`prefix` qualifies the file names of dependencies)
+    local function runFiles(mdir, mname, files, skip, prefix)
+        -- one private addon table shared by every file of the module (`local _, ns = ...`),
+        -- like the WoW client and Mock.loadAddon
+        local private = {}
+        for _, rel in ipairs(files) do
+            if not (skip and skip[rel]) then
+                currentFile, currentModule = prefix .. rel, mname
+                if mname == mod.name then mod.files[#mod.files + 1] = rel end
+                local path = mdir .. "/" .. rel
+                if not rel:match("%.lua$") then
+                    addError("only .lua files are supported in route modules (got " .. rel .. ")")
                 else
-                    local env = baseEnv()
-                    env.FastesBoooy = api
-                    setfenv(chunk, env)
-                    local ok, rerr = pcall(chunk, mod.name, private)
-                    if not ok then addError("runtime error: " .. tostring(rerr)) end
-                    local base = baseEnv()
-                    for k in pairs(env) do
-                        if k ~= "FastesBoooy" and base[k] == nil then
-                            addError(("defines global '%s' (route modules may only call FastesBoooy.*)"):format(tostring(k)))
+                    local chunk, err = loadfile(path)
+                    if not chunk then
+                        addError("load error: " .. tostring(err))
+                    else
+                        local env = baseEnv()
+                        env.FastesBoooy = api
+                        setfenv(chunk, env)
+                        local ok, rerr = pcall(chunk, mname, private)
+                        if not ok then addError("runtime error: " .. tostring(rerr)) end
+                        local base = baseEnv()
+                        for k in pairs(env) do
+                            if k ~= "FastesBoooy" and base[k] == nil then
+                                addError(("defines global '%s' (route modules may only call FastesBoooy.*)")
+                                    :format(tostring(k)))
+                            end
                         end
                     end
                 end
             end
         end
+        currentFile, currentModule = "?", mod.name
     end
-    currentFile = "?"
+
+    -- TOC of a module directory; checks Interface and the core dependency
+    local function readToc(mdir, mname, label)
+        local saved = currentModule
+        currentModule = mname
+        local tocPath = Loader.FindToc(mdir)
+        if not tocPath then
+            addError("no TOC file found (expected " .. mname .. ".toc)", label .. mname .. ".toc")
+            currentModule = saved
+            return nil
+        end
+        local toc, err = Loader.ParseToc(tocPath)
+        local tocFile = label .. basename(tocPath)
+        if not toc then
+            addError(err, tocFile)
+            currentModule = saved
+            return nil
+        end
+        local iface = toc.meta.Interface
+        if iface and not tostring(iface):match("^16%d%d%d") then
+            addError("## Interface must be 16001 (Forever), got " .. tostring(iface), tocFile)
+        end
+        local deps = (toc.meta.Dependencies or "") .. "," .. (toc.meta.RequiredDeps or "")
+        local hasCore = false
+        for name in deps:gmatch("[^,%s]+") do
+            if name == "FastesBoooy" then hasCore = true end
+        end
+        if not hasCore then
+            addError("## Dependencies must include FastesBoooy", tocFile)
+        end
+        currentModule = saved
+        return toc, tocFile, tocPath
+    end
+
+    local files = opts.files
+    local toc
+    if not files then
+        local tocFile
+        toc, tocFile = readToc(dir, mod.name, "")
+        if not toc then return mod end
+        mod.toc = toc
+        mod.tocFile = tocFile
+        files = toc.files
+    end
+
+    -- dependencies first (depth first, in TOC order), like the client
+    if opts.deps ~= false and toc then
+        local addonsDir = opts.addons or dirname(dir)
+        local state = { [mod.name] = "loading" }
+        local function loadDeps(names, from)
+            for _, name in ipairs(names) do
+                if state[name] == "loading" then
+                    addError(("dependency cycle: %s -> %s"):format(from, name), mod.tocFile)
+                elseif state[name] == nil then
+                    state[name] = "loading"
+                    local ddir = addonsDir .. "/" .. name
+                    if not Loader.FindToc(ddir) then
+                        addError(("dependency %s (## Dependencies of %s) not found in %s"):format(name, from, addonsDir),
+                            mod.tocFile)
+                    else
+                        local dtoc, _, dtocPath = readToc(ddir, name, name .. "/")
+                        if dtoc then
+                            loadDeps(Loader.Dependencies(dtoc), name)
+                            mod.deps[#mod.deps + 1] = { name = name, dir = ddir, toc = dtocPath }
+                            runFiles(ddir, name, dtoc.files, nil, name .. "/")
+                        end
+                    end
+                    state[name] = "done"
+                end
+            end
+        end
+        loadDeps(Loader.Dependencies(toc), mod.name)
+    end
+
+    runFiles(dir, mod.name, files, opts.skip, "")
+
     for routeId, list in pairs(mod.pending) do
         for _, p in ipairs(list) do
+            currentModule = p.module
             addError(("%s for route %s was never registered"):format(p.kind, routeId), p.file)
         end
     end
+    currentModule = mod.name
+
+    -- compose the routes (UseSegments / AddInsert), exactly like the addon's Registry
+    for _, route in ipairs(mod.routes) do
+        if route.own then
+            for _, e in ipairs(Compose.Build(route, lib)) do
+                addError("route " .. tostring(route.id) .. ": " .. e.msg, e.source or route.file)
+            end
+        end
+    end
+    mod.isLibrary = #mod.routes == 0 and (#mod.librarySegments > 0 or mod.libraryData)
     return mod
 end
 

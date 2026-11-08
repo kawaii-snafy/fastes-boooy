@@ -13,6 +13,14 @@
 --
 -- Every message has a severity (ERROR / WARN / INFO) and a stable `code`
 -- (see tools/README.md for the list); `--ignore code,code` suppresses codes.
+--
+-- Library segments (FastesBoooy.UseSegments, Core/Compose.lua): a route module is loaded
+-- with its FastesBoooy_* dependencies and validated as the composed route. Messages about
+-- library steps / segments carry `library = "<library module>"` ("[library X]" in the text
+-- and Markdown reports) and are reported once per route (identical ones of further
+-- profiles are dropped). A library module is not a route: its own load / schema errors
+-- are reported once per run (in its own entry when it is part of the run, else with the
+-- first route module that depends on it).
 
 local DB = require("lib.fbdb")
 local Loader = require("lib.route_loader")
@@ -181,9 +189,11 @@ function Run:add(sev, code, step, msg, ...)
         m.step = step.segIndex
         m.stepId = step.id
         m.file = step.file
+        if type(step.library) == "string" then m.library = step.library end
     elseif self.seg then
         m.segment = self.seg.id
         m.file = self.seg.file
+        if type(self.seg.library) == "string" then m.library = self.seg.library end
     end
     self.messages[#self.messages + 1] = m
     self.counts[sev] = self.counts[sev] + 1
@@ -1201,6 +1211,7 @@ function V.RouteChecks(db, route, profiles)
         local m = { severity = sev, code = code, msg = format(msg, ...) }
         if step then
             m.segment, m.step, m.stepId, m.file = step.segment, step.segIndex, step.id, step.file
+            if type(step.library) == "string" then m.library = step.library end
         end
         out[#out + 1] = m
     end
@@ -1245,23 +1256,63 @@ function V.RouteChecks(db, route, profiles)
     return out
 end
 
+-- Drop the library-step messages of later profiles that repeat one of an earlier profile
+-- of the same route (library messages are reported once per route).
+local function dedupeLibraryMessages(results)
+    local seen = {}
+    for i, res in ipairs(results) do
+        local kept = {}
+        for _, m in ipairs(res.messages) do
+            local key = m.library and table.concat({ m.severity, m.code, tostring(m.stepId or m.segment), m.msg }, "\0")
+            if key and seen[key] and i > 1 then
+                res.counts[m.severity] = res.counts[m.severity] - 1
+                res.libraryRepeats = (res.libraryRepeats or 0) + 1
+            else
+                if key then seen[key] = true end
+                kept[#kept + 1] = m
+            end
+        end
+        res.messages = kept
+    end
+end
+
+local function emptyResult(label, modName, plabel)
+    return { route = label, module = modName, profileLabel = plabel or "-", messages = {},
+             counts = { ERROR = 0, WARN = 0, INFO = 0 }, suppressed = 0, segments = {}, summary = {} }
+end
+
 --- Validate every route of a module directory.
--- @param opts { db, schema, route = id filter, profile = override, tolerance, hardTolerance, ignore = set }
+-- @param opts { db, schema, route = id filter, profile = override, tolerance, hardTolerance, ignore = set,
+--               module = already loaded module (Loader.LoadModule), libraryReported = { [libName] = true }
+--               (libraries whose own load / schema errors are reported elsewhere in this run) }
 function V.ValidateModule(dir, opts)
-    local mod = Loader.LoadModule(dir, { schema = opts.schema })
+    local mod = opts.module or Loader.LoadModule(dir, { schema = opts.schema })
     local out = { module = mod.name, dir = dir, loadErrors = mod.errors, results = {} }
     out.matched = 0
+    if mod.isLibrary then
+        -- a library module: no route of its own; its steps are validated in the routes that use them
+        out.library = true
+        local n = 0
+        for _, seg in ipairs(mod.librarySegments) do n = n + #seg.steps end
+        local res = emptyResult("(library " .. mod.name .. ")", mod.name,
+            format("library: %d segment(s), %d step(s)", #mod.librarySegments, n))
+        res.library = mod.name
+        out.results[1] = res
+    end
     for _, route in ipairs(mod.routes) do
         if not opts.route or opts.route == route.id then
             out.matched = out.matched + 1
             local profiles = V.Profiles(route, opts.profile)
             local first
+            local routeResults = {}
             for _, profile in ipairs(profiles) do
                 local run = V.NewRun(opts.db, opts.schema, route, profile, opts)
                 local res = run:execute()
                 first = first or res
                 out.results[#out.results + 1] = res
+                routeResults[#routeResults + 1] = res
             end
+            dedupeLibraryMessages(routeResults)
             -- route-level messages are reported once per route (first profile)
             if first then
                 local extra = {}
@@ -1278,21 +1329,27 @@ function V.ValidateModule(dir, opts)
             end
         end
     end
-    if #mod.errors > 0 then
+    local loadErrors = {}
+    for _, e in ipairs(mod.errors) do
+        if not (e.library and opts.libraryReported and opts.libraryReported[e.library]) then
+            loadErrors[#loadErrors + 1] = e
+        end
+    end
+    if #loadErrors > 0 then
         -- attach load/schema errors to the first result (or a synthetic one)
         local target = out.results[1]
         if not target then
-            target = { route = "(module " .. mod.name .. ")", module = mod.name, profileLabel = "-", messages = {},
-                       counts = { ERROR = 0, WARN = 0, INFO = 0 }, suppressed = 0, segments = {}, summary = {} }
+            target = emptyResult("(module " .. mod.name .. ")", mod.name)
             out.results[1] = target
         end
         local schemaMsgs = {}
-        for _, e in ipairs(mod.errors) do
-            schemaMsgs[#schemaMsgs + 1] = { severity = "ERROR", code = "schema", file = e.file, msg = e.msg }
+        for _, e in ipairs(loadErrors) do
+            schemaMsgs[#schemaMsgs + 1] = { severity = "ERROR", code = "schema", file = e.file, msg = e.msg,
+                library = e.library or (mod.isLibrary and mod.name or nil) }
         end
         for _, m in ipairs(target.messages) do schemaMsgs[#schemaMsgs + 1] = m end
         target.messages = schemaMsgs
-        target.counts.ERROR = target.counts.ERROR + #mod.errors
+        target.counts.ERROR = target.counts.ERROR + #loadErrors
     end
     return out
 end
@@ -1306,7 +1363,8 @@ local function locStr(m)
         parts[#parts + 1] = "id=" .. m.stepId
     end
     if m.file then parts[#parts + 1] = "(" .. m.file .. ")" end
-    if #parts == 0 then return "route" end
+    if #parts == 0 then parts[1] = "route" end
+    if m.library then table.insert(parts, 1, "[library " .. tostring(m.library) .. "]") end
     return table.concat(parts, " ")
 end
 V.LocStr = locStr
@@ -1323,7 +1381,12 @@ function V.FormatText(all, opts)
     local function w(s) lines[#lines + 1] = s end
     for _, mres in ipairs(all) do
         for _, r in ipairs(mres.results) do
-            w(format("== route %s [%s] module %s", tostring(r.route), r.profileLabel, tostring(mres.module)))
+            if r.library then
+                w(format("== library module %s [%s]: its steps are checked in the routes that use them",
+                    tostring(mres.module), r.profileLabel))
+            else
+                w(format("== route %s [%s] module %s", tostring(r.route), r.profileLabel, tostring(mres.module)))
+            end
             for _, m in ipairs(r.messages) do
                 if m.severity ~= "INFO" or opts.verbose then
                     w(format("  %-5s %s [%s] %s", m.severity, locStr(m), m.code, m.msg))
@@ -1430,10 +1493,19 @@ function V.FormatMarkdown(all, db)
     end
     for _, mres in ipairs(all) do
         for _, r in ipairs(mres.results) do
-            w(format("## %s — %s", mdEscape(r.route), mdEscape(textOf(r.title))))
-            w("")
-            w(format("Модуль `%s`, профиль: %s. Результат: **%d ERROR, %d WARN, %d INFO**.", tostring(mres.module),
-                r.profileLabel, r.counts.ERROR, r.counts.WARN, r.counts.INFO))
+            if r.library then
+                w(format("## Библиотека %s", mdEscape(mres.module)))
+                w("")
+                w(format("Модуль общих сегментов (%s): шаги проверяются в маршрутах, которые их используют "
+                    .. "(`UseSegments`), сообщения о них помечены `[library %s]`. Результат: **%d ERROR, %d WARN, "
+                    .. "%d INFO**.", mdEscape(r.profileLabel), mdEscape(mres.module), r.counts.ERROR, r.counts.WARN,
+                    r.counts.INFO))
+            else
+                w(format("## %s — %s", mdEscape(r.route), mdEscape(textOf(r.title))))
+                w("")
+                w(format("Модуль `%s`, профиль: %s. Результат: **%d ERROR, %d WARN, %d INFO**.", tostring(mres.module),
+                    r.profileLabel, r.counts.ERROR, r.counts.WARN, r.counts.INFO))
+            end
             w("")
             local sm = r.summary or {}
             if sm.endLevel then
@@ -1505,6 +1577,7 @@ function V.ReportTable(all, db)
                 route = r.route, module = mres.module, dir = mres.dir, profile = json.object(r.profile or {}),
                 counts = r.counts, suppressed = r.suppressed, summary = json.object(r.summary or {}),
                 segments = r.segments, messages = r.messages,
+                library = r.library, libraryRepeats = r.libraryRepeats, -- library module entry / repeats dropped
             }
             for k, v in pairs(r.counts) do totals[k] = totals[k] + v end
         end
@@ -1609,14 +1682,24 @@ function V.Main(argv, root)
     if not okS then io.stderr:write("validate_routes: " .. tostring(schema) .. "\n") return 2 end
     local dirs = o.dirs
     if #dirs == 0 then dirs = Loader.DiscoverModules(o.addons or (root .. "/addons")) end
-    local opts = {
-        db = db, schema = schema, route = o.route, profile = o.profile, tolerance = o.tolerance,
-        hardTolerance = o.hardTolerance, toleranceYards = o.toleranceYards,
-        hardToleranceYards = o.hardToleranceYards, ignore = o.ignore, unknownXpOptimism = o.unknownXpOptimism,
-    }
+    -- load every module first: library modules of the run report their own load / schema
+    -- errors once (in their entry); route modules depending on them do not repeat them
+    local loaded, libraryReported = {}, {}
+    for i, dir in ipairs(dirs) do
+        loaded[i] = Loader.LoadModule(dir, { schema = schema })
+        if loaded[i].isLibrary and not o.route then libraryReported[loaded[i].name] = true end
+    end
     local all = {}
-    for _, dir in ipairs(dirs) do
-        all[#all + 1] = V.ValidateModule(dir, opts)
+    for i, dir in ipairs(dirs) do
+        local opts = {
+            db = db, schema = schema, route = o.route, profile = o.profile, tolerance = o.tolerance,
+            hardTolerance = o.hardTolerance, toleranceYards = o.toleranceYards,
+            hardToleranceYards = o.hardToleranceYards, ignore = o.ignore, unknownXpOptimism = o.unknownXpOptimism,
+            module = loaded[i], libraryReported = libraryReported,
+        }
+        if not (o.route and loaded[i].isLibrary) then
+            all[#all + 1] = V.ValidateModule(dir, opts)
+        end
     end
     local te, tw = 0, 0
     for _, mres in ipairs(all) do

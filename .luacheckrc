@@ -126,11 +126,16 @@ stds.fastesboooy = {
     },
 }
 
--- Route modules may only READ the registration API of the core.
+-- Route modules and library modules (shared segments, e.g. FastesBoooy_Horde) may only
+-- READ the registration API of the core.
 stds.fastesboooy_route = {
     read_globals = {
         FastesBoooy = {
-            fields = { RegisterRoute = {}, AddSegment = {}, AddRouteData = {} },
+            fields = {
+                RegisterRoute = {}, AddSegment = {}, AddRouteData = {},
+                UseSegments = {}, AddInsert = {},              -- route modules (Core/Compose.lua)
+                AddLibrarySegment = {}, AddLibraryData = {},   -- library modules
+            },
         },
     },
 }
@@ -151,7 +156,8 @@ files["addons/FastesBoooy/**/*.lua"] = {
     std = "forever+fastesboooy",
 }
 
--- Route modules (content-only addons): nothing but FastesBoooy.RegisterRoute/AddSegment/AddRouteData.
+-- Route and library modules (content-only addons): nothing but the FastesBoooy registration API
+-- (RegisterRoute/AddSegment/AddRouteData/UseSegments/AddInsert/AddLibrarySegment/AddLibraryData).
 files["addons/FastesBoooy_*/**/*.lua"] = {
     std = "fastesboooy_route",
 }
