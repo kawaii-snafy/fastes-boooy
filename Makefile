@@ -1,6 +1,7 @@
 # FastesBoooy -- offline checks and packaging (POSIX make).
 #
-#   make check        lint + test + validate + simulate, each also on the fixture routes (what CI runs)
+#   make check        lint + test + validate + simulate, each also on the fixture routes, + the start-state
+#                     harness on the fixture library (what CI runs)
 #   make lint         luacheck with the generated 'forever' std (.luacheckrc)
 #   make test         busted specs (tests/spec)
 #   make validate     route validator against tools/data/forever_db.lua (addons/FastesBoooy_*: route
@@ -8,6 +9,10 @@
 #   make simulate     run every route through the real engine on the WoW mock (addons/FastesBoooy_*
 #                     route modules; library modules are played inside the routes that use them)
 #   make validate-fixtures / simulate-fixtures   the same on the known-good fixture routes
+#   make harness-fixtures  validator (--strict) + simulator harness of the fixture library from its start state
+#   make harness PROFILE=race=Scourge,class=PALADIN,faction=Horde [LIB=addons/FastesBoooy_Horde]
+#                [SEGMENTS=h-a,h-b] [STATE=start.json] [OUT=end.json]
+#                     validate, then simulate a part of a library module from a start state (OUT: end state)
 #   make report       write docs/VALIDATION.md (validator Markdown report)
 #   make routedata    regenerate Data.lua of every route / library module
 #   make api BIR=... WOWUI=...          regenerate tools/data/forever_api.lua
@@ -27,10 +32,23 @@ VALIDATE_FLAGS =
 # + class inserts (AddInsert); the library module itself is validated / regenerated, not simulated.
 FIXTURE_VALIDATE = tests/fixtures/validator/FastesBoooy_FxClean tests/fixtures/validator/FastesBoooy_FxNs \
 	tests/fixtures/core/FastesBoooy_TestRoute tests/fixtures/core/FastesBoooy_TestLib \
-	tests/fixtures/core/FastesBoooy_TestComposed
+	tests/fixtures/core/FastesBoooy_TestComposed tests/fixtures/validator/FastesBoooy_FxHarnessLib
 FIXTURE_SIMULATE = tests/fixtures/core/FastesBoooy_TestRoute tests/fixtures/core/FastesBoooy_TestComposed
 FIXTURE_ROUTEDATA = tests/fixtures/validator/FastesBoooy_FxClean tests/fixtures/core/FastesBoooy_TestLib \
-	tests/fixtures/core/FastesBoooy_TestComposed
+	tests/fixtures/core/FastesBoooy_TestComposed tests/fixtures/validator/FastesBoooy_FxHarnessLib
+# Start-state harness fixture (tools/lib/harness.lua): a library module that validates /
+# simulates cleanly only from its start state, for both 22-60 profiles.
+FIXTURE_HARNESS_LIB = tests/fixtures/validator/FastesBoooy_FxHarnessLib
+FIXTURE_HARNESS_STATE = tests/fixtures/validator/harness_state_6.json
+PROFILE_UD = race=Scourge,class=PALADIN,faction=Horde
+PROFILE_SD = race=Skyborne,class=DRUID,faction=Horde
+# make harness: library module, segments (empty: all), profile (required), start state, end state
+# (the tools treat an empty --segments / --state / --write-state value as "not given")
+LIB = addons/FastesBoooy_Horde
+SEGMENTS =
+PROFILE =
+STATE =
+OUT =
 # make api BIR=/path/to/BlizzardInterfaceResources/Resources WOWUI=/path/to/Interface/AddOns|none
 BIR =
 WOWUI =
@@ -39,15 +57,15 @@ WOWUI =
 RESEARCH =
 CONVERSION =
 
-.PHONY: all check lint test validate validate-fixtures simulate simulate-fixtures report routedata \
-	routedata-check api db package clean help
+.PHONY: all check lint test validate validate-fixtures simulate simulate-fixtures harness-fixtures harness \
+	report routedata routedata-check api db package clean help
 
 all: check
 
 help:
-	@sed -n '3,17p' Makefile
+	@sed -n '3,22p' Makefile
 
-check: lint test validate validate-fixtures simulate simulate-fixtures
+check: lint test validate validate-fixtures simulate simulate-fixtures harness-fixtures
 
 lint:
 	$(LUACHECK) --config .luacheckrc addons tools tests
@@ -66,6 +84,27 @@ simulate:
 
 simulate-fixtures:
 	$(LUA) tools/simulate_routes.lua $(FIXTURE_SIMULATE)
+
+harness-fixtures:
+	$(LUA) tools/validate_routes.lua -q --strict --harness $(FIXTURE_HARNESS_LIB) --profile $(PROFILE_UD) \
+		--state $(FIXTURE_HARNESS_STATE)
+	$(LUA) tools/validate_routes.lua -q --strict --harness $(FIXTURE_HARNESS_LIB) --profile $(PROFILE_SD) \
+		--state $(FIXTURE_HARNESS_STATE)
+	$(LUA) tools/simulate_routes.lua --harness $(FIXTURE_HARNESS_LIB) --profile $(PROFILE_UD) \
+		--state $(FIXTURE_HARNESS_STATE)
+	$(LUA) tools/simulate_routes.lua --harness $(FIXTURE_HARNESS_LIB) --profile $(PROFILE_SD) \
+		--state $(FIXTURE_HARNESS_STATE)
+
+harness:
+	@if [ -z "$(PROFILE)" ]; then \
+		echo "usage: make harness PROFILE=race=Scourge,class=PALADIN,faction=Horde [LIB=addons/FastesBoooy_Horde]"; \
+		echo "       [SEGMENTS=h-a,h-b] [STATE=start.json] [OUT=end.json]   (tools/README.md, section Harness)"; \
+		exit 2; \
+	fi
+	$(LUA) tools/validate_routes.lua --harness "$(LIB)" --profile "$(PROFILE)" --segments "$(SEGMENTS)" \
+		--state "$(STATE)" --write-state "$(OUT)"
+	$(LUA) tools/simulate_routes.lua --harness "$(LIB)" --profile "$(PROFILE)" --segments "$(SEGMENTS)" \
+		--state "$(STATE)"
 
 report:
 	-$(LUA) tools/validate_routes.lua -q --markdown docs/VALIDATION.md

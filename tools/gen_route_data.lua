@@ -21,7 +21,9 @@
 --
 --   FastesBoooy.AddLibraryData({ quests = {...}, npcs = {...}, ..., places = {...} })
 --
--- with everything its own library segments reference.
+-- with everything its own library segments reference (also written, with empty tables, for a
+-- library module whose TOC says "## X-FastesBoooy-Module: library" and that registers no
+-- segment yet, e.g. a skeleton with placeholder segment files).
 --
 -- Names come from tools/data/forever_db.lua (enUS). `places` covers the place names of
 -- the fp / fly / sethearth / hearth actions: `area` = the AreaTable id of that enUS
@@ -201,7 +203,8 @@ function M.Render(mod, db)
     }
     local missing, notes = {}, {}
     local areaIds = M.AreaIds(db)
-    if #(mod.librarySegments or {}) > 0 then
+    if #(mod.librarySegments or {}) > 0 or mod.isLibrary then
+        -- (a library module declared in its TOC may have no segment yet: empty data)
         out[#out + 1] = "FastesBoooy.AddLibraryData({"
         renderBody(out, M.CollectLibraryIds(mod), db, "library " .. mod.name, missing, notes, areaIds)
         out[#out + 1] = "})"

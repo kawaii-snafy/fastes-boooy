@@ -27,7 +27,9 @@
 --   mod.deps          -- { { name, dir, toc }, ... } dependency modules in load order
 --   mod.lib           -- library store (Compose.NewLibrary) of the whole load
 --   mod.librarySegments -- library segments registered by the module's own files
---   mod.isLibrary     -- the module registers library segments / data and no route
+--   mod.declaredLibrary -- the TOC says "## X-FastesBoooy-Module: library"
+--   mod.isLibrary     -- no route, and library segments / data registered or declared in the TOC
+--                        (a declared library may still be empty: placeholder segment files)
 
 local Loader = {}
 
@@ -402,6 +404,14 @@ function Loader.LoadModule(dir, opts)
         mod.toc = toc
         mod.tocFile = tocFile
         files = toc.files
+        local kind = toc.meta["X-FastesBoooy-Module"]
+        if kind ~= nil then
+            if kind == "library" then
+                mod.declaredLibrary = true
+            else
+                addError("## X-FastesBoooy-Module must be \"library\" (got \"" .. tostring(kind) .. "\")", tocFile)
+            end
+        end
     end
 
     -- dependencies first (depth first, in TOC order), like the client
@@ -451,7 +461,11 @@ function Loader.LoadModule(dir, opts)
             end
         end
     end
-    mod.isLibrary = #mod.routes == 0 and (#mod.librarySegments > 0 or mod.libraryData)
+    mod.isLibrary = #mod.routes == 0 and (#mod.librarySegments > 0 or mod.libraryData or mod.declaredLibrary or false)
+    if mod.declaredLibrary and #mod.routes > 0 then
+        addError("## X-FastesBoooy-Module: library, but the module registers route(s): a library module only "
+            .. "registers library segments / data", mod.tocFile)
+    end
     return mod
 end
 

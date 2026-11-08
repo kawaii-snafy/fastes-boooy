@@ -179,10 +179,19 @@ steps = {
 
 ```
 addons/FastesBoooy_Horde/
-  FastesBoooy_Horde.toc    -- ## Interface: 16001, ## Dependencies: FastesBoooy
+  FastesBoooy_Horde.toc    -- ## Interface: 16001, ## Dependencies: FastesBoooy,
+                           -- ## X-FastesBoooy-Module: library
   Data.lua                 -- (генерируется, make routedata) FastesBoooy.AddLibraryData({...})
-  Segments/22_Barrens.lua  -- FastesBoooy.AddLibrarySegment({...}) — по файлу на сегмент
+  Segments/01_h-22-hillsbrad.lua  -- FastesBoooy.AddLibrarySegment({...}) — по файлу на сегмент
 ```
+
+`## X-FastesBoooy-Module: library` в TOC объявляет модуль библиотекой явно. Инструменты и так
+узнают библиотеку по регистрациям (`AddLibrarySegment`/`AddLibraryData` без маршрута), но
+заготовке, у которой сегментов ещё нет (файлы сегментов — только комментарии), объявление
+нужно: `gen_route_data` пишет для неё пустой `AddLibraryData({ quests = {}, npcs = {} })`,
+валидатор показывает её как библиотеку (0 сегментов), симулятор пропускает. Другое значение
+поля или маршрут в объявленной библиотеке — ошибка загрузки. Клиент поле не читает (`X-` —
+свободные метаданные TOC).
 
 ```lua
 FastesBoooy.AddLibrarySegment({
@@ -303,6 +312,14 @@ AddInsert:          after "tl-363-364" { tc-train-1 };  after "tl-363-364" { tc-
   Симулятор проигрывает только модули маршрутов (библиотека загружается как зависимость).
 * luacheck проверяет модули-библиотеки тем же std, что и модули маршрутов (только API
   `FastesBoooy.*`).
+* **Часть библиотеки из стартового состояния** (сегменты пишутся параллельно): валидатор и
+  симулятор с `--harness <каталог библиотеки> --segments h-a,h-b --profile race=…,class=…,faction=…
+  --state <состояние.json> [--write-state <конец.json>]` собирают синтетический маршрут
+  (`RegisterRoute` для одного профиля + `UseSegments` перечисленных сегментов, ничего больше) и
+  проверяют / проигрывают его, начиная с уровня, сданных квестов, журнала, камня и точек полёта
+  из файла состояния. `--write-state` пишет состояние в конце (тот же формат — звенья цепочки);
+  у полного маршрута тоже: `validate_routes.lua --route <id> --write-state f.json`. Подробно —
+  [tools/README.md](../tools/README.md), раздел «Harness».
 
 ## Валидация
 

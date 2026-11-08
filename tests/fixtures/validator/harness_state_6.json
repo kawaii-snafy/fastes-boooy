@@ -1,0 +1,9 @@
+{
+  "level": 6,
+  "xpFrac": 0.25,
+  "done": [363, 364, 376, 380, 427, 3901, 3902],
+  "log": [{"id": 381, "complete": true}],
+  "at": [1420, 32.0, 66.0],
+  "flightPaths": ["Undercity"],
+  "meta": {"note": "validator test fixture: start state of FastesBoooy_FxHarnessLib (tests/spec/validator_harness_spec.lua)"}
+}

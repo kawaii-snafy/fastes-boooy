@@ -3,6 +3,8 @@
 --
 --   lua5.1 tools/simulate_routes.lua [--fixtures] [--route ID] [--verbose] [--locale ruRU]
 --                                    [--db FILE | --no-db] [--no-reload] [module-dir ...]
+--   lua5.1 tools/simulate_routes.lua --harness <library-dir> [--segments ID,...]
+--                                    --profile race=,class=[,faction=] [--state FILE] [--write-state FILE]
 --
 -- Run from the repository root. For every route module (addons/FastesBoooy_*/ with a
 -- TOC; plus tests/fixtures/core/FastesBoooy_*/ with --fixtures; or the directories given)
@@ -48,6 +50,14 @@
 -- SavedVariables must keep it finished and a cold start with EMPTY SavedVariables must
 -- not put the cursor before the last done stateful step.
 --
+-- Start state / harness (tools/lib/harness.lua): --state FILE starts the character from a state
+-- (level / XP, quests turned in, quest log with done objectives, hearthstone bind point, position,
+-- flight paths) instead of a fresh character; --harness DIR plays a synthetic route of one
+-- --profile that only uses the --segments of the library module DIR (FastesBoooy.RegisterRoute +
+-- FastesBoooy.UseSegments through the addon's public API, like a route module would);
+-- --write-state FILE writes the game state at the end (exactly one simulation). The mock gives
+-- quest XP only (no kill XP): levels of a simulator end state lag behind the validator's.
+--
 -- Exit status: 0 = every simulation passed (or nothing to simulate), 1 = a failure,
 -- 2 = usage error.
 
@@ -56,6 +66,7 @@ package.path = "./tests/?.lua;./tools/?.lua;" .. package.path
 local Mock = require("mocks.wow")
 local Loader = require("lib.route_loader")
 local FBDB = require("lib.fbdb")
+local Harness = require("lib.harness")
 
 local format = string.format
 local floor, ceil, max = math.floor, math.ceil, math.max
@@ -85,6 +96,13 @@ usage: lua5.1 tools/simulate_routes.lua [options] [module-dir ...]
   --db FILE        Forever DB snapshot (default tools/data/forever_db.lua)
   --no-db          do not use the DB snapshot (generic quests)
   --no-reload      skip the /reload and cold-start checks
+  --state FILE     start from a character state (JSON, see tools/README.md "Harness")
+  --write-state FILE  write the game state at the end (needs exactly one simulation)
+  --harness DIR    simulate a synthetic route that only uses library segments of the
+                   library module DIR, for one --profile (race and class required)
+  --segments ID,...   library segments of the harness route (default: all, TOC order)
+  --profile k=v,...   race=Scourge,class=PALADIN[,faction=Horde] (harness, or a filter
+                   of the route profiles otherwise)
   -h, --help       this text]]
 
 local function parseArgs(argv)
@@ -99,6 +117,23 @@ local function parseArgs(argv)
         elseif a == "--db" then i = i + 1; o.db = argv[i]
         elseif a == "--no-db" then o.db = false
         elseif a == "--no-reload" then o.reload = false
+        elseif a == "--state" or a == "--write-state" or a == "--harness" or a == "--segments"
+            or a == "--profile" then
+            i = i + 1
+            local v = argv[i]
+            if v == nil then return nil, a .. " needs a value" end
+            -- an empty --state / --write-state / --segments value = not given (make harness passes them all)
+            if a == "--state" then o.state = Harness.NonEmpty(v)
+            elseif a == "--write-state" then o.writeState = Harness.NonEmpty(v)
+            elseif a == "--harness" then o.harness = v
+            elseif a == "--segments" then
+                o.segments = Harness.ParseList(v)
+                if #o.segments == 0 then o.segments = nil end
+            else
+                local ok, p = pcall(Harness.ParseProfile, v)
+                if not ok then return nil, p end
+                o.profile = p
+            end
         elseif a == "-h" or a == "--help" then o.help = true
         elseif a:sub(1, 1) == "-" then return nil, "unknown option " .. a
         else o.dirs[#o.dirs + 1] = a end
@@ -442,6 +477,7 @@ local function serviceViaGossip(S, step, a)
 end
 
 local function doService(S, step, a)
+    if a.type == "fp" then S.flightPaths[a.place] = true end
     if step.gossip and not S.gossipUsed[step.id] then
         if firstNpc(step) then
             S.gossipUsed[step.id] = true
@@ -623,20 +659,69 @@ local function routeCompletes(route)
     return out
 end
 
-local function newMock(S, extra)
-    local route, p = S.route, S.profile
+-- the start state (--state) in a fresh mock, before the addons are loaded (no events)
+local function applyState(m, st)
+    local p = m.player
+    p.xp = Harness.XpFromFraction(st.xpFrac, m:XPMax(p.level))
+    for _, id in ipairs(st.done or {}) do m.completed[id] = true end
+    for _, id in ipairs(st.log or {}) do m:_addToLog(id) end
+    for _, id in ipairs(st.complete or {}) do
+        local e = m:_logEntry(id)
+        for _, o in ipairs(e and e.objectives or {}) do
+            if o.itemID then
+                local need = o.required - m:GetItemCount(o.itemID)
+                if need > 0 then m:AddItem(o.itemID, need) end
+            end
+            o.fulfilled = o.required
+        end
+        if e and e.complete == false then e.complete = nil end
+    end
+    if st.hearth then
+        local at = st.hearthAt
+        m.bind = { name = st.hearth, mapID = at and at[1], x = at and at[2], y = at and at[3] }
+    end
+end
+
+-- World sizes for the zones of the DB snapshot that the mock does not know (its built-in maps are the
+-- 1-22 zones): without them the engine falls back to a nominal map size there, so arrival radii and the
+-- hearth landing check are not real. Each such zone gets its own coordinate frame (continent = uiMapID):
+-- distances inside a zone are real yards, distances between such zones stay unknown (as before).
+local dbMapsCache = setmetatable({}, { __mode = "k" })
+local function dbMaps(db)
+    if not db or type(db.zones) ~= "table" then return nil end
+    if dbMapsCache[db] then return dbMapsCache[db] end
+    local maps = {}
+    for id, z in pairs(db.zones) do
+        local size = type(z) == "table" and z.size
+        if type(id) == "number" and not Mock.BUILTIN_MAPS[id] and type(size) == "table"
+            and (size[1] or 0) > 0 and (size[2] or 0) > 0 then
+            maps[id] = { name = z.name, mapType = 3, continent = id, width = size[1], height = size[2],
+                         top = 0, left = 0 }
+        end
+    end
+    dbMapsCache[db] = maps
+    return maps
+end
+
+
+-- @param fresh apply the start state (first boot of a simulation; restarts copy the game state)
+local function newMock(S, extra, fresh)
+    local route, p, st = S.route, S.profile, S.state
     local mapID, x, y = startPosition(route)
+    if st and st.at then mapID, x, y = st.at[1], st.at[2], st.at[3] end
     local opts = {
         locale = S.opts.locale,
         player = {
             race = p.race, class = p.class, faction = p.faction,
-            level = route.levels and route.levels[1] or 1,
+            level = st and st.level or (route.levels and route.levels[1]) or 1,
             mapID = mapID, x = x, y = y,
         },
     }
+    opts.maps = dbMaps(S.db)
     for k, v in pairs(extra or {}) do opts[k] = v end
     local m = Mock.new(opts)
     if S.db then m:UseForeverDB(S.db, { routeCompletes = routeCompletes(route) }) end
+    if fresh and st then applyState(m, st) end
     return m
 end
 
@@ -650,6 +735,16 @@ local function bootMock(S, m)
     end
     Mock.loadAddon(m, S.toc, name)
     boot[#boot + 1] = name
+    local h = S.harness
+    if h then
+        -- the harness route: registered through the public API right after the library, like a
+        -- route module whose TOC depends on it
+        m:_top(function()
+            local api = rawget(m.env, "FastesBoooy")
+            api.RegisterRoute(h.def)
+            api.UseSegments(h.def.id, h.segments)
+        end)
+    end
     Mock.boot(m, boot)
     m:Advance(SETTLE)
     if ns.Engine:GetRoute() ~= ns.Registry:Get(S.route.id) then
@@ -746,7 +841,7 @@ checkBgLeft = function(S)
 end
 
 local function simulate(S)
-    local m = newMock(S)
+    local m = newMock(S, nil, true)
     S.m = m
     local ns = bootMock(S, m)
     S.ns = ns
@@ -829,12 +924,44 @@ local function simulate(S)
     if S.opts.reload then restartChecks(S) end
 end
 
-local function runOne(opts, module, toc, route, profile, db)
+-- the game state at the end of a simulation (tools/lib/harness.lua format, --write-state)
+local function endState(S)
+    local m, p = S.m, S.m.player
+    local done, log, complete = {}, {}, {}
+    for id, v in pairs(m.completed) do
+        if v == true then done[#done + 1] = id end
+    end
+    table.sort(done)
+    for _, e in ipairs(m.questLog) do log[#log + 1] = e.questID end
+    table.sort(log)
+    for _, id in ipairs(log) do
+        if m:_isComplete(m:_logEntry(id)) then complete[#complete + 1] = id end
+    end
+    local fps = sortedKeys(S.flightPaths)
+    local function r2(v) return floor(v * 100 + 0.5) / 100 end
+    local b = m.bind
+    return {
+        level = p.level, xpFrac = Harness.Fraction(p.xp, m:XPMax(p.level)),
+        done = done, log = log, complete = complete,
+        hearth = b and b.name or nil, hearthAt = b and b.mapID and { b.mapID, r2(b.x or 50), r2(b.y or 50) } or nil,
+        at = { p.mapID, r2(p.x), r2(p.y) }, flightPaths = fps,
+        meta = {
+            source = "tools/simulate_routes.lua", route = S.route.id,
+            profile = format("%s %s %s", p.race, p.class, p.faction),
+            note = "mock XP = quest XP only (no kill XP): the level is lower than the validator's end state",
+            startState = S.state and S.state.file or nil,
+        },
+    }
+end
+
+local function runOne(opts, module, toc, route, profile, db, extra)
     local S = {
         opts = opts, module = module, toc = toc, route = route, profile = profile, db = db,
         warnings = {}, bgSeen = {}, bgOpen = {}, gossipUsed = {},
         stats = { steps = 0, iterations = 0, accepted = 0, turnedIn = 0, bg = 0, gossip = 0, estimatedXP = 0 },
+        state = opts.startState, harness = extra and extra.harness, flightPaths = {},
     }
+    for _, fp in ipairs(S.state and S.state.flightPaths or {}) do S.flightPaths[fp] = true end
     local label = format("%s (%s %s %s)", route.id, profile.race, profile.class, profile.faction)
     if opts.verbose then print("== " .. label) end
     local ok, err = pcall(simulate, S)
@@ -856,7 +983,7 @@ local function runOne(opts, module, toc, route, profile, db)
         if not opts.verbose then
             for _, w in ipairs(S.warnings) do print("     warning: " .. w) end
         end
-        return true
+        return true, endState(S)
     end
     local msg = getmetatable(err) == FAIL and err.msg or tostring(err)
     print(format("FAIL %s: %s", label, msg))
@@ -872,6 +999,74 @@ end
 -- main
 ---------------------------------------------------------------------------
 
+local function writeEndState(opts, results)
+    if #results ~= 1 then
+        io.stderr:write(format("simulate_routes: --write-state needs exactly one simulation, this run has %d "
+            .. "(select one with --route ID and --profile race=,class=,faction=, or use --harness)\n", #results))
+        return 2
+    end
+    if not results[1] then
+        io.stderr:write("simulate_routes: the simulation failed: no end state written\n")
+        return 1
+    end
+    local ok, err = Harness.WriteState(opts.writeState, results[1])
+    if not ok then
+        io.stderr:write("simulate_routes: " .. tostring(err) .. "\n")
+        return 2
+    end
+    local es = results[1]
+    print(format("simulate_routes: end state written to %s: level %d + %.2f, %d done, %d in the log (%d complete), "
+        .. "hearth %s", opts.writeState, es.level, es.xpFrac, #es.done, #es.log, #es.complete, tostring(es.hearth or "-")))
+    return 0
+end
+
+local function profileMatches(filter, p)
+    if not filter then return true end
+    return (not filter.race or filter.race == p.race) and (not filter.class or filter.class == p.class)
+        and (not filter.faction or filter.faction == p.faction)
+end
+
+-- --harness: one synthetic route over library segments, one profile
+local function mainHarness(opts, schema, db)
+    local profile, perr = Harness.Profile(opts.profile)
+    if not profile then
+        io.stderr:write("simulate_routes: " .. perr .. "\n")
+        return 2
+    end
+    local hb = Harness.Build(opts.harness, { schema = schema, segments = opts.segments, profile = profile })
+    if hb.fatal then
+        io.stderr:write("simulate_routes: harness: " .. hb.fatal .. "\n")
+        return 2
+    end
+    if hb.empty then
+        print(format("simulate_routes: harness: library module %s registers no library segments yet (its segment "
+            .. "files are placeholders); nothing to simulate", hb.mod.name))
+        return #hb.mod.errors > 0 and 1 or 0
+    end
+    local errors = {}
+    for _, e in ipairs(hb.mod.errors) do errors[#errors + 1] = e end
+    for _, e in ipairs(hb.errors) do errors[#errors + 1] = e end
+    if #errors > 0 or not hb.route then
+        print(format("FAIL %s (harness %s): %d load/schema error(s)", Harness.RouteId(hb.mod.name), hb.mod.name,
+            #errors))
+        for i, e in ipairs(errors) do
+            if i > 10 then break end
+            print(format("     %s: %s", tostring(e.file), tostring(e.msg)))
+        end
+        print("simulate_routes: 1 simulation(s), 0 passed, 1 failed")
+        return 1
+    end
+    local module = { dir = hb.dir, deps = hb.mod.deps, name = hb.mod.name }
+    local harness = { def = hb.def, segments = hb.segments }
+    local ok, es = runOne(opts, module, Loader.FindToc(hb.dir), hb.route, profile, db, { harness = harness })
+    print(format("simulate_routes: 1 simulation(s), %d passed, %d failed", ok and 1 or 0, ok and 0 or 1))
+    if opts.writeState then
+        local code = writeEndState(opts, { ok and es or false })
+        if code ~= 0 then return code end
+    end
+    return ok and 0 or 1
+end
+
 local function main(argv)
     local opts, err = parseArgs(argv)
     if not opts then
@@ -886,6 +1081,33 @@ local function main(argv)
         io.stderr:write("run from the repository root (" .. CORE_TOC .. " not found)\n")
         return 2
     end
+    if opts.harness and (#opts.dirs > 0 or opts.fixtures or opts.route) then
+        io.stderr:write("simulate_routes: --harness takes no module directories, --fixtures or --route\n")
+        return 2
+    end
+    if opts.segments and not opts.harness then
+        io.stderr:write("simulate_routes: --segments is only used with --harness\n")
+        return 2
+    end
+    if opts.state then
+        local st, errs = Harness.ReadState(opts.state)
+        if not st then
+            io.stderr:write("simulate_routes: " .. table.concat(errs, "\nsimulate_routes: ") .. "\n")
+            return 2
+        end
+        opts.startState = st
+    end
+
+    local db
+    if opts.db then
+        if Loader.fileExists(opts.db) then
+            db = FBDB.Load(opts.db)
+        else
+            print("simulate_routes: " .. opts.db .. " not found: quests without DB data")
+        end
+    end
+    local schema = Loader.LoadSchema(".")
+    if opts.harness then return mainHarness(opts, schema, db) end
 
     local dirs = {}
     if #opts.dirs > 0 then
@@ -901,29 +1123,22 @@ local function main(argv)
         return 0
     end
 
-    local db
-    if opts.db then
-        if Loader.fileExists(opts.db) then
-            db = FBDB.Load(opts.db)
-        else
-            print("simulate_routes: " .. opts.db .. " not found: quests without DB data")
-        end
-    end
-
-    local schema = Loader.LoadSchema(".")
     local total, failed = 0, 0
+    local results = {}
     for _, dir in ipairs(dirs) do
         local toc = Loader.FindToc(dir)
         if not toc then
             print(format("FAIL %s: no TOC", dir))
             failed, total = failed + 1, total + 1
+            results[#results + 1] = false
         else
             local mod = Loader.LoadModule(dir, { schema = schema })
             if mod.isLibrary and #mod.errors == 0 then
-                print(format("skip %s: library module (its segments are simulated in the routes that use them)",
-                    mod.name))
+                print(format("skip %s: library module (its segments are simulated in the routes that use them; "
+                    .. "a part of it: --harness)", mod.name))
             elseif #mod.errors > 0 then
                 total, failed = total + 1, failed + 1
+                results[#results + 1] = false
                 print(format("FAIL %s: %d load/schema error(s)", mod.name, #mod.errors))
                 for i, e in ipairs(mod.errors) do
                     if i > 10 then break end
@@ -933,8 +1148,12 @@ local function main(argv)
                 for _, route in ipairs(mod.routes) do
                     if not opts.route or opts.route == route.id then
                         for _, profile in ipairs(profiles(route)) do
-                            total = total + 1
-                            if not runOne(opts, mod, toc, route, profile, db) then failed = failed + 1 end
+                            if profileMatches(opts.profile, profile) then
+                                total = total + 1
+                                local ok, es = runOne(opts, mod, toc, route, profile, db)
+                                if not ok then failed = failed + 1 end
+                                results[#results + 1] = ok and es or false
+                            end
                         end
                     end
                 end
@@ -943,9 +1162,13 @@ local function main(argv)
     end
     if total == 0 then
         print("simulate_routes: no route matched" .. (opts.route and (" --route " .. opts.route) or ""))
-        return opts.route and 1 or 0
+        return (opts.route or opts.profile) and 1 or 0
     end
     print(format("simulate_routes: %d simulation(s), %d passed, %d failed", total, total - failed, failed))
+    if opts.writeState then
+        local code = writeEndState(opts, results)
+        if code ~= 0 then return code end
+    end
     return failed > 0 and 1 or 0
 end
 

@@ -21,10 +21,17 @@
 -- profiles are dropped). A library module is not a route: its own load / schema errors
 -- are reported once per run (in its own entry when it is part of the run, else with the
 -- first route module that depends on it).
+--
+-- Start states and harness runs (tools/lib/harness.lua): opts.startState starts the simulation
+-- from a character state instead of a fresh level-1 character (level / XP, quests turned in,
+-- quest log, hearthstone, flight paths); V.ValidateHarness validates a synthetic one-profile
+-- route that only uses some library segments (validate_routes.lua --harness). Run:EndState()
+-- is the state at the end of the run (--write-state), in the same format.
 
 local DB = require("lib.fbdb")
 local Loader = require("lib.route_loader")
 local json = require("lib.json")
+local Harness = require("lib.harness")
 
 local V = {}
 
@@ -145,7 +152,7 @@ function V.NewRun(db, schema, route, profile, opts)
         opt = { level = 1, xp = 0 }, -- optimistic simulation (see V.DEFAULTS.unknownXpOptimism)
         active = {}, activeCount = 0, maxLog = 0,
         accepted = {}, turnedIn = {}, abandoned = {}, completed = {}, credited = {},
-        collected = {}, hearth = nil,
+        collected = {}, hearth = nil, hearthAt = nil, lastAt = nil, flightPaths = {},
         xp = { quest = 0, questEstimated = 0, kill = 0, grind = 0, grindKills = 0,
                unknownXpQuests = 0, turnins = 0, accepts = 0 },
         segments = {}, seg = nil,
@@ -173,7 +180,104 @@ function V.NewRun(db, schema, route, profile, opts)
     if not r.letter then
         r:add("WARN", "profile-faction", nil, "route has no faction; side checks are skipped")
     end
+    if opts.startState then r:applyState(opts.startState) end
     return r
+end
+
+--- Start the simulation from a character state (tools/lib/harness.lua format): level and XP,
+-- quests turned in ("done"), quests in the log ("log", objectives done for "complete"), hearthstone
+-- bind place, position and known flight paths.
+function Run:applyState(state)
+    local db = self.db
+    -- pseudo step of everything the start state says was done before the run
+    local STATE_STEP = { segment = "start-state", segIndex = 0, id = "start-state", actions = {}, file = state.file,
+                         isState = true }
+    self.stateStep = STATE_STEP
+    local level = math.min(state.level or 1, db.levelCap or 60)
+    self.st.level = level
+    self.st.xp = Harness.XpFromFraction(state.xpFrac, DB.XpToLevel(db, level))
+    self.opt.level, self.opt.xp = self.st.level, self.st.xp
+    local function known(id, what)
+        if DB.Quest(db, id, self.profile.class) or DB.QuestBrief(db, id) then return true end
+        self:add("ERROR", "quest-unknown", STATE_STEP, "start state %s: quest %d does not exist in the Forever DB",
+            what, id)
+        return false
+    end
+    for _, id in ipairs(state.done or {}) do
+        known(id, "done")
+        self.turnedIn[id] = STATE_STEP
+    end
+    for _, id in ipairs(state.log or {}) do
+        known(id, "log")
+        self.active[id] = { step = STATE_STEP }
+        self.accepted[id] = STATE_STEP
+        self.activeCount = self.activeCount + 1
+    end
+    local cap = db.questLogSize or 40
+    if self.activeCount > cap then
+        self:add("ERROR", "questlog-full", STATE_STEP, "start state: the quest log holds %d quests (Forever maximum %d)",
+            self.activeCount, cap)
+    end
+    self.maxLog = self.activeCount
+    for _, id in ipairs(state.complete or {}) do
+        self.completed[id] = STATE_STEP
+        local q = DB.Quest(db, id, self.profile.class)
+        local credited = {}
+        for idx in ipairs(q and V.ObjectiveList(q) or {}) do credited[idx] = true end
+        self.credited[id] = credited
+    end
+    self.hearth = state.hearth
+    if state.hearthAt then
+        self.hearthAt = { map = state.hearthAt[1], x = state.hearthAt[2], y = state.hearthAt[3] }
+    end
+    if state.at then self.lastAt = { map = state.at[1], x = state.at[2], y = state.at[3] } end
+    for _, p in ipairs(state.flightPaths or {}) do self.flightPaths[p] = true end
+end
+
+local function point(at)
+    if not at then return nil end
+    return { at.map, round2(at.x), round2(at.y) }
+end
+
+--- Has every objective of an active quest been completed (complete steps / start state)?
+function Run:objectivesDone(id)
+    if not self.completed[id] then return false end
+    local q = DB.Quest(self.db, id, self.profile.class)
+    if not q then return true end
+    local credited = self.credited[id] or {}
+    for idx, e in ipairs(V.ObjectiveList(q)) do
+        if not credited[idx] and not (e.kind == "item" and self.collected[e.id]) then return false end
+    end
+    return true
+end
+
+--- The character state at the end of the run (tools/lib/harness.lua format; --write-state).
+function Run:EndState()
+    local db = self.db
+    local done, log, complete = {}, {}, {}
+    for id in pairs(self.turnedIn) do done[#done + 1] = id end
+    for id in pairs(self.active) do log[#log + 1] = id end
+    table.sort(done)
+    table.sort(log)
+    for _, id in ipairs(log) do
+        if self:objectivesDone(id) then complete[#complete + 1] = id end
+    end
+    local fps = sortedKeys(self.flightPaths)
+    local segIds = {}
+    for i, seg in ipairs(self.route.segments or {}) do segIds[i] = tostring(seg.id) end
+    return {
+        level = self.st.level,
+        xpFrac = Harness.Fraction(self.st.xp, DB.XpToLevel(db, self.st.level)),
+        done = done, log = log, complete = complete,
+        hearth = self.hearth, hearthAt = point(self.hearthAt), at = point(self.lastAt), flightPaths = fps,
+        meta = json.object({
+            source = "tools/validate_routes.lua", route = tostring(self.route.id), profile = profileLabel(self.profile),
+            levelValue = round2(DB.LevelValue(db, self.st)),
+            levelOptimistic = round2(math.max(DB.LevelValue(db, self.opt), DB.LevelValue(db, self.st))),
+            segments = segIds,
+            startState = self.opts.startState and self.opts.startState.file or nil,
+        }),
+    }
 end
 
 function Run:add(sev, code, step, msg, ...)
@@ -226,6 +330,7 @@ end
 
 function Run:stepRef(step) -- luacheck: ignore 212/self
     if not step then return "?" end
+    if step.isState then return "the start state" end
     return format("%s#%d", tostring(step.segment), step.segIndex or 0)
 end
 
@@ -290,6 +395,7 @@ local function objectiveList(q)
     for _, e in ipairs(o.items or {}) do out[#out + 1] = { kind = "item", id = e[1], count = e[2] } end
     return out
 end
+V.ObjectiveList = objectiveList
 
 function Run:friendly(npc)
     if not self.letter then return true end
@@ -1026,6 +1132,13 @@ function H.train(self, _, step)
 end
 
 local function flightCheck(self, a, step)
+    if a.type == "fp" then
+        self.flightPaths[a.place] = true
+    elseif not self.flightPaths[a.place] then
+        self:add("WARN", "fly-unknown-fp", step, "fly %s: flight point %s was not learned before (no earlier fp "
+            .. "step%s): a flight there is not offered", a.place, a.place,
+            self.opts.startState and ", not in the start state's flightPaths" or "")
+    end
     if not step.npc then
         if a.type == "fp" then
             self:add("INFO", "fp-no-npc", step, "fp %s: no flight master npc on the step", a.place)
@@ -1052,6 +1165,7 @@ function H.sethearth(self, a, step)
         end
     end
     self.hearth = a.place
+    self.hearthAt = step.at
 end
 
 function H.hearth(self, a, step)
@@ -1144,6 +1258,7 @@ function Run:processStep(step)
         local h = H[a.type]
         if h then h(self, a, step) end
     end
+    if step.at then self.lastAt = step.at end
 end
 
 function Run:execute()
@@ -1159,8 +1274,14 @@ function Run:execute()
         self:endSegment(seg)
     end
     for _, id in ipairs(sortedKeys(self.active)) do
-        self:add("WARN", "quest-carried", self.active[id].step, "quest %s is still in the quest log at the end of the "
-            .. "route (never turned in or abandoned)", self:qn(id))
+        if route.harness then
+            -- a part of a library: quests carried into the next segments are expected (end state "log")
+            self:add("INFO", "quest-carried", self.active[id].step, "quest %s is carried out of the harness run "
+                .. "(still in the quest log: --write-state keeps it in \"log\")", self:qn(id))
+        else
+            self:add("WARN", "quest-carried", self.active[id].step, "quest %s is still in the quest log at the end of "
+                .. "the route (never turned in or abandoned)", self:qn(id))
+        end
     end
     local lv = DB.LevelValue(self.db, self.st)
     if route.levels and math.abs(lv - route.levels[2]) > 1 then
@@ -1193,6 +1314,7 @@ function Run:result()
             unknownXpQuests = self.xp.unknownXpQuests, accepts = self.xp.accepts, turnins = self.xp.turnins,
             maxQuestLog = self.maxLog, carried = carried, steps = #self.route.steps,
         },
+        endState = self:EndState(), -- --write-state (not part of the JSON report)
     }
 end
 
@@ -1235,7 +1357,7 @@ function V.RouteChecks(db, route, profiles)
                     hint(tok))
             end
         end
-        if f and not bad then
+        if f and not bad and not route.harness then -- a harness route has a single profile on purpose
             local any = false
             for _, p in ipairs(profiles) do
                 if (not f.class or not p.class or f.class[p.class])
@@ -1351,6 +1473,49 @@ function V.ValidateModule(dir, opts)
         target.messages = schemaMsgs
         target.counts.ERROR = target.counts.ERROR + #loadErrors
     end
+    return out
+end
+
+--- Validate a harness route (tools/lib/harness.lua: Harness.Build) -- some segments of a library
+-- module for one profile, usually from a start state (opts.startState).
+-- @return a module result like V.ValidateModule (module = library module name, harness = true)
+function V.ValidateHarness(hb, opts)
+    local mod = hb.mod
+    local out = { module = mod.name, dir = hb.dir, loadErrors = mod.errors, results = {}, matched = 1, harness = true }
+    local res
+    if hb.route then
+        local profile = V.Profiles(hb.route)[1]
+        local run = V.NewRun(opts.db, opts.schema, hb.route, profile, opts)
+        res = run:execute()
+        local extra = {}
+        for _, m in ipairs(V.RouteChecks(opts.db, hb.route, { profile })) do
+            if opts.ignore and opts.ignore[m.code] then
+                res.suppressed = (res.suppressed or 0) + 1
+            else
+                extra[#extra + 1] = m
+                res.counts[m.severity] = res.counts[m.severity] + 1
+            end
+        end
+        for _, m in ipairs(res.messages) do extra[#extra + 1] = m end
+        res.messages = extra
+    else
+        res = emptyResult(hb.def and hb.def.id or Harness.RouteId(mod.name), mod.name,
+            opts.profile and profileLabel(opts.profile) or "-")
+    end
+    res.harness = true
+    res.segmentsUsed = hb.segments
+    local schemaMsgs = {}
+    for _, e in ipairs(mod.errors) do
+        schemaMsgs[#schemaMsgs + 1] = { severity = "ERROR", code = "schema", file = e.file, msg = e.msg,
+            library = e.library or mod.name }
+    end
+    for _, e in ipairs(hb.errors) do
+        schemaMsgs[#schemaMsgs + 1] = { severity = "ERROR", code = "schema", file = e.file, msg = e.msg }
+    end
+    for _, m in ipairs(res.messages) do schemaMsgs[#schemaMsgs + 1] = m end
+    res.counts.ERROR = res.counts.ERROR + #mod.errors + #hb.errors
+    res.messages = schemaMsgs
+    out.results[1] = res
     return out
 end
 
@@ -1607,12 +1772,25 @@ options:
   --ignore CODE,...     suppress message codes (e.g. xp-unknown)
   --xp-optimism N       optimistic factor for estimated quest XP (default 2.0): a level
                         requirement is an ERROR only if even the optimistic level is too low
+  --state FILE          start the simulation from a character state (JSON, see tools/README.md):
+                        level / xpFrac, done, log / complete, hearth, at, flightPaths
+  --write-state FILE    write the character state at the END of the run (same format; needs
+                        exactly one route x profile: use --route and --profile)
+  --harness DIR         validate a part of a library module: a synthetic route of the --profile
+                        (race and class required) that only uses the --segments of DIR
+  --segments ID,...     library segments of the harness route, in this order (default: every
+                        segment of the library module, TOC order)
   -v, --verbose         also print INFO messages
   -q, --quiet           print only the per-route result lines
   -h, --help            this help
 
-exit status: 0 ok, 1 errors (or warnings with --strict), 2 usage/load failure or
---route matching no route]]
+harness example (Undead Paladin, from the end of the 1-22 route):
+  lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Horde --segments h-22-hillsbrad \
+      --profile race=Scourge,class=PALADIN,faction=Horde --state state_ud_22.json --write-state out.json
+
+exit status: 0 ok (also: a harness on a library without segments - nothing to do), 1 errors
+(or warnings with --strict), 2 usage/load failure, --route matching no route or a
+--write-state run that is not exactly one route x profile]]
 
 function V.ParseArgs(argv)
     local o = { dirs = {}, ignore = {} }
@@ -1628,14 +1806,14 @@ function V.ParseArgs(argv)
         if a == "-h" or a == "--help" then o.help = true
         elseif a == "--route" then o.route = val()
         elseif a == "--profile" then
-            o.profile = {}
-            for kv in val():gmatch("[^,]+") do
-                local k, v = kv:match("^%s*(%w+)%s*=%s*(.-)%s*$")
-                if not k or (k ~= "race" and k ~= "class" and k ~= "faction") then
-                    error("bad --profile entry '" .. kv .. "' (use race=,class=,faction=)", 0)
-                end
-                o.profile[k] = v
-            end
+            o.profile = Harness.ParseProfile(val())
+        -- an empty --state / --write-state / --segments value = not given (make harness passes them all)
+        elseif a == "--state" then o.state = Harness.NonEmpty(val())
+        elseif a == "--write-state" then o.writeState = Harness.NonEmpty(val())
+        elseif a == "--harness" then o.harness = val()
+        elseif a == "--segments" then
+            o.segments = Harness.ParseList(val())
+            if #o.segments == 0 then o.segments = nil end
         elseif a == "--strict" then o.strict = true
         elseif a == "--json" then o.json = val()
         elseif a == "--markdown" then o.markdown = val()
@@ -1666,6 +1844,17 @@ local function writeFile(path, text)
     fh:close()
 end
 
+-- results of real runs (no library-module entries)
+local function runResults(all)
+    local out = {}
+    for _, mres in ipairs(all) do
+        for _, r in ipairs(mres.results) do
+            if r.endState then out[#out + 1] = r end
+        end
+    end
+    return out
+end
+
 --- CLI entry. @param argv array of arguments; @param root repository root
 -- @return exit code
 function V.Main(argv, root)
@@ -1676,29 +1865,75 @@ function V.Main(argv, root)
         return 2
     end
     if o.help then print(USAGE) return 0 end
+    if o.harness and (#o.dirs > 0 or o.route) then
+        io.stderr:write("validate_routes: --harness takes no module directories and no --route (the library module "
+            .. "is its value, the route is synthetic)\n")
+        return 2
+    end
+    if o.segments and not o.harness then
+        io.stderr:write("validate_routes: --segments is only used with --harness\n")
+        return 2
+    end
+    local harnessProfile
+    if o.harness then
+        local perr
+        harnessProfile, perr = Harness.Profile(o.profile)
+        if not harnessProfile then
+            io.stderr:write("validate_routes: " .. perr .. "\n")
+            return 2
+        end
+    end
+    local startState
+    if o.state then
+        local errs
+        startState, errs = Harness.ReadState(o.state)
+        if not startState then
+            io.stderr:write("validate_routes: " .. table.concat(errs, "\nvalidate_routes: ") .. "\n")
+            return 2
+        end
+    end
     local okDb, db = pcall(DB.Load, o.db or (root .. "/tools/data/forever_db.lua"))
     if not okDb then io.stderr:write("validate_routes: " .. tostring(db) .. "\n") return 2 end
     local okS, schema = pcall(Loader.LoadSchema, root)
     if not okS then io.stderr:write("validate_routes: " .. tostring(schema) .. "\n") return 2 end
-    local dirs = o.dirs
-    if #dirs == 0 then dirs = Loader.DiscoverModules(o.addons or (root .. "/addons")) end
-    -- load every module first: library modules of the run report their own load / schema
-    -- errors once (in their entry); route modules depending on them do not repeat them
-    local loaded, libraryReported = {}, {}
-    for i, dir in ipairs(dirs) do
-        loaded[i] = Loader.LoadModule(dir, { schema = schema })
-        if loaded[i].isLibrary and not o.route then libraryReported[loaded[i].name] = true end
-    end
-    local all = {}
-    for i, dir in ipairs(dirs) do
+    local function runOpts(extra)
         local opts = {
             db = db, schema = schema, route = o.route, profile = o.profile, tolerance = o.tolerance,
             hardTolerance = o.hardTolerance, toleranceYards = o.toleranceYards,
             hardToleranceYards = o.hardToleranceYards, ignore = o.ignore, unknownXpOptimism = o.unknownXpOptimism,
-            module = loaded[i], libraryReported = libraryReported,
+            startState = startState,
         }
-        if not (o.route and loaded[i].isLibrary) then
-            all[#all + 1] = V.ValidateModule(dir, opts)
+        for k, v in pairs(extra or {}) do opts[k] = v end
+        return opts
+    end
+    local all, dirs = {}, o.dirs
+    if o.harness then
+        local hb = Harness.Build(o.harness, { schema = schema, segments = o.segments, profile = harnessProfile })
+        if hb.fatal then
+            io.stderr:write("validate_routes: harness: " .. hb.fatal .. "\n")
+            return 2
+        end
+        if hb.empty then
+            print(("validate_routes: harness: library module %s registers no library segments yet (its segment "
+                .. "files are placeholders); nothing to validate"):format(hb.mod.name))
+            for _, e in ipairs(hb.mod.errors) do print(("  ERROR %s: %s"):format(tostring(e.file), tostring(e.msg))) end
+            return #hb.mod.errors > 0 and 1 or 0
+        end
+        all[1] = V.ValidateHarness(hb, runOpts({ profile = harnessProfile }))
+        dirs = { o.harness }
+    else
+        if #dirs == 0 then dirs = Loader.DiscoverModules(o.addons or (root .. "/addons")) end
+        -- load every module first: library modules of the run report their own load / schema
+        -- errors once (in their entry); route modules depending on them do not repeat them
+        local loaded, libraryReported = {}, {}
+        for i, dir in ipairs(dirs) do
+            loaded[i] = Loader.LoadModule(dir, { schema = schema })
+            if loaded[i].isLibrary and not o.route then libraryReported[loaded[i].name] = true end
+        end
+        for i, dir in ipairs(dirs) do
+            if not (o.route and loaded[i].isLibrary) then
+                all[#all + 1] = V.ValidateModule(dir, runOpts({ module = loaded[i], libraryReported = libraryReported }))
+            end
         end
     end
     local te, tw = 0, 0
@@ -1718,8 +1953,8 @@ function V.Main(argv, root)
         for _, line in ipairs(V.FormatText(all, { verbose = o.verbose })) do print(line) end
     end
     if #dirs == 0 then print("no route modules found") end
-    print(format("validate_routes: %d module(s), %d error(s), %d warning(s)%s", #dirs, te, tw,
-        o.strict and " (strict)" or ""))
+    print(format("validate_routes: %d module(s), %d error(s), %d warning(s)%s%s", #dirs, te, tw,
+        o.strict and " (strict)" or "", startState and (" (start state " .. o.state .. ")") or ""))
     if o.json then writeFile(o.json, json.encode(V.ReportTable(all, db), "  ") .. "\n") end
     if o.markdown then writeFile(o.markdown, table.concat(V.FormatMarkdown(all, db), "\n") .. "\n") end
     if o.route then
@@ -1729,6 +1964,24 @@ function V.Main(argv, root)
             io.stderr:write("validate_routes: --route " .. o.route .. " matched no route\n")
             return 2
         end
+    end
+    if o.writeState then
+        local runs = runResults(all)
+        if o.harness and #runs == 0 then
+            io.stderr:write("validate_routes: no end state written: the harness route has no segment to run\n")
+            return te > 0 and 1 or 2
+        end
+        if #runs ~= 1 then
+            io.stderr:write(format("validate_routes: --write-state needs exactly one route x profile, this run has %d "
+                .. "(select one with --route ID and --profile race=,class=,faction=)\n", #runs))
+            return 2
+        end
+        local wok, werr = Harness.WriteState(o.writeState, runs[1].endState)
+        if not wok then io.stderr:write("validate_routes: " .. tostring(werr) .. "\n") return 2 end
+        local es = runs[1].endState
+        print(format("validate_routes: end state of %s [%s] written to %s: level %d + %.2f, %d done, %d in the log "
+            .. "(%d complete), hearth %s", tostring(runs[1].route), runs[1].profileLabel, o.writeState, es.level,
+            es.xpFrac, #es.done, #es.log, #es.complete, tostring(es.hearth or "-")))
     end
     if te > 0 or (o.strict and tw > 0) then return 1 end
     return 0

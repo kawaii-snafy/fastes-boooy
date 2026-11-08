@@ -13,13 +13,14 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 | `data/forever_api.lua` | (генерируется, коммитится) функции/неймспейсы/события/FrameXML/шаблоны/миксины/методы виджетов/Enum клиента Forever |
 | `build_db_snapshot.py` | снимок БД Forever из research-JSON → `data/forever_db.lua` |
 | `data/forever_db.lua` | (генерируется, коммитится) квесты, NPC, объекты, предметы, зоны, правила опыта |
-| `validate_routes.lua` | **валидатор маршрутов** (CLI; логика в `lib/validator.lua`) |
+| `validate_routes.lua` | **валидатор маршрутов** (CLI; логика в `lib/validator.lua`; `--state`/`--write-state`/`--harness` — раздел 7) |
 | `gen_route_data.lua` | генерирует `<модуль>/Data.lua` (enUS-имена квестов/NPC маршрута, `places` — id зон и ruRU-имена мест; у модуля-библиотеки — `AddLibraryData`) |
 | `package_addons.py` | `dist/<Аддон>-<версия>.zip` для каждого каталога `addons/*` |
-| `simulate_routes.lua` | прогон маршрутов через настоящий движок на моке (принадлежит ядру; цели-события exploration/escort и квесты с шагом `complete` без целей в БД не выполнены при взятии — их выполняет шаг `complete`; библиотеки-зависимости грузятся в мок раньше модуля, сами отдельно не прогоняются) |
+| `simulate_routes.lua` | прогон маршрутов через настоящий движок на моке (принадлежит ядру; цели-события exploration/escort и квесты с шагом `complete` без целей в БД не выполнены при взятии — их выполняет шаг `complete`; библиотеки-зависимости грузятся в мок раньше модуля, сами отдельно не прогоняются; часть библиотеки из стартового состояния — `--harness`, раздел 7) |
 | `lib/route_loader.lua` | загрузка модуля маршрута в песочнице (сначала его зависимости `FastesBoooy_*` из `## Dependencies`) + нормализация через `Core/Schema.lua` и сборка маршрута через `Core/Compose.lua` (общие сегменты, вставки) |
 | `lib/fbdb.lua` | доступ к снимку БД: маски рас/классов, поиск, расстояния, формулы опыта |
-| `lib/json.lua` | детерминированный JSON-энкодер |
+| `lib/json.lua` | детерминированный JSON-энкодер и строгий декодер (файлы состояния) |
+| `lib/harness.lua` | **harness** — часть библиотеки из стартового состояния: формат файла состояния (чтение, проверка, детерминированная запись), синтетический маршрут «профиль + `UseSegments` выбранных сегментов» (раздел 7) |
 
 Все Lua-инструменты — Lua 5.1, запускаются из корня репозитория. Сторонний код
 (Questie, QuestieDB, RXPGuides, BlizzardInterfaceResources, FrameXML) никогда не
@@ -29,14 +30,16 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 
 | Цель | Команда |
 |---|---|
-| `make check` | `lint` + `test` + `validate` + `validate-fixtures` + `simulate` + `simulate-fixtures` (то же, что CI) |
+| `make check` | `lint` + `test` + `validate` + `validate-fixtures` + `simulate` + `simulate-fixtures` + `harness-fixtures` (то же, что CI) |
 | `make lint` | `luacheck --config .luacheckrc addons tools tests` |
 | `make test` | `busted` (все `tests/spec/*_spec.lua`) |
 | `make validate` | `lua5.1 tools/validate_routes.lua` (флаги: `make validate VALIDATE_FLAGS=--strict`) |
 | `make simulate` | `lua5.1 tools/simulate_routes.lua` |
 | `make validate-fixtures` / `make simulate-fixtures` | валидатор (0 ERROR) / симулятор на заведомо хороших фикстурах (`FxClean`, `FxNs`, `TestRoute`, библиотека `TestLib` + составной маршрут `TestComposed`; симулятор — `TestRoute`, `TestComposed`) — стадии проверяют что-то и до появления первого модуля маршрута |
+| `make harness-fixtures` | harness на фикстуре-библиотеке `FastesBoooy_FxHarnessLib` из её состояния `tests/fixtures/validator/harness_state_6.json`: валидатор (`--strict`) и симулятор, оба профиля 22-60 |
+| `make harness PROFILE=… [LIB=…] [SEGMENTS=…] [STATE=…] [OUT=…]` | часть библиотеки из стартового состояния (раздел 7): валидатор (с `--write-state OUT`), затем симулятор; `LIB` по умолчанию `addons/FastesBoooy_Horde`, пустой `SEGMENTS` — все сегменты |
 | `make report` | пишет `docs/VALIDATION.md` (Markdown-отчёт валидатора; ошибки маршрутов не роняют цель) |
-| `make routedata` / `make routedata-check` | перегенерировать / проверить актуальность `Data.lua` всех модулей маршрутов и библиотек (check — и фикстуры `FxClean`, `TestLib`, `TestComposed`) |
+| `make routedata` / `make routedata-check` | перегенерировать / проверить актуальность `Data.lua` всех модулей маршрутов и библиотек (check — и фикстуры `FxClean`, `TestLib`, `TestComposed`, `FxHarnessLib`) |
 | `make api BIR=… WOWUI=…` | перегенерировать `data/forever_api.lua` (оба пути обязательны; `WOWUI=none` — без глобалов FrameXML) |
 | `make db RESEARCH=… CONVERSION=…` | перегенерировать `data/forever_db.lua` (`CONVERSION` = `QuestieDB/data/Forever/conversion.json` или `none`) |
 | `make package` | архивы аддонов в `dist/` (воспроизводимые: фиксированные даты, сортировка) |
@@ -278,7 +281,10 @@ lua5.1 tools/gen_route_data.lua --stdout <каталог>        # напеча�
 `FastesBoooy.AddLibraryData({ quests = ..., npcs = ..., objects = ..., items = ..., places = ... })`
 со всем, на что ссылаются **его** сегменты; в игре эти имена подмешиваются в данные каждого
 маршрута, использующего библиотеку. Ошибки загрузки зависимости (файл `<Библиотека>/<файл>`)
-тоже останавливают генерацию.
+тоже останавливают генерацию. Библиотека, объявленная в TOC (`## X-FastesBoooy-Module: library`),
+у которой ещё нет сегментов (заготовка `addons/FastesBoooy_Horde`: файлы сегментов — только
+комментарии), получает пустой `AddLibraryData({ quests = {}, npcs = {} })`; модуль без маршрута,
+без сегментов и без этого объявления — по-прежнему ошибка («no routes (and no library segments)»).
 
 `places` — места действий `fp`/`fly`/`sethearth`/`hearth`:
 `["Brill"] = { area = 159, en = "Brill", ru = "Брилл" }`. `area` — id зоны (AreaTable) с этим
@@ -314,10 +320,19 @@ lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
 | `--tolerance N` / `--hard-tolerance N` | те же пороги в единицах карты (%) для карт без известного размера (по умолчанию 3.0 / 8.0; помечается «approximate») |
 | `--ignore код,код` | подавить коды сообщений (например `xp-unknown`) |
 | `--xp-optimism N` | множитель оценённого опыта для «оптимистичной» симуляции (по умолчанию 2.0) |
+| `--state FILE` | начать симуляцию не с нового персонажа 1 уровня, а из состояния (раздел 7) |
+| `--write-state FILE` | записать состояние в конце прогона (тот же формат); нужен ровно один «маршрут × профиль» (`--route`, `--profile`) |
+| `--harness DIR` | проверить часть модуля-библиотеки `DIR`: синтетический маршрут одного `--profile` (раса и класс обязательны) из сегментов `--segments` (раздел 7) |
+| `--segments ID,…` | сегменты библиотеки для `--harness`, в этом порядке (по умолчанию — все сегменты модуля в порядке TOC) |
 | `-v` / `-q` | показать INFO / только итоговые строки |
 
-Код выхода: 0 — нет ошибок; 1 — есть ERROR (или WARN при `--strict`); 2 — ошибка запуска
-или `--route` не совпал ни с одним маршрутом.
+Пустое значение `--state` / `--write-state` / `--segments` равно отсутствию опции (так их
+передаёт `make harness`).
+
+Код выхода: 0 — нет ошибок (и harness на библиотеке без сегментов — «nothing to validate»);
+1 — есть ERROR (или WARN при `--strict`); 2 — ошибка запуска (неверные опции, файл состояния,
+`--harness` без расы/класса или на модуле маршрута), `--route` не совпал ни с одним маршрутом
+или `--write-state` при числе прогонов, отличном от одного.
 
 ### Как работает
 
@@ -396,7 +411,7 @@ lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
 | `accept-disabled` | ERROR | квест не выдаётся, пока в журнале его `disabledByQuest` (`disabledBy`) |
 | `accept-parent` | ERROR | родительский квест не в журнале |
 | `accept-duplicate` / `accept-done` | ERROR | квест уже в журнале / уже сдан (кроме повторяемых) |
-| `questlog-full` | ERROR | в журнале больше `questLogSize` (40) квестов |
+| `questlog-full` | ERROR | в журнале больше `questLogSize` (40) квестов (считая `log` стартового состояния; переполненное состояние — ошибка на шаге `start-state`) |
 | `breadcrumb-late` / `breadcrumb-open` | WARN | «хлебная крошка» берётся после цели / цель берётся при открытой крошке |
 | `accept-wrong-npc` / `accept-wrong-object` | ERROR | NPC/объект шага не выдаёт квест |
 | `turnin-wrong-npc` / `turnin-wrong-object` | ERROR | NPC/объект шага не принимает квест |
@@ -407,7 +422,7 @@ lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
 | `complete-not-active` | ERROR | `complete` для квеста не в журнале |
 | `complete-bad-index` | WARN | номер цели больше числа целей в БД |
 | `abandon-not-active` | ERROR | бросается квест не из журнала |
-| `quest-carried` | WARN | квест не сдан и не брошен к концу маршрута |
+| `quest-carried` | WARN / INFO | квест не сдан и не брошен к концу маршрута (в harness — INFO: квест переходит в следующий сегмент, `log` конечного состояния) |
 | `npc-unknown` / `object-unknown` | ERROR | NPC/объекта нет в БД Forever |
 | `npc-out-of-scope` / `object-out-of-scope` | WARN | существует, но вне снимка (позиция не проверена) |
 | `at-map-unknown` | ERROR | неизвестный uiMapID |
@@ -419,6 +434,7 @@ lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
 | `train-not-class-trainer` | WARN | тренер профессии/верховой езды, а не класса |
 | `train-no-npc` | WARN | шаг `train` без NPC |
 | `not-flightmaster` | ERROR | `fp`/`fly` у NPC без флага полётчика |
+| `fly-unknown-fp` | WARN | `fly X`, но точка полёта X не изучена раньше (нет шага `fp X`, нет в `flightPaths` стартового состояния): такого полёта на карте нет |
 | `not-innkeeper` | ERROR | `sethearth` не у трактирщика |
 | `not-vendor` | WARN | `vendor` у NPC без флага торговца/ремонта |
 | `npc-hostile` | ERROR | NPC тренера/полётов/таверны/торговли не дружелюбен фракции (`A`/`H`/`AH`) |
@@ -441,7 +457,8 @@ lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
   таблица сегментов (план уровней, симулированный уровень начала → конца, опыт квестов/мобов/
   гринда, журнал), итог маршрута;
 * `--json`: `{ db, totals, routes = [{ route, module, profile, counts, summary, segments, messages }] }`;
-* `--markdown`: отчёт на русском для `docs/VALIDATION.md`. Оба файла детерминированы.
+* `--markdown`: отчёт на русском для `docs/VALIDATION.md`. Оба файла детерминированы;
+* `--write-state`: конечное состояние (раздел 7), строка `end state of <маршрут> [<профиль>] written to …`.
 
 ## 6. Тесты и фикстуры
 
@@ -467,12 +484,114 @@ lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
   неизвестный сегмент → FAIL). Фикстуры: `tests/fixtures/core/FastesBoooy_TestLib` (библиотека)
   и `FastesBoooy_TestComposed` (свои сегменты + `UseSegments` + вставки до/после шагов
   библиотеки и своих); в аддоне их проверяет `tests/spec/core_compose_spec.lua`.
+* `tests/spec/validator_harness_spec.lua` — harness (раздел 7): декодер JSON, файл состояния
+  (чтение, все ошибки списком, детерминированная запись, точность `xpFrac`), `Harness.Build`
+  (порядок сегментов, все сегменты по умолчанию, неизвестный сегмент со списком известных,
+  модуль маршрута / нет каталога, профиль), валидатор из состояния (чисто для обоих профилей;
+  без состояния — `turnin-not-accepted`, `level-too-low`, `accept-prereq`, `fly-unknown-fp`; лог без
+  `complete`; `accept-done` «at the start state»; ёмкость журнала с `log`; неизвестные квесты
+  состояния; конечное состояние; **цепочка двух прогонов = один прогон**; конечное состояние
+  полного маршрута; harness не сообщает `step-no-profile`), CLI обоих инструментов
+  (`--harness/--state/--write-state`, коды выхода, пустая объявленная библиотека — понятное
+  сообщение и пустой `AddLibraryData`), `## X-FastesBoooy-Module`. Фикстура:
+  `tests/fixtures/validator/FastesBoooy_FxHarnessLib` (два сегмента, Мертвый Звон / Брилл,
+  проходит только из состояния `tests/fixtures/validator/harness_state_6.json`).
 * `tests/spec/validator_lint_spec.lua` — std `forever` ловит несуществующие API.
 
 ```
 busted tests/spec/validator_*_spec.lua
 lua5.1 tools/validate_routes.lua tests/fixtures/validator/FastesBoooy_FxClean
 ```
+
+## 7. Harness: часть библиотеки из стартового состояния
+
+Сегменты общей библиотеки (`addons/FastesBoooy_Horde`, 22-60) пишутся параллельно, а маршрут
+целиком (модуль класса с `UseSegments`) появится позже. Чтобы проверить **один сегмент** (или
+несколько подряд) сразу, валидатор и симулятор умеют стартовать из явного состояния персонажа.
+
+```
+lua5.1 tools/validate_routes.lua --harness <каталог библиотеки> [--segments h-a,h-b,...] \
+       --profile race=<raceFile>,class=<CLASS>[,faction=Horde|Alliance] \
+       [--state start.json] [--write-state end.json] [--strict] [-v]
+lua5.1 tools/simulate_routes.lua --harness <каталог библиотеки> [--segments ...] --profile ... \
+       [--state start.json] [--write-state end.json] [--no-reload] [-v]
+make harness PROFILE=race=Scourge,class=PALADIN,faction=Horde SEGMENTS=h-22-hillsbrad \
+       STATE=state_ud_22.json OUT=end.json            # оба инструмента подряд
+```
+
+**Синтетический маршрут** (`lib/harness.lua`, `Harness.Build`): модуль-библиотека грузится как
+обычно (со своими зависимостями), затем регистрируется маршрут `harness-<Имя>` (`harness-Horde`)
+ровно для одного профиля — `RegisterRoute{ api = 1, faction, races = { race }, classes = { class } }`
++ `UseSegments` перечисленных сегментов в этом порядке, **больше ничего** (нет своих сегментов,
+нет классовых вставок). Сборка — настоящим `Core/Compose.lua`; в симуляторе маршрут
+регистрируется через публичный API аддона в моке сразу после загрузки библиотеки, как модуль
+маршрута с `## Dependencies` на неё. Профиль: раса и класс обязательны; фракция берётся из расы,
+у `Skyborne` (обе стороны) — обязательна. Шаги с фильтром другого класса/расы пропускаются
+(INFO `step-skipped`); `step-no-profile` в harness не сообщается (профиль один намеренно).
+Без `--segments` — все сегменты модуля в порядке TOC. Неизвестный сегмент — ERROR `schema` со
+списком сегментов библиотеки (у заготовки — «registers no library segments yet: its segment files
+are placeholders»). Библиотека без единого сегмента и без `--segments` — сообщение «registers no
+library segments yet … nothing to validate / simulate», код 0. `--harness` на модуле маршрута или
+каталоге без TOC — код 2.
+
+**Файл состояния** (JSON; его же пишет `--write-state`, так что прогоны сцепляются):
+
+```json
+{
+  "level": 34,                      // уровень 1..60
+  "xpFrac": 0.2,                    // доля текущего уровня, 0 <= xpFrac < 1
+  "done": [1064, 1065],             // сданные раньше квесты (предквесты, «уже сдан»)
+  "log": [532, 1067],               // квесты в журнале; элемент может быть {"id": 532, "complete": true}
+  "complete": [1067],               // квесты из "log", цели которых уже выполнены
+  "hearth": "Thunder Bluff",        // точка привязки камня (enUS, как в sethearth/hearth)
+  "hearthAt": [1456, 45.81, 64.71], // где она (трактирщик; симулятор телепортирует туда)
+  "at": [1456, 25.81, 19.03],       // позиция персонажа {uiMapID, x, y}
+  "flightPaths": ["Thunder Bluff"], // изученные точки полёта (enUS, как в fp/fly)
+  "meta": { ... }                   // свободное поле: откуда состояние (маршрут, профиль, сегменты, уровень)
+}
+```
+
+(Комментарии `//` здесь только для пояснения — в файле их быть не должно: декодер строгий.)
+Все ключи необязательны (по умолчанию — новый персонаж 1 уровня); неизвестный ключ, квест
+одновременно в `done` и `log`, `complete` вне `log`, повторы, уровень/доля вне диапазона —
+ошибки чтения (все списком, код 2).
+
+**Что значит состояние для валидатора:** симуляция опыта (обычная и оптимистичная) начинается с
+`level` + `xpFrac`; `done` — сданы (предквесты выполнены, повторное взятие — `accept-done` «at the
+start state»); `log` — в журнале (сдача без взятия не нужна, ёмкость журнала считает их —
+`questlog-full`), `complete` — цели выполнены (сдача без шага `complete` без
+`turnin-no-complete`); `hearth` — к нему проверяется `hearth` (`hearth-mismatch`); `flightPaths` —
+для `fly-unknown-fp`. Квесты состояния, которых нет в БД, — ERROR `quest-unknown` на
+псевдошаге `start-state`. Квесты, оставшиеся в журнале в конце harness-прогона, — INFO
+`quest-carried` (они уходят в `log` конечного состояния). Для симулятора: мок получает уровень и
+опыт, `done` как выполненные квесты, `log` в журнале (`complete` — с выполненными целями и
+предметами в сумках), привязку камня (`hearth` + `hearthAt`), позицию `at`; `flightPaths`
+переносятся в конечное состояние.
+
+**Конечное состояние** (`--write-state`): уровень и доля по симуляции, `done` = `done` старта +
+сданное в прогоне, `log` = журнал в конце, `complete` = квесты журнала, все цели которых
+выполнены шагами `complete` (у валидатора) / по журналу мока (у симулятора; там и квесты без
+целей), `hearth`/`hearthAt` — последний `sethearth` (или из старта), `at` — `at` последнего
+пройденного шага, `flightPaths` — старт + шаги `fp`, `meta` — источник, маршрут, профиль,
+сегменты, `levelValue`/`levelOptimistic`, файл старта. Запись детерминирована (порядок ключей,
+сортированные списки), `xpFrac` — 6 знаков: опыт при чтении восстанавливается точно, поэтому
+цепочка «сегмент A → файл → сегмент B» даёт то же конечное состояние, что прогон A,B сразу
+(проверяется в `validator_harness_spec.lua`).
+
+**Конечное состояние полного маршрута:** `lua5.1 tools/validate_routes.lua --route
+horde-undead-paladin --write-state state_ud_22.json` (и `--route horde-skyborne-druid`) — старт
+первого сегмента библиотеки из реального конца маршрута 1-22. `--write-state` требует ровно
+один прогон «маршрут × профиль» (иначе код 2: выберите `--route` и `--profile`). Симулятор
+тоже пишет состояние (`simulate_routes.lua --route ID --write-state f.json`, один прогон).
+
+**Оговорки.** (1) Валидатор считает выполненными **все** шаги, в том числе `optional = true`:
+состояние конца 1-22 включает то, что дают необязательные шаги (у нежити-паладина — точка
+полёта Orgrimmar из `ud04-org-fp`); для строгой проверки уберите такие записи из копии файла.
+(2) Опыт за убийства есть только у валидатора (оценка); мок симулятора даёт только опыт
+квестов и шаги `level`, поэтому уровень в конечном состоянии симулятора ниже. Сцепляйте
+сегменты по состояниям **валидатора**; состояние симулятора — для проверки игрового состояния
+(журнал, сданные квесты, камень, позиция). (3) Валидатор не моделирует позицию — `at` старта
+лишь переносится в конец, если в прогоне не было шагов с `at`.
 
 ## Ограничения
 
@@ -483,3 +602,8 @@ lua5.1 tools/validate_routes.lua tests/fixtures/validator/FastesBoooy_FxClean
 * Расстояние считается в ярдах по размерам карт из `conversion.json`; у карт без известных
   границ (Zephras Isle 2521, данжевые карты) — в процентах карты (приблизительно).
 * uiMap 2665 (вторая карта Zephras Isle) не разрешён в данных QuestieDB.
+* Симулятор: встроенные карты мока (`tests/mocks/wow/world.lua`, `BUILTIN_MAPS`) — зоны 1-22. Остальные
+  зоны снимка с известным размером (`zones[uiMap].size`) симулятор определяет в моке сам (`opts.maps`):
+  размер в ярдах настоящий, у каждой зоны своя система координат (continent = uiMapID). Поэтому внутри
+  такой зоны радиусы прибытия и проверка «камень возвращения приземлил на `at` шага» настоящие, а
+  расстояние между двумя такими зонами по-прежнему неизвестно; с `--no-db` этих карт нет.

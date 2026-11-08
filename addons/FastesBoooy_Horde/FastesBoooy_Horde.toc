@@ -1,0 +1,21 @@
+## Interface: 16001
+## Title: FastesBoooy: Horde 22-60
+## Notes: Shared Horde 22-60 questing route for FastesBoooy (library of class-neutral segments used by the class route modules). Not a guide on its own.
+## Notes-ruRU: Общий маршрут прокачки Орды 22-60 для FastesBoooy (библиотека сегментов без классовых шагов для модулей маршрутов классов). Сам по себе не гайд.
+## Dependencies: FastesBoooy
+## Version: 0.1.0
+## X-FastesBoooy-Module: library
+
+Data.lua
+Segments\01_h-22-hillsbrad.lua
+Segments\02_h-24-barrens-stonetalon.lua
+Segments\03_h-27-ashenvale-needles.lua
+Segments\04_h-31-hillsbrad-arathi.lua
+Segments\05_h-34-stranglethorn.lua
+Segments\06_h-37-desolace-dustwallow.lua
+Segments\07_h-41-arathi-badlands.lua
+Segments\08_h-44-swamp-stranglethorn.lua
+Segments\09_h-46-tanaris-feralas.lua
+Segments\10_h-50-hinterlands-searing-steppes.lua
+Segments\11_h-53-azshara-ungoro-silithus.lua
+Segments\12_h-56-felwood-winterspring-plaguelands.lua

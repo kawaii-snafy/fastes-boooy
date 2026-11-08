@@ -45,6 +45,21 @@ FastesBoooy.AddSegment("event", { id = "e1", title = "E1", steps = {
     { turnin = 870, npc = 3448, at = { 1413, 52.26, 31.93 } },
 } })
 ]],
+    -- Stranglethorn Vale (uiMap 1434) is no built-in mock map: its world size comes from the DB snapshot,
+    -- so the hearth landing is checked against the step location (bb: lands there; gg: does not, its `at` is
+    -- the Nesingwary camp)
+    ["FastesBoooy_Hearth/FastesBoooy_Hearth.toc"] = "## Interface: 16001\n## Dependencies: FastesBoooy\nRoute.lua\n",
+    ["FastesBoooy_Hearth/Route.lua"] = [[
+FastesBoooy.RegisterRoute({ api = 1, id = "hearth", title = "Hearth", faction = "Horde",
+    races = { "Orc" }, classes = { "WARRIOR" }, levels = { 44, 45 } })
+FastesBoooy.AddSegment("hearth", { id = "h1", title = "H1", steps = {
+    { id = "bind", sethearth = "Booty Bay", npc = 6807, at = { 1434, 27.04, 77.31 } },
+    { go = true, at = { 1434, 32.0, 29.0 } },
+    { id = "bb", hearth = "Booty Bay", at = { 1434, 27.04, 77.31 } },
+    { go = true, at = { 1434, 32.0, 29.0 } },
+    { id = "gg", hearth = "Booty Bay", at = { 1434, 35.6, 10.6 } },
+} })
+]],
     ["FastesBoooy_Schema/FastesBoooy_Schema.toc"] = "## Interface: 16001\nRoute.lua\n",
     ["FastesBoooy_Schema/Route.lua"] = [[
 FastesBoooy.RegisterRoute({ api = 1, id = "schema", title = "S" })
@@ -95,6 +110,19 @@ describe("tools/simulate_routes.lua", function()
         assert.is_truthy(out:find("[2/5] e1:2 [fp The Crossroads]", 1, true), out)
         assert.is_truthy(out:find("[4/5] e1:4 [complete 870]", 1, true), out)
         assert.is_falsy(out:find("cursor 1 -> 5", 1, true), out)
+    end)
+
+    it("checks the hearth landing on 22-60 maps with the world size from the DB snapshot", function()
+        local code, out = run("'" .. root .. "/FastesBoooy_Hearth'")
+        assert.equal(0, code, out)
+        assert.is_truthy(out:find("OK   hearth (Orc WARRIOR Horde): 5 steps", 1, true), out)
+        assert.is_falsy(out:find("step bb [hearth Booty Bay]: the hearthstone bind point", 1, true), out)
+        assert.is_truthy(out:find("step gg [hearth Booty Bay]: the hearthstone bind point (Booty Bay) is not at the "
+            .. "step location", 1, true), out)
+        -- without the DB snapshot the map has no world size: the landing cannot be checked
+        code, out = run("--no-db '" .. root .. "/FastesBoooy_Hearth'")
+        assert.equal(0, code, out)
+        assert.is_truthy(out:find("step bb [hearth Booty Bay]: the hearthstone bind point", 1, true), out)
     end)
 
     it("fails a route that cannot be followed", function()
