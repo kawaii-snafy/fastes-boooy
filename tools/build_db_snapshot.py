@@ -228,6 +228,11 @@ SUPPLEMENT_QUEST_ENDERS = OrderedDict([
     (97265, [268705]),  # Hate the Hatefury: "... and then return to Aka'rai in S..."
     (97539, [12920]),   # Silky Sutures: "Return 12 Surgical Spidersilk to Doctor Gregory Victor in Hammerfall"
 ])
+#   * prerequisites missing in QuestieDB: {questId: ([preQuestSingle ids], source)}
+SUPPLEMENT_QUEST_PRE_SINGLE = OrderedDict([
+    # Scout Support: offered by High Executor Darthalia only after Battle of Hillsbrad part II
+    (98094, ([528], "Wowhead Forever quest=98094 comments (players, Nov 2026) + live in-game report")),
+])
 #   * npcFlags bits wrongly set: 11741 Dredge Crusher carries QUEST_GIVER (2) but is a hostile beast
 #     (factionID 14, Wowhead Forever tooltip "Level 57 - 58 Beast (Normal)") that starts / ends no quest
 #     -- the flag made the validator treat the 20 kills of 8281 Stepping Up Security as a service NPC:
@@ -586,7 +591,15 @@ class Builder:
 
     def apply_supplements(self):
         """Fill the research-input gaps of the SUPPLEMENT_* tables (only where the input lacks the data)."""
-        n = OrderedDict([("questEnders", 0), ("npcFlagsCleared", 0), ("npcSpawns", 0), ("objects", 0)])
+        n = OrderedDict([("questEnders", 0), ("questPreSingle", 0), ("npcFlagsCleared", 0), ("npcSpawns", 0),
+                         ("objects", 0)])
+        for qid, (pre, _src) in SUPPLEMENT_QUEST_PRE_SINGLE.items():
+            q = self.qraw.get(qid)
+            if q is not None and not q.get("preQuestSingle") and not q.get("preQuestGroup"):
+                q = dict(q)
+                q["preQuestSingle"] = list(pre)
+                self.qraw[qid] = q
+                n["questPreSingle"] += 1
         for qid, npcs in SUPPLEMENT_QUEST_ENDERS.items():
             q = self.qraw.get(qid)
             fb = (q or {}).get("finishedBy") or {}

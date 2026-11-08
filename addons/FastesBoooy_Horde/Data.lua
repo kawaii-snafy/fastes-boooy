@@ -1622,6 +1622,6 @@ FastesBoooy.AddLibraryData({
         [98069] = { level = 31, reqLevel = 27, items = { 279383 } },
         [98070] = { level = 31, reqLevel = 27 },
         [98093] = { level = 23, reqLevel = 18 },
-        [98094] = { level = 25, reqLevel = 19 },
+        [98094] = { level = 25, reqLevel = 19, preAny = { 528 } },
     },
 })

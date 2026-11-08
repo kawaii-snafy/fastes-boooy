@@ -25,17 +25,18 @@
 --         (Hadrec; Vincent inside) + 1014 (Dalar: back to the Sepulcher) + 1013 (Book of Ur, turned in at the
 --         Undercity in h-31); Forever-new 95883 -> 95885 at the Offering Stone of Beren's Peril (XP unknown, 150 yd
 --         off the road: on the path, so not optional any more); 494 (Lesh, Hillsbrad west).
---   TM1 : fp; 1065 + 493 > 496, 501, 1066 (Lydon); 494 > 527 + 98094 (Darthalia); 549 + 567 (posters); 498
+--   TM1 : fp; 1065 + 493 > 496, 501, 1066 (Lydon); 494 > 527 (Darthalia); 549 + 567 (posters); 498
 --         (Krusk).
 --   F1  : Hillsbrad Fields: 527 (farmers, farmhands, Ray, Getz). bg all the time: 496 (bears + 1 creeper ichor),
 --         501 (Starving Mountain Lions), 567 Wilkes + Kalaba.
 --   TM2 : 527 > 528 (Darthalia); 546 (Samsa).
 --   D   : Durnholde Keep: 549 + 1066 (Syndicate), 498 (jailor keys, Drull, Tog'thar); the Syndicate also drop
 --         546 skulls (that is why Durnholde comes after TM2, not before F1: same distance, ~20 fewer skull kills).
---   M   : Deathstalker Masoj: 98094 (delivery, 200 yd south of the Durnholde -> fields line).
 --   F2  : 528 (15 peasants) + skulls.
---   TM3 : 496 > 499 (> Umpi), 501 > 502, 1066 > 1067 (Lydon); 528 + 549 > 529 (Darthalia); 498 (Krusk).
---   F3  : 502 Stanley (kill Enraged Stanley), 529 (smithy), rest of the skulls, level gate.
+--   TM3 : 496 > 499 (> Umpi), 501 > 502, 1066 > 1067 (Lydon); 528 + 549 > 529 + 98094 (Darthalia, 98094
+--         needs 528); 498 (Krusk).
+--   F3  : 502 Stanley (kill Enraged Stanley), 529 (smithy), rest of the skulls, level gate;
+--         then east to Deathstalker Masoj (98094, optional) and north to Tarren Mill.
 --   TM4 : 546 (Samsa); 529 > 532 (Darthalia); hearth Thunder Bluff.
 -- Carried out: 1067 (h-24, Zamah), 532 (h-31, Magistrate Burnside L30), 567 with objectives 2+4 done
 --   (h-31: Clerk Horrace stands next to Burnside in the town hall, Miner Hackett L29 is in Azurelode Mine next
@@ -203,12 +204,6 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Аптекарь Лидон.", en = "Apothecary Lydon." } },
         { turnin = 494, accept = 527, npc = 2215, at = { 1424, 62.33, 20.45 },
           note = { ru = "Верховный палач Дарталия.", en = "High Executor Darthalia." } },
-        -- Optional: the DB says reqLevel 19, but a live report says Darthalia only offers it from level 25.
-        { accept = 98094, npc = 2215, at = { 1424, 62.33, 20.45 }, optional = true,
-          note = { ru = "Новое в Forever (опыт неизвестен): приказ для Масоджа — он почти по пути. "
-                       .. "Если Дарталия ещё не даёт его (бывает только с 25-го уровня) — «Вперёд».",
-                   en = "New in Forever (XP unknown): orders for Masoj - he is almost on the way. "
-                       .. "If Darthalia does not offer it yet (it may need level 25) - press Forward." } },
         { accept = { 549, 567 }, object = { 1763, 556670, 2008, 556669 }, at = { 1424, 62.56, 20.20 },
           note = { ru = "Две доски объявлений у дороги: «Разыскиваются: члены Синдиката» и «Опасно!».",
                    en = "The two posters by the road: WANTED: Syndicate Personnel and Dangerous!" } },
@@ -262,12 +257,6 @@ FastesBoooy.AddLibrarySegment({
         { complete = { [498] = { 1 } }, object = 1721, at = { 1424, 75.33, 41.50 },
           note = { ru = "Друлл у западной стены: вторым ключом.",
                    en = "Drull by the west wall: use the other key." } },
-        { id = "h-22-deathstalker-masoj", turnin = 98094, npc = 270438, -- WARN-OK: xp-unknown (Forever-new)
-          at = { 1424, 63.58, 53.11 }, optional = true,
-          note = { ru = "Следопыт Масодж к юго-западу от крепости. Его «Ценные высоты» (пузырьки на вершинах) не "
-                       .. "берите: где вершины — неизвестно.",
-                   en = "Deathstalker Masoj south-west of the keep. Skip his Valuable Vantages (vials on peaks): the "
-                       .. "peaks are not mapped." } },
         { go = true, radius = 40, at = { 1424, 54.00, 44.00 },
           note = { ru = "На запад к полям севернее Южнобережья (стражники Альянса).",
                    en = "West to the fields, north of Southshore (Alliance guards)." } },
@@ -291,6 +280,12 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Умпи рядом с Лидоном.", en = "Umpi next to Lydon." } },
         { turnin = { 528, 549 }, accept = 529, npc = 2215, at = { 1424, 62.33, 20.45 },
           note = { ru = "Дарталия.", en = "Darthalia." } },
+        -- 98094 is offered only after 528 (Wowhead Forever comments + live report); optional: XP unknown, small detour.
+        { accept = 98094, npc = 2215, at = { 1424, 62.33, 20.45 }, optional = true,
+          note = { ru = "Дарталия теперь даёт «Помощь разведчикам» (новое в Forever, открывается после второй "
+                       .. "«Битвы за Хилсбрад»): приказ для Масоджа, отнесёте по пути с полей.",
+                   en = "Darthalia now offers Scout Support (new in Forever, unlocked by Battle of Hillsbrad "
+                       .. "part II): orders for Masoj, delivered on the way back from the fields." } },
         { turnin = 498, npc = 2229, at = { 1424, 63.24, 20.66 },
           note = { ru = "Круск. Его «Проникновение» (34) не берите.", en = "Krusk. Skip his Infiltration (34)." } },
 
@@ -314,6 +309,13 @@ FastesBoooy.AddLibrarySegment({
                        .. "сдача 546 и 529 даст ещё ~16% — это 24-й к Громовому Утёсу.",
                    en = "Finish the skulls in the fields (peasants, farmers, farmhands 22-25: the best XP nearby) up to "
                        .. "level 23 + 85%: the 546 and 529 turn-ins add ~16%, which makes 24 for Thunder Bluff." } },
+
+        { id = "h-22-deathstalker-masoj", turnin = 98094, npc = 270438, -- WARN-OK: xp-unknown (Forever-new)
+          at = { 1424, 63.58, 53.11 }, optional = true,
+          note = { ru = "С полей на восток к Следопыту Масоджу у Дун Гарока (крюк ~2 мин), потом на север в Мельницу. "
+                       .. "Его «Ценные высоты» (пузырьки на вершинах) не берите. Не брали приказ — «Вперёд».",
+                   en = "From the fields east to Deathstalker Masoj outside Dun Garok (~2 min detour), then north to "
+                       .. "Tarren Mill. Skip his Valuable Vantages (vials on peaks). No orders taken: press Forward." } },
 
         ------------------------------------------------------------------
         -- Tarren Mill, last visit -> hearth (level 24)
