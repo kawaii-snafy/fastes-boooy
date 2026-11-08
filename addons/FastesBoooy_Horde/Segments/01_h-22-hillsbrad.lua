@@ -203,9 +203,12 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Аптекарь Лидон.", en = "Apothecary Lydon." } },
         { turnin = 494, accept = 527, npc = 2215, at = { 1424, 62.33, 20.45 },
           note = { ru = "Верховный палач Дарталия.", en = "High Executor Darthalia." } },
-        { accept = 98094, npc = 2215, at = { 1424, 62.33, 20.45 },
-          note = { ru = "Новое в Forever (опыт неизвестен): приказ для Масоджа — он почти по пути.",
-                   en = "New in Forever (XP unknown): orders for Masoj - he is almost on the way." } },
+        -- Optional: the DB says reqLevel 19, but a live report says Darthalia only offers it from level 25.
+        { accept = 98094, npc = 2215, at = { 1424, 62.33, 20.45 }, optional = true,
+          note = { ru = "Новое в Forever (опыт неизвестен): приказ для Масоджа — он почти по пути. "
+                       .. "Если Дарталия ещё не даёт его (бывает только с 25-го уровня) — «Вперёд».",
+                   en = "New in Forever (XP unknown): orders for Masoj - he is almost on the way. "
+                       .. "If Darthalia does not offer it yet (it may need level 25) - press Forward." } },
         { accept = { 549, 567 }, object = { 1763, 556670, 2008, 556669 }, at = { 1424, 62.56, 20.20 },
           note = { ru = "Две доски объявлений у дороги: «Разыскиваются: члены Синдиката» и «Опасно!».",
                    en = "The two posters by the road: WANTED: Syndicate Personnel and Dangerous!" } },
@@ -259,7 +262,8 @@ FastesBoooy.AddLibrarySegment({
         { complete = { [498] = { 1 } }, object = 1721, at = { 1424, 75.33, 41.50 },
           note = { ru = "Друлл у западной стены: вторым ключом.",
                    en = "Drull by the west wall: use the other key." } },
-        { id = "h-22-deathstalker-masoj", turnin = 98094, npc = 270438, at = { 1424, 63.58, 53.11 }, -- WARN-OK: xp-unknown (Forever-new)
+        { id = "h-22-deathstalker-masoj", turnin = 98094, npc = 270438, -- WARN-OK: xp-unknown (Forever-new)
+          at = { 1424, 63.58, 53.11 }, optional = true,
           note = { ru = "Следопыт Масодж к юго-западу от крепости. Его «Ценные высоты» (пузырьки на вершинах) не "
                        .. "берите: где вершины — неизвестно.",
                    en = "Deathstalker Masoj south-west of the keep. Skip his Valuable Vantages (vials on peaks): the "
