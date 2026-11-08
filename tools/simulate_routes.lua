@@ -18,7 +18,11 @@
 -- own: their segments are played inside the routes that use them.
 --
 --   accept    quest dialog (QUEST_DETAIL), gossip (by quest id) or greeting (by index);
---             the addon's automation must accept (AcceptQuest is asserted)
+--             the addon's automation must accept (AcceptQuest is asserted). Every
+--             automatic action must wait for the automation delay (default settings
+--             autoDelay 0.5 s + random 0..autoDelayJitter 0.3 s): nothing may happen in
+--             the dialog event, the mock clock is advanced by the longest delay while an
+--             action is scheduled (the summary counts these "delayed actions")
 --   turnin    QUEST_PROGRESS / QUEST_COMPLETE / gossip / greeting; the automation must
 --             complete and take the reward (the step `reward` choice is asserted); quest XP
 --             comes from tools/data/forever_db.lua (unknown XP: median of the quest level)
@@ -225,6 +229,38 @@ local function findAction(list, name, arg1)
     return nil
 end
 
+-- client calls of the quest automation (Core/Automation.lua)
+local AUTO_CALLS = {
+    AcceptQuest = true, AcknowledgeAutoAcceptQuest = true, CompleteQuest = true, GetQuestReward = true,
+    SelectActiveQuest = true, SelectAvailableQuest = true,
+    ["C_GossipInfo.SelectActiveQuest"] = true, ["C_GossipInfo.SelectAvailableQuest"] = true,
+    ["C_GossipInfo.SelectOptionByIndex"] = true, ["C_GossipInfo.SelectOption"] = true,
+}
+
+-- After a dialog window opened: the automation acts after its delay (settings autoDelay +
+-- random 0..autoDelayJitter; a simulated character has the defaults), never in the dialog
+-- event itself. Advance the mock clock by the longest delay while an action is scheduled
+-- (one dialog may chain several: gossip -> quest window -> reward -> the gossip again).
+local function awaitAutomation(S, step, mark)
+    local m, A = S.m, S.ns.Automation
+    local s = S.ns.db.settings
+    local delay = tonumber(s.autoDelay) or 0
+    if delay <= 0 then return end -- autoDelay 0: the automation acted at once
+    for _, a in ipairs(newActions(S, mark)) do
+        if AUTO_CALLS[a[1]] then
+            fail(S, "step %s: the automation called %s without waiting for its delay", stepName(step), a[1])
+        end
+    end
+    local wait = delay + (tonumber(s.autoDelayJitter) or 0) + 0.05
+    local n = 0
+    while A:GetPending() do
+        n = n + 1
+        if n > 20 then fail(S, "step %s: the automation keeps scheduling actions", stepName(step)) end
+        m:Advance(wait)
+    end
+    S.stats.delayed = S.stats.delayed + n
+end
+
 ---------------------------------------------------------------------------
 -- quests
 ---------------------------------------------------------------------------
@@ -294,6 +330,17 @@ local function hasItemObjectives(S, q)
     return (def.moneyRequired or 0) > 0
 end
 
+-- Is the `accept` of quest q in this step done for the engine although the quest is
+-- neither in the log nor turned in (forwarded: abandoned by a later step that is passed)?
+local function forwardedAccept(S, step, q)
+    local m = S.m
+    if m:IsOnQuest(q) or m:IsQuestCompleted(q) then return false end
+    for _, a in ipairs(step.actions or {}) do
+        if a.type == "accept" and a.quest == q then return actionDone(S, step, a) and true or false end
+    end
+    return false
+end
+
 local function checkQuestResults(S, step, turnins, accepts, mark)
     local m = S.m
     local acts = newActions(S, mark)
@@ -312,11 +359,18 @@ local function checkQuestResults(S, step, turnins, accepts, mark)
     end
     for _, q in ipairs(accepts) do
         local ok = findAction(acts, "AcceptQuest", q) or findAction(acts, "AcknowledgeAutoAcceptQuest", q)
-        if not ok or not (m:IsOnQuest(q) or m:IsQuestCompleted(q)) then
+        if ok and (m:IsOnQuest(q) or m:IsQuestCompleted(q)) then
+            S.stats.accepted = S.stats.accepted + 1
+        elseif forwardedAccept(S, step, q) then
+            -- the automation re-checks the route window when its delay ends: the engine
+            -- forwarded this accept meanwhile (a later step is done and the route abandons
+            -- the quest later), so dropping it is right
+            warn(S, "step %s: quest %d not accepted: the engine forwarded its accept during the dialog",
+                stepName(step), q)
+        else
             fail(S, "step %s: the automation did not accept quest %d (chat: %s)", stepName(step), q,
                 tostring(m.chat[#m.chat]))
         end
-        S.stats.accepted = S.stats.accepted + 1
     end
 end
 
@@ -361,6 +415,7 @@ local function doQuests(S, step, turnins, accepts)
         vlog(S, "    GOSSIP_SHOW active={%s} available={%s}", table.concat(turnins, ","), table.concat(accepts, ","))
         m:OpenGossip({ active = turnins, available = accepts }, npc)
     end
+    awaitAutomation(S, step, mark)
     m:CloseInteraction()
     checkQuestResults(S, step, turnins, accepts, mark)
 end
@@ -464,6 +519,7 @@ local function serviceViaGossip(S, step, a)
     local mark = #m.actions
     vlog(S, "    GOSSIP_SHOW with %d option(s), npc %s", idx, tostring(npc))
     m:OpenGossip({ options = options }, npc)
+    awaitAutomation(S, step, mark)
     local acts = newActions(S, mark)
     local picked = findAction(acts, "C_GossipInfo.SelectOptionByIndex", idx - 1)
         or findAction(acts, "C_GossipInfo.SelectOption", 1000 + idx)
@@ -476,6 +532,64 @@ local function serviceViaGossip(S, step, a)
     m:CloseInteraction()
 end
 
+-- quests the (filtered) route accepts / turns in: { accept = {[q] = true}, turnin = {[q] = true} }
+local function routeQuestSets(S)
+    if not S.routeQuests then
+        local sets = { accept = {}, turnin = {} }
+        for _, s in ipairs(engine(S):GetSteps()) do
+            for _, a in ipairs(s.actions) do
+                if sets[a.type] then sets[a.type][a.quest] = true end
+            end
+        end
+        S.routeQuests = sets
+    end
+    return S.routeQuests
+end
+
+-- Talking to an NPC opens its gossip first. When the service NPC also offers a route quest (or takes
+-- a complete route quest), the automation accepts the quests of the lookahead window / turns in there
+-- BEFORE the trainer / merchant / taxi / binder window opens. A later step finished that way becomes
+-- the forward anchor and fast-forwards this visit (validator: lookahead-skip): reported as a warning.
+-- @return true when the visit was fast-forwarded (the service is then not opened for this step)
+local function gossipFirst(S, step, a)
+    local m, npc = S.m, firstNpc(step)
+    if not npc or step.gossip then return false end
+    local spec = m:_npcSpec(npc)
+    if not spec then return false end
+    local sets = routeQuestSets(S)
+    local relevant = false
+    for _, q in ipairs(spec.available or {}) do
+        if sets.accept[q] then relevant = true end
+    end
+    for _, q in ipairs(spec.active or {}) do
+        local e = m:_logEntry(q)
+        if e and sets.turnin[q] and m:_isComplete(e) then relevant = true end
+    end
+    if not relevant then return false end
+    local E = engine(S)
+    vlog(S, "    TALK %d (gossip before the %s window)", npc, a.type)
+    local mark = #m.actions
+    m:TalkTo(npc)
+    awaitAutomation(S, step, mark)
+    m:CloseInteraction()
+    settle(S)
+    for _, act in ipairs(newActions(S, mark)) do
+        if act[1] == "AcceptQuest" then S.stats.accepted = S.stats.accepted + 1 end
+    end
+    if E:IsDone(step) then
+        if step.optional then
+            -- an optional visit may be fast-forwarded (the validator does not report it either)
+            vlog(S, "    optional step fast-forwarded by the gossip of NPC %d", npc)
+        else
+            warn(S, "step %s: fast-forwarded before its %s window opened: talking to NPC %d let the automation "
+                .. "accept / turn in a later step's quest first (validator lookahead-skip; merge the steps)",
+                stepName(step), a.type, npc)
+        end
+        return true
+    end
+    return false
+end
+
 local function doService(S, step, a)
     if a.type == "fp" then S.flightPaths[a.place] = true end
     if step.gossip and not S.gossipUsed[step.id] then
@@ -485,6 +599,7 @@ local function doService(S, step, a)
         end
         warn(S, "step %s: `gossip` without `npc` is never selected by the automation", stepName(step))
     end
+    if gossipFirst(S, step, a) then return end
     openService(S, step, a)
     finishService(S, a.type)
     S.m:CloseInteraction()
@@ -958,7 +1073,8 @@ local function runOne(opts, module, toc, route, profile, db, extra)
     local S = {
         opts = opts, module = module, toc = toc, route = route, profile = profile, db = db,
         warnings = {}, bgSeen = {}, bgOpen = {}, gossipUsed = {},
-        stats = { steps = 0, iterations = 0, accepted = 0, turnedIn = 0, bg = 0, gossip = 0, estimatedXP = 0 },
+        stats = { steps = 0, iterations = 0, accepted = 0, turnedIn = 0, bg = 0, gossip = 0, delayed = 0,
+            estimatedXP = 0 },
         state = opts.startState, harness = extra and extra.harness, flightPaths = {},
     }
     for _, fp in ipairs(S.state and S.state.flightPaths or {}) do S.flightPaths[fp] = true end
@@ -974,8 +1090,9 @@ local function runOne(opts, module, toc, route, profile, db, extra)
     if ok then
         local p = S.m.player
         local xpMax = S.m:XPMax(p.level)
-        print(format("OK   %s: %d steps, %d iterations, %d accepted, %d turned in, %d bg, %d gossip; level %d (%d%%)%s; %s%s",
-            label, st.steps, st.iterations, st.accepted, st.turnedIn, st.bg, st.gossip, p.level,
+        print(format("OK   %s: %d steps, %d iterations, %d accepted, %d turned in, %d bg, %d gossip, "
+            .. "%d delayed actions; level %d (%d%%)%s; %s%s",
+            label, st.steps, st.iterations, st.accepted, st.turnedIn, st.bg, st.gossip, st.delayed, p.level,
             xpMax > 0 and floor(p.xp / xpMax * 100) or 0,
             st.estimatedXP > 0 and format(", %d quest XP estimated", st.estimatedXP) or "",
             S.coldStart or "no restart checks",

@@ -212,6 +212,17 @@ function DB.ZoneName(db, uiMap)
     return z and z.name or ("uiMap " .. tostring(uiMap))
 end
 
+--- "Cooking" for skill line 185 (enums.professions; "skill <id>" when unknown).
+function DB.SkillName(db, skillId)
+    for k, v in pairs(db.enums and db.enums.professions or {}) do
+        if v == skillId then
+            local name = (k:sub(1, 1) .. k:sub(2):lower()):gsub("_(%a)", function(c) return " " .. c:upper() end)
+            return name
+        end
+    end
+    return "skill " .. tostring(skillId)
+end
+
 --- Distance (map percent units) from (x, y) to the nearest spawn on uiMap.
 -- @return distance, x, y of the nearest spawn; nil when the entity has no spawn on that map
 function DB.Nearest(spawns, uiMap, x, y)

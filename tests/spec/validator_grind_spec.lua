@@ -171,12 +171,13 @@ describe("validator grind report and skip-ahead", function()
     end)
 
     describe("incidental kills (--incidental-pct)", function()
+        -- level 5: enough grind left after the 8 + 8 zombies for 15 % incidental XP to show in the kill count
         local STEPS = {
             { accept = 363, npc = 1568, at = AT_MORDO },
             { turnin = 363, accept = 364, npc = 1569, at = AT_SARVIS },
             { complete = 364, at = AT_ZOMBIES },
             { turnin = 364, npc = 1569, at = AT_SARVIS },
-            { level = 4 },
+            { level = 5 },
         }
 
         it("default 0: no incidental XP, the simulation as before", function()

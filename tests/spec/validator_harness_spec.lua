@@ -404,6 +404,36 @@ FastesBoooy.AddLibrarySegment({ id = "hx", title = "X", levels = { 1, 2 }, steps
             os.remove(f)
         end)
 
+        it("validate: --until writes the state before a step / the first step of a segment", function()
+            local f, g = tmpname(), tmpname()
+            -- the composed fixture: own tc-intro, then the library segment tl-deathknell
+            local code, out = run(VAL .. "-q --route test-composed --write-state " .. f .. " --until tl-deathknell "
+                .. "tests/fixtures/core/FastesBoooy_TestComposed")
+            assert.are.equal(0, code, out)
+            assert.matches("state before tl%-deathknell of test%-composed", out)
+            local before = assert(Harness.ReadState(f))
+            assert.are.equal("tl-accept-363", before.meta.untilStep)
+            assert.are.same({}, before.done)
+            code, out = run(VAL .. "-q --route test-composed --write-state " .. g .. " --until tl-363-364 "
+                .. "tests/fixtures/core/FastesBoooy_TestComposed")
+            assert.are.equal(0, code, out)
+            local mid = assert(Harness.ReadState(g))
+            assert.are.same({ 363 }, mid.log)
+            local full = tmpname()
+            code = run(VAL .. "-q --route test-composed --write-state " .. full .. " tests/fixtures/core/FastesBoooy_TestComposed")
+            assert.are.equal(0, code)
+            assert.is_true(#assert(Harness.ReadState(full)).done > #mid.done)
+            -- unknown id / without --write-state: usage errors
+            code, out = run(VAL .. "-q --route test-composed --write-state " .. g .. " --until nope "
+                .. "tests/fixtures/core/FastesBoooy_TestComposed")
+            assert.are.equal(2, code)
+            assert.matches("%-%-until nope matched no step id and no segment id of test%-composed", out)
+            code, out = run(VAL .. "-q --until tl-deathknell tests/fixtures/core/FastesBoooy_TestComposed")
+            assert.are.equal(2, code)
+            assert.matches("%-%-until is only used with %-%-write%-state", out)
+            os.remove(f) os.remove(g) os.remove(full)
+        end)
+
         it("a declared library without segments: a clear message, nothing to do", function()
             local root = tmpname()
             os.execute(("mkdir -p '%s/FastesBoooy_HxEmpty/Segments'"):format(root))

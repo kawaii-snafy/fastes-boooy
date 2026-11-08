@@ -55,6 +55,9 @@ V.DEFAULTS = {
     incidentalPct = 0,
     -- grind band printed for every run (V.RunProfile): incidental kills 0% and this percent
     incidentalBandPct = 15,
+    -- the core's auto-accept window (settings.lookahead, Core/Init.lua): quests of the steps
+    -- [cursor, cursor + lookahead] are accepted at the NPC (lookahead-skip check)
+    lookahead = 6,
 }
 
 V.SEVERITIES = { "ERROR", "WARN", "INFO" }
@@ -94,6 +97,14 @@ end
 local function anyIn(ids, list)
     for _, id in ipairs(ids or {}) do
         if contains(list, id) then return true end
+    end
+    return false
+end
+
+-- does the step have an action of this type for quest q?
+local function hasQuestActionV(step, actionType, q)
+    for _, a in ipairs(step.actions or {}) do
+        if a.type == actionType and a.quest == q then return true end
     end
     return false
 end
@@ -744,6 +755,7 @@ function H.turnin(self, a, step)
     local id = a.quest
     local q, full = self:quest(id, step, "turnin")
     if not q then return end
+    if full then self:checkProfession("turnin", id, q, step) end
     if self.turnedIn[id] then
         self:add("ERROR", "turnin-twice", step, "turnin %s: already turned in at %s", self:qn(id),
             self:stepRef(self.turnedIn[id]))
@@ -846,11 +858,38 @@ function Run:checkAvailability(id, q, step)
     end
 end
 
+--- quest-profession: a quest that needs a profession skill (DB reqSkill = {skillLine, value}) cannot
+-- be taken by a character without it; its accept step must be `optional` (and so must its
+-- complete / turnin steps), or the route stops there for most characters.
+function Run:checkProfession(verb, id, q, step)
+    local rs = q.reqSkill
+    if type(rs) ~= "table" or not rs[1] then return end
+    local skill = format("%s %d", DB.SkillName(self.db, rs[1]), rs[2] or 1)
+    if verb == "accept" then
+        if step.optional then
+            self:add("INFO", "quest-profession", step, "accept %s: requires %s (profession); optional step",
+                self:qn(id), skill)
+        else
+            self:add("WARN", "quest-profession", step, "accept %s: requires %s (profession): a character without it "
+                .. "cannot take the quest and the guide stops at this step -- make it `optional` (with the quest's "
+                .. "complete / turnin steps), filter it or drop the quest", self:qn(id), skill)
+        end
+    elseif not step.optional and not step.bg then
+        local acc = self.accepted[id]
+        if acc and not acc.isState and acc.optional then
+            self:add("WARN", "quest-profession", step, "%s %s: the quest requires %s and its accept step %s is "
+                .. "optional, this step is not: a character without the profession is stuck here (make it optional)",
+                verb, self:qn(id), skill, self:stepRef(acc))
+        end
+    end
+end
+
 function H.accept(self, a, step)
     local id = a.quest
     local q, full = self:quest(id, step, "accept")
     if not q then return end
     self:checkAvailability(id, q, step)
+    if full then self:checkProfession("accept", id, q, step) end
     if (q.reqLevel or 0) > self.st.level then
         if q.reqLevel > self:optLevel() then
             local hint = ""
@@ -985,6 +1024,46 @@ function H.accept(self, a, step)
     if self.activeCount > self.maxLog then self.maxLog = self.activeCount end
 end
 
+--- complete-far-from-trigger: a quest completed by an area trigger (DB objectives.trigger: exploration,
+-- "leap from the planks") is done only there; the `complete` step's `at` (where the arrow leads)
+-- should be that place -- or an earlier step since the quest's accept leads there (a `go` step to the
+-- trigger, then { complete = Q, turnin = Q } at the quest ender). WARN beyond the hard distance
+-- tolerance (trigger areas have a radius). Escorts (DB objectives.escort) are skipped: they start at
+-- the quest giver and end at the trigger on their own.
+function Run:checkTrigger(id, q, step)
+    local o = q.objectives or {}
+    local trig = o.trigger
+    local at = step.at
+    if type(trig) ~= "table" or o.escort or not at or not self.db.zones[at.map] then return end
+    local function near(p)
+        if not p or not self.db.zones[p.map] then return false end
+        local d, isYd = self:nearestSpawn(trig, p)
+        return d ~= nil and d <= (isYd and self.hardTolYd or self.hardTol)
+    end
+    -- an earlier step since the accept (this profile's walk) already leads to the trigger
+    local acc = self.accepted[id]
+    for k = #self.walked, 1, -1 do
+        local w = self.walked[k]
+        if w ~= step and near(w.at) then return end
+        if w == acc then break end
+    end
+    local d, isYards, tx, ty = self:nearestSpawn(trig, at)
+    if not d then
+        local maps = {}
+        for _, m in ipairs(DB.SpawnMaps(trig)) do maps[#maps + 1] = format("%d %s", m, DB.ZoneName(self.db, m)) end
+        self:add("WARN", "complete-far-from-trigger", step, "complete %s: the quest completes at an area trigger on %s, "
+            .. "not on uiMap %d (%s)", self:qn(id), table.concat(maps, "; "), at.map, DB.ZoneName(self.db, at.map))
+        return
+    end
+    local limit = isYards and self.hardTolYd or self.hardTol
+    if d > limit then
+        self:add("WARN", "complete-far-from-trigger", step, "complete %s: the quest completes at its area trigger "
+            .. "{%d, %.2f, %.2f}, %s from at {%d, %.1f, %.1f} (the arrow leads to `at`: put it at the trigger)",
+            self:qn(id), at.map, tx, ty, isYards and format("%.0f yards", d) or format("%.1f map units", d),
+            at.map, at.x, at.y)
+    end
+end
+
 function H.complete(self, a, step)
     local id = a.quest
     local q, full = self:quest(id, step, "complete")
@@ -1001,6 +1080,8 @@ function H.complete(self, a, step)
     end
     self.completed[id] = self.completed[id] or step
     if not full then return end
+    self:checkProfession("complete", id, q, step)
+    if not a.objectives then self:checkTrigger(id, q, step) end
     local list = objectiveList(q)
     local selected = {}
     if a.objectives then
@@ -1357,6 +1438,12 @@ end
 
 function Run:processStep(step)
     self.ordinal = self.ordinal + 1
+    -- --until: the state BEFORE this step / the first step of this segment (also when filtered out)
+    local u = self.opts.untilId
+    if u and not self.untilState and (step.id == u or step.segment == u) then
+        self.untilState = self:EndState()
+        self.untilState.meta.untilStep = tostring(step.id)
+    end
     if not self.schema.FiltersMatch(step.filters, self.facts) then
         self:add("INFO", "step-skipped", step, "step filtered out for %s (class/race/faction filter)",
             profileLabel(self.profile))
@@ -1514,6 +1601,67 @@ function Run:checkSkipAhead()
     end
 end
 
+--- WARN lookahead-skip. Talking to an NPC opens its gossip first: the core's automation accepts the
+-- route quests of the steps [cursor, cursor + lookahead] the NPC offers and turns in the route quests
+-- it takes (Core/Automation.lua). When the current step is a trainer / merchant / taxi / innkeeper
+-- visit (train / vendor / fp / sethearth) at that NPC and a later step within the lookahead is
+-- nothing but accepts / turn-ins at the same NPC, that later step is done before the window opens,
+-- becomes the forward anchor, and the visit counts as done (fast-forwarded): the cursor jumps past
+-- the training / purchase. Merge the visit into the quest step (one step, all actions) or put it
+-- after. A turn-in counts only when the quest is complete by then (no `complete` step in between).
+-- Reported at the visit step (`-- WARN-OK: reason` goes there).
+local WINDOW_ACTIONS = { train = "trainer", vendor = "merchant", fp = "flight master", sethearth = "innkeeper" }
+
+function Run:checkLookaheadSkip()
+    local steps = self.walked
+    local look = self.opts.lookahead or V.DEFAULTS.lookahead
+    for j, v in ipairs(steps) do
+        local kinds = {}
+        local stateful = false
+        for _, a in ipairs(v.actions) do
+            if WINDOW_ACTIONS[a.type] then kinds[#kinds + 1] = a.type
+            elseif self.schema.STATEFUL[a.type] and a.type ~= "level" then stateful = true end
+        end
+        if #kinds > 0 and not stateful and not v.bg and not v.optional and v.npc and #v.npc > 0 then
+            for i = j + 1, math.min(#steps, j + look) do
+                local s = steps[i]
+                if not s.bg then
+                    local hit, other = nil, false
+                    for _, a in ipairs(s.actions) do
+                        local t = a.type
+                        if t == "accept" or t == "turnin" then
+                            local q = DB.Quest(self.db, a.quest, self.profile.class)
+                            local who = q and (t == "accept" and q.start or q.finish)
+                            local same = who and who.npcs and anyIn(v.npc, who.npcs)
+                            if same and t == "turnin" then
+                                -- not complete yet when the visit happens: no auto turn-in then
+                                for k = j + 1, i - 1 do
+                                    if hasQuestActionV(steps[k], "complete", a.quest) then same = false break end
+                                end
+                            end
+                            if same then hit = hit or a else other = true end
+                        elseif self.schema.STATEFUL[t] and t ~= "level" then
+                            other = true
+                        end
+                    end
+                    if hit and not other then
+                        local m = self:add("WARN", "lookahead-skip", v, "%s step [%s] at NPC %s can be fast-forwarded: "
+                            .. "talking to the NPC opens its gossip first, the automation %s %s there (step %s [%s], "
+                            .. "%d step(s) later, within the lookahead of %d), that step becomes the forward anchor "
+                            .. "and the guide counts this %s visit as done before the window opens (merge the actions "
+                            .. "into one step or put this step after it)", table.concat(kinds, ", "), stepActions(v),
+                            self:names(v.npc, Run.nn), hit.type == "accept" and "accepts" or "turns in",
+                            self:qn(hit.quest), stepLabel(s), stepActions(s), i - j, look,
+                            WINDOW_ACTIONS[kinds[1]])
+                        if m then self.msgOrd[m] = self.walkedOrd[j] end
+                        break
+                    end
+                end
+            end
+        end
+    end
+end
+
 function Run:execute()
     local route = self.route
     if #route.steps == 0 then
@@ -1530,6 +1678,7 @@ function Run:execute()
     if not self.opts.shadow then
         local before = #self.messages
         self:checkSkipAhead()
+        self:checkLookaheadSkip()
         if #self.messages > before then self:sortMessages() end
     end
     for _, id in ipairs(sortedKeys(self.active)) do
@@ -1575,7 +1724,9 @@ function Run:result()
             incidentalPct = self.opts.incidentalPct or V.DEFAULTS.incidentalPct, xpIncidental = self.xp.incidental,
             gates = self.gates,
         },
-        endState = self:EndState(), -- --write-state (not part of the JSON report)
+        -- --write-state (not part of the JSON report); with --until: the state before that step / segment
+        endState = (self.opts.untilId and self.untilState) or self:EndState(),
+        untilMatched = self.untilState ~= nil,
     }
 end
 
@@ -2028,8 +2179,12 @@ V.IN_GAME_ONLY = {
         .. "сравнивается с локализованным именем зоны (`C_Map.GetAreaInfo` по `places[...].area` из "
         .. "`Data.lua`) — что эти имена совпадают в ruRU, проверяется в клиенте.",
     "**События окон и цели-события.** Порядок `TRAINER_*`/`MERCHANT_*`/`TAXIMAP_*` и "
-        .. "`PLAYER_INTERACTION_MANAGER_FRAME_*` (одно окно засчитывается один раз); выполнение целей "
-        .. "исследования и сопровождения (в моке — только по явному событию).",
+        .. "`PLAYER_INTERACTION_MANAGER_FRAME_*` (одно окно засчитывается один раз); что `UnitGUID(\"npc\")` "
+        .. "в момент `TRAINER_SHOW`/`MERCHANT_SHOW` отдаёт NPC окна (по нему окно засчитывается только шагу "
+        .. "с этим `npc`); выполнение целей исследования и сопровождения (в моке — только по явному событию).",
+    "**Количество целей квестов** — из подсказок Wowhead Forever (`tools/data/wowhead_requirements.json`): "
+        .. "местами они расходятся с WCLBox и текстом Classic (например 364: 8 + 8, WCLBox — 5 + 5); "
+        .. "в игре не сверялись. От них зависят только оценки опыта за убийства.",
     "**Метка Blizzard** (`C_Map.SetUserWaypoint` + `C_SuperTrack`) на картах Forever, где метки "
         .. "запрещены или карта не поддерживает их.",
     "**SavedVariables после холодного перезапуска** ранних билдов Forever: прогресс восстанавливается "
@@ -2224,6 +2379,9 @@ options:
                         level / xpFrac, done, log / complete, hearth, at, flightPaths
   --write-state FILE    write the character state at the END of the run (same format; needs
                         exactly one route x profile: use --route and --profile)
+  --until ID            with --write-state: write the state BEFORE step ID / the first step of
+                        segment ID instead (e.g. --until h-22-hillsbrad = the end of a route's own
+                        1-22 part, the start state of the first library segment)
   --harness DIR         validate a part of a library module: a synthetic route of the --profile
                         (race and class required) that only uses the --segments of DIR
   --segments ID,...     library segments of the harness route, in this order (default: every
@@ -2233,6 +2391,8 @@ options:
   -h, --help            this help
 
 harness example (Undead Paladin, from the end of the 1-22 route):
+  lua5.1 tools/validate_routes.lua --route horde-undead-paladin --profile race=Scourge,class=PALADIN,faction=Horde \
+      --write-state state_ud_22.json --until h-22-hillsbrad
   lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Horde --segments h-22-hillsbrad \
       --profile race=Scourge,class=PALADIN,faction=Horde --state state_ud_22.json --write-state out.json
 
@@ -2258,6 +2418,7 @@ function V.ParseArgs(argv)
         -- an empty --state / --write-state / --segments value = not given (make harness passes them all)
         elseif a == "--state" then o.state = Harness.NonEmpty(val())
         elseif a == "--write-state" then o.writeState = Harness.NonEmpty(val())
+        elseif a == "--until" then o.untilId = Harness.NonEmpty(val())
         elseif a == "--harness" then o.harness = val()
         elseif a == "--segments" then
             o.segments = Harness.ParseList(val())
@@ -2326,6 +2487,10 @@ function V.Main(argv, root)
         io.stderr:write("validate_routes: --segments is only used with --harness\n")
         return 2
     end
+    if o.untilId and not o.writeState then
+        io.stderr:write("validate_routes: --until is only used with --write-state\n")
+        return 2
+    end
     local harnessProfile
     if o.harness then
         local perr
@@ -2353,7 +2518,7 @@ function V.Main(argv, root)
             db = db, schema = schema, route = o.route, profile = o.profile, tolerance = o.tolerance,
             hardTolerance = o.hardTolerance, toleranceYards = o.toleranceYards,
             hardToleranceYards = o.hardToleranceYards, ignore = o.ignore, unknownXpOptimism = o.unknownXpOptimism,
-            startState = startState, incidentalPct = o.incidentalPct,
+            startState = startState, incidentalPct = o.incidentalPct, untilId = o.untilId,
         }
         for k, v in pairs(extra or {}) do opts[k] = v end
         return opts
@@ -2428,11 +2593,17 @@ function V.Main(argv, root)
                 .. "(select one with --route ID and --profile race=,class=,faction=)\n", #runs))
             return 2
         end
+        if o.untilId and not runs[1].untilMatched then
+            io.stderr:write(format("validate_routes: --until %s matched no step id and no segment id of %s\n",
+                o.untilId, tostring(runs[1].route)))
+            return 2
+        end
         local wok, werr = Harness.WriteState(o.writeState, runs[1].endState)
         if not wok then io.stderr:write("validate_routes: " .. tostring(werr) .. "\n") return 2 end
         local es = runs[1].endState
-        print(format("validate_routes: end state of %s [%s] written to %s: level %d + %.2f, %d done, %d in the log "
-            .. "(%d complete), hearth %s", tostring(runs[1].route), runs[1].profileLabel, o.writeState, es.level,
+        print(format("validate_routes: %s of %s [%s] written to %s: level %d + %.2f, %d done, %d in the log "
+            .. "(%d complete), hearth %s", o.untilId and ("state before " .. o.untilId) or "end state",
+            tostring(runs[1].route), runs[1].profileLabel, o.writeState, es.level,
             es.xpFrac, #es.done, #es.log, #es.complete, tostring(es.hearth or "-")))
     end
     if te > 0 or (o.strict and tw > 0) then return 1 end

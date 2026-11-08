@@ -171,6 +171,27 @@ function H.settle(m, seconds)
     m:Advance(seconds or 0.5)
 end
 
+--- Longest wait of one delayed automation action with the current settings:
+-- autoDelay + autoDelayJitter + one mock frame (0 when the automation acts at once).
+function H.autoWait(ns)
+    local s = ns.db.settings
+    if (s.autoDelay or 0) <= 0 then return 0 end
+    return s.autoDelay + (s.autoDelayJitter or 0) + 0.05
+end
+
+--- Let the delayed quest automation act (Core/Automation.lua): advance the mock clock by
+-- H.autoWait while an action is scheduled (one dialog may chain several: gossip -> quest
+-- window -> reward -> gossip again ...). Returns the number of waits.
+function H.waitAuto(m, ns, max)
+    local n = 0
+    while ns.Automation:GetPending() do
+        n = n + 1
+        assert(n <= (max or 20), "the automation keeps scheduling actions")
+        m:Advance(H.autoWait(ns))
+    end
+    return n
+end
+
 --- Id of the displayed step (or "<end>").
 function H.cur(ns)
     local s = ns.Engine:GetCurrentStep()

@@ -78,14 +78,24 @@ Steps.ITEM_FALLBACK_ICON = "Interface\\Icons\\INV_Misc_QuestionMark"
 -- state helpers (memoized per evaluation through ctx.cache / ctx.items)
 ---------------------------------------------------------------------------
 
+-- Quest state { turnedIn, on, complete?, objectives? }, memoized in ctx.cache. The engine
+-- keeps one cache for all its evaluations and stamps it with the evaluation number
+-- (ctx.gen): an entry of an older evaluation is refreshed in place, so a refresh does not
+-- allocate one table per route quest. A fresh cache (ctx.gen nil) works as before.
 local function questState(ctx, q)
     local cache = ctx and ctx.cache
+    local gen = ctx and ctx.gen
     local s = cache and cache[q]
-    if s then return s end
+    if s and s.gen == gen then return s end
+    if not s then
+        s = {}
+        if cache then cache[q] = s end
+    end
     local C = ns.Compat
-    s = { turnedIn = C.IsQuestTurnedIn(q) }
+    s.gen = gen
+    s.turnedIn = C.IsQuestTurnedIn(q)
     s.on = (not s.turnedIn) and C.IsOnQuest(q) or false
-    if cache then cache[q] = s end
+    s.complete, s.objectives = nil, nil
     return s
 end
 Steps.QuestState = questState

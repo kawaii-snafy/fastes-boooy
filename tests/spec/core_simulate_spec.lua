@@ -60,6 +60,22 @@ FastesBoooy.AddSegment("hearth", { id = "h1", title = "H1", steps = {
     { id = "gg", hearth = "Booty Bay", at = { 1434, 35.6, 10.6 } },
 } })
 ]],
+    -- the paladin trainer Aramis Hammerhand 244808 also offers 90902: talking to him opens the gossip first,
+    -- the automation accepts 90902 (next step, within the lookahead) and the visit is fast-forwarded
+    ["FastesBoooy_Gossip/FastesBoooy_Gossip.toc"] = "## Interface: 16001\n## Dependencies: FastesBoooy\nRoute.lua\n",
+    ["FastesBoooy_Gossip/Route.lua"] = [[
+FastesBoooy.RegisterRoute({ api = 1, id = "gossip", title = "Gossip", faction = "Horde",
+    races = { "Scourge" }, classes = { "PALADIN" }, levels = { 1, 3 } })
+FastesBoooy.AddSegment("gossip", { id = "g1", title = "G1", steps = {
+    { accept = 363, npc = 1568, at = { 1420, 30.2, 71.7 } },
+    { turnin = 363, accept = 364, npc = 1569, at = { 1420, 30.8, 66.2 } },
+    { complete = 364, at = { 1420, 32.5, 63.5 } },
+    { turnin = 364, npc = 1569, at = { 1420, 30.8, 66.2 } },
+    { level = 2 },
+    { id = "visit", train = true, npc = 244808, at = { 1420, 31.1, 66.4 } },
+    { accept = 90902, npc = 244808, at = { 1420, 31.1, 66.4 } },
+} })
+]],
     ["FastesBoooy_Schema/FastesBoooy_Schema.toc"] = "## Interface: 16001\nRoute.lua\n",
     ["FastesBoooy_Schema/Route.lua"] = [[
 FastesBoooy.RegisterRoute({ api = 1, id = "schema", title = "S" })
@@ -123,6 +139,14 @@ describe("tools/simulate_routes.lua", function()
         code, out = run("--no-db '" .. root .. "/FastesBoooy_Hearth'")
         assert.equal(0, code, out)
         assert.is_truthy(out:find("step bb [hearth Booty Bay]: the hearthstone bind point", 1, true), out)
+    end)
+
+    it("talks to a service NPC that offers route quests first: a fast-forwarded visit is a warning", function()
+        local code, out = run("'" .. root .. "/FastesBoooy_Gossip'")
+        assert.equal(0, code, out)
+        assert.is_truthy(out:find("OK   gossip (Scourge PALADIN Horde)", 1, true), out)
+        assert.is_truthy(out:find("step visit [train]: fast-forwarded before its train window opened: talking to NPC "
+            .. "244808", 1, true), out)
     end)
 
     it("fails a route that cannot be followed", function()

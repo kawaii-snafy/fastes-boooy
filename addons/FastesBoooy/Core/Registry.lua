@@ -291,12 +291,14 @@ function Registry:List()
 end
 
 --- Routes applicable to the player (faction / race / class), in registration order.
+-- Only these are composed (Core/Compose.lua) -- a composed route of another class or race
+-- is built when it is listed (Registry:List) or chosen (Registry:Get).
 function Registry:Matching(facts)
-    self:Finalize()
     local out = {}
     for _, r in ipairs(self.order) do
-        if #r.steps > 0 and ns.Schema.RouteMatches(r, facts or {}) then
-            out[#out + 1] = r
+        if ns.Schema.RouteMatches(r, facts or {}) then
+            if r.dirty then self:Finalize(r) end
+            if #r.steps > 0 then out[#out + 1] = r end
         end
     end
     return out

@@ -39,20 +39,37 @@ end
 -- definitions
 ---------------------------------------------------------------------------
 
+-- automation delay sliders (seconds), under the automation checkboxes; the limits are the
+-- core's (ns.SETTING_RANGES, Core/Init.lua)
+local DELAY_STEP = 0.1
+local DELAY_RANGES = {}
+for _, d in ipairs({ { "autoDelay", 3 }, { "autoDelayJitter", 1 } }) do
+    local r = type(ns.SETTING_RANGES) == "table" and ns.SETTING_RANGES[d[1]] or { 0, d[2] }
+    DELAY_RANGES[#DELAY_RANGES + 1] = { key = d[1], min = r[1], max = r[2], step = DELAY_STEP }
+end
+
 local CHECK_SECTIONS = {
-    { title = "UI_OPT_SECTION_AUTOMATION", keys = { "automation", "autoAccept", "autoTurnin", "autoGossip" } },
+    { title = "UI_OPT_SECTION_AUTOMATION", keys = { "automation", "autoAccept", "autoTurnin", "autoGossip" },
+        sliders = DELAY_RANGES },
     { title = "UI_OPT_SECTION_NAVIGATION", keys = { "arrow", "blizzWaypoint" } },
     { title = "UI_OPT_SECTION_WINDOW", keys = { "locked", "hideInCombat", "debug" } },
 }
 -- shown greyed out while the automation master switch is off
-local NEEDS_AUTOMATION = { autoAccept = true, autoTurnin = true, autoGossip = true }
+local NEEDS_AUTOMATION = { autoAccept = true, autoTurnin = true, autoGossip = true, autoDelay = true,
+    autoDelayJitter = true }
 
+-- right column sliders
 local RANGES = {
     { key = "lookahead", min = 0, max = 15, step = 1 },
     { key = "shownNext", min = 0, max = 10, step = 1 },
     { key = "frameScale", min = 0.5, max = 2, step = 0.05 },
     { key = "arrowScale", min = 0.5, max = 2, step = 0.05 },
 }
+
+local ALL_RANGES = {}
+for _, list in ipairs({ DELAY_RANGES, RANGES }) do
+    for _, def in ipairs(list) do ALL_RANGES[#ALL_RANGES + 1] = def end
+end
 
 local MAX_ROUTE_BUTTONS = 8
 
@@ -459,7 +476,7 @@ function Options:Refresh()
             cb.label:SetTextColor(0.5, 0.5, 0.5)
         end
     end
-    for _, def in ipairs(RANGES) do
+    for _, def in ipairs(ALL_RANGES) do
         local sl = sliders[def.key]
         local v = tonumber(s[def.key]) or def.min
         if v < def.min then v = def.min elseif v > def.max then v = def.max end
@@ -467,6 +484,12 @@ function Options:Refresh()
         sl:SetValue(v)
         sl.updating = false
         sl.label:SetText(sliderLabel(def, roundToStep(v, def.step)))
+        -- greyed out without automation; the random extra does nothing without a delay
+        local enabled = not (NEEDS_AUTOMATION[def.key] and not s.automation)
+        if def.key == "autoDelayJitter" and (tonumber(s.autoDelay) or 0) <= 0 then enabled = false end
+        sl:SetEnabled(enabled)
+        local c = enabled and 1 or 0.5
+        sl.label:SetTextColor(c, c, c)
     end
     refreshRoutes()
 end
@@ -481,7 +504,7 @@ local function applyDefaults()
             if defaults[key] ~= nil then UI.SetSetting(key, defaults[key]) end
         end
     end
-    for _, def in ipairs(RANGES) do
+    for _, def in ipairs(ALL_RANGES) do
         if defaults[def.key] ~= nil then UI.SetSetting(def.key, defaults[def.key]) end
     end
     Options:Refresh()
@@ -501,7 +524,7 @@ function Options:Build()
     sub:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
     sub:SetText(L.UI_OPT_SUBTITLE .. " " .. L.UI_OPT_HINT)
 
-    -- left column: checkboxes
+    -- left column: checkboxes (+ the automation delay sliders)
     local x, y = 16, -72
     for _, sec in ipairs(CHECK_SECTIONS) do
         sectionTitle(panel, L[sec.title], x, y)
@@ -509,6 +532,10 @@ function Options:Build()
         for _, key in ipairs(sec.keys) do
             createCheck(panel, key, x + (NEEDS_AUTOMATION[key] and 16 or 0), y)
             y = y - 26
+        end
+        for _, def in ipairs(sec.sliders or {}) do
+            createSlider(panel, def, x + 20, y - 4)
+            y = y - 44
         end
         y = y - 10
     end
@@ -559,7 +586,7 @@ end
 local function showStandalone()
     if not holder then
         holder = UI.CreatePanel("Frame", nil, UIParent)
-        holder:SetSize(660, 580)
+        holder:SetSize(660, 630)
         holder:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
         holder:SetFrameStrata("DIALOG")
         holder:SetMovable(true)
@@ -641,7 +668,8 @@ end
 
 local function printHelp()
     out(L.UI_HELP_HEADER)
-    for _, k in ipairs({ "show", "lock", "next", "reset", "routes", "route", "config", "status", "xp", "debug" }) do
+    for _, k in ipairs({ "show", "lock", "next", "reset", "routes", "route", "config", "delay", "status", "xp",
+        "debug" }) do
         out(L["UI_HELP_" .. k])
     end
 end
@@ -681,7 +709,9 @@ end
 
 local function printStatus()
     local pub = ns.public or FastesBoooy
-    out(format(L.UI_STATUS_VERSION_FMT, versionString(), tostring(pub and pub.API_VERSION or "?")))
+    local api = tostring(pub and pub.API_VERSION or "?")
+    if pub and pub.API_MINOR then api = api .. "." .. tostring(pub.API_MINOR) end
+    out(format(L.UI_STATUS_VERSION_FMT, versionString(), api))
     local E = ns.Engine
     local route = E and E:GetRoute()
     if not route then
@@ -789,6 +819,43 @@ COMMANDS.debug = function()
     UI.SetSetting("debug", on)
     Options:Refresh()
     out(format(L.UI_DEBUG_FMT, on and L.UI_ON or L.UI_OFF))
+end
+
+-- automation delay setting: clamped to ns.SETTING_RANGES, rounded to the slider step
+local function delayValue(key, v)
+    return roundToStep(ns.ClampSetting(key, v), DELAY_STEP)
+end
+
+local function printDelay()
+    local s = S()
+    local delay, jitter = delayValue("autoDelay", s.autoDelay), delayValue("autoDelayJitter", s.autoDelayJitter)
+    if delay <= 0 then
+        out(L.UI_DELAY_OFF)
+    elseif jitter > 0 then
+        out(format(L.UI_DELAY_JITTER_FMT, delay, jitter))
+    else
+        out(format(L.UI_DELAY_FMT, delay))
+    end
+end
+
+-- /fb delay: print; /fb delay <seconds> [jitter]: set (a decimal comma is accepted too)
+COMMANDS.delay = function(arg)
+    arg = (arg or ""):gsub(",", ".")
+    if arg == "" then
+        printDelay()
+        out(L.UI_DELAY_USAGE)
+        return
+    end
+    local a, b = arg:match("^(%S+)%s*(%S*)$")
+    local delay, jitter = a and tonumber(a), b and b ~= "" and tonumber(b)
+    if not delay or (b ~= "" and not jitter) then
+        out(L.UI_DELAY_USAGE)
+        return
+    end
+    UI.SetSetting("autoDelay", delayValue("autoDelay", delay))
+    if jitter then UI.SetSetting("autoDelayJitter", delayValue("autoDelayJitter", jitter)) end
+    Options:Refresh()
+    printDelay()
 end
 
 --- Slash command entry point (also used by tests).

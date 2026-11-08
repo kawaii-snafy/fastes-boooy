@@ -63,7 +63,8 @@
 --   * transient actions (go/fly/hearth/train/fp/sethearth/vendor) are observed
 --     only for the "observed" steps = the displayed step + the natural cursor
 --     step + the active background steps: trainer / merchant windows (flagged when
---     the window closes, for the steps observed when it opened), the taxi map
+--     the window closes, for the steps observed when it opened whose `npc` list
+--     contains the window's NPC -- or that have no `npc`), the taxi map
 --     (flagged when it opens), HEARTHSTONE_BOUND / bind location change, arrival
 --     within step.radius of step.at (a 0.25 s position ticker runs only while an
 --     observed step waits for arrival; `fly` also requires not being on a taxi).
@@ -347,6 +348,8 @@ function Engine:BuildSteps()
     self.steps, self.indexById, self.turninSet = steps, byId, turnins
     self.abandonAfter, self.questEnds, self.givenUp, self.acceptAt = abandonAfter, questEnds, {}, acceptAt
     self.done, self.bg = {}, {}
+    -- evaluation buffers (Engine:Evaluate) start empty for the new step list
+    self.doneSpare, self.questCache = nil, nil
     self.needRebuild = false
 end
 
@@ -449,6 +452,10 @@ end
 ---------------------------------------------------------------------------
 
 -- One pass over all steps: anchor, done flags, natural cursor, background list.
+-- Every refresh runs it (up to MAX_PASSES times), so it reuses its tables instead of
+-- allocating per call: the context, the quest-state cache (entries are refreshed in place,
+-- stamped with the evaluation number ctx.gen: Steps.QuestState), the item counts and the
+-- `done` array (double-buffered: self.done stays the last complete evaluation).
 function Engine:Evaluate()
     local steps = self.steps
     local n = #steps
@@ -456,12 +463,18 @@ function Engine:Evaluate()
     local facts = ns.Compat.PlayerFacts()
     self.facts = facts
 
-    local ctx = {
-        level = facts.level, xp = facts.xp, xpMax = facts.xpMax, maxLevel = facts.maxLevel,
-        flags = EMPTY, forwarded = false, manual = false,
-        cache = {}, items = {},
-    }
-    self.lastCtx = ctx
+    self.evalGen = (self.evalGen or 0) + 1
+    local ctx = self.evalCtx
+    if not ctx then
+        ctx = {}
+        self.evalCtx = ctx
+    end
+    ctx.level, ctx.xp, ctx.xpMax, ctx.maxLevel = facts.level, facts.xp, facts.xpMax, facts.maxLevel
+    ctx.flags, ctx.forwarded, ctx.manual, ctx.index, ctx.abandonedLater, ctx.givenUp = EMPTY, false, false, nil, nil, nil
+    ctx.gen = self.evalGen
+    self.questCache = self.questCache or {}
+    ctx.cache = self.questCache
+    ctx.items = clear(ctx.items or {})
 
     -- quests given up by hand (cdb.gaveUp): a record whose quest is turned in, or back
     -- in the log (re-accepted, e.g. while the addon was off) and not for the route's next
@@ -522,7 +535,9 @@ function Engine:Evaluate()
     ctx.givenUp = givenUp
 
     -- non-bg steps first (bg steps never influence them), giving the natural cursor
-    local done = {}
+    -- (every index 1..n is written below; entries past n are dropped)
+    local done = self.doneSpare or {}
+    for i = #done, n + 1, -1 do done[i] = nil end
     local natural
     for i = 1, n do
         local s = steps[i]
@@ -567,7 +582,7 @@ function Engine:Evaluate()
         end
     end
     ctx.flags, ctx.forwarded, ctx.manual, ctx.abandonedLater, ctx.index = EMPTY, false, false, nil, nil
-    self.done = done
+    self.doneSpare, self.done = self.done, done
 
     local bg = {}
     local bgEnd = (natural or (n + 1)) - 1
@@ -1091,12 +1106,16 @@ end
 function Engine:Start()
     if self.started then return end
     self.started = true
-    ns.Registry:Finalize() -- compose the routes now: composition errors are part of the report
+    -- selecting the route composes only the routes this character can use (the saved choice,
+    -- Registry:Matching); the others are composed when listed or chosen (/fb routes, /fb route,
+    -- settings), so a paladin does not pay for the druid route. Their composition errors are
+    -- reported then; the ones of the usable routes are part of this report.
+    local route = self:SelectRoute()
     local errors = ns.Registry.errors
     if #errors > 0 then
         ns.Print(L().MSG_ROUTE_ERRORS, #errors, tostring(errors[1]))
     end
-    self:ActivateRoute(self:SelectRoute(), true)
+    self:ActivateRoute(route, true)
 end
 
 ns:On("PLAYER_LOGIN", function()
@@ -1198,11 +1217,22 @@ function Engine:ObserveAction(actionType)
     return any
 end
 
--- ids of the observed steps that have an action of the given type
-function Engine:ObservedIds(actionType)
+-- Is the window of NPC `npc` the one of step s? A step without `npc`, or an NPC id that
+-- cannot be read (nil), matches any window.
+local function windowNpcMatches(s, npc)
+    if not npc or type(s.npc) ~= "table" or #s.npc == 0 then return true end
+    for _, id in ipairs(s.npc) do
+        if id == npc then return true end
+    end
+    return false
+end
+
+-- ids of the observed steps that have an action of the given type (and, when `npc` is
+-- given, whose `npc` list contains it -- or that have no `npc`)
+function Engine:ObservedIds(actionType, npc)
     local ids = {}
     for _, s in ipairs(self:ObservedSteps()) do
-        if ns.Steps:HasAction(s, actionType) then ids[#ids + 1] = s.id end
+        if ns.Steps:HasAction(s, actionType) and windowNpcMatches(s, npc) then ids[#ids + 1] = s.id end
     end
     return ids
 end
@@ -1230,6 +1260,10 @@ local function windowState(self, actionType)
     return w
 end
 
+-- window kinds whose NPC must be the step's `npc` (a riding trainer next to the class
+-- trainer, a vendor next to the quest giver must not complete the step)
+local NPC_WINDOWS = { train = true, vendor = true }
+
 --- A trainer ("train") / merchant ("vendor") / taxi map ("fp") window opened.
 -- The client fires the legacy event AND the interaction-manager event for the
 -- same window: the second one (same kind, while open, within DUP_WINDOW) is
@@ -1237,6 +1271,9 @@ end
 -- pending throttled refresh -- e.g. after the turn-in that precedes a train
 -- step at the same NPC -- is applied); a train/vendor step is flagged when the
 -- window closes, an fp step right away (opening the map is the action).
+-- Trainer / merchant windows count only for the steps whose `npc` list contains the
+-- window's NPC (UnitGUID("npc")); steps without `npc`, or a window whose NPC id cannot
+-- be read, keep the old rule (any window of that kind).
 function Engine:WindowOpened(actionType)
     if not self.started then return false end
     local w = windowState(self, actionType)
@@ -1244,7 +1281,8 @@ function Engine:WindowOpened(actionType)
     if w.open and w.openedAt and (t - w.openedAt) < DUP_WINDOW then return false end
     self:Refresh()
     w.open, w.openedAt = true, t
-    w.ids = self:ObservedIds(actionType)
+    w.npc = NPC_WINDOWS[actionType] and ns.Compat.GetNpcIdFromUnit("npc") or nil
+    w.ids = self:ObservedIds(actionType, w.npc)
     if actionType == "fp" then
         return self:FlagSteps(actionType, w.ids)
     end
@@ -1268,7 +1306,7 @@ function Engine:WindowClosed(actionType)
         self:Refresh()
         ids = self:ObservedIds(actionType)
     end
-    w.open, w.ids, w.closedAt = false, nil, t
+    w.open, w.ids, w.npc, w.closedAt = false, nil, nil, t
     return self:FlagSteps(actionType, ids)
 end
 

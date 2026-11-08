@@ -1,5 +1,5 @@
 # FastesBoooy CI: lint (luacheck with the generated Forever std), busted specs,
-# route validator, route simulation, generated-data freshness and packaging.
+# route validator, route simulation, generated-data and validation-report freshness, packaging.
 name: CI
 
 on:
@@ -31,10 +31,12 @@ jobs:
       - name: Generated route data is up to date
         run: make routedata-check
 
-      - name: Validation report
+      - name: Validation report is up to date
         run: |
           make report
           test -f docs/VALIDATION.md
+          git diff --exit-code -- docs/VALIDATION.md || {
+            echo "docs/VALIDATION.md is stale: run 'make report' and commit the result"; exit 1; }
 
       - name: Package addons
         run: make package

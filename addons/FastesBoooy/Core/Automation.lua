@@ -12,12 +12,25 @@
 --   * gossip   turn-ins first, then accepts (by quest id); QUEST_GREETING by list
 --              index; then the current step's `gossip` option when the gossip
 --              NPC's id is one of step.npc (at most once per step per 10 s);
+--   * delay    every automatic action is scheduled (C_Timer.After) settings.autoDelay
+--              seconds + a random 0..settings.autoDelayJitter after its dialog event,
+--              like a player reading the window (autoDelay 0 = at once, in the event
+--              handler, jitter ignored). When the timer fires, the action is planned
+--              again from the open window and runs only if it is still the same action
+--              of the same window: the dialog token (+1 on every dialog window open /
+--              close event) is unchanged, the window shows the same quest / list entry /
+--              option, the automation is not suspended (Shift, settings), no combat
+--              lockdown, the quest still qualifies (route window, completable, reward
+--              rule). Otherwise it is dropped silently. At most one action waits: a new
+--              dialog event replaces it (a duplicate event re-plans the same action);
 --   * holding Shift (IsShiftKeyDown) suspends everything; Shift held when a
 --     dialog window opens (GOSSIP_SHOW / QUEST_GREETING / QUEST_DETAIL /
 --     QUEST_PROGRESS / QUEST_COMPLETE) suspends the automation for the whole
 --     dialog with that NPC, even after Shift is released: until GOSSIP_CLOSED
 --     (interaction not continuing) or QUEST_FINISHED, and also for the NPC's
---     gossip shown again right after its quest window (REOPEN_GRACE);
+--     gossip shown again right after its quest window (REOPEN_GRACE); Shift
+--     pressed while an action waits for its delay cancels it and suspends the
+--     rest of the dialog the same way;
 --   * the settings flags automation / autoAccept / autoTurnin / autoGossip are
 --     honoured; nothing is done during combat lockdown or without an active route.
 -- All game calls go through ns.Compat.
@@ -25,12 +38,16 @@
 local _, ns = ...
 -- luacheck: ignore 212/self
 
-local ipairs, type = ipairs, type
+local ipairs, type, tostring = ipairs, type, tostring
+local format = string.format
+local random = math.random
 
 local Automation = {
     gossipDone = {},       -- [stepId] = GetTime() of the last automatic gossip option
     suspended = nil,       -- { npc = npcID | false }: Shift was held when the current dialog opened
     lastSuspended = nil,   -- { npc = npcID, at = GetTime() }: a suspended dialog that just closed
+    serial = 0,            -- dialog token: +1 on every dialog window open / close event
+    pending = nil,         -- the scheduled action: { serial, key, frame, planner, arg, due }
 }
 ns.Automation = Automation
 
@@ -107,91 +124,200 @@ local function contains(list, v)
 end
 
 ---------------------------------------------------------------------------
+-- delay / scheduling
+---------------------------------------------------------------------------
+
+--- Seconds to wait before an automatic action: autoDelay + random 0..autoDelayJitter
+-- (ranges: ns.SETTING_RANGES). 0 = act at once (autoDelay 0 ignores the jitter).
+function Automation:GetDelay()
+    local s = settings()
+    local delay = ns.ClampSetting("autoDelay", s.autoDelay)
+    if delay <= 0 then return 0 end
+    local jitter = ns.ClampSetting("autoDelayJitter", s.autoDelayJitter)
+    if jitter > 0 then delay = delay + jitter * random() end
+    return delay
+end
+
+--- A dialog window opened or closed: the dialog token moves on and the scheduled
+-- action is dropped. keep = "quest": an action of the quest window survives (a
+-- continuing GOSSIP_CLOSED may come after the quest window's own event).
+function Automation:NextDialogToken(keep)
+    self.serial = self.serial + 1
+    local p = self.pending
+    if p and keep and p.frame == keep then
+        p.serial = self.serial
+    else
+        self.pending = nil
+    end
+end
+
+--- Do the action `planner` finds in the open window: at once when there is no
+-- delay, else after GetDelay() seconds if planning again then yields the same action.
+-- planner(self, quiet, arg) -> { key = "<what> <id>", run = fn } | nil; quiet = the
+-- re-check of a scheduled action (no chat hints). frame = "quest" | "gossip".
+function Automation:Act(frame, planner, arg)
+    local action = planner(self, false, arg)
+    if not action then return end
+    local delay = self:GetDelay()
+    if delay <= 0 or not (C_Timer and C_Timer.After) then
+        action.run()
+        return
+    end
+    local p = self.pending
+    if p and p.serial == self.serial and p.key == action.key then return end -- already scheduled
+    p = { serial = self.serial, key = action.key, frame = frame, planner = planner, arg = arg,
+        due = now() + delay }
+    self.pending = p
+    ns.Debug("auto: in", format("%.2f s:", delay), action.key)
+    C_Timer.After(delay, function() self:RunPending(p) end)
+end
+
+--- Timer of a scheduled action: re-validate everything, then act or drop it silently.
+function Automation:RunPending(p)
+    if self.pending ~= p then return end -- replaced / cancelled (dialog event, Shift)
+    self.pending = nil
+    if p.serial ~= self.serial then return end
+    local action = p.planner(self, true, p.arg)
+    if action and action.key == p.key then
+        action.run()
+    else
+        ns.Debug("auto: dropped", p.key)
+    end
+end
+
+--- Shift pressed: an action waiting for its delay is cancelled and the automation
+-- stays suspended for the rest of this dialog (as if Shift was held when it opened).
+function Automation:OnShiftDown()
+    if not self.pending then return end
+    self.pending = nil
+    self.suspended = self.suspended or { npc = ns.Compat.GetNpcIdFromUnit("npc") or false }
+    ns.Debug("auto: cancelled (Shift)")
+end
+
+--- The action waiting for its delay: { key = "<what> <id>", due = GetTime() it fires } or nil.
+function Automation:GetPending()
+    local p = self.pending
+    if not p then return nil end
+    return { key = p.key, due = p.due }
+end
+
+local function action(key, run)
+    return { key = key, run = run }
+end
+
+---------------------------------------------------------------------------
 -- quest dialog
 ---------------------------------------------------------------------------
 
-function Automation:OnQuestDetail(questStartItemID)
-    if not self:CanAct() or not settings().autoAccept then return end
+function Automation:PlanQuestDetail(quiet, questStartItemID)
+    if not self:CanAct() or not settings().autoAccept then return nil end
     local C = ns.Compat
     -- item-started offers and area-trigger auto quests become Blizzard popups
     if not C.IsSecret(questStartItemID) and type(questStartItemID) == "number" and questStartItemID ~= 0 then
-        return
+        return nil
     end
-    if C.IsDialogAreaTriggerAuto() then return end
+    if C.IsDialogAreaTriggerAuto() then return nil end
     local q = C.GetDialogQuestID()
-    if not q or not ns.Engine:GetAcceptQuests()[q] then return end
+    if not q or not ns.Engine:GetAcceptQuests()[q] then return nil end
     if C.IsDialogQuestPvP() then
-        ns.Print(L().MSG_PVP_QUEST, questTitle(q))
-        return
+        if not quiet then ns.Print(L().MSG_PVP_QUEST, questTitle(q)) end
+        return nil
     end
     local count, maxQuests = C.GetNumQuestsInLog(), C.GetMaxQuests()
     if count >= maxQuests then
-        ns.Print(L().MSG_QUEST_LOG_FULL, count, maxQuests, questTitle(q))
-        return
+        if not quiet then ns.Print(L().MSG_QUEST_LOG_FULL, count, maxQuests, questTitle(q)) end
+        return nil
     end
-    ns.Debug("auto-accept", q)
-    C.AcceptDialogQuest()
+    return action("accept " .. q, function()
+        ns.Debug("auto-accept", q)
+        C.AcceptDialogQuest()
+    end)
 end
 
-function Automation:OnQuestProgress()
-    if not self:CanAct() or not settings().autoTurnin then return end
+function Automation:PlanQuestProgress()
+    if not self:CanAct() or not settings().autoTurnin then return nil end
     local C = ns.Compat
     local q = C.GetDialogQuestID()
-    if not q or not ns.Engine:GetTurninQuests()[q] then return end
-    if C.IsDialogQuestCompletable() then
+    if not q or not ns.Engine:GetTurninQuests()[q] then return nil end
+    if not C.IsDialogQuestCompletable() then return nil end
+    return action("complete " .. q, function()
         ns.Debug("auto-complete", q)
         C.CompleteDialogQuest()
-    end
+    end)
 end
 
-function Automation:OnQuestComplete()
-    if not self:CanAct() or not settings().autoTurnin then return end
+function Automation:PlanQuestComplete(quiet)
+    if not self:CanAct() or not settings().autoTurnin then return nil end
     local C = ns.Compat
     local q = C.GetDialogQuestID()
-    if not q or not ns.Engine:GetTurninQuests()[q] then return end
+    if not q or not ns.Engine:GetTurninQuests()[q] then return nil end
     if C.GetDialogMoneyRequired() > 0 then
-        ns.Print(L().MSG_QUEST_COSTS_MONEY, questTitle(q))
-        return
+        if not quiet then ns.Print(L().MSG_QUEST_COSTS_MONEY, questTitle(q)) end
+        return nil
     end
     local n = C.GetNumRewardChoices()
     local choice = ns.Engine:GetRewardChoice(q)
-    if type(choice) == "number" and choice >= 1 and choice <= n then
+    if not (type(choice) == "number" and choice >= 1 and choice <= n) then
+        if n > 1 then
+            if not quiet then
+                ns.Print(L().MSG_CHOOSE_REWARD, questTitle(q))
+                ns:Fire("REWARD_CHOICE_NEEDED", q, n)
+            end
+            return nil
+        end
+        choice = n -- 1 = the only choice, 0 = no choice
+    end
+    return action("reward " .. q .. " " .. choice, function()
         ns.Debug("auto-reward", q, choice)
         C.ChooseReward(choice)
-    elseif n <= 1 then
-        ns.Debug("auto-reward", q, n)
-        C.ChooseReward(n) -- 1 = the only choice, 0 = no choice
-    else
-        ns.Print(L().MSG_CHOOSE_REWARD, questTitle(q))
-        ns:Fire("REWARD_CHOICE_NEEDED", q, n)
-    end
+    end)
 end
 
-function Automation:OnQuestGreeting()
-    if not self:CanAct() then return end
+function Automation:PlanQuestGreeting()
+    if not self:CanAct() then return nil end
     local C = ns.Compat
     local s = settings()
     if s.autoTurnin then
         local turnins = ns.Engine:GetTurninQuests()
         for _, info in ipairs(C.GetGreetingActiveQuests()) do
-            local q = info.questID
+            local q, index = info.questID, info.index
             if q and turnins[q] and (info.isComplete or C.IsQuestComplete(q)) then
-                ns.Debug("greeting turn-in", q)
-                C.SelectGreetingActive(info.index)
-                return
+                return action("greeting turn-in " .. q .. " " .. index, function()
+                    ns.Debug("greeting turn-in", q)
+                    C.SelectGreetingActive(index)
+                end)
             end
         end
     end
     if s.autoAccept then
         local accepts = ns.Engine:GetAcceptQuests()
         for _, info in ipairs(C.GetGreetingAvailableQuests()) do
-            if info.questID and accepts[info.questID] then
-                ns.Debug("greeting accept", info.questID)
-                C.SelectGreetingAvailable(info.index)
-                return
+            local q, index = info.questID, info.index
+            if q and accepts[q] then
+                return action("greeting accept " .. q .. " " .. index, function()
+                    ns.Debug("greeting accept", q)
+                    C.SelectGreetingAvailable(index)
+                end)
             end
         end
     end
+    return nil
+end
+
+function Automation:OnQuestDetail(questStartItemID)
+    self:Act("quest", self.PlanQuestDetail, questStartItemID)
+end
+
+function Automation:OnQuestProgress()
+    self:Act("quest", self.PlanQuestProgress)
+end
+
+function Automation:OnQuestComplete()
+    self:Act("quest", self.PlanQuestComplete)
+end
+
+function Automation:OnQuestGreeting()
+    self:Act("quest", self.PlanQuestGreeting)
 end
 
 ---------------------------------------------------------------------------
@@ -205,8 +331,8 @@ function Automation:GossipNpcMatches(step)
     return id ~= nil and contains(step.npc, id)
 end
 
-function Automation:OnGossipShow()
-    if not self:CanAct() then return end
+function Automation:PlanGossip()
+    if not self:CanAct() then return nil end
     local C = ns.Compat
     local s = settings()
     if s.autoTurnin then
@@ -214,36 +340,47 @@ function Automation:OnGossipShow()
         for _, info in ipairs(C.GetGossipActiveQuests()) do
             local q = info.questID
             if q and turnins[q] and (info.isComplete or C.IsQuestComplete(q)) then
-                ns.Debug("gossip turn-in", q)
-                C.SelectGossipActive(q)
-                return
+                return action("gossip turn-in " .. q, function()
+                    ns.Debug("gossip turn-in", q)
+                    C.SelectGossipActive(q)
+                end)
             end
         end
     end
     if s.autoAccept then
         local accepts = ns.Engine:GetAcceptQuests()
         for _, info in ipairs(C.GetGossipAvailableQuests()) do
-            if info.questID and accepts[info.questID] then
-                ns.Debug("gossip accept", info.questID)
-                C.SelectGossipAvailable(info.questID)
-                return
+            local q = info.questID
+            if q and accepts[q] then
+                return action("gossip accept " .. q, function()
+                    ns.Debug("gossip accept", q)
+                    C.SelectGossipAvailable(q)
+                end)
             end
         end
     end
     if s.autoGossip then
         local step = ns.Engine:GetCurrentStep()
         if step and step.gossip and self:GossipNpcMatches(step) then
-            local t = now()
             local last = self.gossipDone[step.id]
-            if last and (t - last) < GOSSIP_REPEAT_DELAY then return end
+            if last and (now() - last) < GOSSIP_REPEAT_DELAY then return nil end
             local option = C.GetGossipOptions()[step.gossip]
             if option then
-                self.gossipDone[step.id] = t
-                ns.Debug("gossip option", step.gossip, step.id)
-                C.SelectGossipOption(option)
+                local id = step.id
+                return action(format("gossip option %s %s %s", tostring(id), tostring(step.gossip),
+                    tostring(option.gossipOptionID or option.name)), function()
+                    self.gossipDone[id] = now()
+                    ns.Debug("gossip option", step.gossip, id)
+                    C.SelectGossipOption(option)
+                end)
             end
         end
     end
+    return nil
+end
+
+function Automation:OnGossipShow()
+    self:Act("gossip", self.PlanGossip)
 end
 
 ---------------------------------------------------------------------------
@@ -251,28 +388,43 @@ end
 ---------------------------------------------------------------------------
 
 ns:On("QUEST_DETAIL", function(_, questStartItemID)
+    Automation:NextDialogToken()
     Automation:NoteDialog()
     Automation:OnQuestDetail(questStartItemID)
 end)
 ns:On("QUEST_PROGRESS", function()
+    Automation:NextDialogToken()
     Automation:NoteDialog()
     Automation:OnQuestProgress()
 end)
 ns:On("QUEST_COMPLETE", function()
+    Automation:NextDialogToken()
     Automation:NoteDialog()
     Automation:OnQuestComplete()
 end)
 ns:On("QUEST_GREETING", function()
+    Automation:NextDialogToken()
     Automation:NoteDialog()
     Automation:OnQuestGreeting()
 end)
 ns:On("GOSSIP_SHOW", function()
+    Automation:NextDialogToken()
     Automation:NoteDialog()
     Automation:OnGossipShow()
 end)
 ns:On("GOSSIP_CLOSED", function(_, interactionIsContinuing)
     -- true while the NPC interaction moves on to its quest window (same dialog)
-    if interactionIsContinuing == true then return end
+    if interactionIsContinuing == true then
+        Automation:NextDialogToken("quest")
+        return
+    end
+    Automation:NextDialogToken()
     Automation:EndDialog()
 end)
-ns:On("QUEST_FINISHED", function() Automation:EndDialog() end)
+ns:On("QUEST_FINISHED", function()
+    Automation:NextDialogToken()
+    Automation:EndDialog()
+end)
+ns:On("MODIFIER_STATE_CHANGED", function(_, key, down)
+    if (key == "LSHIFT" or key == "RSHIFT") and down == 1 then Automation:OnShiftDown() end
+end)

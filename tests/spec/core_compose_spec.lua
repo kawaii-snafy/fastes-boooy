@@ -164,6 +164,27 @@ describe("core composition (library segments, UseSegments, AddInsert)", function
         m:Advance(1)
     end)
 
+    it("composes only the routes the character can use; the others when listed or chosen", function()
+        m, ns = boot({ fixture = false })
+        local FB = m.env.FastesBoooy
+        libSeg("lib-a", { { id = "lib-a-1", accept = 363 }, { id = "lib-a-2", turnin = 363 } })
+        route("rp")
+        FB.UseSegments("rp", { "lib-a" })
+        FB.RegisterRoute({ api = 1, id = "rd", title = "Route rd", faction = "Horde", races = { "Skyborne" },
+            classes = { "DRUID" }, levels = { 1, 60 } })
+        FB.UseSegments("rd", { "lib-a" })
+        local R = ns.Registry
+        H.settle(m)
+        assert.equal("rp", E():GetRoute().id, "the paladin route is selected (and composed)")
+        assert.is_falsy(R.routes.rp.dirty)
+        assert.is_true(R.routes.rd.dirty, "the druid route is not composed for a paladin")
+        assert.equal(0, #R.routes.rd.steps)
+        -- listed (/fb routes, settings) or chosen: composed then
+        assert.same({ "lib-a-1", "lib-a-2" }, H.ids(R:Get("rd").steps))
+        assert.is_falsy(R.routes.rd.dirty)
+        assert.same({}, R.errors)
+    end)
+
     it("reports duplicate step ids after composition, duplicate library segments and bad definitions", function()
         m, ns = boot({ fixture = false })
         local FB = m.env.FastesBoooy

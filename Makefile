@@ -16,7 +16,9 @@
 #   make report       write docs/VALIDATION.md (validator Markdown report)
 #   make routedata    regenerate Data.lua of every route / library module
 #   make api BIR=... WOWUI=...          regenerate tools/data/forever_api.lua
-#   make db RESEARCH=... CONVERSION=... regenerate tools/data/forever_db.lua
+#   make db RESEARCH=... CONVERSION=... regenerate tools/data/forever_db.lua (objective counts:
+#                     tools/data/wowhead_requirements.json)
+#   make requirements re-fetch tools/data/wowhead_requirements.json (network; then make db)
 #   make package      dist/<Addon>-<Version>.zip for every addons/* directory
 #
 # See tools/README.md for details.
@@ -58,12 +60,12 @@ RESEARCH =
 CONVERSION =
 
 .PHONY: all check lint test validate validate-fixtures simulate simulate-fixtures harness-fixtures harness \
-	report routedata routedata-check api db package clean help
+	report routedata routedata-check api db requirements package clean help
 
 all: check
 
 help:
-	@sed -n '3,22p' Makefile
+	@sed -n '3,25p' Makefile
 
 check: lint test validate validate-fixtures simulate simulate-fixtures harness-fixtures
 
@@ -131,6 +133,9 @@ db:
 		exit 2; \
 	fi
 	$(PYTHON) -I tools/build_db_snapshot.py --research "$(RESEARCH)" --conversion "$(CONVERSION)"
+
+requirements:
+	$(PYTHON) -I tools/fetch_wowhead_requirements.py
 
 package:
 	$(PYTHON) -I tools/package_addons.py

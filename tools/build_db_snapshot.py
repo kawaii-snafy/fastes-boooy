@@ -8,6 +8,9 @@ Inputs (JSON produced by our research step, see <research>/db/README.md):
     <research>/db/wclbox_quests.json      (WCLBox/Wowhead Forever: objective counts, status, XP)
     <research>/xp_table.json              (XP per level, quest XP rule, mob XP rule,
                                            Forever dungeon quest XP)
+    tools/data/wowhead_requirements.json  (--requirements: Wowhead Forever tooltip "Requirements:"
+                                           lists = Forever objective counts, written by
+                                           tools/fetch_wowhead_requirements.py)
 
 Data provenance: QuestieDB Forever data (GPLv3; data/Forever + src/corrections/Forever,
 static correction layers reproduced by the research step) + WCLBox Forever mirror of
@@ -44,6 +47,16 @@ The Forever-new maps (Riverglades, Mount Hyjal, Darkspear Islands, Shen'dralas) 
 there; their size comes from the WCLBox map mirror (WCLBOX_MAP_PIXELS, records carry
 `sizeSrc = "wclbox-map"`). Zephras Isle (2521) stays without a size for now (see WCLBOX_MAP_PIXELS).
 
+Objective counts: the Wowhead Forever tooltip "Requirements:" list (--requirements, matched by
+objective name) wins; then WCLBox `goals` / `need`, then the number in front of the objective's name
+in the QuestieDB objective text. The research counts are Classic-era (e.g. 545 Dalaran Patrols 12
+Elemental Slaves, Forever 8) and Forever-new quests often have none (meta.counts.objectiveCounts.*).
+
+Area triggers: a quest completed by an area trigger (exploration, "leap from the planks") keeps
+`objectives.event = true` plus `objectives.trigger = {[uiMapID] = {{x, y}, ...}}` (QuestieDB
+triggerEnd spawns), so the validator can check that the route's `complete` step goes there; an escort
+(trigger text "Escort ...") also has `objectives.escort = true` (the trigger is where it ends).
+
 Objective icons: creature / killCredit objectives keep QuestieDB's objective icon when it is
 not the default (`icon = N`, enums.iconTypes: 3 EVENT, 5 TALK, 17 INTERACT; 0/1 = slay), so the
 validator can tell "kill 8" from "speak with" / "heal" / "free" objectives (no kill XP).
@@ -67,7 +80,7 @@ The output is deterministic (sorted keys, no wall-clock timestamp; the snapshot 
 the fixed --date value). Run:
 
     python3 -I tools/build_db_snapshot.py --research DIR --conversion FILE|none [--out FILE]
-                                          [--date YYYY-MM-DD]
+                                          [--date YYYY-MM-DD] [--requirements FILE|none]
 """
 import argparse
 import hashlib
@@ -79,6 +92,7 @@ from collections import OrderedDict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_OUT = os.path.join(HERE, "data", "forever_db.lua")
+DEFAULT_REQUIREMENTS = os.path.join(HERE, "data", "wowhead_requirements.json")
 DEFAULT_DATE = "2026-11-07"
 
 BUILD = ["1.60.1", "70862"]
@@ -515,7 +529,7 @@ class Zones:
 # ---------------------------------------------------------------------------
 
 class Builder:
-    def __init__(self, research):
+    def __init__(self, research, requirements=None):
         dbdir = os.path.join(research, "db")
         self.paths = OrderedDict([
             ("quests", os.path.join(dbdir, "quests.json")),
@@ -547,6 +561,13 @@ class Builder:
             for k, v in load_json(self.paths["wclbox60"])["data"].items():
                 self.wcl.setdefault(int(k), v)
         self.xpt = load_json(self.paths["xp_table"])
+        # Wowhead Forever "Requirements:" lists: {questID: [[name, count|None], ...]}
+        self.req = {}
+        if requirements:
+            self.paths["requirements"] = requirements
+            for k, v in load_json(requirements)["data"].items():
+                self.req[int(k)] = v
+        self.count_stats = OrderedDict([("wowhead", 0), ("wowheadChanged", 0), ("research", 0)])
         rk = self.enums["raceKeys"]
         self.horde_mask = sum(rk[k] for k in HORDE_RACE_KEYS)
         self.alliance_mask = sum(rk[k] for k in ALLIANCE_RACE_KEYS)
@@ -780,8 +801,48 @@ class Builder:
                     return n
         return None
 
-    def objective_counts(self, qid, q):
-        """{('creature'|'item'|'object', id): count} from WCLBox (Forever) then the text."""
+    def objective_counts(self, qid, q, stats=False):
+        """{('creature'|'killCredit'|'item'|'object', id): count}: Wowhead Forever "Requirements:" (by
+        objective name), else WCLBox, else the objective text. stats: count the sources (main record)."""
+        counts = self.research_counts(qid, q)
+        req = self.req.get(qid) or []
+        if not req:
+            if stats:
+                self.count_stats["research"] += len(counts)
+            return counts
+        free = list(range(len(req)))
+
+        def take(name):
+            if not name:
+                return None
+            for i in free:
+                if req[i][0].lower() == name.lower():
+                    free.remove(i)
+                    return req[i][1] or 1
+            return None
+        obj = q.get("objectives") or {}
+        keyed = [("creature", c["id"], c.get("name")) for c in obj.get("creature") or []]
+        keyed += [("killCredit", k.get("baseId"), k.get("baseName")) for k in obj.get("killCredit") or []]
+        keyed += [("item", i["id"], i.get("name")) for i in obj.get("item") or []]
+        keyed += [("object", o["id"], o.get("name")) for o in obj.get("object") or []]
+        out = OrderedDict()
+        for kind, oid, name in keyed:
+            key = (kind, oid)
+            n = take(name)
+            if n is not None:
+                if stats:
+                    self.count_stats["wowhead"] += 1
+                    if counts.get(key) != n:
+                        self.count_stats["wowheadChanged"] += 1
+                out[key] = n
+            elif counts.get(key):
+                if stats:
+                    self.count_stats["research"] += 1
+                out[key] = counts[key]
+        return out
+
+    def research_counts(self, qid, q):
+        """{('creature'|'item'|'object', id): count} from WCLBox then the text."""
         w = self.wcl.get(qid) or {}
         counts = {}
         goals = [g for g in (w.get("goals") or []) if g.get("k") == "kill"]
@@ -935,6 +996,12 @@ class Builder:
             objectives["reputation"] = [obj["reputation"].get("factionId"), obj["reputation"].get("value")]
         if q.get("triggerEnd"):
             objectives["event"] = True
+            te = q["triggerEnd"] or {}
+            trig, _inst, _raw, _thinned = self.convert_spawns(te.get("spawns"), None)
+            if trig:
+                objectives["trigger"] = trig
+                if re.search(r"escort", te.get("text") or "", flags=re.I):
+                    objectives["escort"] = True  # the trigger is where the escort ENDS (it starts at the giver)
         if objectives:
             rec["objectives"] = objectives
         if q.get("sourceItemId"):
@@ -971,7 +1038,7 @@ class Builder:
             q, per = self.effective_quest(q0)
             if q is not q0:
                 stats["dynamicApplied"] += 1
-            counts = self.objective_counts(qid, q)
+            counts = self.objective_counts(qid, q, stats=True)
             rec = self.convert_quest(qid, q, counts)
             if per:
                 byc = OrderedDict()
@@ -994,6 +1061,7 @@ class Builder:
             self._collect_refs(rec, refs)
             quests[qid] = rec
         self.stats.update(("quests." + k, v) for k, v in stats.items())
+        self.stats.update(("objectiveCounts." + k, v) for k, v in self.count_stats.items())
         return quests, refs
 
     @staticmethod
@@ -1414,6 +1482,8 @@ class Builder:
             ("classSorts", class_sorts),
             ("specialFlags", OrderedDict([("REPEATABLE", 1)])),
             ("iconTypes", OrderedDict((k, it[k]) for k in sorted(it))),
+            # quests[id].reqSkill = {skillLineID, value}: the profession names (validator: quest-profession)
+            ("professions", OrderedDict((k, v) for k, v in sorted((self.enums.get("professionKeys") or {}).items()))),
         ])
 
     def build_xp(self):
@@ -1502,13 +1572,19 @@ def main():
                          "or 'none' (no sizes: the validator then measures distances in map percent)")
     ap.add_argument("--out", default=DEFAULT_OUT)
     ap.add_argument("--date", default=DEFAULT_DATE, help="snapshot date written into meta (fixed for determinism)")
+    ap.add_argument("--requirements", default=DEFAULT_REQUIREMENTS,
+                    help="Wowhead Forever quest requirements JSON (tools/fetch_wowhead_requirements.py; default "
+                         "tools/data/wowhead_requirements.json), or 'none' (research counts only)")
     args = ap.parse_args()
     if not os.path.isdir(args.research):
         ap.error("research directory not found: %s" % args.research)
     if args.conversion != "none" and not os.path.isfile(args.conversion):
         ap.error("conversion.json not found: %s (pass --conversion none to skip zone sizes)" % args.conversion)
 
-    b = Builder(args.research)
+    if args.requirements != "none" and not os.path.isfile(args.requirements):
+        ap.error("requirements file not found: %s (pass --requirements none to use the research counts only)"
+                 % args.requirements)
+    b = Builder(args.research, None if args.requirements == "none" else args.requirements)
     sizes = load_map_sizes(args.conversion)
     wcl_sized = add_wclbox_map_sizes(sizes) if args.conversion != "none" else []
     b.sizes = sizes
@@ -1527,7 +1603,8 @@ def main():
 
     sources = OrderedDict()
     for k, p in b.paths.items():
-        sources[k] = OrderedDict([("file", os.path.relpath(p, args.research)), ("sha256", sha256_short(p))])
+        rel = "tools/data/" + os.path.basename(p) if k == "requirements" else os.path.relpath(p, args.research)
+        sources[k] = OrderedDict([("file", rel), ("sha256", sha256_short(p))])
     if args.conversion != "none":
         sources["conversion"] = OrderedDict([("file", "QuestieDB data/Forever/conversion.json"),
                                              ("sha256", sha256_short(args.conversion))])
@@ -1581,8 +1658,9 @@ def main():
         "-- World of Warcraft: Forever database snapshot for offline route validation.",
         "-- Client %s.%s (## Interface: %d). Snapshot date %s." % (BUILD[0], BUILD[1], INTERFACE, args.date),
         "-- Data: QuestieDB Forever data (GPL-3.0; data/Forever + src/corrections/Forever static layers) and",
-        "--       WCLBox mirror of Wowhead Forever data (objective counts, quest status, XP), see",
-        "--       research/db/README.md and research/db/crosscheck.md. Our repository is GPL-3.0 as well.",
+        "--       WCLBox mirror of Wowhead Forever data (quest status, XP), Wowhead Forever tooltips (objective",
+        "--       counts: tools/data/wowhead_requirements.json), see research/db/README.md and",
+        "--       research/db/crosscheck.md. Our repository is GPL-3.0 as well.",
         "-- Coordinates: uiMapID + map percent (0-100), Forever frame (QuestieDB Forever data is already",
         "--       converted from Era; only AreaID -> uiMapID was resolved here).",
         "--",
@@ -1591,10 +1669,13 @@ def main():
         "--                   finish={npcs,objects}, preGroup, preSingle, exclusive, next, breadcrumbFor, breadcrumbs,",
         "--                   parent, children, objectives={creatures={{id,count?,icon=?}},",
         "--                   killCredit={{ids,base,count,icon}},",
-        "--                   objects={{id,count?}}, items={{id,count?}}, event=true}, sourceItem, zone, uiMap, flags,",
+        "--                   objects={{id,count?}}, items={{id,count?}}, event=true,",
+        "--                   trigger={[uiMapID]={{x,y},...}}, escort=true}, sourceItem, zone, uiMap, flags,",
+        "--                   reqSkill={skillLine,value},",
         "--                   special, xp, xpSrc, status=\"same|new|changed\", byClass={CLASS={overridden fields}}}",
         "--                   (objective icon only when not slay: enums.iconTypes 3 EVENT, 5 TALK, 17 INTERACT;",
-        "--                   event = completes on an area trigger / scripted event: exploration, escort)",
+        "--                   event = completes on an area trigger / scripted event: exploration, escort;",
+        "--                   trigger = where the area trigger is, when known; escort = the trigger ends an escort)",
         "--   npcs[id]     = {name, sub, minLevel, maxLevel, rank, faction=\"A|H|AH|\", flags={trainer=true,...},",
         "--                   flagsSrc=\"subName\" (flags inferred for a flagless Forever NPC),",
         "--                   spawns={[uiMapID]={{x,y},...}}, spawnsGrid (thinned: one spawn per grid cell),",

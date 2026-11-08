@@ -14,7 +14,7 @@ local ADDON, ns = ...
 -- luacheck: ignore 212/self
 
 local type, pairs, select, tostring, pcall, xpcall = type, pairs, select, tostring, pcall, xpcall
-local setmetatable, unpack = setmetatable, unpack
+local setmetatable, unpack, tonumber = setmetatable, unpack, tonumber
 local format = string.format
 
 ns.ADDON = ADDON or "FastesBoooy"
@@ -23,11 +23,17 @@ ns.ADDON = ADDON or "FastesBoooy"
 -- public API table
 ---------------------------------------------------------------------------
 
-local public = { API_VERSION = 1 }
+-- API_VERSION = route format version (routes declare `api = 1`, Core/Schema.lua);
+-- API_MINOR = additive feature level of that format, for modules that need a newer core:
+--   0  core 0.1.x: RegisterRoute / AddSegment / AddRouteData
+--   1  core 0.2.0: + AddLibrarySegment / AddLibraryData / UseSegments / AddInsert (Core/Compose.lua)
+-- A module guards with `if (FastesBoooy.API_MINOR or 0) < 1 then ... return end` (an older core
+-- has no API_MINOR at all), see docs/ROUTE_FORMAT.md "Версия ядра".
+local public = { API_VERSION = 1, API_MINOR = 1 }
 ns.public = public
 FastesBoooy = public
 
-local DEFAULT_VERSION = "0.1.0"
+local DEFAULT_VERSION = "0.2.0"
 
 local function readVersion()
     if C_AddOns and C_AddOns.GetAddOnMetadata then
@@ -285,6 +291,8 @@ ns.DEFAULTS = {
             autoAccept = true,
             autoTurnin = true,
             autoGossip = true,
+            autoDelay = 0.5,        -- seconds before each automatic quest action (0 = at once)
+            autoDelayJitter = 0.3,  -- + random 0..jitter seconds each time (0 = always autoDelay)
             arrow = true,
             blizzWaypoint = false,  -- also place Blizzard's user waypoint + super-track it
             lookahead = 6,          -- accept route quests in steps [cursor, cursor + lookahead]
@@ -342,6 +350,25 @@ local function fill(dst, defaults)
 end
 ns.FillDefaults = fill
 
+-- Numeric settings with a fixed range { min, max }: saved values outside it are clamped
+-- on load (ns:InitDB), the automation, the settings panel and /fb use the same limits.
+ns.SETTING_RANGES = {
+    autoDelay = { 0, 3 },
+    autoDelayJitter = { 0, 1 },
+}
+
+--- `value` clamped to the range of setting `key` (ns.SETTING_RANGES); a non-number
+-- (or NaN) gives the default of the setting.
+function ns.ClampSetting(key, value)
+    local v = tonumber(value)
+    if v == nil or v ~= v then v = ns.DEFAULTS.db.settings[key] end
+    local r = ns.SETTING_RANGES[key]
+    if r and type(v) == "number" then
+        if v < r[1] then v = r[1] elseif v > r[2] then v = r[2] end
+    end
+    return v
+end
+
 -- Until ADDON_LOADED delivers the saved tables, work on volatile defaults so
 -- nothing has to nil-check ns.db / ns.cdb.
 ns.db = fill({}, ns.DEFAULTS.db)
@@ -353,6 +380,8 @@ function ns:InitDB()
     if type(FastesBoooyCharDB) ~= "table" then FastesBoooyCharDB = {} end
     fill(FastesBoooyDB, ns.DEFAULTS.db)
     fill(FastesBoooyCharDB, ns.DEFAULTS.cdb)
+    local settings = FastesBoooyDB.settings
+    for key in pairs(ns.SETTING_RANGES) do settings[key] = ns.ClampSetting(key, settings[key]) end
     local cdb = FastesBoooyCharDB
     if cdb.route ~= nil and type(cdb.route) ~= "string" then cdb.route = nil end
     if cdb.cursorHint ~= nil and type(cdb.cursorHint) ~= "number" then cdb.cursorHint = nil end

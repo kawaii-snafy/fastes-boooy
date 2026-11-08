@@ -13,10 +13,12 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 | `data/forever_api.lua` | (генерируется, коммитится) функции/неймспейсы/события/FrameXML/шаблоны/миксины/методы виджетов/Enum клиента Forever |
 | `build_db_snapshot.py` | снимок БД Forever из research-JSON → `data/forever_db.lua` |
 | `data/forever_db.lua` | (генерируется, коммитится) квесты, NPC, объекты, предметы, зоны, правила опыта |
+| `fetch_wowhead_requirements.py` | списки «Requirements:» подсказок Wowhead Forever для квестов снимка → `data/wowhead_requirements.json` (количества целей Forever; вход `build_db_snapshot.py`) |
+| `data/wowhead_requirements.json` | (генерируется, коммитится) `{"<questID>": [[имя, N или null], ...]}` — 1 958 квестов, у 1 842 есть список (снимок 2026-11-08) |
 | `validate_routes.lua` | **валидатор маршрутов** (CLI; логика в `lib/validator.lua`; `--state`/`--write-state`/`--harness` — раздел 7) |
 | `gen_route_data.lua` | генерирует `<модуль>/Data.lua` (enUS-имена квестов/NPC маршрута, `places` — id зон и ruRU-имена мест; у модуля-библиотеки — `AddLibraryData`) |
 | `package_addons.py` | `dist/<Аддон>-<версия>.zip` для каждого каталога `addons/*` |
-| `simulate_routes.lua` | прогон маршрутов через настоящий движок на моке (принадлежит ядру; цели-события exploration/escort и квесты с шагом `complete` без целей в БД не выполнены при взятии — их выполняет шаг `complete`; библиотеки-зависимости грузятся в мок раньше модуля, сами отдельно не прогоняются; часть библиотеки из стартового состояния — `--harness`, раздел 7) |
+| `simulate_routes.lua` | прогон маршрутов через настоящий движок на моке (принадлежит ядру; цели-события exploration/escort и квесты с шагом `complete` без целей в БД не выполнены при взятии — их выполняет шаг `complete`; визит `train`/`vendor`/`fp`/`sethearth` к NPC, который выдаёт квест маршрута или принимает выполненный, начинается с его диалога (`m:TalkTo`), как в игре, — если автоматика при этом перемотала обязательный визит, это предупреждение (валидатор: `lookahead-skip`); библиотеки-зависимости грузятся в мок раньше модуля, сами отдельно не прогоняются; часть библиотеки из стартового состояния — `--harness`, раздел 7) |
 | `lib/route_loader.lua` | загрузка модуля маршрута в песочнице (сначала его зависимости `FastesBoooy_*` из `## Dependencies`) + нормализация через `Core/Schema.lua` и сборка маршрута через `Core/Compose.lua` (общие сегменты, вставки) |
 | `lib/fbdb.lua` | доступ к снимку БД: маски рас/классов, поиск, расстояния, формулы опыта |
 | `lib/json.lua` | детерминированный JSON-энкодер и строгий декодер (файлы состояния) |
@@ -41,7 +43,8 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 | `make report` | пишет `docs/VALIDATION.md` (Markdown-отчёт валидатора; ошибки маршрутов не роняют цель) |
 | `make routedata` / `make routedata-check` | перегенерировать / проверить актуальность `Data.lua` всех модулей маршрутов и библиотек (check — и фикстуры `FxClean`, `TestLib`, `TestComposed`, `FxHarnessLib`) |
 | `make api BIR=… WOWUI=…` | перегенерировать `data/forever_api.lua` (оба пути обязательны; `WOWUI=none` — без глобалов FrameXML) |
-| `make db RESEARCH=… CONVERSION=…` | перегенерировать `data/forever_db.lua` (`CONVERSION` = `QuestieDB/data/Forever/conversion.json` или `none`) |
+| `make db RESEARCH=… CONVERSION=…` | перегенерировать `data/forever_db.lua` (`CONVERSION` = `QuestieDB/data/Forever/conversion.json` или `none`; количества целей — из `data/wowhead_requirements.json`) |
+| `make requirements` | заново скачать `data/wowhead_requirements.json` (сеть; потом `make db`) |
 | `make package` | архивы аддонов в `dist/` (воспроизводимые: фиксированные даты, сортировка) |
 
 ## 1. API клиента: `gen_forever_api.py` → `data/forever_api.lua`
@@ -104,7 +107,10 @@ python3 -I tools/gen_forever_api.py --bir <BlizzardInterfaceResources>/Resources
 
 ```
 python3 -I tools/build_db_snapshot.py --research <research> \
-        --conversion <QuestieDB>/data/Forever/conversion.json|none [--out tools/data/forever_db.lua] [--date 2026-11-07]
+        --conversion <QuestieDB>/data/Forever/conversion.json|none [--out tools/data/forever_db.lua] [--date 2026-11-07] \
+        [--requirements tools/data/wowhead_requirements.json|none]
+python3 -I tools/fetch_wowhead_requirements.py [--db tools/data/forever_db.lua | --ids FILE] [--cache DIR] \
+        [--out tools/data/wowhead_requirements.json] [--date 2026-11-08]
 ```
 
 `--research` и `--conversion` обязательны.
@@ -177,13 +183,30 @@ python3 -I tools/build_db_snapshot.py --research <research> \
   вне ядра, альянсовые сервисные NPC вне ядра).
 * Overlay Horde Dynamic (QuestieDB dynamic corrections для Орды) применён; различия
   PALADIN/DRUID — в `byClass`.
-* **Количество целей** — из WCLBox (данные Wowhead Forever: например, 364 — 5+5 зомби, а
-  не 8+8 как в тексте Classic), иначе из текста цели.
+* **Количество целей** — по порядку: список «Requirements:» подсказки Wowhead Forever
+  (`--requirements`, по умолчанию `data/wowhead_requirements.json`: строка `Имя x N`, без `x N` —
+  1; сопоставляется с целью creature / killCredit / item / object по имени без учёта регистра),
+  иначе WCLBox `goals` / `need`, иначе число перед именем цели в тексте QuestieDB. Числа research-
+  входов — эпохи Classic и местами противоречивы: 545 Dalaran Patrols — 12 Elemental Slaves в
+  тексте QuestieDB и в WCLBox, в Forever 8 (и текст, и требования подсказки Wowhead Forever);
+  532 Battle of Hillsbrad — WCLBox 4 Hillsbrad Councilmen, Forever 5; у WCLBox 364 `goals` 5+5 при
+  собственном тексте 8+8, Wowhead Forever — 8+8; у новых квестов Forever количеств там нет вовсе
+  (96260 Crystalline Silk x3, 97250 Encroaching Soldier x2, 98070 по 5 гарпий каждого вида). Из
+  Wowhead взято 2 666 количеств, 747 из них отличаются от прежних (`meta.counts.objectiveCounts.*`:
+  `wowhead`, `wowheadChanged`, `research` — сколько осталось из research-входов: у 116 квестов
+  подсказка без списка, у части целей имя в подсказке другое — «поговорить», «сопроводить»).
+  Подсказки — данные клиента Forever по Wowhead; в игре не сверялись. Обновить:
+  `make requirements`, затем `make db`.
 * **Иконка цели** (`icon`) — у целей creature/killCredit хранится иконка QuestieDB, если это не
   «убить» (0/1 не пишутся): `enums.iconTypes` — 3 EVENT («освободить», кредит-болванка),
   5 TALK («поговорить»), 17 INTERACT («вылечить», «применить предмет на»). Цель-существо
   записывается как `{id, count?, icon = N}`. `objectives.event = true` — квест завершается
-  триггером области / скриптом (исследование, сопровождение).
+  триггером области / скриптом (исследование, сопровождение); где триггер, если QuestieDB его знает
+  (`triggerEnd`, 138 квестов) — `objectives.trigger = {[uiMapID] = {{x, y}, ...}}`, а
+  `objectives.escort = true`, когда текст триггера — «Escort …» (сопровождение: начинается у
+  выдающего, триггер — где оно кончается). Валидатор: `complete-far-from-trigger`.
+* **Требование профессии** — `reqSkill = {skillLine, значение}` (184 квеста; например 862 Dig Rat
+  Stew — Cooking 15), имена — `enums.professions` (`COOKING = 185`, …). Валидатор: `quest-profession`.
 * **Опыт квеста** (`xp`, `xpSrc`): опыт данжевых квестов Forever (`forever-dungeon`),
   иначе WCLBox (`wclbox-classic`, равен Classic), иначе QuestieDB XP (`questie-classic`);
   для 974 квестов опыт неизвестен (`xp = nil`): 537 новых квестов Forever и 437 «same», у которых
@@ -244,7 +267,8 @@ return {
   questLogSize = 40, levelCap = 60,
   enums = { races = {UNDEAD = 16, SKYBORNE_HORDE = 8589934592, ...}, classes = {PALADIN = 2, DRUID = 1024, ...},
             raceFileToBit = { Scourge = 16, ..., Skyborne = { Horde = 2^33, Alliance = 2^32 } },
-            factionMasks = { Horde = 8589934770, Alliance = 4294967373 }, npcFlags = {...}, ... },
+            factionMasks = { Horde = 8589934770, Alliance = 4294967373 }, npcFlags = {...},
+            professions = { COOKING = 185, FIRST_AID = 129, ... }, ... },
   coreAreas = { [85] = "Tirisfal Glades", ... },            -- ядро 1-22
   scopeAreas = { [400] = "Thousand Needles", [1337] = "Uldaman", ... }, -- все зоны и 5-местные подземелья
   zones = { [1420] = {name = "Tirisfal Glades", areaId = 85, scope = true, size = {4518.7, 3012.5}},
@@ -253,8 +277,10 @@ return {
   dungeons = { [16611] = {name, entrances = {{1458, 72.48, 11.33}}} },
   xp = { levels = {[1] = 400, ...}, questRule = {...}, mobRule = {...}, typicalQuestXpByLevel = {...} },
   quests = { [364] = { name, level, reqLevel, races, classes, side = "H", start = {npcs = {1569}},
-                       finish = {npcs = {1569}}, breadcrumbs = {363}, objectives = {creatures = {{1501, 5}, {1502, 5}}},
+                       finish = {npcs = {1569}}, breadcrumbs = {363}, objectives = {creatures = {{1501, 8}, {1502, 8}}},
                        zone = 154, uiMap = 1420, xp = 170, xpSrc = "wclbox-classic", status = "same" },
+             [1149] = { ..., objectives = {event = true, trigger = {[1441] = {{26.43, 32.93}}}} },  -- area trigger
+             [862] = { ..., reqSkill = {185, 15} },                                                 -- Cooking 15
              [92514] = { ..., objectives = {creatures = {{251902, icon = 5}, {254089, icon = 5}}} } },  -- talk
   npcs = { [1569] = { name, sub, minLevel, maxLevel, rank, faction = "H", flags = {questgiver = true},
                       spawns = { [1420] = { {30.84, 66.2} } } },    -- spawns[uiMapID] = {{x, y}, ...}
@@ -333,6 +359,7 @@ lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
 | `--incidental-pct P` | **попутные убийства** в пути: каждая сдача квеста даёт ещё P % его опыта как опыт за мобов (0..100; по умолчанию 0 — выключено). Меняет основную симуляцию (уровни, проверки уровня, `--write-state`); полоса 0 % / 15 % в отчёте о гринде печатается всегда |
 | `--state FILE` | начать симуляцию не с нового персонажа 1 уровня, а из состояния (раздел 7) |
 | `--write-state FILE` | записать состояние в конце прогона (тот же формат); нужен ровно один «маршрут × профиль» (`--route`, `--profile`) |
+| `--until ID` | с `--write-state`: записать состояние **перед** шагом `ID` или первым шагом сегмента `ID` (например `--until h-22-hillsbrad` — конец собственной части 1-22 маршрута = старт первого сегмента библиотеки); id, которого нет в маршруте, — код 2 |
 | `--harness DIR` | проверить часть модуля-библиотеки `DIR`: синтетический маршрут одного `--profile` (раса и класс обязательны) из сегментов `--segments` (раздел 7) |
 | `--segments ID,…` | сегменты библиотеки для `--harness`, в этом порядке (по умолчанию — все сегменты модуля в порядке TOC) |
 | `-v` / `-q` | показать INFO / только итоговые строки |
@@ -343,7 +370,8 @@ lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
 Код выхода: 0 — нет ошибок (и harness на библиотеке без сегментов — «nothing to validate»);
 1 — есть ERROR (или WARN при `--strict`); 2 — ошибка запуска (неверные опции, файл состояния,
 `--harness` без расы/класса или на модуле маршрута), `--route` не совпал ни с одним маршрутом
-или `--write-state` при числе прогонов, отличном от одного.
+или `--write-state` при числе прогонов, отличном от одного, `--until` без `--write-state` или с
+id, которого нет в маршруте.
 
 ### Как работает
 
@@ -480,6 +508,9 @@ lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
 | `level-grind` | INFO / WARN | сколько убийств нужно до уровня шага `level` (WARN если > 30) |
 | `optional-dependency` | ERROR | худший случай (необязательные шаги не выполнены): обязательный шаг зависит от необязательного квеста — не-`bg` `complete`/`turnin` квеста, взятого только шагом `optional`, или `accept`, предквест которого сдаётся только шагом `optional` («required step depends on optional quest»). Исправление: сделать и этот шаг `optional` или взятие/сдачу обязательными |
 | `skip-ahead` | WARN | шаг-переход / transient / `optional`, который перемотка движка может пропустить: более поздний не-`bg` шаг, все действия `accept`/`complete` которого может выполнить **раньше** `bg`-цель (`bg`-шаг с `complete` тех же целей или `accept`/`turnin` того же квеста), более ранний шаг с `complete` тех же целей или стартовое состояние (квест в `complete`), становится опорным, как только эта цель выполнена, — и все transient-действия и `optional`-шаги до него считаются выполненными. Сообщение — на пропускаемом шаге (туда и `-- WARN-OK: причина`); шаг с `turnin`/`abandon` раньше не выполняется и не опорный |
+| `lookahead-skip` | WARN | шаг-визит (`train` / `vendor` / `fp` / `sethearth`, не `bg`, не `optional`, с `npc`) у NPC X, за которым в пределах `lookahead` (6) шагов идёт шаг только из `accept` квестов X и `turnin` уже выполненных квестов X: разговор с X открывает сначала диалог, автоматика берёт / сдаёт квесты, тот шаг становится опорным и визит перематывается до открытия окна. Исправление: объединить действия в один шаг или поставить визит после (docs/ROUTE_FORMAT.md, «Шаг-визит перед квестом того же NPC»). Сообщение — на шаге-визите |
+| `quest-profession` | WARN / INFO | `accept` квеста с требованием профессии (`reqSkill`) в обязательном шаге — WARN (персонаж без профессии квест не возьмёт, гайд встанет); в `optional`-шаге — INFO; обязательный не-`bg` шаг `complete`/`turnin` такого квеста после `optional`-взятия — WARN |
+| `complete-far-from-trigger` | WARN | `complete` квеста с триггером области (`objectives.trigger`: исследование, «прыгните с досок»), а ни `at` шага, ни `at` одного из шагов после взятия квеста не ближе жёсткого порога (120 ярдов / 8 единиц карты) к триггеру — стрелка ведёт не туда. Сопровождения (`objectives.escort`) не проверяются; шаг с `complete = { [id] = {…} }` (выбранные цели) тоже |
 | `segment-level` / `route-level` | WARN | симулированный уровень в конце сегмента / маршрута отличается от плана больше чем на 1 |
 | `step-skipped` | INFO | шаг отфильтрован по классу/расе/фракции |
 | `unknown-race-token` | ERROR | токен расы маршрута или фильтра шага — не `raceFile` из `UnitRace()` (например `Undead` вместо `Scourge`): шаг молча пропал бы у всех |
@@ -507,7 +538,8 @@ lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
   `grindKillsWorst`, `optionalSkipped`, `band`;
 * `--markdown`: отчёт на русском для `docs/VALIDATION.md` (с абзацем «Гринд до порогов уровня» и
   таблицей порогов). Оба файла детерминированы;
-* `--write-state`: конечное состояние (раздел 7), строка `end state of <маршрут> [<профиль>] written to …`.
+* `--write-state`: конечное состояние (раздел 7), строка `end state of <маршрут> [<профиль>] written to …`
+  (с `--until ID` — `state before ID of …`; в `meta.untilStep` — id шага, перед которым снято состояние).
 
 ## 6. Тесты и фикстуры
 
@@ -545,6 +577,12 @@ lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
   сообщение и пустой `AddLibraryData`), `## X-FastesBoooy-Module`. Фикстура:
   `tests/fixtures/validator/FastesBoooy_FxHarnessLib` (два сегмента, Мертвый Звон / Брилл,
   проходит только из состояния `tests/fixtures/validator/harness_state_6.json`).
+* `tests/spec/validator_checks_spec.lua` — проверки `lookahead-skip` (визит к тренеру / торговцу перед
+  квестом того же NPC в пределах `lookahead`; объединённый шаг, шаг дальше окна, `optional`-визит, сдача
+  невыполненного квеста — без предупреждения), `quest-profession` (обязательное / `optional`-взятие,
+  обязательная сдача после `optional`-взятия), `complete-far-from-trigger` (у триггера, `go`-шаг к
+  триггеру, сопровождение — без предупреждения) и данные снимка, на которых они стоят (количества
+  целей Wowhead Forever, `trigger`, `escort`, `reqSkill`, `enums.professions`).
 * `tests/spec/validator_grind_spec.lua` — отчёт о гринде и `skip-ahead` на маршрутах в памяти
   (Мертвый Звон): худший случай (пропуск `optional`-шагов и их опыта, больше гринда на пороге,
   маршрут без `optional` — худший = обычный), `optional-dependency` (обязательные `complete`/`turnin`
@@ -566,9 +604,9 @@ lua5.1 tools/validate_routes.lua tests/fixtures/validator/FastesBoooy_FxClean
 
 ## 7. Harness: часть библиотеки из стартового состояния
 
-Сегменты общей библиотеки (`addons/FastesBoooy_Horde`, 22-60) пишутся параллельно, а маршрут
-целиком (модуль класса с `UseSegments`) появится позже. Чтобы проверить **один сегмент** (или
-несколько подряд) сразу, валидатор и симулятор умеют стартовать из явного состояния персонажа.
+Сегменты общей библиотеки (`addons/FastesBoooy_Horde`, 22-60) проверяются и по отдельности, без
+полного маршрута класса (модуля с `UseSegments`). Чтобы проверить **один сегмент** (или несколько
+подряд), валидатор и симулятор умеют стартовать из явного состояния персонажа.
 
 ```
 lua5.1 tools/validate_routes.lua --harness <каталог библиотеки> [--segments h-a,h-b,...] \
@@ -639,15 +677,26 @@ start state»); `log` — в журнале (сдача без взятия не
 цепочка «сегмент A → файл → сегмент B» даёт то же конечное состояние, что прогон A,B сразу
 (проверяется в `validator_harness_spec.lua`).
 
-**Конечное состояние полного маршрута:** `lua5.1 tools/validate_routes.lua --route
-horde-undead-paladin --write-state state_ud_22.json` (и `--route horde-skyborne-druid`) — старт
-первого сегмента библиотеки из реального конца маршрута 1-22. `--write-state` требует ровно
-один прогон «маршрут × профиль» (иначе код 2: выберите `--route` и `--profile`). Симулятор
-тоже пишет состояние (`simulate_routes.lua --route ID --write-state f.json`, один прогон).
+**Состояние полного маршрута:** маршруты идут до 60, поэтому старт первого сегмента
+библиотеки (конец собственной части 1-22 маршрута) снимается с `--until`:
+
+```
+lua5.1 tools/validate_routes.lua -q --route horde-undead-paladin --profile race=Scourge,class=PALADIN,faction=Horde \
+       --write-state state_ud_22.json --until h-22-hillsbrad
+lua5.1 tools/validate_routes.lua -q --route horde-skyborne-druid --profile race=Skyborne,class=DRUID,faction=Horde \
+       --write-state state_sd_22.json --until h-22-hillsbrad
+```
+
+(сейчас: нежить-паладин — уровень 22 + 0,06, 170 сданных квестов, камень в Thunder Bluff;
+скайборн-друид — 22 + 0,24, 190 сданных). Тем же способом снимается старт любого сегмента
+библиотеки (`--until h-34-stranglethorn` …) или любого шага. Без `--until` пишется состояние в
+конце маршрута (уровень 60). `--write-state` требует ровно один прогон «маршрут × профиль»
+(иначе код 2: выберите `--route` и `--profile`). Симулятор тоже пишет состояние
+(`simulate_routes.lua --route ID --write-state f.json`, один прогон, конец маршрута).
 
 **Оговорки.** (1) Валидатор считает выполненными **все** шаги, в том числе `optional = true`:
-состояние конца 1-22 включает то, что дают необязательные шаги (у нежити-паладина — точка
-полёта Orgrimmar из `ud04-org-fp`); для строгой проверки уберите такие записи из копии файла.
+состояние конца 1-22 включает то, что дают необязательные шаги; для строгой проверки уберите
+такие записи из копии файла (`ud04-org-fp` нежити-паладина с расширением до 60 обязательный).
 Худший случай отчёта о гринде (раздел 5, п. 5) пропускает `optional`-шаги **внутри** прогона, но
 стартовое состояние и `--write-state` остаются состояниями основного прогона. `optional-dependency`
 — только о квестах: `fly X` к точке, которую изучает лишь необязательный шаг `fp X` (или точка из

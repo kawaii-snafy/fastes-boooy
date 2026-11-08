@@ -102,6 +102,34 @@ describe("Init", function()
         assert.equal("test-route", ns.Engine:GetRoute().id)
     end)
 
+    it("adds the automation delay settings to older SavedVariables and keeps them in range", function()
+        local function bootWith(settings)
+            m, ns = H.new({ savedVariables = { FastesBoooyDB = { dbVersion = 1, settings = settings } } })
+            H.Mock.boot(m, { "FastesBoooy", H.FIXTURE_NAME })
+            return m.env.FastesBoooyDB.settings
+        end
+        -- saved before the setting existed: the defaults (0.5 s + random 0..0.3 s)
+        local s = bootWith({ automation = true, autoAccept = false, lookahead = 4 })
+        assert.equal(0.5, s.autoDelay)
+        assert.equal(0.3, s.autoDelayJitter)
+        assert.is_false(s.autoAccept, "other saved values kept")
+        assert.equal(4, s.lookahead)
+        assert.equal(0.5, ns.DEFAULTS.db.settings.autoDelay)
+        assert.equal(0.3, ns.DEFAULTS.db.settings.autoDelayJitter)
+        -- saved values are kept, out-of-range ones clamped (0..3 s, 0..1 s), wrong types reset
+        s = bootWith({ autoDelay = 0, autoDelayJitter = 0.25 })
+        assert.equal(0, s.autoDelay, "0 = instant, kept")
+        assert.equal(0.25, s.autoDelayJitter)
+        s = bootWith({ autoDelay = 12, autoDelayJitter = -1 })
+        assert.equal(3, s.autoDelay)
+        assert.equal(0, s.autoDelayJitter)
+        s = bootWith({ autoDelay = "slow", autoDelayJitter = 0 / 0 })
+        assert.equal(0.5, s.autoDelay)
+        assert.equal(0.3, s.autoDelayJitter, "NaN")
+        assert.same({ 0, 3 }, ns.SETTING_RANGES.autoDelay)
+        assert.same({ 0, 1 }, ns.SETTING_RANGES.autoDelayJitter)
+    end)
+
     it("prints with the addon prefix and is %-safe; debug output only when enabled", function()
         m, ns = H.boot()
         local mark = #m.chat
@@ -152,12 +180,14 @@ describe("locales", function()
         end
         -- keys built at run time (UI/Options.lua)
         for _, k in ipairs({ "automation", "autoAccept", "autoTurnin", "autoGossip", "arrow", "blizzWaypoint",
-            "locked", "hideInCombat", "debug", "lookahead", "shownNext", "frameScale", "arrowScale" }) do
+            "locked", "hideInCombat", "debug", "lookahead", "shownNext", "frameScale", "arrowScale", "autoDelay",
+            "autoDelayJitter" }) do
             for _, key in ipairs({ "UI_OPT_" .. k, "UI_OPT_" .. k .. "_TT" }) do
                 if L[key] == nil then missing[#missing + 1] = key end
             end
         end
-        for _, k in ipairs({ "show", "lock", "next", "reset", "routes", "route", "config", "status", "xp", "debug" }) do
+        for _, k in ipairs({ "show", "lock", "next", "reset", "routes", "route", "config", "delay", "status", "xp",
+            "debug" }) do
             if L["UI_HELP_" .. k] == nil then missing[#missing + 1] = "UI_HELP_" .. k end
         end
         assert.same({}, missing)

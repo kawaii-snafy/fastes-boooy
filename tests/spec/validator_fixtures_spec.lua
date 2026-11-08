@@ -431,29 +431,53 @@ describe("validator fixtures", function()
         end)
 
         it("counted kill objectives of neutral / mis-flagged mobs still give kill XP", function()
-            -- 1501/1502 Mindless / Wretched Zombie carry faction "AH" in the DB; 5 + 5 kills (WCLBox counts)
+            -- 1501/1502 Mindless / Wretched Zombie carry faction "AH" in the DB; 8 + 8 kills (Forever counts)
             local r = memRun(UNDEAD_PALADIN, {
                 { accept = 363, npc = 1568, at = { 1420, 30.2, 71.7 } },
                 { turnin = 363, accept = 364, npc = 1569, at = { 1420, 30.8, 66.2 } },
                 { complete = 364 },
                 { turnin = 364, npc = 1569, at = { 1420, 30.8, 66.2 } },
             })
-            assert.are.equal(10, kills(r))
+            assert.are.equal(16, kills(r))
             assert.is_true(r.summary.xpKill > 0)
             assert.are.same({}, messagesWith(r, "complete-no-kill"))
         end)
 
         it("missing counts: 1 kill for a named / unique NPC, a small default otherwise", function()
+            -- the snapshot has Forever counts for both quests (Wowhead requirements): a proxy DB drops the
+            -- count of 370's Captain Perrine 1662 and of 92462's Pesky Cirrusfly 251169
+            local function withoutCount(q, npc)
+                local c = {}
+                for k, v in pairs(q) do c[k] = v end
+                c.objectives = { creatures = {} }
+                for i, e in ipairs(q.objectives.creatures) do
+                    c.objectives.creatures[i] = (e[1] == npc) and { e[1] } or { e[1], e[2] }
+                end
+                return c
+            end
+            local fake = setmetatable({ quests = setmetatable({
+                [370] = withoutCount(db.quests[370], 1662), [92462] = withoutCount(db.quests[92462], 251169),
+            }, { __index = db.quests }) }, { __index = db })
+            local function fakeRun(routeDef, steps, opts)
+                local route = assert(schema.NormalizeRoute(routeDef))
+                schema.AddSegment(route, { id = "s", title = "s", steps = steps })
+                return V.NewRun(fake, schema, route, V.Profiles(route)[1], opts):execute()
+            end
             -- 370: Captain Perrine (no count, single spawn) + 3 Scarlet Zealots + 3 Scarlet Missionaries
-            local r = memRun(UNDEAD_PALADIN, { { level = 4 }, { accept = 370 }, { complete = 370 },
+            local r = fakeRun(UNDEAD_PALADIN, { { level = 4 }, { accept = 370 }, { complete = 370 },
                 { abandon = 370 } }, NO_XP_WARN)
             assert.are.equal(7, kills(r))
             assert.matches("objective counts partly assumed", messagesWith(r, "complete-kill-xp")[1].msg)
+            -- with the snapshot's count (Perrine x1) nothing is assumed
+            local real = memRun(UNDEAD_PALADIN, { { level = 4 }, { accept = 370 }, { complete = 370 },
+                { abandon = 370 } }, NO_XP_WARN)
+            assert.are.equal(7, kills(real))
+            assert.is_nil(messagesWith(real, "complete-kill-xp")[1].msg:find("assumed", 1, true))
             -- 92462: Pesky Cirrusfly (no count, hostile, many spawns) -> defaultKillCount
-            local r2 = memRun(SKY_DRUID, { { accept = 92462 }, { complete = 92462 }, { abandon = 92462 } },
+            local r2 = fakeRun(SKY_DRUID, { { accept = 92462 }, { complete = 92462 }, { abandon = 92462 } },
                 NO_XP_WARN)
             assert.are.equal(V.DEFAULTS.defaultKillCount, kills(r2))
-            local r3 = memRun(SKY_DRUID, { { accept = 92462 }, { complete = 92462 }, { abandon = 92462 } },
+            local r3 = fakeRun(SKY_DRUID, { { accept = 92462 }, { complete = 92462 }, { abandon = 92462 } },
                 { ignore = NO_XP_WARN.ignore, defaultKillCount = 2 })
             assert.are.equal(2, kills(r3))
         end)
