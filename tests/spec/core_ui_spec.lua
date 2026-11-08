@@ -257,6 +257,26 @@ describe("step window", function()
         assert.same({ "TOPRIGHT", m.env.UIParent, "BOTTOMRIGHT", -50, 40 + h }, { frame():GetPoint(1) })
     end)
 
+    it("converts an old middle / bottom anchor with the window's real height (after login)", function()
+        for _, old in ipairs({
+            { point = "RIGHT", y = 120, v = 0.5 },
+            { point = "BOTTOMRIGHT", y = 300, v = 1 },
+        }) do
+            m, ns = H.boot({ savedVariables = { FastesBoooyDB = { frames = { steps = {
+                point = old.point, relativePoint = old.point, x = -80, y = old.y } } } } })
+            local f = frame()
+            local h = f:GetHeight()
+            assert.is_true(h > 150, "the route's step is laid out: " .. h)
+            local saved = ns.db.frames.steps
+            assert.equal("TOPRIGHT", saved.point)
+            -- the top edge where the old anchor put it with this height (not the "no route" height of
+            -- ADDON_LOADED)
+            assert.equal(math.floor(old.y + old.v * h + 0.5), saved.y, old.point)
+            assert.same({ "TOPRIGHT", m.env.UIParent, old.point, -80, saved.y }, { f:GetPoint(1) })
+            m:AssertClean()
+        end
+    end)
+
     it("lists only what is left of the next steps: no done step, no done line", function()
         m, ns = H.boot()
         UI().SetSetting("shownNext", 10)
@@ -815,7 +835,7 @@ describe("settings panel", function()
         local jitter = widget(function(w) return w.def and w.def.key == "autoDelayJitter" end)
         assert.equal("Задержка автоматики: 0.5 с", delay.label:GetText())
         assert.equal("Случайная добавка: до 0.3 с", jitter.label:GetText())
-        assert.is_true(has(texts(UI().Options:GetPanel()), "Синхронизация с уровнем"))
+        assert.is_true(has(texts(UI().Options:GetPanel()), "Синхронизация по уровню"))
         for mode, label in pairs({ ask = "Предлагать переход", auto = "Переходить автоматически", off = "Выключено" }) do
             assert.equal(label, widget(function(w) return w.mode == mode end).label:GetText())
         end
@@ -933,6 +953,28 @@ describe("slash commands", function()
         assert.same({ "No level sync to undo." }, slash("/fb sync undo"))
         m, ns = H.boot({ fixture = false })
         assert.same({ "No route selected for this character. Type /fb routes." }, slash("/fb sync"))
+    end)
+
+    it("sync undo leaves the floor of another route alone", function()
+        local mods = { { H.FIXTURE_TOC, H.FIXTURE_NAME }, { H.LIB_TOC, H.LIB_NAME }, { H.COMPOSED_TOC, H.COMPOSED_NAME } }
+        m, ns = H.boot({ modules = mods })
+        m:SetLevel(6)
+        H.settle(m)
+        local route1 = ns.Engine:GetRoute().id
+        slash("/fb sync")
+        H.settle(m)
+        local floorRec = ns.cdb.syncFloor
+        assert.is_table(floorRec)
+        slash("/fb route " .. H.COMPOSED_ID)
+        H.settle(m)
+        assert.is_nil(UI().SyncFloor())
+        assert.same({ "No level sync to undo." }, slash("/fb sync undo"))
+        assert.equal(floorRec, ns.cdb.syncFloor, "still there for " .. route1)
+        slash("/fb route " .. route1)
+        H.settle(m)
+        assert.equal(floorRec, UI().SyncFloor())
+        assert.equal("tr-go-brill", H.cur(ns))
+        m:AssertClean()
     end)
 
     it("delay works in ruRU", function()

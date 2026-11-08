@@ -21,7 +21,8 @@ L.STEP_FLY = "Fly to %s"
 L.STEP_SETHEARTH = "Set your hearthstone: %s"
 L.STEP_HEARTH = "Hearth to %s"
 -- hints after a level sync (Engine:FlightPathPending / Engine:HearthBindMismatch)
-L.STEP_FLY_NO_FP = "The flight path %s was skipped by the level sync: travel there yourself (talk to its flight master on arrival)"
+L.STEP_FLY_NO_FP = "The flight path %s was skipped by the level sync: travel there yourself "
+    .. "(talk to its flight master on arrival)"
 L.STEP_HEARTH_BIND = "Your hearthstone is set to %s, not %s: travel there yourself"
 L.STEP_VENDOR = "Visit a vendor (sell / restock)"
 L.STEP_MANUAL = "Press \"Forward\" when done"
@@ -51,4 +52,5 @@ L.MSG_SYNC_APPLIED = "Level sync: you are level %d -- continuing at \"%s\" (\"%s
 L.MSG_SYNC_AUTO = "Level sync (automatic): level %d -- continuing at \"%s\" (\"%s\" is below your level). Undo: /fb sync undo"
 L.MSG_SYNC_UNDONE = "Level sync undone: the route continues where it was before."
 -- %d = number of quests, %s = their titles
-L.MSG_SYNC_DROPPED = "%d quest(s) of the skipped part stay in your log (%s): the guide no longer leads to them -- finish them on your own or abandon them."
+L.MSG_SYNC_DROPPED = "%d quest(s) of the skipped part stay in your log (%s): the guide no longer leads to them "
+    .. "-- finish them on your own or abandon them."

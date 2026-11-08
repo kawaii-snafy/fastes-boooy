@@ -124,9 +124,11 @@ end
 -- { point=, relativePoint=, x=, y= } (what SavePosition writes) and the array
 -- form { point, relativePoint, x, y } (core defaults may use it).
 -- topAnchored: anchor the frame by its top edge (UI.TopAnchor with the current height);
--- a saved position of another point is converted once and written back, so it does not
--- drift with the height on the next restore.
-function UI.RestorePosition(frame, key, defPoint, defRelPoint, defX, defY, topAnchored)
+-- a saved position of another point is converted and written back, so it does not drift with
+-- the height on the next restore -- only when `final` (the frame has its real height: e.g. the
+-- step window once the engine has started), else it is converted for display only and the
+-- next restore converts it again.
+function UI.RestorePosition(frame, key, defPoint, defRelPoint, defX, defY, topAnchored, final)
     local t = framesDB(key) or EMPTY
     local point = t.point or t[1]
     local relPoint = t.relativePoint or t.relPoint or t[2]
@@ -138,7 +140,7 @@ function UI.RestorePosition(frame, key, defPoint, defRelPoint, defX, defY, topAn
     if topAnchored then
         local converted = not isTopPoint(point)
         local p, px, py = setTopPoint(frame, point, relPoint, x, y)
-        if converted and t ~= EMPTY then
+        if converted and t ~= EMPTY and final ~= false then
             t.point, t.relativePoint, t.x, t.y = p, relPoint, px, py
             t[1], t[2], t[3], t[4] = nil, nil, nil, nil
         end
@@ -422,7 +424,7 @@ local function stepTooltip(row)
     local title, lines = nil, {}
     local described = ns.Steps and ns.Steps.Describe and ns.Steps:Describe(step) or EMPTY
     for _, line in ipairs(described) do
-        if line.text and line.kind ~= "note" then
+        if line.text and line.kind ~= "note" and line.void ~= "floor" then
             if not title then
                 title = line.text
             else
@@ -522,6 +524,15 @@ local function stepLines(step, mode)
     local lines = ns.Steps and ns.Steps.Describe and ns.Steps:Describe(step)
     if type(lines) ~= "table" or #lines == 0 then
         lines = { { text = format(L.UI_STEP_FALLBACK_FMT, tostring(step.id)), kind = "note" } }
+    end
+    if mode == "bg" then
+        -- a step below the level-sync floor kept as an along-the-way goal: only what is left of it
+        -- (its other actions are floored -- line.void "floor", Core/Steps.lua)
+        local out = {}
+        for _, line in ipairs(lines) do
+            if line.void ~= "floor" then out[#out + 1] = line end
+        end
+        return out
     end
     if mode ~= "upcoming" then return lines end
     local out = {}
@@ -845,7 +856,11 @@ function SF:ApplySettings()
     local scale = tonumber(s.frameScale) or 1
     if scale < 0.3 or scale > 3 then scale = 1 end
     frame:SetScale(scale)
-    UI.RestorePosition(frame, "steps", "TOPRIGHT", "RIGHT", -80, 180, true)
+    -- a saved middle / bottom anchor (older versions) is converted to the top edge with the real
+    -- height: written back only once the engine has started (before PLAYER_LOGIN the window shows
+    -- the "no route" line only)
+    local E = ns.Engine
+    UI.RestorePosition(frame, "steps", "TOPRIGHT", "RIGHT", -80, 180, true, (E and E.started) and true or false)
     self:UpdateVisibility()
     self:MarkDirty()
 end
@@ -925,8 +940,8 @@ function SF:Create()
     end)
     frame:SetScript("OnShow", function() SF:Refresh() end)
 
-    self:Refresh()       -- the real height first: a saved middle / bottom anchor converts with it
-    self:ApplySettings()
+    self:Refresh()       -- the current height first (ApplySettings converts an old anchor with it; the
+    self:ApplySettings() -- conversion is saved only once the engine has started: PLAYER_LOGIN below)
     self:Refresh()
     return frame
 end
@@ -960,7 +975,8 @@ end
 -- @return true when there was a sync to undo
 function UI.UndoSync()
     local E = ns.Engine
-    if not (E and E.UndoSync) or type(ns.cdb and ns.cdb.syncFloor) ~= "table" then return false end
+    -- only the floor of the active route (UI.SyncFloor): another route's floor stays for that route
+    if not (E and E.UndoSync) or not UI.SyncFloor() then return false end
     local ok = E:UndoSync()
     SF.undo, SF.pendingUndo = nil, nil
     SF:MarkDirty()
@@ -999,8 +1015,13 @@ ns:Listen("UI_VISIBILITY_CHANGED", function() SF:UpdateVisibility() end)
 -- scale / hide-in-combat / shownNext / debug: re-applying everything is cheap
 ns:Listen("SETTINGS_CHANGED", function() SF:ApplySettings() end)
 
+-- after Engine:Start (Core/Engine.lua registers its PLAYER_LOGIN handler first): lay out the route's
+-- step so the position is restored -- and an old middle / bottom anchor converted -- with the real height
 ns:On("PLAYER_LOGIN", function()
-    if frame then SF:ApplySettings() end
+    if frame then
+        SF:Refresh()
+        SF:ApplySettings()
+    end
 end)
 ns:On("PLAYER_XP_UPDATE", markDirty)
 ns:On("PLAYER_LEVEL_UP", markDirty)

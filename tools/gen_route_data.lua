@@ -13,7 +13,8 @@
 --       npcs = { [id] = "enUS name", ... },
 --       objects = {...}, items = {...},   -- only when referenced
 --       places = { ["Brill"] = { area = 159, en = "Brill", ru = "Брилл" }, ... },
---       questMeta = { [id] = { level = 12, reqLevel = 9, preAll = { ... }, preAny = { ... } }, ... },
+--       questMeta = { [id] = { level = 12, reqLevel = 9, preAll = { ... }, preAny = { ... },
+--                              items = { ... } }, ... },
 --   })
 --
 -- A route that uses library segments (UseSegments) lists only what its own segments and
@@ -37,9 +38,11 @@
 --
 -- `questMeta` (every quest listed in `quests`, when the DB knows it): quest level (`level`, -1 =
 -- scales with the player), required level (`reqLevel`) and the prerequisites of the DB snapshot:
--- `preAll` = preQuestGroup (all needed), `preAny` = preQuestSingle (one of them needed); each list
--- only when non-empty. The engine uses it for the level sync / gray-quest skip / unreachable-quest
--- rule (Core/Engine.lua); library data sits under route data like the names do.
+-- `preAll` = preQuestGroup (all needed), `preAny` = preQuestSingle (one of them needed), `items` = the
+-- item ids of the quest's objectives (DB objectives.items); each list only when non-empty. The engine
+-- uses it for the level sync / gray-quest skip / unreachable-quest rule and for the `collect` actions
+-- of quests the player never took or still has after a level sync (Core/Engine.lua); library data
+-- sits under route data like the names do.
 
 local here = (arg and arg[0] or ""):match("^(.*)[/\\][^/\\]*$") or "."
 package.path = here .. "/?.lua;" .. package.path
@@ -157,10 +160,25 @@ local function sortedList(list)
     return out
 end
 
+-- objective item ids of a DB quest record (objectives.items = { { itemID, count }, ... }), sorted, unique
+local function objectiveItems(q)
+    local objs = type(q.objectives) == "table" and q.objectives.items
+    local seen, out = {}, {}
+    for _, o in ipairs(type(objs) == "table" and objs or {}) do
+        local item = type(o) == "table" and o[1]
+        if type(item) == "number" and not seen[item] then
+            seen[item] = true
+            out[#out + 1] = item
+        end
+    end
+    table.sort(out)
+    return out
+end
+
 --- questMeta entries of the referenced quests the DB knows, sorted by id:
--- { { id, level, reqLevel, preAll = {...} | nil, preAny = {...} | nil }, ... }.
--- Full DB records give the prerequisites (preQuestGroup -> preAll, preQuestSingle -> preAny);
--- quests only in the out-of-scope index give level / reqLevel.
+-- { { id, level, reqLevel, preAll = {...} | nil, preAny = {...} | nil, items = {...} | nil }, ... }.
+-- Full DB records give the prerequisites (preQuestGroup -> preAll, preQuestSingle -> preAny) and the
+-- objective items; quests only in the out-of-scope index give level / reqLevel.
 function M.QuestMeta(ids, db)
     local out = {}
     for _, id in ipairs(sortedIds(ids.quests or {})) do
@@ -169,9 +187,10 @@ function M.QuestMeta(ids, db)
         if b and type(b.level) == "number" then
             local e = { id = id, level = b.level, reqLevel = type(b.reqLevel) == "number" and b.reqLevel or nil }
             if q then
-                local all, any = sortedList(q.preGroup), sortedList(q.preSingle)
+                local all, any, items = sortedList(q.preGroup), sortedList(q.preSingle), objectiveItems(q)
                 if #all > 0 then e.preAll = all end
                 if #any > 0 then e.preAny = any end
+                if #items > 0 then e.items = items end
             end
             out[#out + 1] = e
         end
@@ -179,11 +198,12 @@ function M.QuestMeta(ids, db)
     return out
 end
 
---- One `questMeta` line: `[id] = { level = n, reqLevel = n, preAll = { ... }, preAny = { ... } }`.
+--- One `questMeta` line: `[id] = { level = n, reqLevel = n, preAll = { ... }, preAny = { ... },
+-- items = { ... } }`.
 function M.RenderQuestMeta(e)
     local parts = { string.format("level = %d", e.level) }
     if e.reqLevel then parts[#parts + 1] = string.format("reqLevel = %d", e.reqLevel) end
-    for _, k in ipairs({ "preAll", "preAny" }) do
+    for _, k in ipairs({ "preAll", "preAny", "items" }) do
         if e[k] then
             local ids = {}
             for i, v in ipairs(e[k]) do ids[i] = string.format("%d", v) end

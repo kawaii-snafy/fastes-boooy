@@ -90,7 +90,10 @@ for _, list in ipairs({ DELAY_RANGES, RANGES, SYNC_RANGES }) do
     for _, def in ipairs(list) do ALL_RANGES[#ALL_RANGES + 1] = def end
 end
 
-local MAX_ROUTE_BUTTONS = 6
+-- route buttons in the right column, below the level-sync section (header at about -472 on the
+-- Settings canvas, 24 px per button): the canvas is 601 px tall and Apply / Close sit at -610..-632, so
+-- three buttons + the "more routes" and error notes end above -600; the rest: /fb routes
+local MAX_ROUTE_BUTTONS = 3
 
 ---------------------------------------------------------------------------
 -- popups

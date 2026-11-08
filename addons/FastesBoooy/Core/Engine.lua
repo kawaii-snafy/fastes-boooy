@@ -89,7 +89,12 @@
 --         taken" (at least one);
 --       - orphan: a `complete` / `turnin` of a quest that is neither in the log nor turned in when
 --         every accept of it before the step is "not taken" (at least one) -- e.g. Skip on an
---         accept step no longer leaves its turn-in blocking the cursor.
+--         accept step no longer leaves its turn-in blocking the cursor; and a `collect` whose
+--         quests (route quests with the item as an objective -- questMeta items --, else the
+--         step's complete / turnin quests) are all dead or turned in, at least one dead (decided
+--         after the pass: every accept seen);
+--       - floor: the other actions of a step below the sync floor that stays an along-the-way goal
+--         (see level sync).
 --     An accept is "not taken" when the quest is neither in the log nor turned in and the accept is
 --     done without the game: its step is marked (Next / Skip), lies below the sync floor or is an
 --     `optional` non-bg step behind the forward limit, the quest is given up (ctx.givenUp; not the
@@ -103,11 +108,21 @@
 --     with `levels` is OUTLEVELED when playerLevel >= levels[2] + margin. When the segment of the
 --     natural cursor is outleveled, the first later segment that is not (and has a not-done
 --     non-bg step) is suggested (GetSyncSuggestion, message SYNC_SUGGESTION) -- "auto" applies it
---     at once. ApplySync stores a floor per character (cdb.syncFloor = { route, stepId, ... },
---     validated against the active route): every step before it (bg steps too) counts as done;
---     Prev beyond the floor only pins the view; UndoSync restores the previous floor and the
---     high-water mark of the moment of the sync. DismissSync (and UndoSync) silence the
---     suggestion for that segment until the next level-up (cdb.syncDismissed).
+--     at once -- only when the jump skips new content (SyncSkipsContent: an accept of a quest the
+--     player does not have that the route turns in before the target), not quests of the log,
+--     bridges, trainer / travel visits or level gates. ApplySync stores a floor per character
+--     (cdb.syncFloor = { route, stepId, keep, ... }, validated against the active route): every
+--     step before it (bg steps too) counts as done, except the along-the-way goals kept below it
+--     (self.floorKeep, listed in GetBackground, their other actions void "floor"): the complete /
+--     collect actions of a quest of the log the route turns in at or after the floor, the turn-in
+--     of a complete quest of the log, and the skipped service visits still needed (record.keep:
+--     last trainer visit, a bind a later hearth needs, flight paths later flights need; dropped
+--     when done or passed -- KeepServices / KeepUntil). Other incomplete quests of the log whose
+--     turn-ins are all below the floor are dropped (GetDroppedQuests, one chat line). fly / hearth
+--     steps get a hint when the flight path is still pending / the bind point differs.
+--     Prev beyond the floor only pins the view; UndoSync (the active route's floor only) restores
+--     the previous floor and the high-water mark of the moment of the sync. DismissSync (and
+--     UndoSync) silence the suggestion for that segment until the next level-up (cdb.syncDismissed).
 --
 -- Messages: ROUTE_CHANGED(route), STEP_CHANGED(step, index), PROGRESS_UPDATED(),
 -- SYNC_SUGGESTION(suggestion | nil) (on every change), SYNC_APPLIED(record), SYNC_UNDONE().
@@ -1112,7 +1127,10 @@ function Engine:CheckObserved()
                 self.bindBase[s.id] = bind or false
                 base = bind or false
             end
-            if bind and ((base and bind ~= base) or self:PlaceMatches(sethearth.place, bind)) then
+            -- a changed bind counts, except for a bind visit kept below the sync floor (only its own
+            -- place: KeptVisitMatches)
+            local moved = base and bind ~= base and self:KeptVisitMatches(s, "sethearth")
+            if bind and (moved or self:PlaceMatches(sethearth.place, bind)) then
                 changed = setFlag(self, s, "sethearth") or changed
             end
         end
@@ -1689,25 +1707,23 @@ function Engine:HearthBindMismatch(place)
     return bind
 end
 
---- Would a jump from the natural cursor to toIndex skip content -- an accept of a quest the player
--- does not have, or the completion of a quest of the log -- that the route does not turn in at or
--- after toIndex? Trainer / travel / service visits, level gates, turn-ins of quests of the log and
--- quests the next segments turn in are no reason to jump (they stay or are on the way).
+--- Would a jump from the natural cursor to toIndex skip new content of the outleveled part: an
+-- accept of a quest the player does not have and that the route turns in before toIndex? The rest
+-- is no reason to jump: quests of the log (being done: they are finished or turned in on the way),
+-- quests the next segments turn in (bridges), trainer / travel / service visits and level gates.
 function Engine:SyncSkipsContent(fromIndex, toIndex)
     local steps, done, void, turninAt = self.steps, self.done, self.void, self.turninAt
     local ctx = self.evalCtx
-    local questState, questComplete = ns.Steps.QuestState, ns.Steps.QuestComplete
+    local questState = ns.Steps.QuestState
     for i = fromIndex, toIndex - 1 do
         local s = steps[i]
         if not s.bg and not done[i] then
             for _, a in ipairs(s.actions) do
-                local t, q = a.type, a.quest
-                if (t == "accept" or t == "complete") and not void[a] then
-                    local list = turninAt[q]
+                if a.type == "accept" and not void[a] then
+                    local list = turninAt[a.quest]
                     if not (list and list[#list] >= toIndex) then
-                        local st = questState(ctx, q)
-                        if t == "accept" and not st.on and not st.turnedIn then return true end
-                        if t == "complete" and st.on and not questComplete(ctx, q) then return true end
+                        local st = questState(ctx, a.quest)
+                        if not st.on and not st.turnedIn then return true end
                     end
                 end
             end
@@ -1824,33 +1840,37 @@ function Engine:ApplySync(auto)
     self.applyingSync = true
     self:Refresh()
     self.applyingSync = false
-    self:ReportDroppedQuests(sug.toIndex)
+    self:ReportDroppedQuests()
     self:SetSyncSuggestion(self:ComputeSyncSuggestion())
     ns:Fire("SYNC_APPLIED", record)
     return true
 end
 
--- After a jump to toIndex: quests of the log the route no longer leads to (not complete, every turn-in
--- of them below the floor) -- one chat line, the player finishes or abandons them.
-local MAX_LISTED = 5
-function Engine:ReportDroppedQuests(toIndex)
+--- Quests of the log the route no longer leads to because of the sync floor: not complete, every
+-- turn-in of them below the floor (sorted ids; empty without a floor).
+function Engine:GetDroppedQuests()
+    local out = {}
+    local floorIndex = self.floor or 0
+    if floorIndex <= 1 then return out end
     local C = ns.Compat
-    local names, count = {}, 0
-    local seen = {}
     for q, list in pairs(self.turninAt) do
-        if not seen[q] and list[#list] < toIndex and C.IsOnQuest(q) and not C.IsQuestComplete(q) then
-            seen[q] = true
-            count = count + 1
-            names[#names + 1] = q
-        end
+        if list[#list] < floorIndex and C.IsOnQuest(q) and not C.IsQuestComplete(q) then out[#out + 1] = q end
     end
-    if count == 0 then return end
-    table.sort(names)
+    table.sort(out)
+    return out
+end
+
+-- After a jump: one chat line naming the quests of the log the route no longer leads to (the player
+-- finishes or abandons them).
+local MAX_LISTED = 5
+function Engine:ReportDroppedQuests()
+    local list = self:GetDroppedQuests()
+    if #list == 0 then return end
     local shown = {}
-    for k = 1, min(#names, MAX_LISTED) do shown[k] = ns.Steps:QuestTitle(names[k]) end
+    for k = 1, min(#list, MAX_LISTED) do shown[k] = ns.Steps:QuestTitle(list[k]) end
     local text = table.concat(shown, ", ")
-    if count > MAX_LISTED then text = text .. ", ..." end
-    ns.Print(L().MSG_SYNC_DROPPED, count, text)
+    if #list > MAX_LISTED then text = text .. ", ..." end
+    ns.Print(L().MSG_SYNC_DROPPED, #list, text)
 end
 
 --- No suggestion for the current `from` segment until the next level-up (cdb.syncDismissed).
@@ -2085,13 +2105,34 @@ end)
 
 -- transient observations ---------------------------------------------------
 
+local KEPT_FP_RADIUS = 100 -- yards: a kept flight-path visit counts at a taxi map opened this close to it
+
+--- Does a window / bind event count for step s? Always, except for a skipped visit kept below the
+-- sync floor (several of them can be "along the way" at once, anywhere in the world): its flight
+-- path only at a taxi map opened near the step's place (step.at), its bind only when the bind
+-- location is its place.
+function Engine:KeptVisitMatches(s, actionType)
+    local i = self.indexById[s.id]
+    if not (i and i < (self.floor or 0) and self.floorKeep[i]) then return true end
+    if actionType == "fp" then
+        if not s.at then return true end
+        local d = ns.Compat.DistanceTo(s.at.map, s.at.x, s.at.y)
+        return d ~= nil and d <= max(s.radius or 0, KEPT_FP_RADIUS)
+    elseif actionType == "sethearth" then
+        local a = ns.Steps:HasAction(s, "sethearth")
+        local bind = ns.Compat.BindLocation()
+        return (a and bind and self:PlaceMatches(a.place, bind)) and true or false
+    end
+    return true
+end
+
 --- Mark a transient action type done on the observed steps that have it.
 -- @return true when a step was flagged
 function Engine:ObserveAction(actionType)
     if not self.started then return false end
     local any = false
     for _, s in ipairs(self:ObservedSteps()) do
-        if ns.Steps:HasAction(s, actionType) then
+        if ns.Steps:HasAction(s, actionType) and self:KeptVisitMatches(s, actionType) then
             any = setFlag(self, s, actionType) or any
         end
     end
@@ -2114,7 +2155,9 @@ end
 function Engine:ObservedIds(actionType, npc)
     local ids = {}
     for _, s in ipairs(self:ObservedSteps()) do
-        if ns.Steps:HasAction(s, actionType) and windowNpcMatches(s, npc) then ids[#ids + 1] = s.id end
+        if ns.Steps:HasAction(s, actionType) and windowNpcMatches(s, npc) and self:KeptVisitMatches(s, actionType) then
+            ids[#ids + 1] = s.id
+        end
     end
     return ids
 end

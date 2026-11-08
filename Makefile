@@ -9,7 +9,10 @@
 #   make simulate     run every route through the real engine on the WoW mock (addons/FastesBoooy_*
 #                     route modules; library modules are played inside the routes that use them)
 #   make simulate-sync  "player ahead of the route": every route module from a fresh character at the
-#                     levels SYNC_LEVELS (10 23 35 48), the level-sync suggestions applied (--ahead L)
+#                     levels SYNC_LEVELS (10 23 35 48), the level-sync suggestions applied (--ahead L);
+#                     a jump in the middle of a segment with its quests in the log (SYNC_MID: --ahead L
+#                     --ahead-at SEG); the whole route SYNC_PLUS levels above its plan in levelSync "auto"
+#                     (--level-plus N)
 #   make validate-fixtures / simulate-fixtures   the same on the known-good fixture routes
 #   make harness-fixtures  validator (--strict) + simulator harness of the fixture library from its start state
 #   make harness PROFILE=race=Scourge,class=PALADIN,faction=Horde [LIB=addons/FastesBoooy_Horde]
@@ -40,6 +43,11 @@ FIXTURE_VALIDATE = tests/fixtures/validator/FastesBoooy_FxClean tests/fixtures/v
 FIXTURE_SIMULATE = tests/fixtures/core/FastesBoooy_TestRoute tests/fixtures/core/FastesBoooy_TestComposed
 # make simulate-sync: start levels of the "player ahead of the route" runs (tools/simulate_routes.lua --ahead)
 SYNC_LEVELS = 10 23 35 48
+# mid-route jumps with a quest log (--ahead L --ahead-at SEG,...: the first listed segment the route has;
+# both routes have a 15-18 Barrens segment and the shared library segments): LEVEL/SEGMENTS
+SYNC_MID = 21/ud-04-barrens,sd-04-barrens 29/h-24-barrens-stonetalon
+# levels above the route's plan during normal play, levelSync "auto" (--level-plus N)
+SYNC_PLUS = 2 4
 FIXTURE_ROUTEDATA = tests/fixtures/validator/FastesBoooy_FxClean tests/fixtures/core/FastesBoooy_TestLib \
 	tests/fixtures/core/FastesBoooy_TestComposed tests/fixtures/validator/FastesBoooy_FxHarnessLib
 # Start-state harness fixture (tools/lib/harness.lua): a library module that validates /
@@ -92,6 +100,15 @@ simulate-sync:
 	@for level in $(SYNC_LEVELS); do \
 		echo "$(LUA) tools/simulate_routes.lua --ahead $$level"; \
 		$(LUA) tools/simulate_routes.lua --ahead $$level || exit 1; \
+	done
+	@for spec in $(SYNC_MID); do \
+		level=`echo "$$spec" | cut -d/ -f1`; segs=`echo "$$spec" | cut -d/ -f2`; \
+		echo "$(LUA) tools/simulate_routes.lua --ahead $$level --ahead-at $$segs"; \
+		$(LUA) tools/simulate_routes.lua --ahead $$level --ahead-at $$segs || exit 1; \
+	done
+	@for plus in $(SYNC_PLUS); do \
+		echo "$(LUA) tools/simulate_routes.lua --level-plus $$plus"; \
+		$(LUA) tools/simulate_routes.lua --level-plus $$plus || exit 1; \
 	done
 
 simulate-fixtures:

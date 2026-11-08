@@ -218,6 +218,36 @@ describe("tools/simulate_routes.lua", function()
             assert.equal(2, code, out)
             assert.is_truthy(out:find("--ahead needs a level 1..60", 1, true), out)
         end)
+
+        it("--ahead-at: plays to the middle of a segment, then jumps with the quests of the log", function()
+            local code, out = run("--ahead 6 --ahead-at no-such-segment,tl-deathknell "
+                .. "tests/fixtures/core/FastesBoooy_TestComposed")
+            assert.equal(0, code, out)
+            assert.is_truthy(out:find("OK   test-composed (Scourge PALADIN Horde) ahead: level 6 at "
+                .. "no-such-segment,tl-deathknell:", 1, true), out)
+            assert.is_truthy(out:find("sync: at step 9 (tl-deathknell) with 1 quest(s) in the log: level 6: "
+                .. "tl-deathknell -> tl-brill", 1, true), out)
+            assert.is_truthy(out:find("1 dropped quest(s) abandoned, 0 incomplete left in the log", 1, true), out)
+            code, out = run("--ahead 6 --ahead-at nope tests/fixtures/core/FastesBoooy_TestComposed")
+            assert.equal(1, code, out)
+            assert.is_truthy(out:find("--ahead-at: none of the segments nope is in this route", 1, true), out)
+            code, out = run("--ahead-at tl-deathknell")
+            assert.equal(2, code, out)
+            assert.is_truthy(out:find("--ahead-at needs --ahead L", 1, true), out)
+        end)
+
+        it("--level-plus: normal play above the plan in auto mode, no jump over the segment ends", function()
+            local code, out = run("--level-plus 3 tests/fixtures/core/FastesBoooy_TestComposed")
+            assert.equal(0, code, out)
+            assert.is_truthy(out:find("OK   test-composed (Scourge PALADIN Horde) level plan +3 (auto): 26 steps", 1,
+                true), out)
+            assert.is_truthy(out:find("sync: none suggested", 1, true), out)
+            code, out = run("--level-plus 0")
+            assert.equal(2, code, out)
+            assert.is_truthy(out:find("--level-plus needs a number 1..10", 1, true), out)
+            code, out = run("--level-plus 2 --ahead 5")
+            assert.equal(2, code, out)
+        end)
     end)
 
     it("handles its options", function()

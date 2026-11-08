@@ -240,7 +240,9 @@ describe("level sync", function()
         end)
 
         it("drops the bg goals before the floor", function()
-            local m, ns = boot(7)
+            -- level 13: s1 and s2 are outleveled; s2's quests are what the jump to s3 skips (in s1 only
+            -- 91002 of the log is left: no reason to jump on its own -- tests/spec/core_sync_keep_spec.lua)
+            local m, ns = boot(13)
             m:AddQuestToLog(91001)
             H.settle(m)
             assert.equal("s1-t1", H.cur(ns))
@@ -249,17 +251,19 @@ describe("level sync", function()
             H.settle(m)
             assert.equal("s1-go", H.cur(ns))
             assert.same({ "s1-bg" }, H.ids(E(ns):GetBackground()))
-            E(ns):ApplySync()
-            assert.same({}, H.ids(E(ns):GetBackground()))
+            assert.is_true(E(ns):ApplySync())
+            assert.equal("s3-a6", H.cur(ns))
+            assert.same({ "s2-train" }, H.ids(E(ns):GetBackground()), "only the skipped trainer visit stays")
             assert.is_true(done(ns, "s1-bg"))
             assert.is_true(done(ns, "s1-t2"), "below the floor although 91002 is still in the log")
+            assert.same({ 91002 }, E(ns):GetDroppedQuests(), "turned in below the floor only")
             -- abandoning it to clean the log: its steps are all below the floor, nothing is given up
             local mark = #m.chat
             m:AbandonQuest(91002)
             H.settle(m, 1)
             assert.is_nil(ns.cdb.gaveUp[91002])
             assert.same({}, H.chat(m, mark + 1))
-            assert.equal("s2-a3", H.cur(ns))
+            assert.equal("s3-a6", H.cur(ns))
         end)
 
         it("Prev beyond the floor only pins the view; Forward moves it back", function()
@@ -578,7 +582,7 @@ describe("route data questMeta", function()
         return tonumber(out:match("EXIT=(%d+)%s*$")), out
     end
 
-    it("gen_route_data writes level / reqLevel / preAll / preAny from the DB snapshot", function()
+    it("gen_route_data writes level / reqLevel / preAll / preAny / items from the DB snapshot", function()
         local code, out = run("lua5.1 tools/gen_route_data.lua --stdout " .. H.LIB_DIR)
         assert.equal(0, code, out)
         local chunk = assert(loadstring(out))
@@ -591,6 +595,11 @@ describe("route data questMeta", function()
         local Gen = require("gen_route_data")
         assert.equal("[1] = { level = 5, reqLevel = 3, preAll = { 7, 9 }, preAny = { 2 } }",
             Gen.RenderQuestMeta({ id = 1, level = 5, reqLevel = 3, preAll = { 7, 9 }, preAny = { 2 } }))
+        assert.equal("[2] = { level = 5, items = { 8391, 8392 } }",
+            Gen.RenderQuestMeta({ id = 2, level = 5, items = { 8391, 8392 } }))
+        -- the objective items of the DB record (objectives.items)
+        local meta = Gen.QuestMeta({ quests = { [2581] = true } }, H.db())
+        assert.same({ 8391, 8392, 8393 }, meta[1].items)
     end)
 
     it("a composed route gets the library questMeta under its own data", function()

@@ -247,7 +247,7 @@ describe("step descriptions", function()
         assert.equal("Learn: Seal of Righteousness", train[2].text)
         local manual = S():Describe(stepById("tr-manual"))
         assert.same({ "manual", "note" }, kinds(manual))
-        assert.equal("Press \"Next\" when done", manual[1].text)
+        assert.equal("Press \"Forward\" when done", manual[1].text)
         assert.equal("Accept: Rude Awakening", S():Label(stepById("tr-accept-363")))
     end)
 

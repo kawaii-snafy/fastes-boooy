@@ -27,10 +27,10 @@ FastesBoooy.AddRouteData("fx-clean", {
     questMeta = {
         [363] = { level = 1, reqLevel = 1 },
         [364] = { level = 2, reqLevel = 1 },
-        [376] = { level = 2, reqLevel = 2 },
+        [376] = { level = 2, reqLevel = 2, items = { 3264, 3265 } },
         [380] = { level = 4, reqLevel = 2, preAny = { 376 } },
-        [381] = { level = 4, reqLevel = 2, preAny = { 380 } },
+        [381] = { level = 4, reqLevel = 2, preAny = { 380 }, items = { 3266 } },
         [3901] = { level = 3, reqLevel = 1, preAny = { 364 } },
-        [3902] = { level = 3, reqLevel = 2, preAny = { 376 } },
+        [3902] = { level = 3, reqLevel = 2, preAny = { 376 }, items = { 11127 } },
     },
 })

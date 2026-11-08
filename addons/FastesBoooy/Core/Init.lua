@@ -324,8 +324,11 @@ ns.DEFAULTS = {
                            -- abandoned by hand -- its accept step and the skip marks made for it
         -- cursorHint = n, cursorHintId = "<step id>": high-water mark of the cursor
         -- syncFloor = { route = "<route id>", stepId = "<step id>", from = "<segment id>", level = n,
-        --               at = "<step id>", hint = { n, "<step id>", "<route id>" }, prev = <older floor> }:
-        --             level sync (Core/Engine.lua) -- the steps before stepId count as done
+        --               at = "<step id>", hint = { n, "<step id>", "<route id>" },
+        --               keep = { { id = "<step id>", type = "train" | "sethearth" | "fp" }, ... },
+        --               prev = <older floor> }:
+        --             level sync (Core/Engine.lua) -- the steps before stepId count as done, except the
+        --             along-the-way goals: quests of the log, the skipped service visits in `keep`
         -- syncDismissed = { route = "<route id>", segment = "<segment id>", level = n }: no level-sync
         --             suggestion for that segment until the next level-up
     },

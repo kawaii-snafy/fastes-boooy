@@ -65,10 +65,26 @@
 -- Player ahead of the route (level sync, Core/Engine.lua): --ahead L starts a FRESH character at
 -- level L at the route start (default settings: levelSync "ask", skipGray on). When the engine
 -- suggests a level sync (GetSyncSuggestion) -- at the start or later -- the simulator "clicks"
--- the banner's jump button (Engine:ApplySync) and plays on to the end. While playing it refuses
--- an accept whose route-quest prerequisites (DB preQuestGroup: all, preQuestSingle: one; quests
--- the route does not accept count as met) are not turned in: "unreachable accept" (the engine
--- should have skipped it). Without --ahead nothing of this happens (normal runs are unchanged).
+-- the banner's jump button (Engine:ApplySync) and plays on to the end. With --ahead-at SEG[,SEG...]
+-- the character instead plays the route normally up to the middle of the first of those segments
+-- the route has (quests of that part in the log), is then raised to level L and the suggestions
+-- are applied from there (a jump with a quest log). --level-plus N plays the whole route with the
+-- player N levels above the plan (linear within each segment's `levels`) in levelSync "auto":
+-- the engine jumps by itself when it finds a jump worth it.
+-- In these "sync" runs the simulator also
+--   * refuses an accept whose route-quest prerequisites (DB preQuestGroup: all, preQuestSingle: one;
+--     quests the route does not accept count as met) are not turned in: "unreachable accept" (the
+--     engine should have skipped it);
+--   * refuses a `collect` whose items only quests need that the player does not have and can no
+--     longer take (questMeta items; the engine should have made it void);
+--   * abandons, after every jump, the quests the engine names as dropped (Engine:GetDroppedQuests:
+--     what the chat line asks the player to do);
+--   * after a jump: a `fly` to a flight path whose `fp` step the jump skipped must show the engine's
+--     hint (Engine:FlightPathPending) -- the player then travels there instead of flying; a `hearth`
+--     with the hearthstone bound elsewhere must show the bind hint (Steps:Describe) -- the player
+--     travels there instead; without the hint the run fails (counted in the summary);
+--   * fails when the route ends with a COMPLETE quest still in the log (a turn-in the jump lost).
+-- Without these options nothing of this happens (normal runs are unchanged).
 --
 -- Exit status: 0 = every simulation passed (or nothing to simulate), 1 = a failure,
 -- 2 = usage error.
@@ -112,6 +128,9 @@ usage: lua5.1 tools/simulate_routes.lua [options] [module-dir ...]
   --write-state FILE  write the game state at the end (needs exactly one simulation)
   --ahead L        player ahead of the route: a fresh character at level L at the route start;
                    level-sync suggestions are applied, unreachable accepts fail the run
+  --ahead-at SEG[,SEG...]  with --ahead L: play normally to the middle of the first of these
+                   segments the route has, then level L and the suggestions (a jump with quests in the log)
+  --level-plus N   play the route N (1..10) levels above its plan, levelSync "auto"
   --harness DIR    simulate a synthetic route that only uses library segments of the
                    library module DIR, for one --profile (race and class required)
   --segments ID,...   library segments of the harness route (default: all, TOC order)
@@ -136,6 +155,17 @@ local function parseArgs(argv)
             local v = tonumber(argv[i])
             if not v or v < 1 or v > 60 or v % 1 ~= 0 then return nil, "--ahead needs a level 1..60" end
             o.ahead = v
+        elseif a == "--ahead-at" then
+            i = i + 1
+            local v = argv[i]
+            if v == nil or v == "" then return nil, "--ahead-at needs segment ids" end
+            o.aheadAt = {}
+            for id in v:gmatch("[^,%s]+") do o.aheadAt[#o.aheadAt + 1] = id end
+        elseif a == "--level-plus" then
+            i = i + 1
+            local v = tonumber(argv[i])
+            if not v or v < 1 or v > 10 or v % 1 ~= 0 then return nil, "--level-plus needs a number 1..10" end
+            o.levelPlus = v
         elseif a == "--state" or a == "--write-state" or a == "--harness" or a == "--segments"
             or a == "--profile" then
             i = i + 1
@@ -160,6 +190,9 @@ local function parseArgs(argv)
     end
     if o.route == nil and argv[#argv] == "--route" then return nil, "--route needs an id" end
     if not o.locale then return nil, "--locale needs a code" end
+    if o.aheadAt and not o.ahead then return nil, "--ahead-at needs --ahead L" end
+    if o.levelPlus and o.ahead then return nil, "--level-plus and --ahead are exclusive" end
+    o.sync = (o.ahead or o.levelPlus) and true or nil -- a "sync" run (see the header)
     return o
 end
 
@@ -202,7 +235,8 @@ local function warn(S, fmt, ...)
 end
 
 local checkBgLeft -- defined below (needs engine())
-local checkReachable -- defined below (--ahead)
+local checkReachable -- defined below (sync runs)
+local checkCollect -- defined below (sync runs)
 
 local function vlog(S, fmt, ...)
     if S.opts.verbose then print(format(fmt, ...)) end
@@ -339,6 +373,27 @@ checkReachable = function(S, step, q)
     end
 end
 
+-- sync runs: a `collect` whose items (questMeta items: the route quests with the item as an
+-- objective) only quests need that are not in the log, not turned in and that the route no longer
+-- accepts (every accept of them before the natural cursor) -- items for quests the player does not
+-- have (the engine should have made the action void)
+checkCollect = function(S, step, a)
+    local E = engine(S)
+    local quests = E.itemQuests and E.itemQuests[a.item]
+    if not quests or #quests == 0 then return end
+    local m, nat = S.m, E:GetNaturalCursor() or (#E:GetSteps() + 1)
+    for _, q in ipairs(quests) do
+        if m:IsOnQuest(q) or m.completed[q] then return end
+        for _, i in ipairs(E.acceptAt[q] or {}) do
+            if i >= nat then return end
+        end
+    end
+    local l = {}
+    for _, q in ipairs(quests) do l[#l + 1] = tostring(q) end
+    fail(S, "step %s: collect %d x%d for quest(s) %s the player does not have and can no longer take", stepName(step),
+        a.item, a.count, table.concat(l, ", "))
+end
+
 local function prepareTurnin(S, step, q)
     local m = S.m
     if m:IsQuestCompleted(q) then return end
@@ -433,7 +488,7 @@ local function doQuests(S, step, turnins, accepts)
         if not saved[e.questID] and m.completed[e.questID] == nil then m.questLog[#m.questLog + 1] = e end
     end
     for _, q in ipairs(accepts) do
-        if S.opts.ahead then checkReachable(S, step, q) end
+        if S.opts.sync then checkReachable(S, step, q) end
         local why = whyNotOffered(S, q)
         if why then warn(S, "step %s: quest %d would not be offered yet: %s", stepName(step), q, why) end
     end
@@ -658,8 +713,42 @@ local function moveTo(S, at)
     S.m:MoveTo(at.map, at.x, at.y)
 end
 
+-- After a level sync (sync runs): the route's `fp` step of `place` below the sync floor that this
+-- run never performed -- the flight path is not known.
+local function skippedFlightPath(S, place)
+    local E = engine(S)
+    local floorIndex = E.floor or 0
+    if #S.syncs == 0 or floorIndex <= 1 or S.flightPaths[place] then return false end
+    local steps = E:GetSteps()
+    for i = 1, floorIndex - 1 do
+        for _, a in ipairs(steps[i].actions) do
+            if a.type == "fp" and a.place == place then return true end
+        end
+    end
+    return false
+end
+
+-- the hint lines Steps:Describe adds to a step (Engine:FlightPathPending / HearthBindMismatch)
+local function hasHint(S, step)
+    for _, l in ipairs(S.ns.Steps:Describe(step)) do
+        if l.hint then return true end
+    end
+    return false
+end
+
 local function doFly(S, step, a)
     local m, at = S.m, step.at
+    if skippedFlightPath(S, a.place) then
+        -- the jump skipped the flight path: the step must say so; the player travels there
+        if not (engine(S):FlightPathPending(a.place) and hasHint(S, step)) then
+            fail(S, "step %s: fly to %s, but its flight path was skipped by the level sync and the step does not "
+                .. "say so", stepName(step), tostring(a.place))
+        end
+        S.stats.travelled = S.stats.travelled + 1
+        vlog(S, "    flight path %s skipped by the level sync: travelling there", tostring(a.place))
+        moveTo(S, at)
+        return
+    end
     m:OpenTaxi({
         { name = "Here", state = "CURRENT" },
         { name = a.place, state = "REACHABLE", mapID = at.map, destX = at.x, destY = at.y, flightTime = FLIGHT_TIME },
@@ -674,11 +763,25 @@ end
 
 local function doHearth(S, step)
     local m, at = S.m, step.at
+    local hinted = #S.syncs > 0 and hasHint(S, step) -- before the hearthstone moves the player
     m:UseHearthstone()
     local d = m:Distance(m.player.mapID, m.player.x, m.player.y, at.map, at.x, at.y)
+    local a = S.ns.Steps:HasAction(step, "hearth")
+    local bindName = m.bind and m.bind.name
+    local otherPlace = bindName ~= nil and a ~= nil and not engine(S):PlaceMatches(a.place, bindName)
     if not d or d > (step.radius or 80) then
-        warn(S, "step %s: the hearthstone bind point (%s) is not at the step location; teleporting",
-            stepName(step), tostring(m.bind and m.bind.name))
+        if #S.syncs > 0 and otherPlace then
+            -- after a level sync the bind of the skipped part may be missing: the step must say so
+            if not hinted then
+                fail(S, "step %s: the hearthstone is bound to %s, not the step's place, after the level sync and "
+                    .. "the step does not say so", stepName(step), tostring(m.bind and m.bind.name))
+            end
+            S.stats.travelled = S.stats.travelled + 1
+            vlog(S, "    hearthstone bound to %s: travelling there", tostring(m.bind and m.bind.name))
+        else
+            warn(S, "step %s: the hearthstone bind point (%s) is not at the step location; teleporting",
+                stepName(step), tostring(m.bind and m.bind.name))
+        end
         moveTo(S, at)
     end
 end
@@ -738,6 +841,7 @@ local function performStep(S, step)
         if not acceptedHere[a.quest] then doComplete(S, step, a) end
     end)
     each({ collect = true }, function(a)
+        if S.opts.sync then checkCollect(S, step, a) end
         local need = a.count - m:GetItemCount(a.item)
         if need > 0 then m:AddItem(a.item, need) end
         vlog(S, "    +%d item %d", need, a.item)
@@ -873,7 +977,8 @@ local function newMock(S, extra, fresh)
         locale = S.opts.locale,
         player = {
             race = p.race, class = p.class, faction = p.faction,
-            level = S.opts.ahead or (st and st.level) or (route.levels and route.levels[1]) or 1,
+            -- --ahead L: a fresh character at L (--ahead-at: raised to L mid-route instead)
+            level = (not S.opts.aheadAt and S.opts.ahead) or (st and st.level) or (route.levels and route.levels[1]) or 1,
             mapID = mapID, x = x, y = y,
         },
     }
@@ -967,7 +1072,7 @@ local function restartChecks(S)
     copyGameState(S.m, m3)
     local ns3 = bootMock(S, m3)
     checkClean(S, m3, "after a cold start")
-    if S.opts.ahead then
+    if S.opts.sync then
         -- the sync floor was in the lost SavedVariables: the engine suggests the jump again (the
         -- player clicks it, like at the start)
         local n = 0
@@ -1016,21 +1121,72 @@ local function segText(seg)
     return format("%s (%s)", tostring(textEn(t) or (seg and seg.id)), tostring(seg and seg.id))
 end
 
--- --ahead: apply a level-sync suggestion like a click on the banner's jump button
+-- sync runs: every applied level sync (the banner's button or the engine itself in "auto"), from
+-- the engine's SYNC_APPLIED message
+local function listenSyncs(S)
+    S.ns:Listen("SYNC_APPLIED", function(_, record)
+        if type(record) ~= "table" then return end
+        S.syncs[#S.syncs + 1] = format("level %s: %s -> %s", tostring(record.level), tostring(record.from),
+            tostring(record.to))
+        S.dropCheck = true
+        vlog(S, "  [sync] level %s: %s -> %s (step %s)", tostring(record.level), tostring(record.from),
+            tostring(record.to), tostring(record.stepId))
+    end)
+end
+
+-- after a jump: the player abandons the quests the engine's chat line names (Engine:GetDroppedQuests)
+local function abandonDropped(S)
+    if not S.dropCheck then return end
+    S.dropCheck = false
+    local E, m = engine(S), S.m
+    local list = E:GetDroppedQuests()
+    for _, q in ipairs(list) do
+        if m:IsOnQuest(q) then
+            m:AbandonQuest(q)
+            S.stats.dropped = S.stats.dropped + 1
+        end
+    end
+    if #list > 0 then
+        vlog(S, "    abandoned %d quest(s) the jump dropped: %s", #list, table.concat(list, ", "))
+        settle(S, 1)
+    end
+end
+
+-- sync runs: apply a level-sync suggestion like a click on the banner's jump button
 local function applySuggestedSync(S)
     local E = engine(S)
     local sug = E:GetSyncSuggestion()
     if not sug then return false end
-    local level, from, to, toId = sug.level, sug.from, sug.to, sug.toStepId
-    vlog(S, "  [sync] level %d: %s -> %s (step %s)", level, segText(from), segText(to), tostring(toId))
+    local from, to, toId = sug.from, sug.to, sug.toStepId
     if not E:ApplySync() then fail(S, "ApplySync refused the suggestion %s -> %s", segText(from), segText(to)) end
     settle(S)
     local cur = E:GetCurrentStep()
     if not cur or E:GetCursor() < E:IndexOf(toId) then
         fail(S, "after the level sync to %s the cursor is on %s", tostring(toId), stepName(cur))
     end
-    S.syncs[#S.syncs + 1] = format("level %d: %s -> %s", level, tostring(from.id), tostring(to.id))
+    abandonDropped(S)
     return true
+end
+
+-- --ahead-at: index of the middle of the first listed segment the route has (filtered steps)
+local function aheadAtIndex(S)
+    local E = engine(S)
+    for _, id in ipairs(S.opts.aheadAt) do
+        for _, run in ipairs(E.segRuns or {}) do
+            if run.id == id then return run.first + floor((run.last - run.first) / 2), id end
+        end
+    end
+    fail(S, "--ahead-at: none of the segments %s is in this route", table.concat(S.opts.aheadAt, ","))
+end
+
+-- --level-plus N: the player's level N above the plan at the cursor (linear within the segment levels)
+local function planLevel(S, cursor)
+    local E = engine(S)
+    local run = E.segRuns[E.segRunOf[cursor]]
+    local lv = run and run.seg.levels
+    if type(lv) ~= "table" then return nil end
+    local frac = (run.last > run.first) and (cursor - run.first) / (run.last - run.first) or 0
+    return math.min(S.m.maxLevel or 60, floor(lv[1] + (lv[2] - lv[1]) * frac) + S.opts.levelPlus)
 end
 
 local function simulate(S)
@@ -1050,7 +1206,18 @@ local function simulate(S)
     local steps = E:GetSteps()
     if #steps == 0 then fail(S, "no step matches profile %s/%s", S.profile.race, S.profile.class) end
     S.stats.steps = #steps
-    if S.opts.ahead then applySuggestedSync(S) end
+    if S.opts.sync then listenSyncs(S) end
+    if S.opts.levelPlus then
+        ns.db.settings.levelSync = "auto"
+        ns:Fire("SETTINGS_CHANGED", "levelSync", "auto")
+        settle(S)
+    end
+    local midAt, midSeg
+    if S.opts.aheadAt then
+        midAt, midSeg = aheadAtIndex(S)
+    elseif S.opts.ahead then
+        applySuggestedSync(S)
+    end
 
     local maxIter = #steps * 3 + 20
     local last = 0
@@ -1065,6 +1232,32 @@ local function simulate(S)
             fail(S, "cursor moved backwards: %d -> %d (%s)", last, cursor, stepName(E:GetCurrentStep()))
         end
         last = cursor
+        if midAt and cursor >= midAt then
+            -- --ahead-at: the player outlevels the route here, with the quests of this part in the log
+            midAt = nil
+            vlog(S, "  [ahead] at step %d (%s): level %d -> %d, %d quest(s) in the log", cursor, midSeg,
+                m.player.level, S.opts.ahead, #m.questLog)
+            S.mid = format("at step %d (%s) with %d quest(s) in the log", cursor, midSeg, #m.questLog)
+            m:SetLevel(math.max(m.player.level, S.opts.ahead), 0)
+            settle(S)
+            if not applySuggestedSync(S) then
+                fail(S, "--ahead-at: no level-sync suggestion at step %d %s at level %d", cursor,
+                    stepName(E:GetCurrentStep()), m.player.level)
+            end
+            cursor = E:GetCursor()
+            if cursor == nil then break end
+            last = cursor
+        elseif S.opts.levelPlus then
+            local want = planLevel(S, cursor)
+            if want and m.player.level < want then
+                m:SetLevel(want, 0)
+                settle(S)
+                abandonDropped(S) -- "auto": the engine may have jumped
+                cursor = E:GetCursor()
+                if cursor == nil then break end
+                last = cursor
+            end
+        end
         local step = E:GetCurrentStep()
         vlog(S, "  [%d/%d] %s", cursor, #steps, stepName(step))
         performStep(S, step)
@@ -1102,10 +1295,22 @@ local function simulate(S)
             fail(S, "cursor moved backwards after the background steps: %d -> %d (%s)", now, after,
                 stepName(E:GetCurrentStep()))
         end
-        if S.opts.ahead and applySuggestedSync(S) then checkBgLeft(S) end
+        if S.opts.ahead and not midAt and applySuggestedSync(S) then checkBgLeft(S) end
+        abandonDropped(S)
     end
     S.stats.iterations = iter
     checkBgLeft(S)
+    if S.opts.sync then
+        -- a complete quest left in the log: a turn-in the level sync lost
+        local complete, open = {}, 0
+        for _, e in ipairs(m.questLog) do
+            if m:_isComplete(e) then complete[#complete + 1] = tostring(e.questID) else open = open + 1 end
+        end
+        if #complete > 0 then
+            fail(S, "route finished with complete quest(s) in the log (turn-ins lost): %s", table.concat(complete, ", "))
+        end
+        S.stats.leftInLog = open
+    end
     for i, s in ipairs(steps) do
         if s.bg and not S.bgSeen[s.id] and not E:IsDone(i) then
             warn(S, "background step %s was never listed 'along the way'", stepName(s))
@@ -1154,12 +1359,17 @@ local function runOne(opts, module, toc, route, profile, db, extra)
         opts = opts, module = module, toc = toc, route = route, profile = profile, db = db,
         warnings = {}, bgSeen = {}, bgOpen = {}, gossipUsed = {},
         stats = { steps = 0, iterations = 0, accepted = 0, turnedIn = 0, bg = 0, gossip = 0, delayed = 0,
-            estimatedXP = 0 },
+            estimatedXP = 0, dropped = 0, travelled = 0, leftInLog = 0 },
         state = opts.startState, harness = extra and extra.harness, flightPaths = {}, syncs = {},
     }
     for _, fp in ipairs(S.state and S.state.flightPaths or {}) do S.flightPaths[fp] = true end
     local label = format("%s (%s %s %s)", route.id, profile.race, profile.class, profile.faction)
-    if opts.ahead then label = label .. format(" ahead: level %d", opts.ahead) end
+    if opts.ahead then
+        label = label .. format(" ahead: level %d", opts.ahead)
+        if opts.aheadAt then label = label .. " at " .. table.concat(opts.aheadAt, ",") end
+    elseif opts.levelPlus then
+        label = label .. format(" level plan +%d (auto)", opts.levelPlus)
+    end
     if opts.verbose then print("== " .. label) end
     local ok, err = pcall(simulate, S)
     if opts.verbose and S.m then
@@ -1178,13 +1388,15 @@ local function runOne(opts, module, toc, route, profile, db, extra)
             st.estimatedXP > 0 and format(", %d quest XP estimated", st.estimatedXP) or "",
             S.coldStart or "no restart checks",
             #S.warnings > 0 and format(", %d warning(s)", #S.warnings) or ""))
-        if opts.ahead then
+        if opts.sync then
             local E = S.ns.Engine
             local void = { gray = 0, unreachable = 0, orphan = 0 }
             for _, why in pairs(E.void or {}) do void[why] = (void[why] or 0) + 1 end
-            print(format("     sync: %s; at the end %d gray / %d unreachable accept(s) and %d never-taken "
-                .. "complete/turnin action(s) skipped", #S.syncs > 0 and table.concat(S.syncs, "; ") or "none suggested",
-                void.gray, void.unreachable, void.orphan))
+            print(format("     sync: %s%s; at the end %d gray / %d unreachable accept(s) and %d never-taken "
+                .. "complete/turnin/collect action(s) skipped; %d dropped quest(s) abandoned, %d incomplete left in "
+                .. "the log; %d fly/hearth step(s) travelled (flight path / bind skipped by the jump)",
+                S.mid and (S.mid .. ": ") or "", #S.syncs > 0 and table.concat(S.syncs, "; ") or "none suggested",
+                void.gray, void.unreachable, void.orphan, st.dropped, st.leftInLog, st.travelled))
         end
         if not opts.verbose then
             for _, w in ipairs(S.warnings) do print("     warning: " .. w) end

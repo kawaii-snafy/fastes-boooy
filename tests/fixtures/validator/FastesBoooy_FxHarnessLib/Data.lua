@@ -21,9 +21,9 @@ FastesBoooy.AddLibraryData({
         ["Undercity"] = { area = 1497, en = "Undercity", ru = "Подгород" },
     },
     questMeta = {
-        [367] = { level = 6, reqLevel = 6 },
+        [367] = { level = 6, reqLevel = 6, items = { 2858 } },
         [370] = { level = 9, reqLevel = 5, preAny = { 427 } },
-        [381] = { level = 4, reqLevel = 2, preAny = { 380 } },
-        [382] = { level = 5, reqLevel = 2, preAny = { 381 } },
+        [381] = { level = 4, reqLevel = 2, preAny = { 380 }, items = { 3266 } },
+        [382] = { level = 5, reqLevel = 2, preAny = { 381 }, items = { 2885 } },
     },
 })
