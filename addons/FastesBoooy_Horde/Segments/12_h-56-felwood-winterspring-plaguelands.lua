@@ -76,8 +76,9 @@
 --   * Hearth: Orgrimmar (Felwood / Winterspring, used from Maybess south of Bloodvenom), Undercity (Plaguelands), not
 --     Everlook.
 --   * Densify pass (r3): added 8460 Timbermaw Ally > 8462 Speak to Nafien (Grazle; Deadwood Village next to Ror),
---     4102 Cleansing Felwood (Maybess; Blood Amber from the Irontree Warpwoods next to the Toxic Horrors), 81952 turn-in
---     (library book from Azshara, XP unknown), 5094 (moved here from the Undercity of h-50), the Redpath chain 5152 >
+--     4102 Cleansing Felwood (Maybess; Blood Amber from the Irontree Warpwoods next to the Toxic Horrors), 81952
+--     (library book looted in Azshara; Owen Thadd offers and takes the quest at once, XP unknown), 5094 (moved here
+--     from the Undercity of h-50), the Redpath chain 5152 >
 --     5153 > 5154 > 5210 > 5181 (the Pamela visit, same id h-58-pamela-redpath, moved into the Western Plaguelands loop
 --     4 as an excursion to Darrowshire; Marlene, Joseph's monument, Chromie and the Andorhal tome on the way back;
 --     Carlin's villains on the way from Tirion to the chapel), an optional Stratholme block (5251, 5212, 5243, 5214 at
@@ -394,9 +395,12 @@ FastesBoooy.AddLibrarySegment({
                        .. "земель).",
                    en = "Innkeeper Norman: bind the hearthstone (you hearth back from the Western "
                        .. "Plaguelands)." } },
-        { turnin = 81952, npc = 211022, at = { 1458, 73.40, 33.00 }, -- WARN-OK: xp-unknown (Forever-new library quest; /fb xp records it)
-          note = { ru = "Квартал Магов, Оуэн Тэдд: книга «Этикет на каждый день» из Азшары.",
-                   en = "Magic Quarter, Owen Thadd: the book Everyday Etiquette from Azshara." } },
+        -- WARN-OK (xp-unknown, next step): a Forever-new library quest, /fb xp records the real value.
+        { accept = 81952, complete = 81952, turnin = 81952, npc = 211022, at = { 1458, 73.40, 33.00 }, -- WARN-OK: xp-unknown
+          note = { ru = "Квартал Магов, Оуэн Тэдд: книга «Этикет на каждый день» из Азшары - возьмите задание (книга в "
+                       .. "сумках) и сразу сдайте.",
+                   en = "Magic Quarter, Owen Thadd: the book Everyday Etiquette from Azshara - take the quest (the book "
+                       .. "is in your bags) and turn it in at once." } },
         { accept = 5094, npc = 10879, at = { 1458, 63.90, 44.08 },
           note = { ru = "Предвестник Балтазад: «Призыв к оружию: Чумные земли!» (сдача в Бастионе).",
                    en = "Harbinger Balthazad: A Call to Arms: The Plaguelands! (turned in at the Bulwark)." } },
@@ -516,14 +520,19 @@ FastesBoooy.AddLibrarySegment({
         { turnin = 6025, npc = 11610, at = { 1422, 51.92, 28.06 },
           note = { ru = "Криста: дело закрыто.", en = "Kirsta: business finished." } },
         { id = "h-57-chromie", accept = 4971, npc = 10667, at = { 1422, 39.46, 66.76 },
-          note = { ru = "На юг в Андорал, таверна: Хроми — «Вопрос времени».",
-                   en = "South to Andorhal, the inn: Chromie - A Matter of Time." } },
+          note = { ru = "На юг в Андорал, таверна: Хроми — «Вопрос времени» (она даёт темпоральный смещатель).",
+                   en = "South to Andorhal, the inn: Chromie - A Matter of Time (she gives you the Temporal "
+                       .. "Displacer)." } },
         { complete = 964, bg = true, at = { 1422, 44.58, 68.47 },
           note = { ru = "Попутно в Андорале: скелеты-палачи и послушники (53-56) — 15 фрагментов.",
                    en = "On the way in Andorhal: Skeletal Executioners and Acolytes (53-56) - 15 fragments." } },
-        { complete = 4971, at = { 1422, 48.14, 65.18 },
-          note = { ru = "Восток Андорала: 10 временных паразитов (55-57).",
-                   en = "East Andorhal: 10 Temporal Parasites (55-57)." } },
+        { complete = 4971, use = 12627, at = { 1422, 48.14, 65.18 },
+          note = { ru = "Восток Андорала: используйте темпоральный смещатель рядом с силосной башней, затем убейте "
+                       .. "появившихся временных паразитов (55-57) - 15 по Wowhead Forever (в БД и WCLBox 10; верен "
+                       .. "счётчик в журнале). Паразиты сами не стоят - без смещателя их нет.",
+                   en = "East Andorhal: use the Temporal Displacer next to a silo, then kill the Temporal Parasites "
+                       .. "(55-57) that appear - 15 per Wowhead Forever (the DB and WCLBox say 10; trust the quest log "
+                       .. "counter). They do not stand around - no displacer, no parasites." } },
         { turnin = 4971, accept = 4972, npc = 10667, at = { 1422, 39.46, 66.76 },
           note = { ru = "Хроми: «Отсчет времени».", en = "Chromie: Counting Out Time." } },
         { complete = 4972, at = { 1422, 42.98, 70.07 },

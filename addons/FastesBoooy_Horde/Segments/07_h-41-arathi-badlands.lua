@@ -31,11 +31,13 @@
 --          of Inner Binding (651) -> Faldir's Cove: 663 (Lolo > Shakes), 662 (Nilzlix), 664 (Steelgut), 665
 --          (Phizzlethorpe escort) > 666 (Draxlegauge); wrecks (662), Daggerspine naga (664), Elven Gems (666);
 --          662, 664, 666 > 668 > 669 (Shakes; carried to Booty Bay, h-44).
---   BL 1 : Rigglefuzz 703 (+ optional 2418 and an Uldaman run); Lotwil 710, Lesser Rock Elementals, Lotwil 710 > 711,
+--   BL 1 : Rigglefuzz 703 (+ optional 2418 and an Uldaman run); Martek 1106 > 1108 (Stonevault troggs 300 yards
+--          south-east) > 1137 (carried to Fizzle, h-46); Lotwil 710, Lesser Rock Elementals, Lotwil 710 > 711,
 --          Rock Elementals (north-west);
 --          Kargath: fp, hearth, 782 (Gorn), 2258 (Jarkal), 1419 + 1420 (Neeka; 1420 carried to Stonard, h-44).
 --   BL 2 : Lotwil 711 > 712; south-west loop: Elder Crag Coyotes + Giant Buzzards (1419, 2258 gizzards / fangs, 703),
---          Boss Tho'grun (782), Greater Rock Elementals (712, 2258 shards), level gate; Rigglefuzz 703 (+ optional
+--          Greater Rock Elementals (712, 2258 shards), Boss Tho'grun (782: patrols a ~3,000-yard loop through the
+--          southern Badlands - a bg reminder after Lotwil, the blocking step next to the gate camp), level gate; Rigglefuzz 703 (+ optional
 --          2418), Lotwil 712, Kargath 1419, 782; Searing Gorge (550 yards west through the canyon): 4449 Caught! (8 Dark
 --          Iron Geologists + 15 Silk Cloth); Kargath 2258.
 -- Deviations from the plan (documented in the handoff):
@@ -44,7 +46,8 @@
 --     Lieutenant Valorcall 38, Prince Galen Trollbane 44), 673 Foul Magics (Marez Cowl 40), 679 Call to Arms /
 --     680 The Real Threat (Boulderfist Shamans / Lords 38-40, Or'Kalar 40). 651 Stones of Binding (left over from
 --     h-31) IS taken now (densification pass): Iridescent Shards -> the East / Outer / West stones (Exiles 38-39,
---     non-elite; mind the elite Fozruk at the East and Thenan at the Inner circle) -> the Stone of Inner Binding,
+--     non-elite; mind the elite Fozruk, whose patrol passes all four stones, and Thenan at the Inner circle) -> the
+--     Stone of Inner Binding,
 --     +2 350 yards on the mount for 2 850 XP; its follow-up 652 needs the elite Fozruk (42) - so 688 / 687 / 692
 --     (Theldurin) are out. Hammerfall is only the flight point; the plan anchors of these places sit on the nearest
 --     route steps (h-41-stone-of-inner: the 651 turn-in at the Stone of Inner Binding; h-41-keystone: travel step;
@@ -189,23 +192,28 @@ FastesBoooy.AddLibrarySegment({
                        .. "- the keys from three binding stones, turned in at the Stone of Inner Binding on the way "
                        .. "south." } },
         { complete = { [651] = { 2 } }, object = 2691, at = { 1417, 66.70, 29.70 },
-          note = { ru = "Восточный связывающий камень (к западу от Павшего Молота): резной ключ. Вокруг изгои 38-39 и "
-                       .. "элитный Фозрук (42) - дождитесь, пока он отойдёт.",
-                   en = "The Stone of East Binding (west of Hammerfall): the Cresting Key. Exiles 38-39 around and the "
-                       .. "elite Fozruk (42) - wait until he walks away." } },
+          note = { ru = "Восточный связывающий камень (к западу от Павшего Молота): резной ключ. Вокруг изгои 38-39. "
+                       .. "Элитный Фозрук (42) ходит между всеми связывающими камнями - осмотритесь, прежде чем брать.",
+                   en = "The Stone of East Binding (west of Hammerfall): the Cresting Key. Exiles 38-39 around. The "
+                       .. "elite Fozruk (42) patrols between all the binding stones - check before you loot." } },
         { id = "h41-arathi-center", complete = { [651] = { 3 } }, object = 2690, at = { 1417, 52.00, 50.70 },
           note = { ru = "На юго-запад к внешнему связывающему камню (восточнее Опорного пункта Альянса - к стражникам не "
-                       .. "подходите): громовой ключ.",
+                       .. "подходите): громовой ключ. Фозрук (элита 42) проходит рядом - осмотритесь, прежде чем брать.",
                    en = "South-west to the Stone of Outer Binding (east of the Alliance Refuge Pointe - keep away from "
-                       .. "its guards): the Thundering Key." } },
+                       .. "its guards): the Thundering Key. Fozruk (elite 42) patrols past it - check before you "
+                       .. "loot." } },
         { complete = { [651] = { 1 } }, object = 2689, at = { 1417, 25.50, 30.10 },
-          note = { ru = "На северо-запад к западному связывающему камню: огненный ключ (вокруг изгои 38-39).",
-                   en = "North-west to the Stone of West Binding: the Burning Key (Exiles 38-39 around)." } },
+          note = { ru = "На северо-запад к западному связывающему камню: огненный ключ (вокруг изгои 38-39). Фозрук "
+                       .. "(элита 42) проходит вплотную к камню - осмотритесь, прежде чем брать.",
+                   en = "North-west to the Stone of West Binding: the Burning Key (Exiles 38-39 around). Fozruk (elite "
+                       .. "42) patrols right past the stone - check before you loot." } },
         { id = "h-41-stone-of-inner", turnin = 651, object = 2702, at = { 1417, 36.23, 57.38 },
           note = { ru = "На юг к внутреннему связывающему камню: сдайте ключи. Тенан (элитный великан, 42) бродит у "
-                       .. "камней - подходите, когда он далеко. «Разбить ключ-камень» (элитный Фозрук) не берите.",
+                       .. "камней, и Фозрук (элита 42) тоже проходит рядом - подходите, когда оба далеко. «Разбить "
+                       .. "ключ-камень» (элитный Фозрук) не берите.",
                    en = "South to the Circle of Inner Binding: hand in the keys at the stone. Thenan (elite giant, 42) "
-                       .. "roams the stones - go in when he is away. Skip Breaking the Keystone (elite Fozruk)." } },
+                       .. "roams the stones and Fozruk (elite 42) patrols past too - go in when both are away. Skip "
+                       .. "Breaking the Keystone (elite Fozruk)." } },
         { id = "h-41-keystone", go = true, radius = 60, at = { 1417, 34.00, 73.00 },
           note = { ru = "На юг по тропе вниз в Бухту Фалдира. Западнее - Штромгард (элитные мобы), туда не нужно.",
                    en = "South down the path into Faldir's Cove. Stromgarde to the west is full of elites - no need "
@@ -230,8 +238,10 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Доктор Драксельмер: следующее «Утонувшее сокровище» - очки Ловца сокровищ.",
                    en = "Doctor Draxlegauge: the next Sunken Treasure - the Goggles of Gem Hunting." } },
         { complete = 664, bg = true, at = { 1417, 21.67, 87.05 },
-          note = { ru = "Попутно: наги Пронзающего Гребня (38-40) вокруг затонувших кораблей к западу.",
-                   en = "On the way: Daggerspine naga (38-40) around the wrecks to the west." } },
+          note = { ru = "Попутно: наги Пронзающего Гребня (38-40) вокруг затонувших кораблей к западу. Нет ещё 15 "
+                       .. "отрезов шелка для «Попался!» (Тлеющее ущелье, 43) - собирайте с этих наг.",
+                   en = "On the way: Daggerspine naga (38-40) around the wrecks to the west. Still short of 15 Silk "
+                       .. "Cloth for Caught! (Searing Gorge, 43): loot it from these naga." } },
         { id = "h-41-arathi-highlands-field", complete = { [662] = { 1, 2 } }, object = { 2707, 2709 },
           at = { 1417, 23.22, 84.80 },
           note = { ru = "На запад, под воду: восточный корабль («Девичья Блажь») - карты и судовой журнал.",
@@ -300,6 +310,19 @@ FastesBoooy.AddLibrarySegment({
                        .. "(элита) у входа и внутри.",
                    en = "Uldaman (north along the road, entrance 44.6, 12.1): the Power Stones drop from the Shadowforge "
                        .. "dwarves (elite) at the entrance and inside." } },
+        { turnin = 1106, accept = 1108, npc = 4618, at = { 1418, 42.22, 52.69 },
+          note = { ru = "Мартек Изгнанник в 5 ярдах от Ригглфазза: письмо Физзла (из Тысячи Игл); возьмите «Индурий» - "
+                       .. "10 чешуек индурия.",
+                   en = "Martek the Exiled, 5 yards from Rigglefuzz: Fizzle's letter (from Thousand Needles); take "
+                       .. "Indurium - 10 Indurium Flakes." } },
+        { complete = 1108, at = { 1418, 50.08, 68.32 },
+          note = { ru = "На юго-восток (~300 ярдов): костоломы (39-40) и шаманы (40-41) Каменного Свода у скал - 10 "
+                       .. "чешуек индурия.",
+                   en = "South-east (~300 yards): Stonevault Bonesnappers (39-40) and Shamans (40-41) by the rocks - 10 "
+                       .. "Indurium Flakes." } },
+        { turnin = 1108, accept = 1137, npc = 4618, at = { 1418, 42.22, 52.69 },
+          note = { ru = "Обратно к Мартеку: возьмите «Новости для Физзла» (Мерцающая равнина, по пути в Танарис, h-46).",
+                   en = "Back to Martek: take News for Fizzle (Shimmering Flats, on the way to Tanaris, h-46)." } },
         { id = "h-41-lotwil-veriatus-lucien", accept = 710, npc = 2921, at = { 1418, 25.95, 44.87 },
           note = { ru = "На запад по дороге: Лотвиль Вериатус - «Изучение стихий: Камень». «Охлаждение горячих голов», "
                        .. "«Гиро...чего?» и «Камень – лучшая одежка!» не берите (нужны изделия алхимика, инженера и "
@@ -322,9 +345,10 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Хозяин таверны Шул'кар: камень возвращения - в Каргат.",
                    en = "Innkeeper Shul'kar: bind your hearthstone to Kargath." } },
         { accept = 782, npc = 1068, at = { 1418, 2.91, 45.60 },
-          note = { ru = "Горн: «Разорванные союзы» - Знак Земли с главаря То'груна (огры Гнилобрюхов на юго-западе).",
+          note = { ru = "Горн: «Разорванные союзы» - Знак Земли с главаря То'груна (огры Гнилобрюхов на юго-западе; "
+                       .. "То'грун патрулирует юг зоны - бейте, где встретите).",
                    en = "Gorn: Broken Alliances - the Sign of the Earth from Boss Tho'grun (Dustbelcher ogres to the "
-                       .. "south-west)." } },
+                       .. "south-west; he patrols the southern Badlands - kill him wherever you meet him)." } },
         { accept = 2258, npc = 6868, at = { 1418, 2.42, 46.06 },
           note = { ru = "Джаркал Замшелый Клык: «Пробежка по Бесплодным землям» - 5 вторых желудков канюка, 10 клыков "
                        .. "скального койота, 5 осколков каменного элементаля.",
@@ -341,20 +365,32 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         { turnin = 711, accept = 712, npc = 2921, at = { 1418, 25.95, 44.87 },
           note = { ru = "Обратно на восток к Лотвилю.", en = "Back east to Lotwil." } },
+        { complete = 782, bg = true, at = { 1418, 12.62, 75.49 },
+          note = { ru = "Попутно: главарь То'грун (41-42) ходит по югу зоны (лагерь огров, южная дорога до ~61,70, "
+                       .. "мимо Ригглфазза, назад по y≈57) - встретили, убейте: Знак Земли.",
+                   en = "On the way: Boss Tho'grun (41-42) walks the southern Badlands (the ogre camp, the south road "
+                       .. "to ~61,70, past Rigglefuzz, back along y≈57) - met him, kill him: the Sign of the Earth." } },
         { id = "h-41-badlands-field-loop", complete = { [1419] = { 1 }, [703] = { 1 }, [2258] = { 1, 2 } },
           at = { 1418, 23.88, 63.47 },
           note = { ru = "На юг: старые скальные койоты (38-40) и гигантские канюки (39-41) - 30 челюстей, 10 клыков, "
                        .. "5 желудков и 4 крыла канюка.",
                    en = "South: Elder Crag Coyotes (38-40) and Giant Buzzards (39-41) - 30 jawbones, 10 fangs, 5 "
                        .. "gizzards and 4 buzzard wings." } },
-        { complete = 782, at = { 1418, 12.62, 75.49 },
-          note = { ru = "На юго-запад в лагерь огров Гнилобрюхов (40-43): главарь То'грун - Знак Земли.",
-                   en = "South-west into the Dustbelcher ogre camp (40-43): Boss Tho'grun - the Sign of the Earth." } },
         { complete = { [712] = { 1 }, [2258] = { 3 } }, at = { 1418, 3.98, 79.90 },
-          note = { ru = "Западнее: большие каменные элементали (42-44) - 5 наручей Камня и 5 осколков каменного "
-                       .. "элементаля.",
-                   en = "Further west: Greater Rock Elementals (42-44) - 5 Bracers of Rock Binding and 5 Rock "
-                       .. "Elemental Shards." } },
+          note = { ru = "На юго-запад мимо лагеря огров Гнилобрюхов к западному краю: большие каменные элементали "
+                       .. "(42-44) - 5 наручей Камня и 5 осколков каменного элементаля.",
+                   en = "South-west past the Dustbelcher ogre camp to the west edge: Greater Rock Elementals (42-44) - "
+                       .. "5 Bracers of Rock Binding and 5 Rock Elemental Shards." } },
+        { complete = 782, at = { 1418, 12.62, 75.49 },
+          note = { ru = "Лагерь огров Гнилобрюхов (40-43): главарь То'грун - Знак Земли. Он не стоит на месте: ходит по "
+                       .. "кругу (~3000 ярдов, ~20 мин) - из лагеря на восток вдоль южной дороги (y 72-78) до ~61,70, на "
+                       .. "северо-запад мимо Ригглфазза (42,53), на запад по y≈57 и обратно в лагерь с севера (11.5,69). "
+                       .. "Нет в лагере - не ждите на месте: бейте огров и элементалей для гейта ниже, он вернётся.",
+                   en = "The Dustbelcher ogre camp (40-43): Boss Tho'grun - the Sign of the Earth. He does not stand "
+                       .. "still: he walks a ~3,000-yard loop (~20 min) - from the camp east along the southern road (y "
+                       .. "72-78) to ~61,70, north-west past Rigglefuzz (42,53), west along y≈57 and back into the camp "
+                       .. "from the north (11.5,69). Not in the camp: do not stand and wait - grind the ogres and "
+                       .. "elementals for the gate below, he comes back." } },
         -- WARN-OK (level-grind, next step): the end-of-segment gate (south-west Badlands, ogres 40-43 and Greater Rock
         -- Elementals 42-44): 43 for Caught!, and the required turn-ins below make 44.0 at h-44-uc-arrive (training).
         { id = "h-41-arathi-badlands-level-gate", level = { 43, 0.80 }, at = { 1418, 8.35, 78.85 }, -- WARN-OK: level-grind

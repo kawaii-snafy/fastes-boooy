@@ -236,10 +236,10 @@ FastesBoooy.AddLibrarySegment({
         { id = "h38-level-maraudine", level = { 37, 0.50 }, at = { 1443, 32.20, 58.20 }, -- WARN-OK: level-grind
           note = { ru = "Цель: 37 + 50%. Не хватает - кентавры племени Мародин (36-40) здесь же: плотные лагеря, уши "
                        .. "(1366) и тотемы (93225) падают попутно. Дальше задания 38-40 (наги, лорд Крагару, "
-                       .. "ясновидец).",
+                       .. "ясновидец). Отложите 15 отрезов шелка (не продавайте) для «Попался!» (Тлеющее ущелье, 43).",
                    en = "Target: 37 + 50%. Short: the Maraudine centaurs (36-40) right here - dense camps, the ears "
                        .. "(1366) and totems (93225) drop on the side. The quests ahead are 38-40 (naga, Lord Kragaru, "
-                       .. "the Seer)." } },
+                       .. "the Seer). Keep 15 Silk Cloth (do not sell it) for Caught! (Searing Gorge, 43)." } },
         { id = "h38-melizza", accept = 6132, complete = 6132, npc = 12277, at = { 1443, 33.95, 53.50 },
           note = { ru = "Мелицца Жужжалит в лагере кентавров Мародин (северная часть долины): «Вытащи меня отсюда!» - "
                        .. "проводите её на восток к Кладбищу кодо (по пути нападут кентавры). Сдача - позже, у "
@@ -489,9 +489,9 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Рыхлая земля: «Отрубленная голова».", en = "Loose Dirt: The Severed Head." } },
         { id = "h40-theramore-docks", complete = 1202, object = 20925, at = { 1445, 71.53, 51.19 },
           note = { ru = "На юго-восток к Терамору: сундучок капитана лежит под водой у причалов - подплывайте со "
-                       .. "стороны моря, к стражникам на причале (55, элита) не приближайтесь.",
+                       .. "стороны моря, к стражникам на причале (53-57) не приближайтесь.",
                    en = "South-east to Theramore: the Captain's Footlocker lies underwater by the docks - swim in from "
-                       .. "the sea side and keep away from the guards on the pier (55, elite)." } },
+                       .. "the sea side and keep away from the guards on the pier (53-57)." } },
 
         ------------------------------------------------------------------
         -- Wyrmbog 1 (40)

@@ -61,7 +61,12 @@
 --   Feralas visit and the Hinterlands owlbeasts), 4120 (Felwood), 3380 (Sunken Temple chain), 2981 (breadcrumb from
 --   Orgrimmar), 2770 Gahz'rilla (turned in at the Mirage Raceway, not passed again), 1878 / 7738 (repeatable), 81951
 --   (library book at Jademir Lake among level 60-62 elites).
--- Carried out: 32, 864 (Undercity), 2976, 3002, 3121, 7732 (Orgrimmar), 81949 (Undercity), 2641 (Hinterlands, Violet
+-- Library books (Forever-new, here 81949; h-50 / h-53 have the others): the book objects are loot containers, not
+--   quest starters (Wowhead Forever object tooltips: "Container"; QuestieDB Forever traces: the book items looted from
+--   them, the quests finished at Owen Thadd, never started at a book). The route loots the book here (collect step)
+--   and Owen Thadd (211022, Undercity) offers and takes the quest when the book is in the bags (one step: accept +
+--   complete + turnin).
+-- Carried out: 32, 864 (Undercity), 2976, 3002, 3121, 7732 (Orgrimmar), item 220346 for 81949 (Undercity), 2641 (Hinterlands, Violet
 --   Tragan), 3520 (back to Yeh'kinya, Steamwheedle Port, h-53), 1429 (from h-44, untouched: the Atal'ai Exile in
 --   h-50). (592 is no longer carried: h-44 skips 591 / 592, Mai'Zoth is elite.)
 -- XP (validator, from 46.01; Classic quest XP + objective kills; optional steps counted): Tanaris questing ends at
@@ -92,6 +97,21 @@ FastesBoooy.AddLibrarySegment({
         { id = "h46-shimmering-flats", go = true, radius = 60, at = { 1441, 78.14, 77.12 },
           note = { ru = "На лифте вниз и на юго-восток через Мерцающую равнину к гоночной трассе.",
                    en = "Take the lift down and ride south-east across the Shimmering Flats to the Mirage Raceway." } },
+        { turnin = 1137, npc = 4454, at = { 1441, 78.06, 77.13 },
+          note = { ru = "Физзл: «Новости для Физзла» (от Мартека).", en = "Fizzle: News for Fizzle (from Martek)." } },
+        { accept = 1190, npc = 4630, at = { 1441, 80.18, 75.88 },
+          note = { ru = "Поззик: «Держать темп» - Замек отвлечёт Риззла, а вы украдёте его чертежи.",
+                   en = "Pozzik: Keeping Pace - Zamek distracts Rizzle while you steal his plans." } },
+        { turnin = 1190, accept = 1194, object = 20805, at = { 1441, 77.21, 77.39 },
+          note = { ru = "Сначала поговорите с Замеком (79.8,77.0): примите и сдайте «Отвлекающий маневр Замека» - он "
+                       .. "убегает устраивать взрыв, Риззл бежит за ним. Пока его нет - чертежи Риззла (77.2,77.4): "
+                       .. "сдайте «Держать темп», возьмите «Чертежи Риззла».",
+                   en = "Talk to Zamek first (79.8,77.0): accept and complete Zamek's Distraction - he runs off to set "
+                       .. "off a blast and Rizzle chases him. While Rizzle is away - Rizzle's Unguarded Plans "
+                       .. "(77.2,77.4): turn in Keeping Pace, take Rizzle's Schematics." } },
+        { turnin = 1194, npc = 4630, at = { 1441, 80.18, 75.88 },
+          note = { ru = "Поззик: образец индуриевой руды. Продолжение не берите.",
+                   en = "Pozzik: the Sample of Indurium Ore. Skip the follow-up." } },
         { id = "h-46-gadgetzan-arrive", fp = "Gadgetzan", npc = 7824, at = { 1446, 51.60, 25.44 },
           note = { ru = "По дороге на юг в Танарис, до Прибамбасска. Булкрек Десница Гнева у северных ворот: откройте "
                        .. "точку полёта.",
@@ -162,11 +182,13 @@ FastesBoooy.AddLibrarySegment({
                    en = "South along the coast to Lost Rigger Cove: 10 of each Southsea Pirate, Freebooter, Dock Worker, "
                        .. "Swashbuckler (44-45) and 20 hats; the Stolen Cargo crates lie on the ground (72,47); Andre "
                        .. "Firebeard is in the cove (73,47)." } },
-        { accept = 81949, complete = 81949, object = 441248, at = { 1446, 72.60, 47.80 },
-          note = { ru = "В бухте же (72.6,47.8) лежит книга «Легенды о волнопевах» — возьмите задание и книгу (сдача — "
-                       .. "Оуэн Тэдд в Подгороде, следующий сегмент; новое задание Forever, опыт неизвестен).",
-                   en = "In the cove (72.6,47.8) lies the book Legends of the Tidesages - take the quest and the book (turn "
-                       .. "in: Owen Thadd in Undercity, next segment; a Forever-new quest, XP unknown)." } },
+        { collect = { [220346] = 1 }, object = 441248, at = { 1446, 72.60, 47.80 },
+          note = { ru = "В бухте же (72.6,47.8) лежит книга «Легенды о волнопевах» — заберите её (это контейнер: задание "
+                       .. "у книги не берётся). Задание даст и сразу примет Оуэн Тэдд в Подгороде, когда книга в сумках "
+                       .. "(следующий сегмент; новое задание Forever, опыт неизвестен).",
+                   en = "In the cove (72.6,47.8) lies the book Legends of the Tidesages - loot it (a container: the quest "
+                       .. "is not offered at the book). Owen Thadd in Undercity offers and takes the quest when the book "
+                       .. "is in your bags (next segment; a Forever-new quest, XP unknown)." } },
         { complete = 2781, at = { 1446, 61.77, 38.17 },
           note = { ru = "На запад в южный лагерь Скитальцев: Калиф Жало Скорпида (46) в центре лагеря.",
                    en = "West to the southern Wastewander camp: Caliph Scorpidsting (46) in its middle." } },

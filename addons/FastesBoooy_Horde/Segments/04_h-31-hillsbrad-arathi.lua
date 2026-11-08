@@ -74,7 +74,8 @@
 --   96986 (Forever City of Dalaran dungeon chain: object 670427 / Modera image positions and Horde access unknown),
 --   95663 (Excavation Site dungeon), 673 / 679 / 680 (40, h-41), 1051 (SM Graveyard + elite Nancy Vishas), 92519 /
 --   92707 / 92867 (no giver in the data), 79976 / 79949 (SoD-era ids).
--- Carried out: 513 (Faranell, Undercity), 1164 (Genavie Callow, Undercity) -> h-34; 5762 (Hemet, Stranglethorn).
+-- Carried out: 513 (Faranell, Undercity), 1164 (Genavie Callow, Undercity) -> h-34; 5762 (Hemet, Stranglethorn);
+--   1106 (from h-27, Martek in the Badlands, h-41).
 -- XP (validator, Classic quest XP + objective kills, optional steps counted): quests ~67 k (1153 and the optional
 --   1013 included) + objective kills ~44 k from 31.01. The gate h-31-hillsbrad-arathi-level-gate (33 + 43%: ~269
 --   same-level kills in the validator's model, ~323 without the optional steps, fewer with the mobs killed on the
@@ -168,9 +169,9 @@ FastesBoooy.AddLibrarySegment({
                    en = "West to the camp by Dalaran: Dermot, Ricter, Alina and Kegan Darkmar (33-35) - 4 bloodstones. "
                        .. "Tokens from the Shield Guards and Theurgists (31-33)." } },
         { complete = 532, object = { 1761, 1759 }, at = { 1424, 29.80, 41.90 },
-          note = { ru = "На юг в ратушу Хилсбрада: судья Бернсайд (30), 4 члена совета, сожгите объявление и "
+          note = { ru = "На юг в ратушу Хилсбрада: судья Бернсайд (30), 5 членов совета, сожгите объявление и "
                        .. "заберите регистрационную книгу.",
-                   en = "South to the Hillsbrad town hall: Magistrate Burnside (30), 4 Councilmen, burn the "
+                   en = "South to the Hillsbrad town hall: Magistrate Burnside (30), 5 Councilmen, burn the "
                        .. "Proclamation and take the Town Registry." } },
         { complete = { [567] = { 1, 2, 4 } }, at = { 1424, 29.51, 42.41 },
           note = { ru = "Там же клерк Гораций (26). Уилкс (25) и фермер Калаба (25) убиты на 22-24; если нет — они "
@@ -188,8 +189,8 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Бел'варил: «Сковывающие браслеты» (наручи с порабощенных элементалей).",
                    en = "Bel'varil: Bracers of Binding (from the Elemental Slaves)." } },
         { turnin = 544, accept = 545, npc = 2410, at = { 1424, 61.60, 20.85 },
-          note = { ru = "Вурден: «Даларанские патрули» (6 призывателей, 12 элементалей).",
-                   en = "Voidglare: Dalaran Patrols (6 Summoners, 12 Elemental Slaves)." } },
+          note = { ru = "Вурден: «Даларанские патрули» (6 призывателей, 8 элементалей).",
+                   en = "Voidglare: Dalaran Patrols (6 Summoners, 8 Elemental Slaves)." } },
         { turnin = 532, accept = 539, npc = 2215, at = { 1424, 62.33, 20.45 },
           note = { ru = "Дарталия: следующая «Битва за Хилсбрад» — Лазурный рудник.",
                    en = "Darthalia: the next Battle of Hillsbrad - the Azurelode Mine." } },
@@ -210,10 +211,11 @@ FastesBoooy.AddLibrarySegment({
                    en = "North-west to the Alterac yeti cave (33-34): the Flame of Uzel - use the rod. Frostmaw (37) "
                        .. "walks inside; elite Crushridge ogres (38-40) stand north of the cave." } },
         { complete = { 545, 557 }, at = { 1416, 15.78, 76.36 },
-          note = { ru = "На запад к куполу Даларана (южная сторона): 6 призывателей, 12 порабощенных элементалей "
-                       .. "(32-35) — с элементалей и 4 наручей.",
-                   en = "West to the Dalaran dome (south side): 6 Summoners, 12 Elemental Slaves (32-35) - the slaves "
-                       .. "also drop the 4 bracers." } },
+          note = { ru = "На запад к куполу Даларана (южная сторона): 6 призывателей, 8 порабощенных элементалей "
+                       .. "(32-35) — с элементалей и 4 наручей (может понадобиться ещё несколько элементалей ради "
+                       .. "наручей).",
+                   en = "West to the Dalaran dome (south side): 6 Summoners, 8 Elemental Slaves (32-35) - the slaves "
+                       .. "also drop the 4 bracers (a few extra slave kills may be needed for them)." } },
         { complete = 539, at = { 1424, 29.98, 55.48 },
           note = { ru = "На юг к Лазурному руднику: штейгер Бондс (30) и 10 шахтеров (26-27).",
                    en = "South to the Azurelode Mine: Foreman Bonds (30) and 10 Hillsbrad Miners (26-27)." } },

@@ -251,7 +251,9 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-26-sunrock-arrive", accept = 1087, npc = 4198, at = { 1442, 45.94, 60.42 },
           note = { ru = "Брайлин Огненная Длань: «Наследие Кенария» (пик Каменного Когтя на севере).",
                    en = "Braelyn Firehand: Cenarius' Legacy (Stonetalon Peak in the north)." } },
-        { id = "h-25-sun-rock-retreat", accept = 6301, npc = 11864, at = { 1442, 47.46, 58.38 },
+        -- WARN-OK (step-no-profile, the three 6301 steps): the Skyborne druid turns 6301 in on its 1-22 route, so
+        -- these race-filtered steps are never shown on horde-skyborne-druid (by design, see the segment header).
+        { id = "h-25-sun-rock-retreat", accept = 6301, npc = 11864, at = { 1442, 47.46, 58.38 }, -- WARN-OK: step-no-profile
           race = { "Orc", "Scourge", "Tauren", "Troll" },
           note = { ru = "Таммра Поле Ветров: «Цикл возрождения» (семена Геи у озера на севере).",
                    en = "Tammra Windfield: Cycle of Rebirth (Gaea Seeds by the lake to the north)." } },
@@ -298,7 +300,8 @@ FastesBoooy.AddLibrarySegment({
         { go = true, radius = 30, at = { 1442, 49.96, 61.04 },
           note = { ru = "На запад к подножию Приюта и дальше на север по дороге к озеру.",
                    en = "West to the foot of Sun Rock, then north along the road to the lake." } },
-        { complete = 6301, at = { 1442, 48.77, 40.66 }, race = { "Orc", "Scourge", "Tauren", "Troll" },
+        { complete = 6301, at = { 1442, 48.77, 40.66 }, -- WARN-OK: step-no-profile (druid: 6301 done on 1-22)
+          race = { "Orc", "Scourge", "Tauren", "Troll" },
           note = { ru = "Озеро: 10 семян Геи на берегу и на мелководье.",
                    en = "The lake: 10 Gaea Seeds on the shore and in the shallows." } },
         { complete = 97538, bg = true, at = { 1442, 48.09, 40.45 },
@@ -346,7 +349,8 @@ FastesBoooy.AddLibrarySegment({
                        .. "следующий сегмент); сдадите здесь же.",
                    en = "Braelyn: Ordanus - Keeper Ordanus sits on top of Raynewood Retreat in Ashenvale (on the way, next "
                        .. "segment); you hand it in back here." } },
-        { turnin = 6301, npc = 11864, at = { 1442, 47.46, 58.38 }, race = { "Orc", "Scourge", "Tauren", "Troll" },
+        { turnin = 6301, npc = 11864, at = { 1442, 47.46, 58.38 }, -- WARN-OK: step-no-profile (druid: 6301 done on 1-22)
+          race = { "Orc", "Scourge", "Tauren", "Troll" },
           note = { ru = "Таммра.", en = "Tammra." } },
         { accept = 6381, npc = 11864, at = { 1442, 47.46, 58.38 },
           note = { ru = "Таммра: «Новая жизнь» — зачарованные семена Геи для долины гарпий.",

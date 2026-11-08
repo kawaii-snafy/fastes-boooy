@@ -13,7 +13,9 @@
 --   28 + 30   Alodan, after h-31-tb-hearth (30.91 / 30.91; 28 alone is not worth the h-28 detour)
 --   32 + 34   Garen Largo, after h-34-uc-arrive (34.10 / 34.10)
 --   36-40     Shari Stilwell in Brill + riding (Velma Warnam) + horse (Zachariah Post), after h-41-uc-arrive
---             (40.88 / 40.75; Brill is 2 minutes from the zeppelin tower; Orgrimmar at 40.04 has no trainer)
+--             (40.88 / 40.75; Brill is 2 minutes from the zeppelin tower; Orgrimmar at 40.04 has no trainer); then
+--             optional Garen Largo in Undercity for the level-40 ranks, only if Shari's list lacks them (whether she
+--             sells ranks of 40+ is unproven: research paladin60.md section 1 and open question 2)
 --   42 + 44   Garen Largo, after h-44-uc-arrive (44.02 / 44.00)
 --   46-52     Garen Largo, after h53-fly-uc (52.57 / 52.54; the Undercity stop at h-50-uc-arrive is at 49.54, short
 --             of 50, so the 50 ranks wait for 52)
@@ -21,9 +23,18 @@
 --   58 + 60   Garen Largo, after h-60-end (hearth to Undercity, bound at h-58-uc-arrive)
 -- Skipped: 24 (Hammer of Justice R2 only), 28 at h-28-tb-arrive (Holy Strike R4: merged into 30), the Undercity
 --   stops at 31.17 / 49.54 and Thunder Bluff at 24.89 / 28.42 (nothing new or one rank short).
--- Weapon skill: Two-Handed Axes at Hanashi (Orgrimmar, Valley of Honor) after h54-hearth-org, optional, right before
---   Beastslayer (4301 The Mighty U'cha, 2H axe 42.58 dps). Every other weapon reward on the path is a 2H mace
---   (Demolition Hammer 893, Servomechanic Sledgehammer 666, Tok'kar's Murloc Basher 1427), which paladins know.
+-- Weapons (Wowhead Forever stats; levels: validator normal case): Demolition Hammer (893, 2H mace 17.61 dps +9 Str,
+--   25.90) is the weapon until 1427 (44.43). The Servomechanic Sledgehammer of 666 (41.35, 30.23 dps) requires
+--   Engineering (100) and the other choice is a wand, so most paladins get nothing there; the Orcish War Sword of 1153
+--   (31.05, 2H sword 18.23 dps, no stats) is no upgrade over the Hammer and needs 2H Swords. 1427 offers Tok'kar's
+--   Murloc Chopper (2H axe 32.50 dps, speed 3.2, +15 Str +6 Sta), Basher (2H mace 32.32 dps, speed 2.8, +18 Sta) and a
+--   dagger; Beastslayer (4301 The Mighty U'cha, 53.87) is a 2H axe (42.58 dps, +36 AP), so is Limb Cleaver (optional
+--   Blackrock Depths quest 4134, 51.32, 42.71 dps +21 Str).
+-- Weapon skill: Two-Handed Axes at Hanashi (Orgrimmar, Valley of Honor) after h41-hearth-org (40.88 / 40.75; the
+--   only Orgrimmar stop between 40 and 1427 that walks through the city anyway, ~3 min on foot), optional but
+--   recommended: the Chopper at 44 (better than the Basher with Seal of Command: slower, Strength) and the axe skill has
+--   grown by Beastslayer. Trained at 53 instead, the skill would start at 1 with Beastslayer against level-54 mobs.
+--   Skipped at 40: take the Basher; the pal-train-52 note points to Hanashi next to Belgrom (h54-hearth-org).
 -- Class quests: the Forever-new chain 91858 > 91859 > 91860 > 91861 > 91862 > 96204 > 95034 (part 1, Bandarion Keep,
 --   the Sepulcher and Fenris Isle) is optional: XP unknown, ~25 minutes of detours, no reward of its own. It only
 --   unlocks part 2 (95036 > 95111 > 95125 > 95126 > 95140, Wolfsbane), which needs the Deadmines (Whitestone Oak
@@ -160,14 +171,44 @@ FastesBoooy.AddInsert("horde-undead-paladin", {
                      { ru = "Вспышка Света (ранг 3)", en = "Flash of Light (Rank 3)" },
                      { ru = "Печать воина Света (ранг 4)", en = "Seal of the Crusader (Rank 4)" } },
           note = { ru = "Квартал Воинов (северо-запад): тренер паладинов Гарен Ларго, обучение 32 + 34. Потом к "
-                       .. "Фаранеллу в зал аптекарей. Таланты: 33 — Покаяние, 34 — Благодарение 1/5.",
+                       .. "Фаранеллу в зал аптекарей. Таланты: 33 — Покаяние, 34 — Благодарение 1/5. Оружие: квестовых "
+                       .. "двуручников до 44-го больше нет (Молот Уничтожения, 17.6 DPS) — есть золото, загляните на "
+                       .. "аукцион Подгорода (двуручная булава 25+ DPS).",
                    en = "The War Quarter (north-west): paladin trainer Garen Largo, training 32 + 34. Then to Faranell "
-                       .. "in the Apothecarium. Talents: 33 Repentance, 34 Benediction 1/5." } },
+                       .. "in the Apothecarium. Talents: 33 Repentance, 34 Benediction 1/5. Weapon: no quest two-hander "
+                       .. "until 44 (Demolition Hammer, 17.6 dps) - with gold to spare, check the Undercity auction house "
+                       .. "(a 2H mace of 25+ dps)." } },
     },
 })
 
 ------------------------------------------------------------------------------------------------------------------
--- 36-40 + riding: Brill (Shari Stilwell, Velma Warnam, Zachariah Post), 2 minutes from the zeppelin tower
+-- 40: Two-Handed Axes (Hanashi, Orgrimmar) before the 1427 reward (Tok'kar's Murloc Chopper) and Beastslayer
+------------------------------------------------------------------------------------------------------------------
+FastesBoooy.AddInsert("horde-undead-paladin", {
+    after = "h41-hearth-org",
+    steps = {
+        { id = "pal-axes", manual = true, npc = 2704, optional = true, at = { 1454, 81.53, 19.63 },
+          spells = { { ru = "Двуручные топоры", en = "Two-Handed Axes" } },
+          note = { ru = "Рекомендуется: от таверны на северо-восток в Аллею Чести, мастер оружия Ханаши — Двуручные "
+                       .. "топоры (~3 мин крюка пешком), потом через главные ворота к дирижаблям. Тогда за 1427 на 44-м "
+                       .. "берите Колун мурлоков Ток'Кара (двуручный топор, 32.5 DPS, +15 к силе, скорость 3.2 — с "
+                       .. "Печатью повиновения лучше Сокрушителя), а к Зверобою (4301, 54-й) навык топоров уже вырастет. "
+                       .. "Навык начинается с 1: первые бои с Колуном — с промахами, пока он не догонит уровень (окно "
+                       .. "персонажа, «Навыки»). До 44-го остаётся Молот Уничтожения: молот из 666 требует Инженерное "
+                       .. "дело (100). Пропустили — на 44-м берите Сокрушитель (булава). Готово — «Дальше».",
+                   en = "Recommended: from the inn north-east to the Valley of Honor, weapon master Hanashi - Two-Handed "
+                       .. "Axes (~3 min detour on foot), then out the main gate to the zeppelins. Then take Tok'kar's "
+                       .. "Murloc Chopper for 1427 at 44 (2H axe, 32.5 dps, +15 Str, speed 3.2 - better than the Basher "
+                       .. "with Seal of Command), and the axe skill has grown by Beastslayer (4301, at 54). The skill "
+                       .. "starts at 1: the first fights with the Chopper miss a lot until it catches up with your level "
+                       .. "(character pane, Skills). Until 44 the Demolition Hammer stays: the hammer of 666 requires "
+                       .. "Engineering (100). Skipped: take the Basher (mace) at 44. Done: press Next." } },
+    },
+})
+
+------------------------------------------------------------------------------------------------------------------
+-- 36-40 + riding: Brill (Shari Stilwell, Velma Warnam, Zachariah Post), 2 minutes from the zeppelin tower;
+-- optional Garen Largo (Undercity) for the level-40 ranks if Shari's list lacks them
 ------------------------------------------------------------------------------------------------------------------
 FastesBoooy.AddInsert("horde-undead-paladin", {
     after = "h-41-uc-arrive",
@@ -182,13 +223,15 @@ FastesBoooy.AddInsert("horde-undead-paladin", {
                      { ru = "Экзорцизм (ранг 3)", en = "Exorcism (Rank 3)" },
                      { ru = "Латы", en = "Plate Mail" } },
           note = { ru = "От башни дирижаблей на север в Брилл (2 мин): Шари Стилвелл у конюшни, обучение 36-40 (Молот "
-                       .. "праведника — удар по цели и трём соседним, 6 с). Нет рангов 40-го в её списке — у Гарена "
-                       .. "Ларго в Подгороде (маршрут идёт туда дальше). Таланты: 35-39 — Champion of the Light 5/5, 40 — "
+                       .. "праведника — удар по цели и трём соседним, 6 с). Если в её списке нет рангов 40-го (Молот "
+                       .. "праведника, Освящение 3, Печать повиновения 3, Молот правосудия 3) — они у Гарена Ларго в "
+                       .. "Подгороде (необязательный шаг после коня). Таланты: 35-39 — Champion of the Light 5/5, 40 — "
                        .. "Unsealed Wrath (вершина Воздаяния).",
                    en = "North from the zeppelin tower to Brill (2 min): Shari Stilwell by the stables, training 36-40 "
-                       .. "(Hammer of the Righteous hits the target and 3 more, 6 s). Her list has no 40 ranks: "
-                       .. "Garen Largo in Undercity (the route goes there next). Talents: 35-39 Champion of the Light "
-                       .. "5/5, 40 Unsealed Wrath (the Retribution capstone)." } },
+                       .. "(Hammer of the Righteous hits the target and 3 more, 6 s). If her list lacks the level-40 "
+                       .. "ranks (Hammer of the Righteous, Consecration 3, Seal of Command 3, Hammer of Justice 3): Garen "
+                       .. "Largo in Undercity has them (optional step after the horse). Talents: 35-39 Champion of the "
+                       .. "Light 5/5, 40 Unsealed Wrath (the Retribution capstone)." } },
         { id = "pal-40-riding", manual = true, npc = 4773, at = { 1420, 60.08, 52.57 },
           note = { ru = "Вельма Варнам рядом: Верховая езда (ученик), ~100 з. — по анонсу Forever скакун выдаётся "
                        .. "вместе с навыком. Если у тренера паладинов был «Призыв боевого коня» — выучили его, езда не нужна. "
@@ -203,6 +246,16 @@ FastesBoooy.AddInsert("horde-undead-paladin", {
                        .. "Подгород.",
                    en = "Only if the riding skill came without a mount: Zachariah Post - a skeletal horse (any). Then "
                        .. "back to Undercity." } },
+        { id = "pal-train-40-garen", train = true, npc = 260093, optional = true, at = { 1458, 47.53, 15.04 },
+          spells = { { ru = "Молот праведника", en = "Hammer of the Righteous" },
+                     { ru = "Освящение (ранг 3)", en = "Consecration (Rank 3)" },
+                     { ru = "Печать повиновения (ранг 3)", en = "Seal of Command (Rank 3)" },
+                     { ru = "Молот правосудия (ранг 3)", en = "Hammer of Justice (Rank 3)" },
+                     { ru = "Латы", en = "Plate Mail" } },
+          note = { ru = "Только если у Шари не было рангов 40-го: в Подгороде на северо-запад в Квартал Воинов, Гарен "
+                       .. "Ларго (верхом ~1 мин крюка). Всё выучили в Брилле — «Пропуск».",
+                   en = "Only if Shari lacked the level-40 ranks: in Undercity north-west to the War Quarter, Garen "
+                       .. "Largo (~1 min detour mounted). Learned everything in Brill: Skip." } },
     },
 })
 
@@ -223,12 +276,14 @@ FastesBoooy.AddInsert("horde-undead-paladin", {
                      { ru = "Печать воина Света (ранг 5)", en = "Seal of the Crusader (Rank 5)" } },
           note = { ru = "Квартал Воинов: Гарен Ларго, обучение 42 + 44 (Молот гнева — добивание ниже 20% здоровья). "
                        .. "Без езды с 40-го? Вельма Варнам в Брилле, 2 мин от башни дирижаблей. Таланты: 41-45 — "
-                       .. "Божественная сила 5/5 (Свет). Награда Ток'Кара за 1427 в Болоте Печали — Сокрушитель мурлоков "
-                       .. "Ток'Кара (двуручная булава).",
+                       .. "Божественная сила 5/5 (Свет). Награда Ток'Кара за 1427 в Болоте Печали: Колун мурлоков Ток'Кара "
+                       .. "(двуручный топор, +15 к силе), если на 40-м выучили топоры; иначе Сокрушитель мурлоков "
+                       .. "Ток'Кара (двуручная булава, +18 к выносливости).",
                    en = "The War Quarter: Garen Largo, training 42 + 44 (Hammer of Wrath finishes targets below 20% "
                        .. "health). No riding since 40? Velma Warnam in Brill, 2 min from the zeppelin tower. Talents: "
                        .. "41-45 Divine Strength 5/5 (Holy). Tok'Kar's reward for 1427 in the Swamp of Sorrows: Tok'kar's "
-                       .. "Murloc Basher (2H mace)." } },
+                       .. "Murloc Chopper (2H axe, +15 Str) if you learned Two-Handed Axes at 40, otherwise Tok'kar's "
+                       .. "Murloc Basher (2H mace, +18 Sta)." } },
     },
 })
 
@@ -253,28 +308,14 @@ FastesBoooy.AddInsert("horde-undead-paladin", {
                      { ru = "Экзорцизм (ранг 5)", en = "Exorcism (Rank 5)" } },
           note = { ru = "Квартал Воинов: Гарен Ларго, обучение 46-52 (ранги 50-го ждали с прошлого визита на 49.5). "
                        .. "Потом в Квартал Магов к Орану. Гнев небес и Экзорцизм — для Чумных земель (нежить). Таланты: "
-                       .. "46-50 — Improved Seals 5/5 (Свет), 51-54 — Благодарение до 5/5.",
+                       .. "46-50 — Improved Seals 5/5 (Свет), 51-54 — Благодарение до 5/5. Не учили двуручные топоры на "
+                       .. "40-м? Ханаши стоит рядом с Белгромом в Аллее Чести Оргриммара (маршрут будет там на 53-м) — без "
+                       .. "них Зверобой (4301) бесполезен.",
                    en = "The War Quarter: Garen Largo, training 46-52 (the 50 ranks waited since the 49.5 visit). Then "
                        .. "to Oran in the Magic Quarter. Holy Wrath and Exorcism are for the Plaguelands (undead). "
-                       .. "Talents: 46-50 Improved Seals 5/5 (Holy), 51-54 Benediction up to 5/5." } },
-    },
-})
-
-------------------------------------------------------------------------------------------------------------------
--- 53: Two-Handed Axes (Hanashi, Orgrimmar) for Beastslayer (4301, Un'Goro)
-------------------------------------------------------------------------------------------------------------------
-FastesBoooy.AddInsert("horde-undead-paladin", {
-    after = "h54-hearth-org",
-    steps = {
-        { id = "pal-axes", manual = true, npc = 2704, optional = true, at = { 1454, 81.53, 19.63 },
-          spells = { { ru = "Двуручные топоры", en = "Two-Handed Axes" } },
-          note = { ru = "По желанию: Аллея Чести, мастер оружия Ханаши — Двуручные топоры (рядом Белгром, следующий "
-                       .. "шаг). Для Зверобоя (42.6 DPS, +36 к силе атаки) из «Могучей Учи» (4301) в Ун'Горо — с 54-го "
-                       .. "лучшее двуручное оружие маршрута; навык начинается с 1 — первые бои с промахами. Готово — «Дальше».",
-                   en = "Optional: Valley of Honor, weapon master Hanashi - Two-Handed Axes (Belgrom, the next step, "
-                       .. "is next to him). For Beastslayer (42.6 dps, +36 attack power) from The Mighty U'cha (4301) "
-                       .. "in Un'Goro, the best 2H weapon of the route from 54; the skill starts at 1, so the first "
-                       .. "fights miss more. Done: press Next." } },
+                       .. "Talents: 46-50 Improved Seals 5/5 (Holy), 51-54 Benediction up to 5/5. No Two-Handed Axes "
+                       .. "from 40? Hanashi stands next to Belgrom in Orgrimmar's Valley of Honor (the route takes you "
+                       .. "there at 53) - Beastslayer (4301) needs them." } },
     },
 })
 

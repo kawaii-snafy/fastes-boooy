@@ -1,7 +1,8 @@
 -- FastesBoooy_Horde / Segments/11_h-53-azshara-ungoro-silithus.lua
 --
 -- Library segment "h-53-azshara-ungoro-silithus": levels 53-56, class-neutral (Undead Paladin and Skyborne Druid,
--- Horde). Stonard -> fly Undercity (Oran) -> zeppelin -> Orgrimmar (hearth) -> fly Splintertree Post -> ride east
+-- Horde). Kargath (hearth from the Blasted Lands; Stonard after the optional 1445) -> fly Undercity (Oran) ->
+-- zeppelin -> Orgrimmar (hearth) -> fly Splintertree Post -> ride east
 -- into Azshara (Loh'atu, Valormok, Kim'jael, the blood elf camp, Ruins of Eldarath, Xylem) -> hearth Orgrimmar
 -- (turn-ins) -> fly Gadgetzan (hearth) -> ramp down into Un'Goro Crater (Torwa) -> Marshal's Refuge (three loops)
 -- -> hearth Gadgetzan (turn-ins) -> fly Marshal's Refuge -> path to Silithus -> Cenarion Hold (three loops).
@@ -17,7 +18,7 @@
 --
 -- Hub plan (Forever DB; every quest is open to Scourge and Skyborne Horde characters of any class):
 --   UC  : Oran 2995 + 2782 > 8273 > 8273 (carried complete from h-50); Owen Thadd: books 81954 / 81955 / 81953 / 81947 /
---         81956 (from h-50). Zeppelin to Orgrimmar.
+--         81956 (the book items looted in h-50: accept + complete + turn in at once). Zeppelin to Orgrimmar.
 --   ORG : 81 (Dran Droffers), 4494 (Zilzibin), hearth Orgrimmar, fly Splintertree Post.
 --   AZ  : Loh'atu 5535 + 5536 (Highborne, Haldarr satyrs + book 81952 on the way north); Valormok fp, 3504 > 3505, 3517;
 --         Kim'jael 3601; blood elf camp (3505 kills, 3601 equipment); Kim'jael 3601 > 5534; Kaldorei Tome 3505 > 3506,
@@ -36,16 +37,18 @@
 --   L3  : Northern Pylon (4285), U'cha (4301), Eastern Pylon (4287), Lar'korwi (4292), Torwa 4292 + 4301; hearth
 --         Gadgetzan 4496, 4504; fly Marshal's Refuge, Western Pylon (4288), J.D. Collie 4285 + 4287 + 4288 > 4321 > 4321;
 --         path to Silithus.
---   SI  : level 54 gate on the north-east field (the hold's quests need 54); Cenarion Hold fp, 8280, 8277, 8307, 8284;
---         north-east field (8277, 8280), tablets in
---         the north-west (8284); hold 8280 > 8281, 8277 > 8278, 8284 > 8285; cookbook 8307 > 8313; crushers /
---         pincers (8281, 8278); south (8278); Ortell 8285; hold 8278, 8282, 8281, 8313; Noggle's Satchel (8282);
---         level gate at the pincers / crushers on the way back; hold 8282.
+--   SI  : level 54 gate on the north-east field (the hold's quests need 54); Cenarion Hold fp, 8280, 8277, 8284;
+--         north-east field (8277, 8280) + the Silithus grind (54 + 74%, own-level mobs), tablets in
+--         the north-west (8284); hold 8280 > 8281, 8277 > 8278, 8284 > 8285; crushers /
+--         pincers (8281, 8278); south (8278); Ortell 8285; hold 8278, 8282, 8281; Noggle's Satchel (8282);
+--         level 55 checkpoint on the way back; hold 8282.
 -- XP (validator from ~52.6, Classic quest XP + objective kills, optional steps counted): Azshara + Un'Goro reach
---   ~53.9; the level 54 gate before the Cenarion Hold (reqLevel 54) is then almost free; the Silithus quests make
---   ~54.5 and the end gate (level 55 at the Stonelash Pincers 56 / Dredge Crushers 57-58, ~330 same-level kills) sets
---   up Felwood / Winterspring (quests 54-58). Incidental kills and rested XP are not modelled, so the real gates are
---   shorter.
+--   ~53.9; the level 54 gate before the Cenarion Hold (reqLevel 54) is then almost free. The Silithus grind (~325
+--   same-level kills) is on the north-east field right after its quests (h55-silithus-field-grind, 54 + 74%: Stonelash
+--   Scorpids 54-55, Sand Skitterers / Dredge Strikers 55-56, ~160 non-elite spawns), not at the end on the +2..+4
+--   Pincers 56 / Crushers 57-58 / Hive'Zora Wasps 58-59: the remaining turn-ins then make 55.0 and the end gate
+--   (level 55) is a checkpoint (0 kills in the validator, normal and worst case) that sets up Felwood / Winterspring
+--   (quests 54-58). Incidental kills and rested XP are not modelled, so the real gates are shorter.
 -- Deviations from the plan (documented in the handoff):
 --   * Undercity first (2995 + 2782 carried complete from h-50, + 8273 Oran's Gratitude): 2782 is no longer carried.
 --   * 3507 Betrayed and 3541 Delivery to Jes'rimon are turned in at once in Orgrimmar (the Azshara hearth goes
@@ -55,7 +58,8 @@
 --     Searing Gorge / Badlands; escort) skipped.
 --   * 3520 Screecher Spirits is optional (750 XP at 53: grey-ish quest, detour to Steamwheedle Port).
 --   * Silithus: 8279 The Twilight Lexicon / 8287 skipped (three level 60 keepers inside 57-60 Twilight camps);
---     8307 > 8313 (Sandy Cookbook) added on the way; 8317 (cooking) skipped.
+--     8307 > 8313 > 8317 skipped (Cooking 285: Calandrath / the Sandy Cookbook do not offer them without it; the plan
+--     anchor h-54-sandy-cookbook now sits on the 8281 Dredge Crusher step next to the cookbook's place).
 --   * Hearth: Orgrimmar for Azshara (used from Loh'atu), Gadgetzan for Un'Goro (used from Torwa at the end).
 --   * Densify pass (r3): the segment starts at ~52.6 (h-50 end gate lowered). Added: the library book turn-ins at Owen
 --     Thadd (Undercity, Forever-new, XP unknown), 4494 March of the Silithid accepted in Orgrimmar (moved from h-50;
@@ -63,7 +67,8 @@
 --     (the Western Pylon on the way back to Marshal's Refuge). h55-silithus-grind (same id) is now the mandatory
 --     level 54 step before the hold (it was an optional level 55 step after the first accepts); the end gate went from
 --     55 + 97% to 55.
--- Carried out: 980 + 3908 (Donova, Winterspring), 4300 (Jes'rimon, Orgrimmar), 3542 + 3568 + 81952 (Undercity), 4808
+-- Carried out: 980 + 3908 (Donova, Winterspring), 4300 (Jes'rimon, Orgrimmar), 3542 + 3568 + the book item for 81952
+--   (Undercity: Owen Thadd offers and takes the quest), 4808
 --   (Everlook).
 -- Automation notes: transient steps (fp, sethearth, hearth, fly, go) come before the quest steps of their hub; one
 --   step per NPC; bg goals have a later non-bg finishing step; optional steps are followed by a mandatory anchor.
@@ -78,7 +83,8 @@ FastesBoooy.AddLibrarySegment({
         -- Undercity -> Orgrimmar (level 53)
         ------------------------------------------------------------------
         { id = "h53-fly-uc", fly = "Undercity", npc = 4551, at = { 1458, 63.25, 48.56 },
-          note = { ru = "Брейк (Каменор): летите в Подгород.", en = "Breyk (Stonard): fly to Undercity." } },
+          note = { ru = "Горрик (Каргат): летите в Подгород (из Каменора после сдачи 1445 — от Брейка).",
+                   en = "Gorrik (Kargath): fly to Undercity (from Stonard after the 1445 turn-in: Breyk)." } },
         { turnin = { 2995, 2782 }, accept = 8273, npc = 7825, at = { 1458, 73.06, 32.85 },
           note = { ru = "Квартал Магов, Оран Змеиные Кольца: «Линии связи» и «Секрет Рин'джи», возьмите «Благодарность "
                        .. "Оран».",
@@ -86,11 +92,15 @@ FastesBoooy.AddLibrarySegment({
                        .. "Gratitude." } },
         { turnin = 8273, npc = 7825, at = { 1458, 73.06, 32.85 },
           note = { ru = "Сразу сдайте «Благодарность Оран» ему же.", en = "Turn in Oran's Gratitude to him at once." } },
-        { turnin = { 81954, 81955, 81953, 81947, 81956 }, npc = 211022, at = { 1458, 73.40, 33.00 }, -- WARN-OK: xp-unknown (new books)
+        { accept = { 81954, 81955, 81953, 81947, 81956 }, -- WARN-OK: xp-unknown (new books)
+          complete = { 81954, 81955, 81953, 81947, 81956 }, turnin = { 81954, 81955, 81953, 81947, 81956 },
+          npc = 211022, at = { 1458, 73.40, 33.00 },
           note = { ru = "Рядом, Оуэн Тэдд: пять книг из Внутренних земель, Тлеющего ущелья, Черной горы, Болота Печали и "
-                       .. "Выжженных земель.",
+                       .. "Выжженных земель - возьмите задания (книги в сумках) и сразу сдайте. Какой-то книги нет - "
+                       .. "сдайте остальные и нажмите «Пропустить».",
                    en = "Next to him, Owen Thadd: the five books from the Hinterlands, the Searing Gorge, Blackrock "
-                       .. "Mountain, the Swamp of Sorrows and the Blasted Lands." } },
+                       .. "Mountain, the Swamp of Sorrows and the Blasted Lands - take the quests (the books are in your "
+                       .. "bags) and turn them in at once. A book missing: turn in the rest and Skip." } },
         { id = "h53-zeppelin-org", go = true, radius = 15, npc = 9566, at = { 1420, 60.74, 58.87 },
           note = { ru = "Из Подгорода к башне дирижаблей (Запота): дирижабль в Оргриммар.",
                    en = "Out of Undercity to the zeppelin tower (Zapetta): zeppelin to Orgrimmar." } },
@@ -124,11 +134,11 @@ FastesBoooy.AddLibrarySegment({
         { complete = 5536, at = { 1447, 20.09, 61.79 },
           note = { ru = "Дальше на север, лагерь Халдарр: 6 сатиров, 2 плута, 2 скверноподданных.",
                    en = "Further north, the Haldarr camp: 6 Satyrs, 2 Tricksters, 2 Felsworn." } },
-        { accept = 81952, complete = 81952, object = 441250, at = { 1447, 20.70, 62.00 },
-          note = { ru = "В лагере же (20.7,62.0): книга «Этикет на каждый день» — возьмите задание и книгу (Оуэн Тэдд, "
-                       .. "Подгород, следующий сегмент).",
-                   en = "In the same camp (20.7,62.0): the book Everyday Etiquette - take the quest and the book (Owen "
-                       .. "Thadd, Undercity, next segment)." } },
+        { collect = { [220348] = 1 }, object = 441250, at = { 1447, 20.70, 62.00 },
+          note = { ru = "В лагере же (20.7,62.0): книга «Этикет на каждый день» — заберите её (контейнер; задание даст "
+                       .. "Оуэн Тэдд в Подгороде, когда книга в сумках, следующий сегмент).",
+                   en = "In the same camp (20.7,62.0): the book Everyday Etiquette - loot it (a container; Owen Thadd in "
+                       .. "Undercity offers the quest when the book is in your bags, next segment)." } },
         { id = "h-53-azshara-arrive", fp = "Valormok", npc = 8610, at = { 1447, 21.96, 49.62 },
           note = { ru = "Лагерь Орды на севере: Кроум — откройте точку полёта.",
                    en = "The Horde camp to the north (Valormok): Kroum - learn the flight point." } },
@@ -262,7 +272,8 @@ FastesBoooy.AddLibrarySegment({
         { accept = 3882, npc = 9272, at = { 1449, 43.50, 7.42 },
           note = { ru = "Искр Пустокоп: «Игра в кости».", en = "Spark Nilminer: Roll the Bones." } },
         { accept = 4501, object = 174682, at = { 1449, 43.53, 8.44 },
-          note = { ru = "Объявление «Осторожно, злой жутедактиль».", en = "The sign: Beware of Pterrordax." } },
+          note = { ru = "Объявление «Осторожно, злой жутедактиль»: 10 жутедактилей и 15 бесноватых жутедактилей.",
+                   en = "The sign: Beware of Pterrordax - 10 Pterrordax and 15 Frenzied Pterrordax." } },
         { accept = 4492, npc = 9997, at = { 1449, 43.62, 8.50 },
           note = { ru = "Муча Кусора: «Потерялся!» (Ринго на Вулкане Огненного Венца).",
                    en = "Spraggle Frock: Lost! (Ringo on Fire Plume Ridge)." } },
@@ -288,8 +299,8 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Попутно: чешуя (8 с деметродонов, 8 с жутедактилей) и 8 костей (с деметродонов).",
                    en = "On the way: scales (8 from diemetradons, 8 from pterrordax) and 8 bones (diemetradons)." } },
         { complete = 4501, bg = true, at = { 1449, 55.34, 10.37 },
-          note = { ru = "Попутно: 10 жутедактилей (у Укрытия и у улья на юге) и 10 бесноватых жутедактилей (запад).",
-                   en = "On the way: 10 Pterrordax (near the Refuge and by the hive in the south) and 10 Frenzied "
+          note = { ru = "Попутно: 10 жутедактилей (у Укрытия и у улья на юге) и 15 бесноватых жутедактилей (запад).",
+                   en = "On the way: 10 Pterrordax (near the Refuge and by the hive in the south) and 15 Frenzied "
                        .. "Pterrordax (west)." } },
         { complete = 4145, bg = true, at = { 1449, 67.35, 33.95 },
           note = { ru = "Попутно: кровоцветы — хлыстуны и крепкозубы на востоке, живодеры в центре, звероловы на западе.",
@@ -360,10 +371,10 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Назад к Краклу: возьмите «Новые источники» (Донова в Зимних Ключах, позже).",
                    en = "Back to Krakle: take The New Springs (Donova in Winterspring, later)." } },
         { complete = { 4501, 4503 }, at = { 1449, 33.20, 39.07 },
-          note = { ru = "К северу от источников: бесноватые жутедактили (51-54) и кровоцветы-звероловы — добейте "
-                       .. "жутедактилей и чешую.",
-                   en = "North of the springs: Frenzied Pterrordax (51-54) and Bloodpetal Trappers - finish the "
-                       .. "pterrordax and the scales." } },
+          note = { ru = "К северу от источников: бесноватые жутедактили (51-54, всего 15) и кровоцветы-звероловы — "
+                       .. "добейте жутедактилей и чешую.",
+                   en = "North of the springs: Frenzied Pterrordax (51-54, 15 in all) and Bloodpetal Trappers - finish "
+                       .. "the pterrordax and the scales." } },
         { complete = 4145, at = { 1449, 57.57, 53.76 },
           note = { ru = "На восток через центр: кровоцветы-живодеры у Вулкана Огненного Венца.",
                    en = "East through the centre: Bloodpetal Flayers around Fire Plume Ridge." } },
@@ -455,10 +466,11 @@ FastesBoooy.AddLibrarySegment({
                        .. "corner. It comes out at Valor's Rest." } },
         { id = "h55-silithus-grind", level = 54, at = { 1451, 58.43, 22.93 }, -- WARN-OK: level-grind (worst case)
           note = { ru = "По пути к крепости — поле к северо-востоку от неё (камнехвостые скорпиды, песчаные пауки, "
-                       .. "землечерпы 54-56, самое плотное поле рядом): до 54-го — задания крепости Кенария требуют 54-й.",
+                       .. "землечерпы 54-56, самое плотное поле рядом): до 54-го — задания крепости Кенария требуют 54-й. "
+                       .. "Основной гринд Силитуса - на этом же поле, когда задания крепости будут взяты.",
                    en = "On the way to the hold - the field north-east of it (Stonelash Scorpids, Sand Skitterers, "
                        .. "Dredge Strikers 54-56, the densest field nearby): up to 54 - the Cenarion Hold quests require "
-                       .. "54." } },
+                       .. "54. The main Silithus grind is on this same field, once the hold's quests are taken." } },
         { id = "h-55-cenarionhold-arrive", fp = "Cenarion Hold", npc = 15178, at = { 1451, 48.68, 36.67 },
           note = { ru = "На запад в крепость Кенария: Рунк Покоритель Ветров — точка полёта.",
                    en = "West to Cenarion Hold: Runk Windtamer - learn the flight point." } },
@@ -467,9 +479,6 @@ FastesBoooy.AddLibrarySegment({
                    en = "Windcaller Proudhorn: Securing the Supply Lines." } },
         { accept = 8277, npc = 15189, at = { 1451, 51.61, 38.63 },
           note = { ru = "Битисса Шаткобрус: «Смертельный яд».", en = "Beetix Ficklespragg: Deadly Desert Venom." } },
-        { accept = 8307, npc = 15174, at = { 1451, 51.89, 39.16 },
-          note = { ru = "Каландрата (трактир): «Блюдо из червей» (поваренная книга на западе).",
-                   en = "Calandrath (inn): Desert Recipe (the cookbook in the west)." } },
         { accept = 8284, npc = 15183, at = { 1451, 49.67, 37.46 },
           note = { ru = "Геолог Ехидная: «Сумеречная тайна».", en = "Geologist Larksbane: The Twilight Mystery." } },
         { id = "h-54-silithus-field-loop", complete = { 8277, 8280 }, at = { 1451, 58.43, 22.93 },
@@ -477,6 +486,16 @@ FastesBoooy.AddLibrarySegment({
                        .. "по 8, 15 землечерпов (54-56).",
                    en = "North-east of the hold: Stonelash Scorpids (stingers), Sand Skitterers (fangs) - 8 each, "
                        .. "15 Dredge Strikers (54-56)." } },
+        -- WARN-OK (level-grind, next step): the Silithus grind sits here, on the densest field of mobs at the player's
+        -- level (Stonelash Scorpids 54-55, Sand Skitterers and Dredge Strikers 55-56, ~160 non-elite spawns), not at
+        -- the end on the 56-59 Pincers / Crushers / Wasps; the end gate below is then a level 55 checkpoint.
+        { id = "h55-silithus-field-grind", level = { 54, 0.74 }, at = { 1451, 58.43, 22.93 }, -- WARN-OK: level-grind
+          note = { ru = "Здесь же гриндите до 54 + 74%: скорпиды 54-55, пауки и землечерпы 55-56 - самые плотные мобы "
+                       .. "своего уровня в Силитусе. Остальные задания Силитуса (мобы 56-59) с этим уровнем идут легче, "
+                       .. "а гейт 55 в конце почти не нужен.",
+                   en = "Grind right here up to 54 + 74%: Scorpids 54-55, Skitterers and Strikers 55-56 - the densest "
+                       .. "own-level mobs in Silithus. The other Silithus quests (mobs 56-59) go easier at this level, "
+                       .. "and the level 55 gate at the end is then nearly free." } },
         { complete = 8284, at = { 1451, 23.29, 12.11 },
           note = { ru = "Вдоль северного края на запад: 8 фрагментов Сумеречной таблички на земле (20-28, 8-22); вокруг "
                        .. "пустынные грохотуны (56-58).",
@@ -490,13 +509,10 @@ FastesBoooy.AddLibrarySegment({
         { turnin = 8284, accept = 8285, npc = 15183, at = { 1451, 49.67, 37.46 },
           note = { ru = "Ехидная: «Дезертир» (табличку — отшельнику Ортеллу).",
                    en = "Larksbane: The Deserter (the tablet goes to Hermit Ortell)." } },
-        { id = "h-54-sandy-cookbook", turnin = 8307, accept = 8313, object = 180503, at = { 1451, 37.94, 45.31 },
-          note = { ru = "На запад: поваренная книга Сэнди — возьмите «Наделение знаниями».",
-                   en = "West: the Sandy Cookbook - take Sharing the Knowledge." } },
         { complete = 8278, bg = true, at = { 1451, 38.83, 56.89 },
           note = { ru = "Попутно: по 3 жала клешневиков (здесь), живодеров и клыка скальных пауков (юг).",
                    en = "On the way: 3 stingers each from Pincers (here) and Flayers, 3 Rock Stalker fangs (south)." } },
-        { complete = 8281, at = { 1451, 38.50, 56.20 },
+        { id = "h-54-sandy-cookbook", complete = 8281, at = { 1451, 38.50, 56.20 },
           note = { ru = "Южнее: 20 земляных сокрушителей (57-58); камнехвостые клешневики (56) там же.",
                    en = "South: 20 Dredge Crushers (57-58); Stonelash Pincers (56) there too." } },
         { complete = 8278, at = { 1451, 38.93, 78.27 },
@@ -513,21 +529,20 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Ноггл Шаткобрус: «Потерянная сумка Ноггла».", en = "Noggle Ficklespragg: Noggle's Lost Satchel." } },
         { turnin = 8281, npc = 15191, at = { 1451, 51.15, 38.29 },
           note = { ru = "Гордый Рог.", en = "Proudhorn." } },
-        { turnin = 8313, npc = 15174, at = { 1451, 51.89, 39.16 },
-          note = { ru = "Каландрата: рецепт. «Помощь по кухне» (кулинария) не берите.",
-                   en = "Calandrath: the recipe. Skip Kitchen Assistance (cooking)." } },
         { complete = 8282, at = { 1451, 44.56, 91.38 },
           note = { ru = "Далеко на юг: сумка Ноггла на земле (44.6,91.4). Рядом бродит Смертехват (59, элитный "
                        .. "скорпид) — дождитесь, пока отойдёт.",
                    en = "Far south: Noggle's Satchel on the ground (44.6,91.4). Deathclasp (59, elite scorpid) "
                        .. "patrols right there - wait until it moves away." } },
-        { id = "h-53-azshara-ungoro-silithus-level-gate", level = 55, at = { 1451, 38.83, 56.89 }, -- WARN-OK: level-grind
-          note = { ru = "На обратном пути на север: камнехвостые клешневики (56) и земляные сокрушители (57-58) — "
-                       .. "плотно; до 55-го (Оскверненный лес и Зимние Ключи — задания 54-58). В группе вместо гринда — "
-                       .. "Забытый Город (Фералас, полёт в лагерь Мохаче).",
-                   en = "On the way back north: Stonelash Pincers (56) and Dredge Crushers (57-58), dense; up to 55 "
-                       .. "(Felwood and Winterspring - quests 54-58). In a group: Dire Maul instead of grinding (Feralas, "
-                       .. "fly to Camp Mojache)." } },
+        { id = "h-53-azshara-ungoro-silithus-level-gate", level = 55, at = { 1451, 38.83, 56.89 },
+          note = { ru = "Контрольная точка: 55-й (Оскверненный лес и Зимние Ключи — задания 54-58); после гринда на "
+                       .. "северо-восточном поле его дают сдачи Силитуса. Не хватает - добейте камнехвостых клешневиков "
+                       .. "(56) здесь же на обратном пути; земляных сокрушителей (57-58) и ос Хайв'Зора (58-59) "
+                       .. "обходите. В группе вместо гринда — Забытый Город (Фералас, полёт в лагерь Мохаче).",
+                   en = "Checkpoint: level 55 (Felwood and Winterspring - quests 54-58); after the grind on the north-east "
+                       .. "field the Silithus turn-ins make it. Short: finish on the Stonelash Pincers (56) right here on "
+                       .. "the way back; avoid the Dredge Crushers (57-58) and Hive'Zora Wasps (58-59). In a group: Dire "
+                       .. "Maul instead of grinding (Feralas, fly to Camp Mojache)." } },
         { id = "h-56-cenarionhold-end", turnin = 8282, npc = 15190, at = { 1451, 51.63, 38.50 },
           note = { ru = "Назад в крепость Кенария, Ноггл: сумка (дальше — следующий сегмент).",
                    en = "Back to Cenarion Hold, Noggle: the satchel (next segment from here)." } },

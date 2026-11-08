@@ -61,25 +61,30 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         -- Thunder Bluff -> Orgrimmar (level 22)
         ------------------------------------------------------------------
-        { id = "h-22-tb-start", accept = 1065, npc = 3419, at = { 1456, 22.81, 20.89 }, race = "Skyborne",
+        -- WARN-OK (step-no-profile, race-filtered steps below): the 1-22 routes end differently - the Undead have 1065
+        -- in the log and know the Orgrimmar flight point, the Skyborne have neither; each route sees only its own
+        -- steps, so the validator reports the other race's steps of this block as never shown for its profile.
+        { id = "h-22-tb-start", accept = 1065, npc = 3419, at = { 1456, 22.81, 20.89 }, -- WARN-OK: step-no-profile
+          race = "Skyborne",
           note = { ru = "Аптекарь Зама в Прудах Видений (под Вершиной Духов): «Путешествие к Мельнице Таррен».",
                    en = "Apothecary Zamah in the Pools of Vision (below Spirit Rise): Journey to Tarren Mill." } },
         { id = "h-22-tb-fly", go = true, radius = 10, npc = 2995, at = { 1456, 47.00, 49.83 },
           note = { ru = "Наверх на Вершину Духов, по мосту на центральную вершину: распорядитель ветрокрылов Тал.",
                    en = "Up to Spirit Rise and over the bridge to the central mesa: wind rider master Tal." } },
-        { id = "h-22-tb-fly-org", fly = "Orgrimmar", npc = 3310, at = { 1454, 45.12, 63.89 },
+        { id = "h-22-tb-fly-org", fly = "Orgrimmar", npc = 3310, at = { 1454, 45.12, 63.89 }, -- WARN-OK: step-no-profile
           race = { "Orc", "Scourge", "Tauren", "Troll" },
           note = { ru = "Летите в Оргриммар. Нет его на карте полётов — летите на Перекрёсток и бегите на северо-восток "
                        .. "через Заставу Дальнего Дозора (+5 мин).",
                    en = "Fly to Orgrimmar. Not on your flight map: fly to The Crossroads and run north-east via Far "
                        .. "Watch Post (+5 min)." } },
-        { id = "h-22-tb-fly-xroads", fly = "The Crossroads", npc = 3615, at = { 1413, 51.50, 30.34 }, race = "Skyborne",
+        { id = "h-22-tb-fly-xroads", fly = "The Crossroads", npc = 3615, -- WARN-OK: step-no-profile
+          at = { 1413, 51.50, 30.34 }, race = "Skyborne",
           note = { ru = "Оргриммара ещё нет на карте полётов: летите на Перекрёсток.",
                    en = "Orgrimmar is not on your flight map yet: fly to The Crossroads." } },
-        { go = true, radius = 30, at = { 1413, 62.26, 19.38 }, race = "Skyborne",
+        { go = true, radius = 30, at = { 1413, 62.26, 19.38 }, race = "Skyborne", -- WARN-OK: step-no-profile
           note = { ru = "По дороге на северо-восток к Заставе Дальнего Дозора и через мост в Дуротар.",
                    en = "North-east along the road to Far Watch Post and over the bridge into Durotar." } },
-        { go = true, radius = 20, at = { 1454, 48.97, 92.84 }, race = "Skyborne",
+        { go = true, radius = 20, at = { 1454, 48.97, 92.84 }, race = "Skyborne", -- WARN-OK: step-no-profile
           note = { ru = "Дальше на север по дороге к главным воротам Оргриммара.",
                    en = "Then north along the road to the main gate of Orgrimmar." } },
         { id = "h-22-org-fp", fp = "Orgrimmar", npc = 3310, at = { 1454, 45.12, 63.89 },

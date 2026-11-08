@@ -102,8 +102,10 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Нимбойя: головы вождей Кровавого Скальпа - сейчас, по пути на север.",
                    en = "Nimboya: the Bloodscalp chiefs' heads - now, on the way north." } },
         { accept = 598, npc = 2519, at = { 1434, 32.27, 27.71 },
-          note = { ru = "Кин'вилай: 25 ожерелий с Дробителей Черепов (восток, позже).",
-                   en = "Kin'weelay: 25 necklaces from the Skullsplitter trolls (east, later)." } },
+          note = { ru = "Кин'вилай: 25 ожерелий с Дробителей Черепов (восток, позже). Нет 629 (Коварный риф, h-34) - "
+                       .. "задания не будет: пропустите (Skip) этот шаг и шаги 598.",
+                   en = "Kin'weelay: 25 necklaces from the Skullsplitter trolls (east, later). No Vile Reef (629, h-34): "
+                       .. "it is not offered - Skip this and the later 598 steps." } },
         { complete = 584, at = { 1434, 23.48, 8.83 },
           note = { ru = "На северо-запад во внутреннюю деревню Кровавого Скальпа: Ган'зулах (41) и Неззилок Зловещий "
                        .. "(40) рядом друг с другом. Тролли вокруг 36-37 - быстро.",
@@ -149,8 +151,8 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Хелгрум Быстроногий в большом зале: «Донесение Хелгруму».",
                    en = "Helgrum the Swift in the great hall: Report to Helgrum." } },
         { accept = 1424, npc = 1443, at = { 1435, 47.93, 54.78 },
-          note = { ru = "Фел'зерул рядом: 5 артефактов Атал'ай у Озера Слез.",
-                   en = "Fel'zerul next to him: 5 Atal'ai Artifacts at the Pool of Tears." } },
+          note = { ru = "Фел'зерул рядом: 10 артефактов Атал'ай у Озера Слез.",
+                   en = "Fel'zerul next to him: 10 Atal'ai Artifacts at the Pool of Tears." } },
         { accept = { 698, 1430 }, npc = 5591, at = { 1435, 44.70, 57.21 },
           note = { ru = "Дар у западного входа: 8 боков острозубых кроколисков (кроколиски и крепкохваты) и 10 ножек "
                        .. "чудовищных крабов (восточный берег).",
@@ -162,9 +164,9 @@ FastesBoooy.AddLibrarySegment({
                    en = "On the way: Sawtooth Crocolisks (38-39, between Stonard and the lake) and Snappers (41-42, "
                        .. "east) - flanks." } },
         { id = "h-44-swamp-of-sorrows", complete = 1424, object = { 30854, 30855, 30856 }, at = { 1435, 70.42, 53.20 },
-          note = { ru = "Озеро Слез у Храма Атал'Хаккара: 5 артефактов на берегах и мелководье. Драконоиды 41-45 "
+          note = { ru = "Озеро Слез у Храма Атал'Хаккара: 10 артефактов на берегах и мелководье. Драконоиды 41-45 "
                        .. "вокруг - по одному.",
-                   en = "The Pool of Tears by the Temple of Atal'Hakkar: 5 artifacts on the shores and in the "
+                   en = "The Pool of Tears by the Temple of Atal'Hakkar: 10 artifacts on the shores and in the "
                        .. "shallows. The dragonkin around are 41-45 - one at a time." } },
         { complete = 1430, bg = true, at = { 1435, 96.53, 61.30 },
           note = { ru = "Попутно: чудовищные крабы (43-44) по всему восточному берегу - ножки.",
@@ -274,12 +276,14 @@ FastesBoooy.AddLibrarySegment({
                    en = "Out of Booty Bay through the tunnel, north-west to the pirate camp on the shore: the letter "
                        .. "on a crate." } },
         { id = "h45-mistvale", accept = 349, npc = 1449, at = { 1434, 35.27, 60.41 },
-          note = { ru = "На северо-восток в Мглистую долину: знахарь Унбагва у входа - нужен клык гориллы.",
-                   en = "North-east into Mistvale Valley: Witch Doctor Unbagwa at the entrance - he needs a Gorilla "
-                       .. "Fang." } },
+          note = { ru = "На северо-восток в Мглистую долину: знахарь Унбагва у входа - нужно 10 клыков горилл.",
+                   en = "North-east into Mistvale Valley: Witch Doctor Unbagwa at the entrance - he needs 10 Gorilla "
+                       .. "Fangs." } },
         { complete = { 571, 606, 349 }, at = { 1434, 32.89, 64.63 },
-          note = { ru = "Старые гориллы из Мглистой долины (40-41): сухожилие, 5 потрохов и клык.",
-                   en = "Elder Mistvale Gorillas (40-41): the sinew, 5 giblets and a fang." } },
+          note = { ru = "Старые гориллы из Мглистой долины (40-41): сухожилие, 5 потрохов и 10 клыков горилл "
+                       .. "(~15-20 горилл).",
+                   en = "Elder Mistvale Gorillas (40-41): the sinew, 5 giblets and 10 Gorilla Fangs (~15-20 "
+                       .. "gorillas)." } },
         -- WARN-OK (xp-unknown, next step): 349 gives no XP (WCLBox 0); the estimate only moves the level before the gate.
         { turnin = 349, npc = 1449, at = { 1434, 35.27, 60.41 }, -- WARN-OK: xp-unknown
           note = { ru = "Унбагва вызывает три волны горилл, последняя - Мокк Дикарь (44).",
@@ -359,8 +363,10 @@ FastesBoooy.AddLibrarySegment({
         { id = "h45-gromgol-2", turnin = { 585, 586 }, accept = 588, object = 2076, at = { 1434, 32.22, 27.60 },
           note = { ru = "На юг в Гром'гол: котел.", en = "South to Grom'gol: the cauldron." } },
         { turnin = { 588, 598 }, accept = 589, npc = 2519, at = { 1434, 32.27, 27.71 },
-          note = { ru = "Кин'вилай: 3 пульсирующих осколка с железозубых василисков.",
-                   en = "Kin'weelay: 3 Pulsing Blue Shards from Ironjaw Basilisks." } },
+          note = { ru = "Кин'вилай: 3 пульсирующих осколка с железозубых василисков. Без 598 - сдайте 588, возьмите "
+                       .. "589 и нажмите Skip.",
+                   en = "Kin'weelay: 3 Pulsing Blue Shards from Ironjaw Basilisks. Without 598: hand in 588, take 589, "
+                       .. "then Skip." } },
         { turnin = 571, accept = 573, npc = 2465, at = { 1434, 32.12, 29.24 },
           note = { ru = "Мок'тардин: 10 наг-исследователей и вода Святого источника.",
                    en = "Mok'thardin: 10 Naga Explorers and Holy Spring Water." } },

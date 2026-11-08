@@ -31,7 +31,9 @@
 --   * h-37-bootybay-end is the last step of the segment (Booty Bay, the plan's segment end); plan60.json lists
 --     it as the "last pass" id of the Grom'gol hub - the last Grom'gol step here is h36-gromgol-end.
 --   * Booty Bay is visited first, on foot (all five of its quests have their objectives in the north); the
---     hearthstone is bound to Grom'gol and used twice (Booty Bay -> Grom'gol, Nesingwary -> Grom'gol).
+--     hearthstone is bound to Grom'gol. Booty Bay -> Grom'gol is a flight (h34-hearth-gromgol-1 keeps its id): the
+--     stone was used at Hammerfall ~22-25 min earlier and is still on its 1-hour cooldown; it is used once, from
+--     Nesingwary (h34-hearth-gromgol-2).
 -- Skipped: 338-342 Green Hills pages (random drops), 196 / 572 / 584-586 / 193 / 209 / 600 (level 40+, h-44),
 --   638 Trollbane (back to Arathi), 1109 / 1113 / 1160 / 1394 (dungeon / Test of Lore chain), Forever-new 97328 /
 --   97329 / 97331 (Zul'Kunda, no turn-in NPC in the data), 97047 / 97048 (Kurzen, no giver), Drowned City
@@ -122,9 +124,11 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Кразек рядом.", en = "Krazek next to him." } },
         { id = "h34-fp-bootybay", fp = "Booty Bay", npc = 2858, at = { 1434, 26.87, 77.10 },
           note = { ru = "Грингер рядом: откройте карту полётов.", en = "Gringer next to them: open the flight map." } },
-        { id = "h34-hearth-gromgol-1", hearth = "Grom'gol Base Camp", at = { 1434, 31.49, 29.75 },
-          note = { ru = "Камень возвращения в Гром'гол. Камень ещё на откате - летите туда у Грингера.",
-                   en = "Hearth to Grom'gol. Hearthstone still on cooldown: fly there from Gringer." } },
+        { id = "h34-hearth-gromgol-1", fly = "Grom'gol Base Camp", npc = 1387, at = { 1434, 32.54, 29.35 },
+          note = { ru = "Грингер: летите в Гром'гол. Камень не тратьте - он ещё на откате после Павшего Молота (~25 мин "
+                       .. "назад) и нужен позже, от Эрнестуэя.",
+                   en = "Gringer: fly to Grom'gol. Do not use the hearthstone - it is still on cooldown from Hammerfall "
+                       .. "(~25 min ago) and is needed later, from Nesingwary." } },
 
         ------------------------------------------------------------------
         -- North: Nesingwary's Expedition and its loops (34-35)
@@ -203,10 +207,10 @@ FastesBoooy.AddLibrarySegment({
         { turnin = 581, accept = 582, npc = 2497, at = { 1434, 32.16, 27.72 },
           note = { ru = "Нимбойя.", en = "Nimboya." } },
         { complete = 569, at = { 1434, 37.10, 30.77 },
-          note = { ru = "Восточнее лагеря, у заставы огров: 10 громил и 5 знахарей из клана Мош'Огг. Редкий элитный "
-                       .. "Ролох тоже ходит здесь - обходите.",
+          note = { ru = "Восточнее лагеря, у заставы огров: 10 громил и 5 знахарей из клана Мош'Огг. Редкий Ролох "
+                       .. "(38) тоже ходит здесь - обходите.",
                    en = "East of the camp, at the ogre outpost: 10 Mosh'Ogg Brutes and 5 Witch Doctors. The rare "
-                       .. "elite Roloch walks here too - avoid him." } },
+                       .. "Roloch (38) walks here too - avoid him." } },
         { complete = { 192, 570 }, at = { 1434, 38.90, 37.87 },
           note = { ru = "Южнее: 10 тенебрюхих пантер (в незаметности), 8 когтей с них и безупречный тигриный клык с "
                        .. "тигрицы Тернистой долины (появляются на тех же местах).",
@@ -223,9 +227,13 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         { complete = 629, object = 58, at = { 1434, 24.82, 23.03 },
           note = { ru = "Коварный риф к западу: обломок таблички с Гри'лека на дне. Мурлоки Соленой Чешуи - ЭЛИТА: "
-                       .. "плывите над ними к табличке и сразу назад. Слишком опасно - бросьте 629.",
+                       .. "плывите над ними к табличке и сразу назад. Слишком опасно - бросьте 629, но тогда "
+                       .. "Кин'вилай не даст «Ожерелье расколотых костей» (598, h-44): оно открывается только после "
+                       .. "596 и 629.",
                    en = "The Vile Reef to the west: the Tablet Shard from Gri'lek on the sea floor. The Saltscale "
-                       .. "murlocs are ELITE: swim over them to the tablet and straight back. Too risky: abandon 629." } },
+                       .. "murlocs are ELITE: swim over them to the tablet and straight back. Too risky: abandon 629, "
+                       .. "but then Kin'weelay will not offer Split Bone Necklace (598, h-44): it needs both 596 and "
+                       .. "629." } },
         { complete = { 582, 596 }, at = { 1434, 22.52, 10.62 },
           note = { ru = "На север во внутреннюю деревню Кровавого Скальпа: охотники за головами (20 сушеных голов), "
                        .. "берсерки и знахари 36-37; доберите 25 ожерелий. Вождей Ган'зулаха и Неззилока (40-41) не "

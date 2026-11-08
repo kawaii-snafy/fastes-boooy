@@ -40,7 +40,8 @@
 --   FW1 : fp; 4767 (Elu), 4821 (Hagar), 4542 > 4841 (Longhorn), 5147 (poster), 1196 > 1197 (Rau), 98069 + 98070
 --         (Jandia, Forever-new, need 27).
 --   GH  : Galak Hold: 4841 centaurs + 1197 brazier (end of the cave); optional 4881 from the Galak Messenger.
---   DO  : Gravelsnout kobolds 1153 (bg); Dorn 1149 (leap from the planks) > 1150; Alien Egg 4821 (three spawn points).
+--   DO  : Gravelsnout kobolds 1153 (bg); Dorn 1149 (RP teleport to a platform at 26.4,32.9, leap) > 1150; Alien Egg
+--         4821 (three spawn points).
 --   FW2 : 4841 > 5064 (Longhorn), 1197 (Rau), 4821 > 4865 (Hagar).
 --   HC  : harpy cave: 98069 + 98070 in the bg, Grenka 1150.
 --   HP  : Highperch: Pao'ka 4770 escort + 4767 wyvern eggs; Steelsnap 1131.
@@ -52,7 +53,8 @@
 --         Flats loop (tortoises, reavers, basilisks, scavengers, rocket car rubble); crystalhides + gazers; level
 --         gate; turn-ins; hearth Thunder Bluff.
 --   TB3 : 1131 (Melor), 5062 (Magatha) = end.
--- Carried out: 532 + 567 (from h-22, for h-31), 5762 (Hemet Nesingwary, Stranglethorn, h-34), 1153 (Tatternack,
+-- Carried out: 1106 (Martek, Badlands, h-41), 532 + 567 (from h-22, for h-31), 5762 (Hemet Nesingwary, Stranglethorn,
+--   h-34), 1153 (Tatternack,
 --   start of h-31), optional 1013 (Book of Ur, Undercity in h-31).
 -- Not used (reasons): 6571 Warsong Supplies (its Warsong Axe Shipment, object 178204, is in Booty Bay: Stranglethorn
 --   1434 26.4,73.3); 6581 (part of 6571); 6482 Freedom to Ruul (Thistlefur, ~1.5k yd off the loop each way + escort:
@@ -61,7 +63,9 @@
 --   98823 Earthen Echo (Bashana: the follow-up of 95664, whose Titan Relic comes from the Excavation Site dungeon
 --   in the Wetlands - not offered without it); 1151 / 1152 (Rok'Alim, elite 30 in the far west after a second Dorn
 --   visit; Test of Lore ends in Stonetalon); 5088 Arikara (needs 5062 turned in at Magatha first: a second
---   Needles trip); 1102 / 1109 / 1221 (RFK, see above); 1106 / 1107 (35; 1107's fins drop in Stranglethorn);
+--   Needles trip); 1102 / 1109 / 1221 (RFK, see above); 1107 (35; its fins drop in Stranglethorn). 1106 Martek the
+--   Exiled IS taken (reqLevel 26, after 1104 + 1105): carried to Martek in the Badlands (h-41: 1106 > 1108 > 1137),
+--   whose 1137 > 1190 > 1194 end back at the Mirage Raceway on the way to Tanaris (h-46);
 --   1145-1147 The Swarm Grows (1145 needs 29 at the Crossroads, ~27 here); 1089 The Den (Talon Den keys).
 -- Automation notes: accepts at one NPC sit in one step; transient steps (fp, fly, go, hearth) come before the
 --   quest steps of the same place. The class inserts of the plan go after h-27-tb-arrive (Zamah; next step is Tah
@@ -142,8 +146,10 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Сразу сдайте её (0 опыта): Шадумбра, Урсангус и Шарптэлон теперь дают задания.",
                    en = "Turn it in right away (0 XP): Shadumbra, Ursangous and Sharptalon now start quests." } },
         { accept = 25, npc = 12737, at = { 1440, 73.67, 60.00 },
-          note = { ru = "Масток: «Остановка в Когтистых горах» — 12 осквернённых элементалей (Мистральское озеро).",
-                   en = "Mastok Wrilehiss: Stonetalon Standstill - 12 Befouled Water Elementals (Mystral Lake)." } },
+          note = { ru = "Масток: «Остановка в Когтистых горах» — 12 осквернённых элементалей (Мистральское озеро) и "
+                       .. "разведать беседку на озере (48.9, 69.6).",
+                   en = "Mastok Wrilehiss: Stonetalon Standstill - 12 Befouled Water Elementals (Mystral Lake) and scout "
+                       .. "the gazebo on the lake (48.9, 69.6)." } },
 
         ------------------------------------------------------------------
         -- Ashenvale loop: Felmusk, Shadumbra, Mystral Lake, Ursangous, moonwell, Sharptalon (level 27-28)
@@ -158,9 +164,11 @@ FastesBoooy.AddLibrarySegment({
         { accept = 24, use = 16304, at = { 1440, 57.50, 56.00 },
           note = { ru = "Дальше на запад: Шадумбра (28, ночной саблезуб) — голова, щёлкните её.",
                    en = "On west: Shadumbra (28, nightsaber) - her Head, click it." } },
-        { complete = 25, at = { 1440, 49.00, 70.42 },
-          note = { ru = "На юго-запад к Мистральскому озеру: 12 осквернённых элементалей воды (23-25) по берегам.",
-                   en = "South-west to Mystral Lake: 12 Befouled Water Elementals (23-25) along the shores." } },
+        { complete = 25, at = { 1440, 48.92, 69.56 },
+          note = { ru = "На юго-запад к Мистральскому озеру: 12 осквернённых элементалей воды (23-25) по берегам и "
+                       .. "разведка беседки на озере (48.9, 69.6) — зайдите в неё, иначе задание не сдать.",
+                   en = "South-west to Mystral Lake: 12 Befouled Water Elementals (23-25) along the shores, and scout "
+                       .. "the gazebo on the lake (48.9, 69.6) - step into it, or the quest cannot be turned in." } },
         { accept = 1918, use = 16408, at = { 1440, 46.00, 70.00 }, optional = true,
           note = { ru = "Тидресс (27) на западе озера — шар осквернённой воды, щёлкните его (550 опыта у Мастока). "
                        .. "Следующее задание (Зорам'гар) не берите.",
@@ -346,9 +354,13 @@ FastesBoooy.AddLibrarySegment({
                        .. "Sample." } },
         { id = "h-28-dorn-plainstalker", accept = 1149, npc = 2986, at = { 1441, 53.95, 41.49 },
           note = { ru = "Дорн Странник Равнин: «Испытание веры».", en = "Dorn Plainstalker: Test of Faith." } },
-        { complete = 1149, at = { 1441, 53.95, 41.49 },
-          note = { ru = "Прыгайте с края деревянного помоста у Дорна — духи подхватят, вы не разобьётесь.",
-                   en = "Jump off the end of the wooden planks next to Dorn - the spirits catch you, you do not die." } },
+        { complete = 1149, at = { 1441, 26.43, 32.93 },
+          note = { ru = "После взятия подождите короткую сценку Дорна (~7 с): он телепортирует вас на деревянный помост "
+                       .. "на игле далеко на западе (26.4, 32.9). Прыгайте с его края — духи вернут вас к Дорну, вы не "
+                       .. "разобьётесь. Не прыгайте с уступа у самого Дорна.",
+                   en = "After accepting, wait out Dorn's short RP (~7 s): he teleports you onto a wooden platform on a "
+                       .. "needle far to the west (26.4, 32.9). Jump off its end; the spirits teleport you back to Dorn, "
+                       .. "you do not die. Do not jump off Dorn's own ledge." } },
         { turnin = 1149, accept = 1150, npc = 2986, at = { 1441, 53.95, 41.49 },
           note = { ru = "Дорн: «Испытание стойкости» — коготь Гренки (пещера гарпий).",
                    en = "Dorn: Test of Endurance - Grenka's Claw (the harpy cave)." } },
@@ -513,10 +525,13 @@ FastesBoooy.AddLibrarySegment({
                        .. "this is up to ~300 kills: Well Fed food (+5%)." } },
         { turnin = 1110, npc = 4452, at = { 1441, 77.79, 77.27 },
           note = { ru = "Кравел. «Начальник порта Диззивиг» (36) не берите.", en = "Kravel. Skip Wharfmaster Dizzywig (36)." } },
-        { turnin = 1104, npc = 4454, at = { 1441, 78.06, 77.13 },
-          note = { ru = "Физзл. «Мартек Изгнанник» не берите.", en = "Fizzle. Skip Martek the Exiled." } },
         { turnin = 1105, npc = 4453, at = { 1441, 78.14, 77.12 },
           note = { ru = "Виззл. «Плавники» (35) не берите.", en = "Wizzle. Skip Encrusted Tail Fins (35)." } },
+        { turnin = 1104, accept = 1106, npc = 4454, at = { 1441, 78.06, 77.13 },
+          note = { ru = "Физзл (после сдачи обоих братьев): возьмите «Мартек Изгнанник» - письмо Мартеку в Бесплодные "
+                       .. "земли (h-41, рядом с Ригглфаззом; держите его до тех пор).",
+                   en = "Fizzle (after both brothers' turn-ins): take Martek the Exiled - the letter to Martek in the "
+                       .. "Badlands (h-41, next to Rigglefuzz; keep it until then)." } },
         { turnin = 1176, npc = 4630, at = { 1441, 80.18, 75.88 },
           note = { ru = "Поззик. Следующее не берите.", en = "Pozzik. Skip the follow-up." } },
         { id = "h-31-flats-end", turnin = 1175, npc = 4629, at = { 1441, 81.63, 77.95 },
