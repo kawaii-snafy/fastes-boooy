@@ -24,6 +24,9 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
         en = "15-18 The Barrens: the Crossroads, Ratchet, Camp Taurajo",
     },
     zone = "The Barrens",
+    -- WARN-OK: segment-level (the validator ends this segment at ~19.0, 0.02 over its 1-level tolerance, only with
+    -- its estimates for the 7 Forever-new quests here (~8k XP of 44k) and every optional step of sd-01..sd-04
+    -- counted; the Barrens part stays 15-18 like ud-04-barrens, sd-05 absorbs the difference)
     levels = { 15, 18 },
     steps = {
         ---------------------------------------------------------------------

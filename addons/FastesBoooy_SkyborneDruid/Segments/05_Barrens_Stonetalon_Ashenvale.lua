@@ -535,8 +535,9 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               en = "Marukai: the naga heads.",
           } },
         -- Vorsha (2300 XP, Elite / 2 players in WCLBox) is optional: the reference takes it solo for every class, its
-        -- naga waves also drop heads for 6442, and the route ends with a naga grind anyway. Skipped -> the
-        -- {complete, turnin} step below is forwarded by the 6442 turn-in.
+        -- naga waves also drop heads for 6442, and the route ends with a naga grind anyway. Skipped -> its complete
+        -- step (at the brazier, the quest's area trigger) is forwarded by the 6442 complete, its turn-in by the 6442
+        -- turn-in.
         { accept = 6641, optional = true, npc = 12717, at = { 1440, 12.06, 34.63 },
           note = {
               ru = "По желанию: Muglash рядом - сопровождение к жаровне наг на берегу. Волны наг (их головы "
@@ -546,15 +547,21 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
                   .. "count for Marukai's quest), then Vorsha (hits very hard - let Muglash take aggro, heal him and "
                   .. "yourself). Not confident - skip this step.",
           } },
+        { complete = 6641, optional = true, at = { 1440, 9.59, 27.58 },
+          note = {
+              ru = "Только если взяли: с Muglash к жаровне наг на берегу - волны наг, затем Vorsha. Muglash погиб - "
+                  .. "«Пропуск».",
+              en = "Only if you took it: with Muglash to the naga brazier on the shore - naga waves, then Vorsha. "
+                  .. "Muglash died - Skip.",
+          } },
         { complete = 6442, at = { 1440, 12.2, 24.3 },
           note = {
               ru = "На север вдоль Берега Зорам: 20 голов с наг Wrathtail (18-21). Севернее (у 7, 15) - "
-                  .. "Myrmidon и Priestess посильнее. Редкая Lady Vespia (22). Взяли Muglash - держитесь его.",
+                  .. "Myrmidon и Priestess посильнее. Редкая Lady Vespia (22).",
               en = "North along the Zoram Strand: 20 heads from the Wrathtail nagas (18-21). Further north (near 7, 15) "
-                  .. "the Myrmidons and Priestesses hit harder. Rare: Lady Vespia (22). Escorting Muglash - stay with "
-                  .. "him.",
+                  .. "the Myrmidons and Priestesses hit harder. Rare: Lady Vespia (22).",
           } },
-        { complete = 6641, turnin = 6641, optional = true, npc = 12863, at = { 1440, 12.22, 34.22 },
+        { turnin = 6641, optional = true, npc = 12863, at = { 1440, 12.22, 34.22 },
           note = {
               ru = "Только если сопровождали Muglash: Warsong Runner в Зорамгаре.",
               en = "Only if you escorted Muglash: the Warsong Runner in Zoram'gar.",

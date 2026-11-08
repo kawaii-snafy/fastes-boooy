@@ -13,8 +13,8 @@
 --
 -- Hub plan (Forever DB; every quest is available to Scourge and Skyborne Horde characters of any class):
 --   TB  : 742 (Windstrider, kept for Splintertree), 1067 > 1086 (Zamah), 97538 (Tah Winterhoof, Forever-new).
---   XR1 : 868 (Korran), 97003 (Gur'ak, Forever-new; Chol'aruk is an elite 20, killed at ~26), 862 (Grub); fly Camp
---         Taurajo.
+--   XR1 : 868 (Korran), 97003 (Gur'ak, Forever-new; Chol'aruk is an elite 20, killed at ~26), optional 862 (Grub,
+--         needs Cooking 15); fly Camp Taurajo.
 --   CT1 : 879 (Mangletooth), optional 97250 (Logmar), 874 (Jorn, for Mahren at Ratchet), 893 (Tatternack).
 --   BM  : Field of Giants eggs (868) on the way; Gann 843; 98093 (Sulhasa, Forever-new); 97250 soldiers (bg); dig site
 --         843 + dig rats 862; Feegly 857; Gann 843 > 846; Bael'dun Keep 846 + 857; Feegly 857; Gann 846 > 849;
@@ -91,9 +91,12 @@ FastesBoooy.AddLibrarySegment({
                        .. "ниже вас) на холме к северо-востоку; убьёте на обратном пути из Кабестана.",
                    en = "New in Forever (XP unknown): Gur'ak - Chol'aruk (elite 20, 5-6 levels below you by then) on the "
                        .. "hill to the north-east; you kill him on the way back from Ratchet." } },
-        { accept = 862, npc = 3443, at = { 1413, 55.31, 31.79 },
-          note = { ru = "Грязнуля на восточном краю Перекрёстка: «Крысиная похлебка» (пещерные крысы в Бейл Модане).",
-                   en = "Grub at the east edge of the Crossroads: Dig Rat Stew (dig rats at Bael Modan)." } },
+        -- 862 needs Cooking 15 (DB reqSkill): optional with its turn-in (the bg complete step is skipped without it).
+        { accept = 862, npc = 3443, at = { 1413, 55.31, 31.79 }, optional = true,
+          note = { ru = "Грязнуля на восточном краю Перекрёстка: «Крысиная похлебка» (пещерные крысы в Бейл Модане). "
+                       .. "Нужна Кулинария 15; без неё — «Пропуск».",
+                   en = "Grub at the east edge of the Crossroads: Dig Rat Stew (dig rats at Bael Modan). Needs Cooking "
+                       .. "15; without it - Skip." } },
         { id = "h-24-fly-taurajo", fly = "Camp Taurajo", npc = 10378, at = { 1413, 44.45, 59.15 },
           note = { ru = "Обратно к Девраку: летите в Лагерь Таурахо.", en = "Back to Devrak: fly to Camp Taurajo." } },
 
@@ -234,8 +237,8 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Бегом на северо-запад (~4 мин вместо полёта): Чол'арук (элитный 20-й) на холме кентавров — голова.",
                    en = "Run north-west (~4 min instead of the flight): Chol'aruk (elite 20) on the centaur hill - his "
                        .. "Head." } },
-        { turnin = 862, npc = 3443, at = { 1413, 55.31, 31.79 },
-          note = { ru = "Грязнуля.", en = "Grub." } },
+        { turnin = 862, npc = 3443, at = { 1413, 55.31, 31.79 }, optional = true,
+          note = { ru = "Грязнуля (если брали «Крысиную похлебку»).", en = "Grub (if you took Dig Rat Stew)." } },
         { turnin = 97003, npc = 267310, at = { 1413, 52.65, 29.06 }, -- WARN-OK: xp-unknown (Forever-new)
           note = { ru = "Гур'ак.", en = "Gur'ak." } },
         { turnin = 868, npc = 3428, at = { 1413, 51.07, 29.63 },
