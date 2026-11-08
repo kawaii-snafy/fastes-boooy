@@ -22,7 +22,7 @@ FastesBoooy.RegisterRoute({
     races = { "Skyborne" },
     classes = { "DRUID" },
     levels = { 1, 60 },
-    version = "0.2.0",
+    version = "0.3.0",
     author = "FastesBoooy",
     default = true,
 })

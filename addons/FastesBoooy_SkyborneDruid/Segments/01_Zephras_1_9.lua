@@ -324,10 +324,10 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
           note = {
               ru = "Sania дала «Знак Акира» (маскировка культиста) - он нужен в Фалаате, куда вы пойдёте "
                   .. "прямо из долины, без захода в деревню. Не умирайте в долине и у Vulgara; потеряли "
-                  .. "баф - перед Фалаатом вернитесь к Sania. Прочитали - жмите «Дальше».",
+                  .. "баф - перед Фалаатом вернитесь к Sania. Прочитали - жмите «Вперёд».",
               en = "Sania gave you the Mark of Akir (cultist disguise) - you need it in Falaath, where you go "
                   .. "straight from the vale without coming back to the village. Do not die in the vale or at "
-                  .. "Vulgara; lost the buff - see Sania again before Falaath. Read it - press Next.",
+                  .. "Vulgara; lost the buff - see Sania again before Falaath. Read it - press Forward.",
           } },
         { turnin = 93319, npc = 251906, at = { 2521, 44.46, 44.96 } }, -- WARN-OK: xp-unknown (Forever-new)
         { turnin = 94411, npc = 251902, at = { 2521, 43.51, 44.77 } }, -- WARN-OK: xp-unknown (Forever-new)

@@ -62,12 +62,12 @@ FastesBoooy.AddInsert("horde-undead-paladin", {
                        .. "Мертвые копи, Крепость Темного Клыка и к Непроглядной Пучине (вторая часть в гайде не "
                        .. "ведётся), ~25 мин, опыт неизвестен. Из Подгорода на запад к крепости Бандарион: Данита Морр "
                        .. "— «Дипломатический скандал». Потом летите из Подгорода в Гробницу (или бегом на юг). Не "
-                       .. "делаете — «Пропуск» на этом шаге и на девяти шагах цепочки в Гробнице. Сам «Аконит» — "
+                       .. "делаете — «Вперёд» на этом шаге и на девяти шагах цепочки в Гробнице. Сам «Аконит» — "
                        .. "двуручный меч: навык у Арчибальда в Подгороде.",
                    en = "Optional class chain towards Wolfsbane (2H sword, 25.6 dps): only if you will also run the "
                        .. "Deadmines, Shadowfang Keep and the Blackfathom Deeps entrance later (part 2 is not routed), "
                        .. "~25 min, XP unknown. Out of Undercity west to Bandarion Keep: Danitha Morr - Diplomatic "
-                       .. "Incident. Then fly from Undercity to the Sepulcher (or run south). Not doing it: Skip this "
+                       .. "Incident. Then fly from Undercity to the Sepulcher (or run south). Not doing it: press Forward on this "
                        .. "step and the nine chain steps at the Sepulcher. Wolfsbane itself is a 2H sword: the skill is "
                        .. "taught by Archibald in Undercity." } },
     },
@@ -195,14 +195,14 @@ FastesBoooy.AddInsert("horde-undead-paladin", {
                        .. "Печатью повиновения лучше Сокрушителя), а к Зверобою (4301, 54-й) навык топоров уже вырастет. "
                        .. "Навык начинается с 1: первые бои с Колуном — с промахами, пока он не догонит уровень (окно "
                        .. "персонажа, «Навыки»). До 44-го остаётся Молот Уничтожения: молот из 666 требует Инженерное "
-                       .. "дело (100). Пропустили — на 44-м берите Сокрушитель (булава). Готово — «Дальше».",
+                       .. "дело (100). Пропустили — на 44-м берите Сокрушитель (булава). Готово — «Вперёд».",
                    en = "Recommended: from the inn north-east to the Valley of Honor, weapon master Hanashi - Two-Handed "
                        .. "Axes (~3 min detour on foot), then out the main gate to the zeppelins. Then take Tok'kar's "
                        .. "Murloc Chopper for 1427 at 44 (2H axe, 32.5 dps, +15 Str, speed 3.2 - better than the Basher "
                        .. "with Seal of Command), and the axe skill has grown by Beastslayer (4301, at 54). The skill "
                        .. "starts at 1: the first fights with the Chopper miss a lot until it catches up with your level "
                        .. "(character pane, Skills). Until 44 the Demolition Hammer stays: the hammer of 666 requires "
-                       .. "Engineering (100). Skipped: take the Basher (mace) at 44. Done: press Next." } },
+                       .. "Engineering (100). Skipped: take the Basher (mace) at 44. Done: press Forward." } },
     },
 })
 
@@ -235,12 +235,12 @@ FastesBoooy.AddInsert("horde-undead-paladin", {
         { id = "pal-40-riding", manual = true, npc = 4773, at = { 1420, 60.08, 52.57 },
           note = { ru = "Вельма Варнам рядом: Верховая езда (ученик), ~100 з. — по анонсу Forever скакун выдаётся "
                        .. "вместе с навыком. Если у тренера паладинов был «Призыв боевого коня» — выучили его, езда не нужна. "
-                       .. "Не хватает золота — «Дальше», вернётесь на 44-м (Брилл в 2 мин от башни дирижаблей). "
-                       .. "Готово — «Дальше».",
+                       .. "Не хватает золота — «Вперёд», вернётесь на 44-м (Брилл в 2 мин от башни дирижаблей). "
+                       .. "Готово — «Вперёд».",
                    en = "Velma Warnam next to her: Apprentice Riding, ~100 g - Forever announced a mount with the skill. "
                        .. "If the paladin trainer offered Summon Warhorse, you learned that and need no riding. Not "
-                       .. "enough gold: press Next and come back at 44 (Brill is 2 min from the zeppelin tower). Done: "
-                       .. "press Next." } },
+                       .. "enough gold: press Forward and come back at 44 (Brill is 2 min from the zeppelin tower). Done: "
+                       .. "press Forward." } },
         { id = "pal-40-horse", vendor = true, npc = 4731, optional = true, at = { 1420, 59.87, 52.68 },
           note = { ru = "Только если с ездой не дали скакуна: Захария Пост — скелет-конь (любой). Потом обратно в "
                        .. "Подгород.",
@@ -253,9 +253,9 @@ FastesBoooy.AddInsert("horde-undead-paladin", {
                      { ru = "Молот правосудия (ранг 3)", en = "Hammer of Justice (Rank 3)" },
                      { ru = "Латы", en = "Plate Mail" } },
           note = { ru = "Только если у Шари не было рангов 40-го: в Подгороде на северо-запад в Квартал Воинов, Гарен "
-                       .. "Ларго (верхом ~1 мин крюка). Всё выучили в Брилле — «Пропуск».",
+                       .. "Ларго (верхом ~1 мин крюка). Всё выучили в Брилле — «Вперёд».",
                    en = "Only if Shari lacked the level-40 ranks: in Undercity north-west to the War Quarter, Garen "
-                       .. "Largo (~1 min detour mounted). Learned everything in Brill: Skip." } },
+                       .. "Largo (~1 min detour mounted). Learned everything in Brill: press Forward." } },
     },
 })
 
@@ -331,11 +331,11 @@ FastesBoooy.AddInsert("horde-undead-paladin", {
                      { ru = "Свет небес (ранг 8)", en = "Holy Light (Rank 8)" },
                      { ru = "Молот правосудия (ранг 4)", en = "Hammer of Justice (Rank 4)" } },
           note = { ru = "По желанию: Квартал Воинов, Гарен Ларго — ранги 54 и, если уже 58-й (обычно да с попутными "
-                       .. "убийствами; по квестам здесь 57.95-57.99), Печать праведности 8. Нет 58-го — «Пропуск», всё "
+                       .. "убийствами; по квестам здесь 57.95-57.99), Печать праведности 8. Нет 58-го — «Вперёд», всё "
                        .. "выучите на 60-м. Таланты: 55-59 — Божественный интеллект 5/5 (Защита).",
                    en = "Optional: War Quarter, Garen Largo - the 54 ranks and, if you are 58 already (usually yes with "
                        .. "kills on the way; the quests alone give 57.95-57.99 here), Seal of Righteousness R8. Not 58: "
-                       .. "Skip, you train everything at 60. Talents: 55-59 Divine Intellect 5/5 (Protection)." } },
+                       .. "press Forward, you train everything at 60. Talents: 55-59 Divine Intellect 5/5 (Protection)." } },
     },
 })
 

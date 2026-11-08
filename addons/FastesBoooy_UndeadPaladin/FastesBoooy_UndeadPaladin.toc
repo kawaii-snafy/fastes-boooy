@@ -3,7 +3,7 @@
 ## Notes: Speed leveling route for FastesBoooy: Undead Paladin (Horde), levels 1-60 (Tirisfal, Silverpine, Barrens, Stonetalon, Ashenvale; 22-60 on the shared Horde route with paladin training and the mount at 40).
 ## Notes-ruRU: Скоростной маршрут прокачки для FastesBoooy: нежить-паладин (Орда), уровни 1-60 (Тирисфаль, Серебряный бор, Степи, Когтистые горы, Ясеневый лес; 22-60 по общему маршруту Орды с обучением паладина и верховой ездой на 40-м).
 ## Dependencies: FastesBoooy, FastesBoooy_Horde
-## Version: 0.2.0
+## Version: 0.3.0
 
 Route.lua
 Data.lua

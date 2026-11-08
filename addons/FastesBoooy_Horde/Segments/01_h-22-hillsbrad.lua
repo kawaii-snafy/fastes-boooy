@@ -107,10 +107,10 @@ FastesBoooy.AddLibrarySegment({
         -- Optional, group: Ruins of Lordaeron (Forever-new dungeon 15-22 above the Undercity; quests ~2.2x Classic XP).
         { accept = 92421, npc = 266484, at = { 1458, 58.08, 89.51 }, optional = true,
           note = { ru = "Если собрали группу: Руины Лордерона (новое подземелье 15-22, ~19 тыс. опыта за 4 задания, ~40 мин). "
-                       .. "Морбин Погибель Света в Королевском квартале: «Правосудие Света». Без группы — «Пропуск» на этих "
+                       .. "Морбин Погибель Света в Королевском квартале: «Правосудие Света». Без группы — «Вперёд» на этих "
                        .. "семи шагах.",
                    en = "If you have a group: Ruins of Lordaeron (new dungeon 15-22, ~19k XP for 4 quests, ~40 min). Morbin "
-                       .. "Lightbane in the Royal Quarter: Light's Justice. No group: Skip these seven steps." } },
+                       .. "Lightbane in the Royal Quarter: Light's Justice. No group: press Forward on these seven steps." } },
         { accept = 95216, npc = 11835, at = { 1458, 46.31, 71.91 }, optional = true,
           note = { ru = "Квартал аптекарей: Теодор Гриффс — «Новая чума».",
                    en = "The Apothecarium: Theodore Griffs - The New Plague." } },
@@ -149,9 +149,9 @@ FastesBoooy.AddLibrarySegment({
         { accept = { 1098, 1014 }, npc = { 1952, 1938 }, at = { 1421, 43.81, 40.34 }, optional = true,
           note = { ru = "Если собрали группу: Крепость Темного Клыка (~14 тыс. опыта, ~50 мин; с «Книгой Ура» ~20 тыс.). "
                        .. "Верховный палач Хадрик — «Пропавшие стражи смерти», Далар Ткач Рассвета — «Смерть Аругалу!». "
-                       .. "Без группы — «Пропуск» на этих пяти шагах.",
+                       .. "Без группы — «Вперёд» на этих пяти шагах.",
                    en = "If you have a group: Shadowfang Keep (~14k XP, ~50 min; ~20k with The Book of Ur). High Executor "
-                       .. "Hadrec - Deathstalkers in Shadowfang, Dalar Dawnweaver - Arugal Must Die. No group: Skip these "
+                       .. "Hadrec - Deathstalkers in Shadowfang, Dalar Dawnweaver - Arugal Must Die. No group: press Forward on these "
                        .. "five steps." } },
         { turnin = 1098, at = { 1421, 44.80, 67.80 }, optional = true, -- WARN-OK: at-far-from-giver (Vincent is inside the dungeon)
           note = { ru = "На юг к крепости на холме (вход 44.8, 67.8). Внутри, за двором: поговорите со стражем смерти "

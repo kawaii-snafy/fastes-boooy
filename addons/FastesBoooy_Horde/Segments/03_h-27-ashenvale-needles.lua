@@ -98,9 +98,9 @@ FastesBoooy.AddLibrarySegment({
                    en = "Zangen Stonehoof next to her: The Sacred Flame (a moonwell in Ashenvale)." } },
         { turnin = 6561, npc = 9087, at = { 1456, 71.06, 34.19 }, optional = true,
           note = { ru = "Если были в Непроглядной Пучине: по мосту на Вершину Старейшин — Башана Рунический Тотем, голова "
-                       .. "Келриса (7850 опыта). Нет головы — «Пропуск».",
+                       .. "Келриса (7850 опыта). Нет головы — «Вперёд».",
                    en = "If you did Blackfathom Deeps: over the bridge to Elder Rise - Bashana Runetotem, the head of "
-                       .. "Kelris (7850 XP). No head: Skip." } },
+                       .. "Kelris (7850 XP). No head: press Forward." } },
         { id = "h-27-thunder-bluff-flight", fly = "The Crossroads", npc = 3615, at = { 1413, 51.50, 30.34 },
           note = { ru = "Тал на центральной вершине: летите на Перекрёсток.",
                    en = "Tal on the central mesa: fly to the Crossroads." } },
@@ -284,10 +284,10 @@ FastesBoooy.AddLibrarySegment({
         { accept = 1144, at = { 1413, 42.90, 90.20 }, optional = true, -- WARN-OK: at-far-from-giver (Willix is inside the dungeon)
           note = { ru = "Если собрали группу: Лабиринты Иглошкурых (7250 опыта за Вилликса и много за мобов, ~50 мин). Вход "
                        .. "к западу от дороги (42.9, 90.2); внутри Импортер Вилликс — «Импортер Вилликс». Без группы — "
-                       .. "«Пропуск» на этих трёх шагах.",
+                       .. "«Вперёд» на этих трёх шагах.",
                    en = "If you have a group: Razorfen Kraul (7250 XP for Willix plus lots of mob XP, ~50 min). The "
                        .. "entrance is west of the road (42.9, 90.2); inside, Willix the Importer - Willix the Importer. "
-                       .. "No group: Skip these three steps." } },
+                       .. "No group: press Forward on these three steps." } },
         { complete = 1144, at = { 1413, 42.90, 90.20 }, optional = true,
           note = { ru = "Проводите Вилликса к выходу.", en = "Escort Willix to the exit." } },
         { turnin = 1144, at = { 1413, 42.90, 90.20 }, optional = true, -- WARN-OK: at-far-from-giver (Willix, inside the dungeon)

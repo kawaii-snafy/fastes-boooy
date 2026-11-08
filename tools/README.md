@@ -37,7 +37,7 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 | `make test` | `busted` (все `tests/spec/*_spec.lua`) |
 | `make validate` | `lua5.1 tools/validate_routes.lua` (флаги: `make validate VALIDATE_FLAGS=--strict`) |
 | `make simulate` | `lua5.1 tools/simulate_routes.lua` |
-| `make simulate-sync` | «игрок обогнал маршрут», оба маршрута (раздел 8): `lua5.1 tools/simulate_routes.lua --ahead L` для `L` из `SYNC_LEVELS` (`10 23 35 48`), прыжок посреди участка с квестами в журнале `--ahead L --ahead-at SEG` для `SYNC_MID` (`21/ud-04-barrens,sd-04-barrens 29/h-24-barrens-stonetalon`) и игра с опережением `--level-plus N` для `SYNC_PLUS` (`2 4`) (≈ 6½ мин) |
+| `make simulate-sync` | «игрок обогнал маршрут», оба маршрута (раздел 8): `lua5.1 tools/simulate_routes.lua --ahead L` для `L` из `SYNC_LEVELS` (`10 23 35 48`), прыжок посреди участка с квестами в журнале `--ahead L --ahead-at SEG` для `SYNC_MID` (`21/ud-04-barrens,sd-04-barrens 29/h-24-barrens-stonetalon`) и игра с опережением `--level-plus N` для `SYNC_PLUS` (`2 4`) (≈ 5 мин; весь `make check` ≈ 7 мин) |
 | `make validate-fixtures` / `make simulate-fixtures` | валидатор (0 ERROR) / симулятор на заведомо хороших фикстурах (`FxClean`, `FxNs`, `TestRoute`, библиотека `TestLib` + составной маршрут `TestComposed`; симулятор — `TestRoute`, `TestComposed`) — стадии проверяют что-то и до появления первого модуля маршрута |
 | `make harness-fixtures` | harness на фикстуре-библиотеке `FastesBoooy_FxHarnessLib` из её состояния `tests/fixtures/validator/harness_state_6.json`: валидатор (`--strict`) и симулятор, оба профиля 22-60 |
 | `make harness PROFILE=… [LIB=…] [SEGMENTS=…] [STATE=…] [OUT=…]` | часть библиотеки из стартового состояния (раздел 7): валидатор (с `--write-state OUT`), затем симулятор; `LIB` по умолчанию `addons/FastesBoooy_Horde`, пустой `SEGMENTS` — все сегменты |
@@ -783,13 +783,13 @@ ud-01-deathknell -> ud-05-stonetalon-ashenvale; …`) и число «пусты
 
 Без этих опций ничего из этого не происходит: обычные прогоны не изменились.
 
-Итоги `--ahead L` (`make simulate-sync`; вместе с `SYNC_MID` и `SYNC_PLUS` ≈ 6½ мин на обоих
+Итоги `--ahead L` (`make simulate-sync`; вместе с `SYNC_MID` и `SYNC_PLUS` ≈ 5 мин на обоих
 маршрутах):
 
 | L | Нежить-паладин | Скайборн-друид |
 |---|---|---|
 | 10 | 1-6 → 6-13 | на 11-м: 1-9 → 9-13 |
-| 23 | 1-6 → 18-22, затем на 24-м → h-22, на 26-м → h-24 | 1-9 → 18-22 |
+| 23 | 1-6 → 18-22, затем на 24-м → h-22 | 1-9 → 18-22 |
 | 35 | 1-6 → h-31 | 1-9 → h-31 |
 | 48 | 1-6 → h-46 | 1-9 → h-46 |
 
@@ -797,7 +797,10 @@ ud-01-deathknell -> ud-05-stonetalon-ashenvale; …`) и число «пусты
 12 квестов) → 18-22, брошенные 4 / 3 квеста отменены, выполнение квестов, которые сдаются в 18-22,
 и сдачи готовых — «Попутно»; на 29-м посреди h-24 → h-27. `SYNC_PLUS`: +2 — ни одного прыжка, все
 квесты сданы (712/712 → 710/710 у паладина: 2 серых квеста перерощенного сегмента); +4 — прыжок на
-каждом сегменте, пропущенные тренер / точки полёта / привязка — «Попутно», журнал в конце пуст.
+каждом сегменте, пропущенные тренер / точки полёта / привязка — «Попутно», брошенные 34 / 31 квеста
+(паладин / друид) отменены, журнал в конце пуст; единственное предупреждение — 4496 в h-53 (его
+`preAny` 4493 — альянсовый вариант, не квест маршрута; по правилу недоступных квестов такие
+предпосылки считаются выполненными, docs/ARCHITECTURE.md).
 
 ## Ограничения
 

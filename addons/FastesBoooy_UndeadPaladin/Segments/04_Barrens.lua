@@ -141,10 +141,10 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
                    en = "Along the way: 4 Zhevra Hooves (Zhevra Runners all over the east)." } },
         { id = "ud04-keg", collect = { [4926] = 1 }, object = 3238, optional = true, at = { 1413, 55.70, 27.30 },
           note = { ru = "По пути на северо-восток: здесь может лежать Пустой бочонок Чэня (задание пивовару Дрону в "
-                       .. "Кабестане, 1050 + 1350 опыта). Есть — подберите. Нет — «Пропуск»: бочонок бывает и в "
+                       .. "Кабестане, 1050 + 1350 опыта). Есть — подберите. Нет — «Вперёд»: бочонок бывает и в "
                        .. "других местах маршрута (подсказки в заметках).",
                    en = "On the way north-east: Chen's Empty Keg may lie here (a quest for Brewmaster Drohn in "
-                       .. "Ratchet, 1050 + 1350 XP). There: loot it. Not there: press Skip, the keg can also lie "
+                       .. "Ratchet, 1050 + 1350 XP). There: loot it. Not there: press Forward, the keg can also lie "
                        .. "at other spots on the route (see the notes)." } },
         { complete = { 872, 5041 }, at = { 1413, 58.6, 25.4 },
           note = { ru = "Дальний лагерь Иглогривых: 8 геомантов, 8 защитников, Кринег Злобное Рыло (15) на юге "
@@ -372,9 +372,9 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
           note = { ru = "Мебок Миззирикс: 5 рогов серпокоготных ящеров — на юге, у гнёзд.",
                    en = "Mebok Mizzyrix: 5 horns from Sunscale Scytheclaws, in the south by the nests." } },
         { accept = 819, use = 4926, optional = true, at = { 1413, 62.26, 38.39 },
-          note = { ru = "Нашли Пустой бочонок Чэня? Начните задание из бочонка. Нет бочонка — «Пропуск» на "
+          note = { ru = "Нашли Пустой бочонок Чэня? Начните задание из бочонка. Нет бочонка — «Вперёд» на "
                        .. "этом и следующем шаге.",
-                   en = "Found Chen's Empty Keg? Start the quest from the keg. No keg: press Skip on this and "
+                   en = "Found Chen's Empty Keg? Start the quest from the keg. No keg: press Forward on this and "
                        .. "the next step." } },
         { turnin = 819, accept = 821, npc = 3292, optional = true, at = { 1413, 62.26, 38.39 }, -- 821 is carried: Drohn, ud-05
           note = { ru = "Пивовар Дрон: сдайте и возьмите 821 — 5 клыков равнинного льва, 5 почек долгонога и рог "

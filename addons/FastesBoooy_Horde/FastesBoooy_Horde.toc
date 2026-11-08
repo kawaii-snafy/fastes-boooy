@@ -3,7 +3,7 @@
 ## Notes: Shared Horde 22-60 questing route for FastesBoooy (library of class-neutral segments used by the class route modules). Not a guide on its own.
 ## Notes-ruRU: Общий маршрут прокачки Орды 22-60 для FastesBoooy (библиотека сегментов без классовых шагов для модулей маршрутов классов). Сам по себе не гайд.
 ## Dependencies: FastesBoooy
-## Version: 0.1.0
+## Version: 0.2.0
 ## X-FastesBoooy-Module: library
 
 Data.lua

@@ -3,7 +3,7 @@
 ## Notes: Speed leveling route for FastesBoooy: Skyborne (Windshaper) Druid, Horde, levels 1-60 (Zephras Isle, Kalimdor to 22, then the shared Horde 22-60 path with druid training, Travel Form, Dire Bear Form, riding and the Torwa Pathfinder chain).
 ## Notes-ruRU: Скоростной маршрут прокачки для FastesBoooy: скайборн-друид (Windshaper, Орда), уровни 1-60 (остров Зефрас, Калимдор до 22, дальше общий путь Орды 22-60 с обучением друида, походным обликом, обликом лютого медведя, верховой ездой и цепочкой Торвы Следопыта).
 ## Dependencies: FastesBoooy, FastesBoooy_Horde
-## Version: 0.2.0
+## Version: 0.3.0
 
 Route.lua
 Data.lua

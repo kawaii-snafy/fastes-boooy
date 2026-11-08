@@ -94,9 +94,9 @@ FastesBoooy.AddLibrarySegment({
         -- 862 needs Cooking 15 (DB reqSkill): optional with its turn-in (the bg complete step is skipped without it).
         { accept = 862, npc = 3443, at = { 1413, 55.31, 31.79 }, optional = true,
           note = { ru = "Грязнуля на восточном краю Перекрёстка: «Крысиная похлебка» (пещерные крысы в Бейл Модане). "
-                       .. "Нужна Кулинария 15; без неё — «Пропуск».",
+                       .. "Нужна Кулинария 15; без неё — «Вперёд».",
                    en = "Grub at the east edge of the Crossroads: Dig Rat Stew (dig rats at Bael Modan). Needs Cooking "
-                       .. "15; without it - Skip." } },
+                       .. "15; without it - press Forward." } },
         { id = "h-24-fly-taurajo", fly = "Camp Taurajo", npc = 10378, at = { 1413, 44.45, 59.15 },
           note = { ru = "Обратно к Девраку: летите в Лагерь Таурахо.", en = "Back to Devrak: fly to Camp Taurajo." } },
 
@@ -364,10 +364,10 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         { id = "h-26-bfd-fly", fly = "Zoram'gar Outpost", npc = 11901, at = { 1440, 12.24, 33.80 }, optional = true,
           note = { ru = "Если собрали группу: Непроглядная Пучина (~60 мин, ~17 тыс. опыта за задания здесь и ещё 7850 "
-                       .. "в Громовом Утёсе — вместо гринда у гарпий). Тарм: летите в Зорам'гар. Без группы — «Пропуск» "
+                       .. "в Громовом Утёсе — вместо гринда у гарпий). Тарм: летите в Зорам'гар. Без группы — «Вперёд» "
                        .. "на этих 10 шагах.",
                    en = "If you have a group: Blackfathom Deeps (~60 min, ~17k quest XP here and 7850 more in Thunder "
-                       .. "Bluff - instead of grinding harpies). Tharm: fly to Zoram'gar. No group: Skip these 10 "
+                       .. "Bluff - instead of grinding harpies). Tharm: fly to Zoram'gar. No group: press Forward on these 10 "
                        .. "steps." } },
         { accept = { 6563, 6921 }, npc = 12736, at = { 1440, 11.56, 34.29 }, optional = true,
           note = { ru = "Дже'неу Санкри: «Сущность Аку'май» и «Среди руин».",

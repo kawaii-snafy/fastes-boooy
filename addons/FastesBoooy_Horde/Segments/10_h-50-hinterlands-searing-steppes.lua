@@ -628,9 +628,9 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Линора.", en = "Lynnore." } },
         { turnin = 1445, npc = 1443, optional = true, at = { 1435, 47.93, 54.78 },
           note = { ru = "По желанию (были в Затонувшем храме, 1445 в журнале): на север в Каменор, Фел'зерул — фетиши "
-                       .. "Хаккара; затем летите от Брейка в Подгород, камень ниже не нужен. Нет 1445 - «Пропустить».",
+                       .. "Хаккара; затем летите от Брейка в Подгород, камень ниже не нужен. Нет 1445 - «Вперёд».",
                    en = "Optional (you ran the Sunken Temple, 1445 is in the log): north to Stonard, Fel'Zerul - the "
-                       .. "Fetishes of Hakkar; then fly from Breyk to Undercity, no hearth below. No 1445: Skip." } },
+                       .. "Fetishes of Hakkar; then fly from Breyk to Undercity, no hearth below. No 1445: press Forward." } },
         { id = "h-51-stonard-2", hearth = "Kargath", at = { 1418, 2.82, 45.86 },
           note = { ru = "Камень возвращения в Каргат (привязан там же, последний раз использован в Пылающих степях больше "
                        .. "часа назад): оттуда полёт в Подгород короче, чем от Каменора (дальше — следующий сегмент). "

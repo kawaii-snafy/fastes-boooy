@@ -97,10 +97,10 @@ FastesBoooy.AddLibrarySegment({
           npc = 211022, at = { 1458, 73.40, 33.00 },
           note = { ru = "Рядом, Оуэн Тэдд: пять книг из Внутренних земель, Тлеющего ущелья, Черной горы, Болота Печали и "
                        .. "Выжженных земель - возьмите задания (книги в сумках) и сразу сдайте. Какой-то книги нет - "
-                       .. "сдайте остальные и нажмите «Пропустить».",
+                       .. "сдайте остальные и нажмите «Вперёд».",
                    en = "Next to him, Owen Thadd: the five books from the Hinterlands, the Searing Gorge, Blackrock "
                        .. "Mountain, the Swamp of Sorrows and the Blasted Lands - take the quests (the books are in your "
-                       .. "bags) and turn them in at once. A book missing: turn in the rest and Skip." } },
+                       .. "bags) and turn them in at once. A book missing: turn in the rest and press Forward." } },
         { id = "h53-zeppelin-org", go = true, radius = 15, npc = 9566, at = { 1420, 60.74, 58.87 },
           note = { ru = "Из Подгорода к башне дирижаблей (Запота): дирижабль в Оргриммар.",
                    en = "Out of Undercity to the zeppelin tower (Zapetta): zeppelin to Orgrimmar." } },

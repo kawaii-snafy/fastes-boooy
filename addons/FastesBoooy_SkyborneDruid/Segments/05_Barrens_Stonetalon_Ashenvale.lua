@@ -550,9 +550,9 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
         { complete = 6641, optional = true, at = { 1440, 9.59, 27.58 },
           note = {
               ru = "Только если взяли: с Muglash к жаровне наг на берегу - волны наг, затем Vorsha. Muglash погиб - "
-                  .. "«Пропуск».",
+                  .. "«Вперёд».",
               en = "Only if you took it: with Muglash to the naga brazier on the shore - naga waves, then Vorsha. "
-                  .. "Muglash died - Skip.",
+                  .. "Muglash died - press Forward.",
           } },
         { complete = 6442, at = { 1440, 12.2, 24.3 },
           note = {
