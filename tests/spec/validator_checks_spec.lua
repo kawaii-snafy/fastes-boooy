@@ -117,6 +117,16 @@ describe("validator checks", function()
                 { turnin = 90902, npc = 244808, at = AT_ARAMIS },
             }, open), "lookahead-skip"))
         end)
+
+        it("an accept counts only when the quest is offered at the visit (prerequisite not turned in between)", function()
+            -- 90902 needs 364: turned in between the visit and the accept
+            local state = { level = 3, xpFrac = 0, done = { 363 }, log = { 364 }, complete = { 364 }, flightPaths = {} }
+            assert.are.same({}, codeSteps(run({
+                { train = true, npc = 244808, at = AT_ARAMIS },
+                { turnin = 364, npc = 1569, at = { 1420, 30.8, 66.2 } },
+                { accept = 90902, npc = 244808, at = AT_ARAMIS },
+            }, state), "lookahead-skip"))
+        end)
     end)
 
     describe("quest-profession", function()

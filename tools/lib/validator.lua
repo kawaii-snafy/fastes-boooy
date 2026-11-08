@@ -1634,9 +1634,20 @@ function Run:checkLookaheadSkip()
                             local who = q and (t == "accept" and q.start or q.finish)
                             local same = who and who.npcs and anyIn(v.npc, who.npcs)
                             if same and t == "turnin" then
-                                -- not complete yet when the visit happens: no auto turn-in then
+                                -- not in the log or not complete yet when the visit happens: no auto turn-in then
                                 for k = j + 1, i - 1 do
-                                    if hasQuestActionV(steps[k], "complete", a.quest) then same = false break end
+                                    if hasQuestActionV(steps[k], "complete", a.quest)
+                                        or hasQuestActionV(steps[k], "accept", a.quest) then same = false break end
+                                end
+                            elseif same then
+                                -- not offered yet at the visit: a prerequisite is turned in between
+                                local pre = {}
+                                for _, p in ipairs(q.preGroup or {}) do pre[p] = true end
+                                for _, p in ipairs(q.preSingle or {}) do pre[p] = true end
+                                for k = j + 1, i - 1 do
+                                    for _, b in ipairs(steps[k].actions) do
+                                        if b.type == "turnin" and pre[b.quest] then same = false end
+                                    end
                                 end
                             end
                             if same then hit = hit or a else other = true end
