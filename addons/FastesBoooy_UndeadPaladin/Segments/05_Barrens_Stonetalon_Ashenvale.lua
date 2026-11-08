@@ -40,7 +40,8 @@
 --   6421/6481 (Boulderslide Ravine, two Sun Rock round trips), 6301 (seeds north of Sun Rock), 6563 and
 --   95042 (elite naga/satyrs at the Blackfathom Deeps entrance), 6641 Vorsha (group escort), 97250
 --   (elite pillagers), 264 / 3301 (deliveries to Silverpine), 1096 Gerenzo (27), Splintertree.
--- Carried past the route end: 1065 Journey to Tarren Mill (free pickup for the Hillsbrad continuation).
+-- Carried into the shared Horde 22-60 route (FastesBoooy_Horde, h-22-hillsbrad): 1065 Journey to Tarren Mill,
+--   turned in at Tarren Mill (the library accepts 1065 itself only for Skyborne).
 -- Hearthstone: bound to Camp Taurajo (ud-04) and used from the Stagnant Oasis; re-bound to Thunder
 --   Bluff on the training-20 visit and used from Zoram'gar at the end.
 -- Training: 18 (Seal of Righteousness R3) on the forced first Thunder Bluff visit (the validator arrives
@@ -461,15 +462,17 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
         { go = true, radius = 15, at = { 1456, 28.5, 29.0 },
           note = { ru = "Через центральную вершину на Вершину Духов, вниз в Пруды Видений.",
                    en = "Across the central mesa to Spirit Rise, down into the Pools of Vision." } },
-        { turnin = 1064, accept = 1065, npc = 3419, at = { 1456, 22.81, 20.89 }, -- WARN-OK: quest-carried, 1065 -> Hillsbrad (22+)
-          note = { ru = "Аптекарь Зама. 1065 ведёт в Мельницу Таррен (Предгорья Хилсбрада) — держите для "
-                       .. "продолжения после 22-го.",
-                   en = "Apothecary Zamah. 1065 leads to Tarren Mill (Hillsbrad Foothills): keep it for after "
+        { turnin = 1064, accept = 1065, npc = 3419, at = { 1456, 22.81, 20.89 }, -- 1065: turned in at Tarren Mill (h-22)
+          note = { ru = "Аптекарь Зама. 1065 ведёт в Мельницу Таррен (Предгорья Хилсбрада) — следующая зона "
+                       .. "после 22-го.",
+                   en = "Apothecary Zamah. 1065 leads to Tarren Mill (Hillsbrad Foothills), the next zone after "
                        .. "level 22." } },
         { id = "ud05-end", train = true, npc = 246344, at = { 1456, 25.81, 19.03 },
           spells = { { ru = "Благословение могущества (ранг 3)", en = "Blessing of Might (Rank 3)" },
                      { ru = "Свет небес (ранг 4)", en = "Holy Light (Rank 4)" } },
-          note = { ru = "Тренер паладинов Алодан Жизнерадостный: обучение 22-го уровня. Маршрут 1-22 пройден!",
-                   en = "Alodan the Hopeful: level-22 training. The 1-22 route is done!" } },
+          note = { ru = "Тренер паладинов Алодан Жизнерадостный: обучение 22-го уровня. Талант 22 — Печать "
+                       .. "повиновения. Дальше общий маршрут Орды: Оргриммар, Подгород, Хилсбрад.",
+                   en = "Alodan the Hopeful: level-22 training. Talent at 22: Seal of Command. Next: the shared Horde "
+                       .. "route - Orgrimmar, Undercity, Hillsbrad." } },
     },
 })

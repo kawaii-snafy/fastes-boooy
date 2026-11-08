@@ -16,25 +16,28 @@
 -- are lower and are the ones given in the notes.
 --
 -- Hub plan (Forever DB; every quest is open to Scourge and Skyborne Horde characters of any class):
---   ORG : 3002 (Uthel'nay); 32 + 7732 > 4494 (Zilzibin); 4300 (Jes'rimon); 649 > 650 (Droffers); 2976 > 3504.
---   UC  : 2995 (Oran), 5094 (Balthazad), 864 (Zinge), 3568 (Cuely). Fly Tarren Mill, ride into the Hinterlands.
+--   ORG : 3002 (Uthel'nay); 3121 (Neeru); 32 + 7732 (Zilzibin); 4300 (Jes'rimon); 649 > 650 (Droffers); 2976 > 3504.
+--   UC  : 2995 (Oran), 81949 (Owen Thadd), 864 (Zinge), 3568 (Cuely). Fly Tarren Mill, ride into the Hinterlands.
 --   HW  : Gilveradin 650 > 77; Highvale papers (2995); Rin'ji 2742 (escort out of the lodge); Skulk Rock crates (77).
 --   RV1 : fp, hearth; 7840, 7845 + 7850, 7815 + 7816, 7828 + 7829 + 7830 + 7849, 7861 + 7862, 7841, 7844, 7839.
 --   L1  : coast snapjaws (7815), Gammerita (7816), Rin'ji's Secret 2742 > 2782, Lard's lunch (7840), Vilebranch camp
---         (7844, 7839), wilds (7829, 7830, 7828), Violet Tragan (2641), Atal'ai Exile 1429 > 1444, Quel'Danil elves
+--         (7844, 7839), wilds (7829, 7830, 7828), Violet Tragan (2641), book 81954, Atal'ai Exile 1429 > 1444, Quel'Danil elves
 --         (7841), Gilveradin 77 > 81; hearth.
 --   RV2 : turn-ins; 7841 > 7842.
 --   L2  : skylords (7842 feathers), Jintha'Alor: skull pile, vessels, bones, elite trolls (7862), Hexx + guards
 --         (7861), Elder Torntusk 7845 > 7846, Hitah'ya (key), 7846 > 7847.   RV3: turn-ins, fly Kargath.
---   KG  : hearth Kargath, 3821.  SG: Thorium Point (fp, 7701 / 7728 / 7729 board, 7722, 7723 / 7724 / 7727),
+--   KG  : hearth Kargath, 3821, (optional BRD: 4134, 3906, 4081).  SG: Thorium Point (fp, 7701 / 7728 / 7729 board, 7722,
+--         7723 / 7724 / 7727),
 --         Kalaran 3441 > 3442, Slag Pit (incendosaurs 7727, 7701, 7722), Cauldron (7723, 3442, 7729 bg, 7728),
 --         lava spiders (7724), 3442 > 3443 (daggers), 3443 > 3452 (Twilight cultists), Thorium Point turn-ins,
---         3452 > 3453 > 3454 > 3462 > 3463 (braziers), 3481 hoard. South through Blackrock Mountain.
+--         3452 > 3453 > 3454 > 3462 > 3463 (braziers), 3481 hoard, book 81955 (Cauldron). South through Blackrock
+--         Mountain: book 81953 (Franclorn), optional Blackrock Depths block (3906 Pyron, 4081, 4134).
 --   BS  : Flame Crest fp, 4296, 4726; tablet; Dreadmaul Rock 3821 > 3822 (Krom'Grul); broodlings (4726);
---         4726 > 4808, 4296; hearth Kargath 3822; fly Stonard.
---   SW  : Fallen Hero 2784 > 2621; Stonard 2621 > 2622, 1444, 2622 > 2623; Swamp Talkers; Fallen Hero 2623.
+--         4726 > 4808, 4296; hearth Kargath 3822, (optional 4134, 3906, 4081); fly Stonard.
+--   SW  : Fallen Hero 2784 > 2621; Stonard 2621 > 2622, 1444 (+ optional 1445), 2622 > 2623; book 81947 (Pool of Tears),
+--         optional Sunken Temple (1445); Swamp Talkers; Fallen Hero 2623.
 --   BL  : Bloodmages 2581 / 2583 / 2585 / 2601 / 2603 (shared parts: collect totals), Kum'isha 2521 / 3501 (random
---         drops), field loop, level gate at the helboars, turn-ins, back to Stonard.
+--         drops), book 81956, field loop, level gate at the helboars, turn-ins, back to Stonard (optional 1445).
 -- Deviations from the plan (documented in the handoff):
 --   * 2995 Lines of Communication cannot be turned in on the same Undercity visit (its papers are in the
 --     Hinterlands): it is carried COMPLETE, with 2782 Rin'ji's Secret, to Oran Snakewrithe (Undercity) - the plan's
@@ -44,16 +47,27 @@
 --     Nilith Lokrav and the Wooden Outhouse stay travel points (Searing Gorge exit / entrance), as in the plan.
 --   * No second Kargath visit on foot: the hearthstone is bound in Kargath on the way in and used from Flame Crest
 --     to turn in 3822 (the plan's "Revantusk, then Kargath").
---   * The plan's end gate sits before the last turn-ins (level 52 + 77%: Kum'isha + Bloodmage turn-ins make 53).
+--   * The end gate sits before the last turn-ins (level 52 + 30%: Kum'isha + Bloodmage turn-ins make ~52.6).
+--   * Densify pass (r3): the segment starts at ~49.4 (h-46 end gate lowered), so the two reqLevel 50 quests of the old
+--     start moved: 4494 March of the Silithid -> the Orgrimmar visit of h-53 (Zilzibin), 5094 A Call to Arms: The
+--     Plaguelands! -> the Undercity visit of h-56 (Balthazad). Added: 3121 turn-in (Neeru, from Feralas), the
+--     Forever-new library books 81954 / 81955 / 81953 / 81947 / 81956 (objects on the path, XP unknown, turned in to
+--     Owen Thadd in the Undercity of h-53) and 81949 turn-in (from Tanaris); optional group blocks for Blackrock Depths
+--     (4134, 3906, 4081 at Kargath) and the Sunken Temple (1445, Fel'Zerul). 4133 Vivian Lagrave (reqLevel 50 at Zinge)
+--     dropped. End gate 52 + 77% -> 52 + 30% (Azshara / Un'Goro are fine from 52).
 -- Skipped: 485 / 836 OOX-09/HL (random drop + escort), 2933-2938 (Tarren Mill / Sen'jin chain), 7843 (Aerie Peak),
---   4449-4451 (silk cloth, Dustwallow / Swamp items), 7704 (removed), 3906 / 4081 / 4082 / 4061 (Blackrock Depths or
---   reqLevel 52 at Kargath), 2801 > 2681 (18 demons of level 53-57), 1445 (Sunken Temple).
--- Carried out: 81 (Orgrimmar), 2641 (complete, Gadgetzan), 2782 + 2995 (complete, Undercity), 3504 + 3568
---   (Azshara), 4300 (Un'Goro), 4494 (Gadgetzan), 4808 (Everlook), 5094 (Plaguelands); 3520 untouched.
+--   4449 Caught! (done in h-41, next to Kargath), 4450 / 4451 (Ledger from Tanaris: one item is in Dustwallow, which
+--   the route does not revisit), 7704 (removed), 4082 / 3907 / 3981 (follow-ups of the BRD block,
+--   offered only after its turn-ins) and 4061 (reqLevel 52 at Kargath), 2801 > 2681 (18 demons of level 53-57), 1446
+--   (Jammal'an, turned in at the Atal'ai Exile before the temple), 4133 (reqLevel 50).
+-- Carried out: 81 (Orgrimmar), 2641 (complete, Gadgetzan), 2782 + 2995 (complete, Undercity), 81953 / 81954 / 81955 /
+--   81947 / 81956 (complete, Owen Thadd, Undercity), 3504 + 3568 (Azshara), 4300 (Un'Goro), 4808 (Everlook); 3520
+--   untouched.
 -- Automation notes: transient steps (fp, sethearth, hearth, go) come before the quest steps of their hub; accepts at
 --   one NPC are merged into one step; the paladin's training insert after h-50-uc-arrive (Oran) is followed by a
---   step at another NPC. Shared-item quests (Bloodmages) finish with collect totals; bg goals get a later non-bg
---   finishing step.
+--   step at another NPC (the level there is ~49.5 since the 46-60 densify pass: docs/routes/horde-22-60.md section 10
+--   suggests merging pal-train-50 into the 52 set). Shared-item quests (Bloodmages) finish with collect totals; bg
+--   goals get a later non-bg finishing step.
 FastesBoooy.AddLibrarySegment({
     id = "h-50-hinterlands-searing-steppes",
     title = { ru = "50-53 Внутренние земли, Тлеющее ущелье, Пылающие степи, Выжженные земли",
@@ -69,11 +83,15 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-50-org-arrive", turnin = 3002, npc = 7311, at = { 1454, 39.16, 86.27 },
           note = { ru = "Аллея Духов, Утель'най: «Сфера Гордунни».",
                    en = "Valley of Spirits, Uthel'nay: The Gordunni Orb." } },
-        { turnin = { 32, 7732 }, accept = 4494, npc = 7010, at = { 1454, 56.26, 46.68 },
-          note = { ru = "Зилзибин Барабанный Бой: сдайте «Восхождение силитидов» и «Донесение об улье Цуккаш», возьмите "
-                       .. "«Нашествие силитидов» (Танарис, следующий сегмент).",
-                   en = "Zilzibin Drumlore: turn in Rise of the Silithid and Zukk'ash Report, take March of the "
-                       .. "Silithid (Tanaris, next segment)." } },
+        { turnin = 3121, npc = 3216, at = { 1454, 49.47, 50.59 },
+          note = { ru = "Расселина Теней, Нииру Огненный Клинок: голова от Узер'и. «Возвращение к знахарю Узер'и» не "
+                       .. "берите.",
+                   en = "Cleft of Shadow, Neeru Fireblade: the head from Uzer'i. Skip Return to Witch Doctor Uzer'i." } },
+        { turnin = { 32, 7732 }, npc = 7010, at = { 1454, 56.26, 46.68 },
+          note = { ru = "Зилзибин Барабанный Бой: сдайте «Восхождение силитидов» и «Донесение об улье Цуккаш». "
+                       .. "«Нашествие силитидов» (50+) он даст при следующем визите в Оргриммар.",
+                   en = "Zilzibin Drumlore: turn in Rise of the Silithid and Zukk'ash Report. March of the Silithid "
+                       .. "(50+) is taken on the next Orgrimmar visit." } },
         { accept = 4300, npc = 8659, at = { 1454, 55.52, 34.08 },
           note = { ru = "Джес'римон: «Костяные клинки» (когти равазавров в Ун'Горо, следующий сегмент).",
                    en = "Jes'rimon: Bone-Bladed Weapons (ravasaur claws in Un'Goro, next segment)." } },
@@ -101,9 +119,9 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Квартал Магов, Оран Змеиные Кольца: «Линии связи» (бумаги Высокодолья во Внутренних землях).",
                    en = "Magic Quarter, Oran Snakewrithe: Lines of Communication (Highvale papers in the "
                        .. "Hinterlands)." } },
-        { accept = 5094, npc = 10879, at = { 1458, 63.90, 44.08 },
-          note = { ru = "Предвестник Балтазад: «Призыв к оружию: Чумные земли!» (понесёте до Чумных земель).",
-                   en = "Harbinger Balthazad: A Call to Arms: The Plaguelands! (carried to the Plaguelands)." } },
+        { turnin = 81949, npc = 211022, at = { 1458, 73.40, 33.00 }, -- WARN-OK: xp-unknown (Forever-new library quest; /fb xp records it)
+          note = { ru = "Рядом, Оуэн Тэдд: книга «Легенды о волнопевах» из Танариса.",
+                   en = "Next to him, Owen Thadd: the book Legends of the Tidesages from Tanaris." } },
         { turnin = 864, npc = 5204, at = { 1458, 50.14, 67.97 },
           note = { ru = "Чумной квартал, аптекарь Зинг: «Возвращение к аптекарю Зинг».",
                    en = "Apothecarium, Apothecary Zinge: Return to Apothecary Zinge." } },
@@ -213,6 +231,11 @@ FastesBoooy.AddLibrarySegment({
         { complete = 2641, at = { 1425, 40.63, 59.66 },
           note = { ru = "Рядом: сорвите фиалковый траган для «Маленького секрета Поливалки» (Танарис).",
                    en = "Nearby: pick a Violet Tragan for Sprinkle's Secret Ingredient (Tanaris)." } },
+        { accept = 81954, complete = 81954, object = 441252, at = { 1425, 36.00, 72.80 },
+          note = { ru = "На юго-запад, у троллей Сохнущей Коры (36.0,72.8): книга «Ядовитые странствия» — возьмите "
+                       .. "задание и книгу (сдача — Оуэн Тэдд в Подгороде, следующий сегмент; новое задание Forever).",
+                   en = "South-west, by the Witherbark trolls (36.0,72.8): the book Venomous Journeys - take the quest "
+                       .. "and the book (turn in: Owen Thadd in Undercity, next segment; a Forever-new quest)." } },
         { id = "h-50-atal-ai-exile", turnin = 1429, accept = 1444, npc = 5598, at = { 1425, 33.75, 75.21 },
           note = { ru = "На юго-запад, изгнанник племени Атал'ай: возьмите «Возвращение к Фел'зерулу» (Каменор).",
                    en = "South-west, the Atal'ai Exile: take Return to Fel'Zerul (Stonard)." } },
@@ -296,6 +319,18 @@ FastesBoooy.AddLibrarySegment({
                    en = "Innkeeper Shul'kar: bind the hearthstone (you hearth back from the Burning Steppes)." } },
         { id = "h-51-kargath", accept = 3821, npc = 9082, at = { 1418, 3.36, 48.06 },
           note = { ru = "Тал'трак Гордый Клык: «Скала Молота Ужаса».", en = "Thal'trak Proudtusk: Dreadmaul Rock." } },
+        -- Optional group content: Blackrock Depths (52-60), on the way through Blackrock Mountain; turned in after the
+        -- hearth back to Kargath.
+        { accept = 4134, npc = 9078, optional = true, at = { 1418, 2.90, 47.76 },
+          note = { ru = "По желанию, если собрали группу в Глубины Черной горы: Вивиан — «Утерянный рецепт Громоваров».",
+                   en = "Optional, if you have a group for Blackrock Depths: Vivian - Lost Thunderbrew Recipe." } },
+        { accept = 3906, npc = 9084, optional = true, at = { 1418, 3.33, 48.26 },
+          note = { ru = "По желанию (с группой): Громосерд — «Разлад пламени» (Повелитель Пирон у входа в Глубины).",
+                   en = "Optional (with a group): Thunderheart - Disharmony of Flame (Overmaster Pyron by the Depths "
+                       .. "entrance)." } },
+        { accept = 4081, object = 164867, optional = true, at = { 1418, 3.74, 47.43 },
+          note = { ru = "По желанию (с группой): плакат «Разыскивается» — «Убивать на месте: дворфы Черного Железа».",
+                   en = "Optional (with a group): the WANTED poster - KILL ON SIGHT: Dark Iron Dwarves." } },
 
         ------------------------------------------------------------------
         -- Searing Gorge (level 51)
@@ -348,6 +383,11 @@ FastesBoooy.AddLibrarySegment({
         { complete = 7724, at = { 1427, 28.06, 59.49 },
           note = { ru = "На запад: 20 опаляющих лавовых пауков (47-49).",
                    en = "West: 20 Greater Lava Spiders (47-49)." } },
+        { accept = 81955, complete = 81955, object = 441253, at = { 1427, 37.80, 49.30 },
+          note = { ru = "Дно Котла (37.8,49.3): книга «Разум из металла» — возьмите задание и книгу (Оуэн Тэдд, "
+                       .. "Подгород).",
+                   en = "Floor of the Cauldron (37.8,49.3): the book A Mind of Metal - take the quest and the book (Owen "
+                       .. "Thadd, Undercity)." } },
         { id = "h-50-searing-gorge-field", complete = { 7723, 3442 }, at = { 1427, 40.83, 49.21 },
           note = { ru = "Не хватает големов, сердец или масла? Центр Котла.",
                    en = "Golems, hearts or oil missing? The centre of the Cauldron." } },
@@ -405,6 +445,18 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-50-nilith-lokrav", go = true, radius = 40, at = { 1427, 40.99, 74.95 },
           note = { ru = "На юг к Черной горе (мимо гоблина Нилиты Локрав).",
                    en = "South towards Blackrock Mountain (past the goblin Nilith Lokrav)." } },
+        { accept = 81953, complete = 81953, object = 441251, at = { 1428, 28.96, 28.93 },
+          note = { ru = "В Черной горе, у призрака Франклорна Кузнечного Горна: книга «Каменное зодчество» — возьмите "
+                       .. "задание и книгу (Оуэн Тэдд, Подгород).",
+                   en = "Inside Blackrock Mountain, by Franclorn Forgewright's ghost: the book Stonewrought Design - take "
+                       .. "the quest and the book (Owen Thadd, Undercity)." } },
+        { complete = { 3906, 4081, 4134 }, optional = true, at = { 1427, 34.80, 85.30 },
+          note = { ru = "По желанию, если собрали группу: Глубины Черной горы — Повелитель Пирон (элита 52) в карьере у "
+                       .. "входа; внутри 15 стражников, 10 надзирателей и 5 пехотинцев Ярости Наковальни; рецепт — с Херли "
+                       .. "Черного Дыхания (Мрачный Трактир).",
+                   en = "Optional, if you have a group: Blackrock Depths - Overmaster Pyron (elite 52) in the quarry by "
+                       .. "the entrance; inside 15 Anvilrage Guardsmen, 10 Wardens and 5 Footmen; the recipe drops from "
+                       .. "Hurley Blackbreath (Grim Guzzler)." } },
         { id = "h52-burning-steppes-road", go = true, radius = 60, at = { 1428, 47.00, 24.00 },
           note = { ru = "Через Черную гору (по цепям) в Пылающие степи; на восток вдоль северного края — южнее "
                        .. "крепость Черной горы (орки 55-58).",
@@ -443,6 +495,13 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Камень возвращения в Каргат.", en = "Hearth to Kargath." } },
         { id = "h-51-kargath-2", turnin = 3822, npc = 9082, at = { 1418, 3.36, 48.06 },
           note = { ru = "Тал'трак.", en = "Thal'trak." } },
+        { turnin = 4134, npc = 9078, optional = true, at = { 1418, 2.90, 47.76 },
+          note = { ru = "По желанию (после Глубин): Вивиан — рецепт.", en = "Optional (after the Depths): Vivian - the recipe." } },
+        { turnin = 3906, npc = 9084, optional = true, at = { 1418, 3.33, 48.26 },
+          note = { ru = "По желанию: Громосерд — Пирон.", en = "Optional: Thunderheart - Pyron." } },
+        { turnin = 4081, npc = 9077, optional = true, at = { 1418, 5.81, 47.52 },
+          note = { ru = "По желанию: военачальник Гнилозуб — дворфы Черного Железа.",
+                   en = "Optional: Warlord Goretooth - the Dark Iron dwarves." } },
         { id = "h52-fly-stonard", fly = "Stonard", npc = 6026, at = { 1435, 46.07, 54.83 },
           note = { ru = "Горрик: летите в Каменор (Болото Печали).", en = "Gorrik: fly to Stonard (Swamp of Sorrows)." } },
 
@@ -463,8 +522,20 @@ FastesBoooy.AddLibrarySegment({
         { turnin = 1444, npc = 1443, at = { 1435, 47.93, 54.78 },
           note = { ru = "Фел'зерул рядом: «Возвращение к Фел'зерулу».",
                    en = "Fel'Zerul next to him: Return to Fel'Zerul." } },
+        { accept = 1445, npc = 1443, optional = true, at = { 1435, 47.93, 54.78 },
+          note = { ru = "По желанию, если собрали группу в Затонувший храм: Фел'зерул — «Храм Атал'Хаккара».",
+                   en = "Optional, if you have a group for the Sunken Temple: Fel'Zerul - The Temple of Atal'Hakkar." } },
         { turnin = 2622, accept = 2623, npc = 7643, at = { 1435, 44.97, 57.37 },
           note = { ru = "Бенгор: «Болотный говорун».", en = "Bengor: The Swamp Talker." } },
+        { accept = 81947, complete = 81947, object = 441247, at = { 1435, 70.00, 51.00 },
+          note = { ru = "На восток к Озеру Слез (70.0,51.0): книга «Кровавое чародейство» — возьмите задание и книгу "
+                       .. "(Оуэн Тэдд, Подгород).",
+                   en = "East to the Pool of Tears (70.0,51.0): the book Sanguine Sorcery - take the quest and the book "
+                       .. "(Owen Thadd, Undercity)." } },
+        { complete = 1445, optional = true, at = { 1435, 69.90, 53.50 },
+          note = { ru = "По желанию (с группой): Затонувший храм (вход в озере рядом) — 20 фетишей Хаккара с троллей.",
+                   en = "Optional (with a group): the Sunken Temple (entrance in the pool next to it) - 20 Fetishes of "
+                       .. "Hakkar from the trolls." } },
         { id = "h-51-swamp-of-sorrows-2", complete = 2623, at = { 1435, 63.97, 83.66 },
           note = { ru = "На юго-восток: болотные говоруны (50) — приказы военного вождя.",
                    en = "South-east: Swamp Talkers (50) - the Warchief's Orders." } },
@@ -492,6 +563,11 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "На юг к Кум'ише Коллекционеру: «Служба для Кум'иша» и «Счет идет на большие числа».",
                    en = "South to Kum'isha the Collector: To Serve Kum'isha and Everything Counts In Large "
                        .. "Amounts." } },
+        { accept = 81956, complete = 81956, object = 441254, at = { 1419, 55.40, 32.20 },
+          note = { ru = "Чуть северо-восточнее (55.4,32.2): книга «Кодекс заклинателя» — возьмите задание и книгу (Оуэн "
+                       .. "Тэдд, Подгород).",
+                   en = "Just north-east (55.4,32.2): the book Conjurer's Codex - take the quest and the book (Owen "
+                       .. "Thadd, Undercity)." } },
         { complete = { 2521, 3501 }, bg = true, at = { 1419, 52.00, 41.47 },
           note = { ru = "Попутно: безупречная сфера дренетиста и несовершенный осколок падают с любых местных "
                        .. "существ.",
@@ -504,14 +580,14 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Восток: краснокаменные василиски и хрусталиски — 11 мозгов; пеплогривые вепри и стервятники там же.",
                    en = "East: Redstone Basilisks and Crystalhides - 11 brains; Ashmane Boars and vultures there too." } },
         { id = "h-50-hinterlands-searing-steppes-level-gate", complete = { 2581, 2583, 2585, 2601, 2603 }, -- WARN-OK: level-grind
-          collect = { [8391] = 5, [8392] = 6, [8393] = 6, [8394] = 11, [8396] = 14 }, level = { 52, 0.77 },
+          collect = { [8391] = 5, [8392] = 6, [8393] = 6, [8394] = 11, [8396] = 14 }, level = { 52, 0.30 },
           at = { 1419, 49.76, 42.23 },
           note = { ru = "Центр: зловепри (52-53, плотно — лучший опыт рядом), стервятники-костегрызы, гиены. "
-                       .. "Добейте части и бейте зловепрей до 52-го + 77%: сдачи дадут 53-й. Нет сферы или осколка "
-                       .. "Кум'иши — до 52 + 86%.",
+                       .. "Добейте части и бейте зловепрей до 52-го + 30%: сдачи дадут ~52.6 — Азшара (волхв Римтори 55) "
+                       .. "и Ун'Горо идут с 52-го. Нет сферы или осколка Кум'иши — до 52 + 40%.",
                    en = "Centre: Helboars (52-53, dense: the best XP nearby), Bonepickers, hyenas. Finish the parts "
-                       .. "and keep killing Helboars up to 52 + 77%: the turn-ins make 53. No sphere or fragment for "
-                       .. "Kum'isha - up to 52 + 86%." } },
+                       .. "and keep killing Helboars up to 52 + 30%: the turn-ins make ~52.6 - Azshara (Magus Rimtori 55) "
+                       .. "and Un'Goro are fine from 52. No sphere or fragment for Kum'isha - up to 52 + 40%." } },
         { turnin = { 2521, 3501 }, npc = 7363, at = { 1419, 51.98, 35.65 },
           note = { ru = "Кум'иша. Сферы нет — бросьте 2521 (гайд пропустит шаг).",
                    en = "Kum'isha. No sphere - abandon 2521 (the guide skips the step)." } },
@@ -519,6 +595,8 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "На север к магам крови: Дразиал.", en = "North to the Bloodmages: Drazial." } },
         { id = "h-53-blastedlands-end", turnin = { 2601, 2603 }, npc = 7506, at = { 1419, 50.64, 14.30 },
           note = { ru = "Линора.", en = "Lynnore." } },
+        { turnin = 1445, npc = 1443, optional = true, at = { 1435, 47.93, 54.78 },
+          note = { ru = "По желанию: Фел'зерул — фетиши Хаккара.", en = "Optional: Fel'Zerul - the Fetishes of Hakkar." } },
         { id = "h-51-stonard-2", go = true, radius = 15, npc = 6026, at = { 1435, 46.07, 54.83 },
           note = { ru = "Обратно в Каменор к распорядителю полётов Брейку (дальше — следующий сегмент).",
                    en = "Back to Stonard, flight master Breyk (next segment from here)." } },

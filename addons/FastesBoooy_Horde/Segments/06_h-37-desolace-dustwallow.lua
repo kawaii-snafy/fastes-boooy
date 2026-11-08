@@ -20,52 +20,67 @@
 --
 -- Hub plan (Forever DB; every quest is open to Scourge and Skyborne Horde characters of any class):
 --   Org 1 : 1431 (Craven Drok) > 1432 (Keldran); fly Sun Rock Retreat.
---   GWP 1 : Kormek's Hut 5501 on the way in; 1432 > 1433 + 1434 (Takata), 1433 > 1435 (Maurin), 5386 (Nataka),
---           1365 (Felgur), optional Forever-new 93225 (Gurda); Smeed 5561.
+--   GWP 1 : Kormek's Hut 5501 on the way in (optional caravan escort 5821 if the caravan stands there); 1432 > 1433 +
+--           1434 (Takata), 1433 > 1435 (Maurin), 5386 (Nataka),
+--           1365 (Felgur), optional Forever-new 93225 (Gurda); Smeed 5561 (optional 5821 turn-in).
 --   K     : Kodo Graveyard: bones (5501), tamed kodos to Smeed (5561); Kormek's 5501.
 --   TA 1  : Thunder Axe Fortress: 15 Infused Burning Gems (1435), Flayed Demon Skin > 1480.
 --   GWP 2 : 1435 + 1480 > 1481 (Maurin).  E: Khan Dez'hepah (1365), Sargeron satyrs (1434, 1481 scalp).
 --   GWP 3 : 1434 > 1436 (Takata), 1481 > 1482 (Maurin), 1365 > 1366 (Felgur); Hornizz 6134.
---   W     : Valley of Spears (Maraudine 36-40): ears (1366), totems (93225), level gate 1.
+--   W     : Valley of Spears (Maraudine 36-40): ears (1366), totems (93225), level gate 1 (37 + 50%), Melizza's
+--           escort out of the Maraudine camp (6132).
 --   SV 1  : sethearth; 5381 (Taiga), 6142 (Mai'Lahii), 6143 (Drulzegar), talk to Jinar'Zillen (5386); flight point.
 --   NW    : Rackmore's Log 6161, clams (6142) + Drysnap silver key, Azore 5741; Thunder Axe 2 (5741 sceptre, 5381
 --           Demon Box); Azore 5741 > 6027; Slitherblade naga (6143, golden key, 1482 Oracle Crystal), Ranzajar Isle
 --           (Lord Kragaru 6027, Rackmore's Chest 6161); Azore 6027; hearth.
 --   SV 2  : 5381 > 5581, 6142, 6143.
---   S     : Mannoroc Coven (5581 portals, level gate 2), Valley of Bones (6134); Hornizz 6134.
+--   S     : optional caravan escort 5943 at Rigger Gizelton; Mannoroc Coven (5581 portals, level gate 2 = 40 at the
+--           Orgrimmar stop), Valley of Bones (6134); optional Smeed 5943; Hornizz 6134 + 6132.
 --   GWP 4 : spices for Dustwallow (Kireena); 1482 > 1484 > Takata; 5386; 1366; 93225.  SV 3: hearth, 5581; fly
 --           Orgrimmar.
 --   Org 2 : hearth bound in Orgrimmar (the next segment can hearth out of Brackenwall), 1436 (Keldran); fly Camp
---           Taurajo, run east into Dustwallow.
+--           Taurajo; optional Razorfen Downs block (6626 at the entrance, south Barrens), run east into Dustwallow.
 --   DW    : Shady Rest 1251 / 1268 / 1269; Mudcrush 1177; Brackenwall: fp, 1251 + 1268 + 1269 > 1321 (Krog),
 --           1321 > 1322 (Do'gol), 1201, 1166, 1168, 1169.  East: Theramore Infiltrators (1201), Ogron 1273 + Reethe,
 --           Darkfang spiders (1322), Jarl 1218 > 1206, Loose Dirt 1238, Mirefin murlocs (1177).  Brackenwall:
---           1201, 1238, 1322 > 1323, 1323 + 1273.  Darkmist spiders (1206), Jarl 1206, Loose Dirt 1239.  Wyrmbog 1:
---           1166 (snuff, grog, strongbox), 1168, 1169.  Mudcrush 1177; Brackenwall 1239, 1168, 1169 > 1170 > 1171 >
---           1172.  Wyrmbog 2: eggs (1172), level gate; Brackenwall 1172.
+--           1201 + 1238 > 1202, 1322 > 1323, 1323 + 1273.  Darkmist spiders (1206), Jarl 1206, Loose Dirt 1239;
+--           Theramore docks (1202 footlocker).  Wyrmbog 1: 1166 (snuff, grog, strongbox), 1168, 1169.  Mudcrush 1177;
+--           Brackenwall 1239 + 1202, 1168, 1169 > 1170 > 1171 > 1172.  Wyrmbog 2: eggs (1172), checkpoint; Brackenwall
+--           1172.
 -- Deviations from the plan (documented in the handoff):
 --   * 1367 Magram Alliance is skipped: it needs Friendly with the Magram (~150 Gelkis kills) and a trip to Warug in
 --     the far south-east for 650 XP. The anchor id h-37-warug sits on the Valley of Bones step (south of Magram
 --     Village); Warug himself is not visited.
---   * 5821 / 5943 Gizelton caravan escorts are skipped (slow kodo caravan, unknown start time); h-37-rigger-gizelton
---     is the road point where Rigger's caravan stands. 1488 (Lord Azrethoc is a level 40 ELITE) is not taken.
+--   * 5821 / 5943 Gizelton caravan escorts are optional (slow kodo caravan, unknown start time: taken only when the
+--     caravan stands at its stop); h-37-rigger-gizelton is the road point where Rigger's caravan stands. 1488 (Lord
+--     Azrethoc is a level 40 ELITE) is not taken.
 --   * Added: 6143 Other Fish to Fry (Shadowprey; the same naga as 6161 / 1482) and the optional Forever-new 93225
---     Carved Centaur Totems (Maraudine centaurs, where the route grinds anyway).
---   * Not taken: 1203 Jarl Needs a Blade (needs a crafted Moonsteel Broadsword), 1202 / 1240 / 1276 (Theramore
---     docks, Stranglethorn, Thunder Bluff), 1173 (fight the elite Mok'Morokk), 97265 Hate the Hatefury (Forever-new,
---     Shadowprey giver, Sargeron objectives: the route reaches Shadowprey only after Sargeron).
+--     Carved Centaur Totems (Maraudine centaurs, where the route grinds anyway). Densification pass (34-46): 6132 Get
+--     Me Out of Here! (Melizza's escort out of the Maraudine camp the route grinds in; turned in at Hornizz with
+--     6134), 1202 The Theramore Docks (footlocker under the Theramore pier, +1 200 yards between Jarl and the Wyrmbog),
+--     the optional caravan escorts above and an optional Razorfen Downs block (6626 A Host of Evil: the elites 33-34
+--     at the entrance, 1 100 yards from Shady Rest; Belnistrasz's quests inside are only named in the note: no outdoor
+--     position for the waypoint).
+--   * Not taken: 1203 Jarl Needs a Blade (needs a crafted Moonsteel Broadsword), 1240 / 1276 (Stranglethorn, Thunder
+--     Bluff), 1270 Stinky's Escape (turned in in Ratchet: next range), 1173 (fight the elite Mok'Morokk), 97265 Hate
+--     the Hatefury (Forever-new, Shadowprey giver, Sargeron objectives: the route reaches Shadowprey only after
+--     Sargeron), 96222 Khan Hratha (Forever-new, elite Khan 42), the Magram / Gelkis reputation chains (1367-1381,
+--     Forever's "Buying Friendship" 94872 / 94873 need Neutral standing first).
 --   * Brackenwall Village has no innkeeper (no innkeeper on uiMap 1445 in the DB): the hearthstone is bound in
 --     Shadowprey Village (Desolace) and then in Orgrimmar (h-40 stop), not in Brackenwall.
 --   * Anchor placement by name where the plan's hub mapping does not fit the route: h-37-orgrimmar = the Orgrimmar
 --     gate (before Craven Drok), h-40-shadowprey-end = the last Desolace quest step (5581 at Taiga in Shadowprey),
 --     h-41-brackenwall-end = the last step (1172 at Draz'Zilb in Brackenwall); h-40-brackenwall-arrive = Shady Rest,
 --     as in the plan.
--- XP (validator, Classic quest XP + objective kills with the DB counts): quests ~97 k, objective kills ~38 k, i.e.
---   questing alone ends near 38.7 instead of 41. The gates cover the rest (~198 k XP, ~840 same-level kills in the
---   validator's model; fewer in game: higher Forever objective counts, mobs killed on the way, rested XP): optional
---   h38-level-maraudine (Valley of Spears, 36-40 centaurs), h39-level-mannoroc (Mannoroc Coven demons, 37-40: 40 at
---   the Orgrimmar stop), h-37-desolace-dustwallow-level-gate (Wyrmbog, 41-44: 41 at the end). Group alternative:
---   Razorfen Downs (entrance south Barrens 49, 93).
+-- XP (validator, Classic quest XP + objective kills with the DB counts; Undead paladin from 36.06): required quests
+--   ~102 k (+ ~9 k optional), objective kills ~44 k. The segment now starts at 36.06 (h-34 grinds less), so the two
+--   Desolace gates take that deficit too, at a higher level: h38-level-maraudine (now required, 37 + 50%, Valley of
+--   Spears centaurs 36-40, ~340 same-level kills) and h39-level-mannoroc (39 + 78%, Mannoroc Coven demons 37-40,
+--   ~680 kills; set so the required turn-ins make 40.0 at the Orgrimmar stop even with every optional step skipped).
+--   h-37-desolace-dustwallow-level-gate is a checkpoint (40 + 25%) the Dustwallow quests reach alone; the segment
+--   ends at ~40.85 (within 1 of 41) and the h-41 gate grinds the rest at 42-43. ~1 010 kills in all (normal) / ~1 030
+--   (worst case), was ~835 from 37.02 (+~460 h-34 kills moved here, minus the new quests). Group alternative:
+--   Razorfen Downs (optional block at Camp Taurajo).
 -- Automation notes: accepts at one NPC sit in one step (except 1218 > 1206, which needs the turn-in in between);
 --   transient steps (fp, sethearth, vendor) come before the quest steps of the same place; the optional 93225
 --   complete step is bg, its optional accept / turn-in are passed by the next quest step.
@@ -114,6 +129,15 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-37-cork-gizelton-bibbly", accept = 5501, npc = 11438, at = { 1443, 62.33, 38.99 },
           note = { ru = "Хижина Кормека у дороги: Биббли Скобкофуз - «Собиратель костей».",
                    en = "Kormek's Hut by the road: Bibbly F'utzbuckle - Bone Collector." } },
+        -- Optional: the Gizelton caravan escorts (only when the caravan happens to stand at its stop; do not wait).
+        { accept = 5821, npc = 11625, optional = true, at = { 1443, 66.54, 37.51 },
+          note = { ru = "По желанию, если караван Гизлтонов стоит у хижины (не ждите его): Корк Гизлтон - «Наемный "
+                       .. "телохранитель».",
+                   en = "Optional, if the Gizelton caravan stands by the hut (do not wait for it): Cork Gizelton - "
+                       .. "Bodyguard for Hire." } },
+        { complete = 5821, optional = true, at = { 1443, 67.20, 56.60 },
+          note = { ru = "Проводите караван на юг по дороге (кентавры нападают дважды). Сдача - у Смида.",
+                   en = "Escort the caravan south along the road (centaurs attack twice). Turned in at Smeed." } },
         { id = "h-37-ghostwalker-arrive", turnin = 1432, accept = { 1433, 1434 }, npc = 5641,
           at = { 1443, 52.57, 54.39 },
           note = { ru = "На юг к заставе в центре Пустошей: Таката Стальной Клинок.",
@@ -138,6 +162,8 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "На восток к Лагерю Заржавня: Смид Заржавень - «Отлов кодо». Караван Гизлтонов не ждите.",
                    en = "East to Scrabblescrew's Camp: Smeed Scrabblescrew - Kodo Roundup. Do not wait for the "
                        .. "Gizelton caravan." } },
+        { turnin = 5821, npc = 11596, optional = true, at = { 1443, 60.86, 61.86 },
+          note = { ru = "Если провели караван: Смид.", en = "If you escorted the caravan: Smeed." } },
 
         ------------------------------------------------------------------
         -- Kodo Graveyard, Kormek's Hut, Thunder Axe Fortress (37)
@@ -204,13 +230,23 @@ FastesBoooy.AddLibrarySegment({
         { complete = 93225, bg = true, optional = true, at = { 1443, 32.20, 58.20 },
           note = { ru = "По желанию: 5 резных тотемов кентавров с тех же кентавров.",
                    en = "Optional: 5 Carved Centaur Totems from the same centaurs." } },
-        -- WARN-OK (level-grind, next step): part of the segment's XP deficit, in the densest 36-40 camp of
-        -- Desolace (the quests ahead are 35-39; Dustwallow needs 40); optional, a later anchor passes it.
-        { id = "h38-level-maraudine", level = { 38, 0.60 }, optional = true, at = { 1443, 32.20, 58.20 }, -- WARN-OK: grind
-          note = { ru = "Желательно 38 + 60%: лучшее место 37-39 в Пустошах - плотные лагеря кентавров племени "
-                       .. "Мародин (36-40), уши и тотемы падают попутно.",
-                   en = "Best reach 38 + 60%: the best 37-39 spot in Desolace - dense Maraudine centaur camps (36-40), "
-                       .. "the ears and totems drop on the side." } },
+        -- WARN-OK (level-grind, next step): about a third of the Desolace deficit, in the densest 36-40 camp of the
+        -- zone, where the ears (1366) and totems (93225) drop anyway; the quests ahead are 38-40 (Slitherblade naga,
+        -- Lord Kragaru 38, the Burning Blade Seer). The rest waits for the Mannoroc gate (higher level, fewer kills).
+        { id = "h38-level-maraudine", level = { 37, 0.50 }, at = { 1443, 32.20, 58.20 }, -- WARN-OK: level-grind
+          note = { ru = "Цель: 37 + 50%. Не хватает - кентавры племени Мародин (36-40) здесь же: плотные лагеря, уши "
+                       .. "(1366) и тотемы (93225) падают попутно. Дальше задания 38-40 (наги, лорд Крагару, "
+                       .. "ясновидец).",
+                   en = "Target: 37 + 50%. Short: the Maraudine centaurs (36-40) right here - dense camps, the ears "
+                       .. "(1366) and totems (93225) drop on the side. The quests ahead are 38-40 (naga, Lord Kragaru, "
+                       .. "the Seer)." } },
+        { id = "h38-melizza", accept = 6132, complete = 6132, npc = 12277, at = { 1443, 33.95, 53.50 },
+          note = { ru = "Мелицца Жужжалит в лагере кентавров Мародин (северная часть долины): «Вытащи меня отсюда!» - "
+                       .. "проводите её на восток к Кладбищу кодо (по пути нападут кентавры). Сдача - позже, у "
+                       .. "Хормица.",
+                   en = "Melizza Brimbuzzle in the Maraudine camp (north part of the valley): Get Me Out of Here! - "
+                       .. "escort her east towards the Kodo Graveyard (centaurs attack on the way). Turned in later, at "
+                       .. "Hornizz." } },
         { id = "h38-sethearth-shadowprey", sethearth = "Shadowprey Village", npc = 11106, at = { 1443, 24.09, 68.21 },
           note = { ru = "На юго-запад в Деревню Ночных Охотников: хозяйка таверны Сикоя - камень возвращения сюда.",
                    en = "South-west to Shadowprey Village: Innkeeper Sikewa - bind your hearthstone here." } },
@@ -284,18 +320,25 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-37-rigger-gizelton", go = true, radius = 30, npc = 11626, at = { 1443, 45.40, 75.29 },
           note = { ru = "На восток по южной дороге. Караван Гизлтонов (сопровождение) не ждите.",
                    en = "East along the southern road. Do not wait for the Gizelton caravan (escort)." } },
+        { accept = 5943, npc = 11626, optional = true, at = { 1443, 45.40, 75.29 },
+          note = { ru = "По желанию, если караван здесь: Риггер Гизлтон - «Караван Гизлтона».",
+                   en = "Optional, if the caravan is here: Rigger Gizelton - Gizelton Caravan." } },
+        { complete = 5943, optional = true, at = { 1443, 55.70, 67.80 },
+          note = { ru = "Проводите караван на восток по дороге (нападут кентавры и демоны). Сдача - у Смида.",
+                   en = "Escort the caravan east along the road (centaurs and demons attack). Turned in at Smeed." } },
         { complete = 5581, use = 14547, at = { 1443, 51.99, 76.98 },
           note = { ru = "Поле Маннорок: рукой Ируксоса закройте 6 порталов, стражи порталов (38-39) нападают. "
                        .. "Лорд Азреток - элита, обходите.",
                    en = "Mannoroc Coven: banish 6 portals with the Hand of Iruxos, the Demon Portal Guardians (38-39) "
                        .. "attack. Lord Azrethoc is elite - avoid him." } },
-        -- WARN-OK (level-grind, next step): the rest of the Desolace deficit; with the turn-ins that follow this makes
-        -- 40 at the Orgrimmar stop (class training / mount at 40, Dustwallow quests 35-43 at full XP up to 40).
-        { id = "h39-level-mannoroc", level = { 39, 0.65 }, at = { 1443, 52.50, 77.00 }, -- WARN-OK: grind
-          note = { ru = "Цель: 39 + 65% (оставшиеся сдачи дадут 40 к Оргриммару: обучение и верховая езда на 40, "
+        -- WARN-OK (level-grind, next step): the rest of the Desolace deficit, as late as possible before the pinned
+        -- level: with the required turn-ins that follow (the optional ones not counted) this makes 40.0 at the
+        -- Orgrimmar stop h-40-org-arrive (druid insert: Dire Bear Form and riding at 40; Dustwallow needs 38).
+        { id = "h39-level-mannoroc", level = { 39, 0.78 }, at = { 1443, 52.50, 77.00 }, -- WARN-OK: level-grind
+          note = { ru = "Цель: 39 + 78% (оставшиеся сдачи дадут 40 к Оргриммару: обучение и верховая езда на 40, "
                        .. "задания Пылевых топей). Не хватает - демоны Поля Маннорок (37-40) здесь же, плотные и быстро "
                        .. "появляются снова.",
-                   en = "Target: 39 + 65% (the remaining turn-ins make 40 for Orgrimmar: training and riding at 40, the "
+                   en = "Target: 39 + 78% (the remaining turn-ins make 40 for Orgrimmar: training and riding at 40, the "
                        .. "Dustwallow quests). Short: the Mannoroc Coven demons (37-40) right here, dense with quick "
                        .. "respawns." } },
         { id = "h-37-warug", complete = 6134, use = 15848, at = { 1443, 64.18, 91.63 },
@@ -303,8 +346,12 @@ FastesBoooy.AddLibrarySegment({
                        .. "между двумя скелетами - призраки Маграм (38-39), 8 эктоплазм.",
                    en = "South-east to the Valley of Bones (south of Magram Village): the Crate of Ghost Magnets "
                        .. "between two skeletons - Magrami Spectres (38-39), 8 Ghost-o-plasms." } },
-        { turnin = 6134, npc = 6019, at = { 1443, 47.83, 61.83 },
-          note = { ru = "На север-запад к Хормицу.", en = "North-west to Hornizz." } },
+        { turnin = 5943, npc = 11596, optional = true, at = { 1443, 60.86, 61.86 },
+          note = { ru = "Если провели караван: на север к Смиду (по пути к Хормицу).",
+                   en = "If you escorted the caravan: north to Smeed (on the way to Hornizz)." } },
+        { turnin = { 6134, 6132 }, npc = 6019, at = { 1443, 47.83, 61.83 },
+          note = { ru = "На северо-запад к Хормицу: эктоплазма и спасённая Мелицца.",
+                   en = "North-west to Hornizz: the ghost-o-plasm and the rescued Melizza." } },
 
         ------------------------------------------------------------------
         -- Ghost Walker Post, Shadowprey Village, fly out (40)
@@ -343,6 +390,24 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Кельдран в западной части города.", en = "Keldran in the west of the city." } },
         { id = "h-38-orgrimmar-flight-master", fly = "Camp Taurajo", npc = 10378, at = { 1413, 44.45, 59.15 },
           note = { ru = "Дорас: летите в Лагерь Таурахо.", en = "Doras: fly to Camp Taurajo." } },
+        -- Optional group content: Razorfen Downs (37-46). The entrance is 1 100 yards from Shady Rest, so the block
+        -- costs ~2 000 yards of extra road; without a group the next step (Shady Rest) passes it.
+        { id = "h40-rfd-host", accept = 6626, npc = 12866, optional = true, at = { 1413, 49.01, 94.94 },
+          note = { ru = "По желанию, если собрали группу в Курганы Иглошкурых: на юг к входу (49, 94) - Мириам Лунная "
+                       .. "Певица, «Воинство зла». Без группы - сразу на восток в Пылевые топи (шаги пропустятся сами).",
+                   en = "Optional, if you have a group for Razorfen Downs: south to the entrance (49, 94) - Myriam "
+                       .. "Moonsinger, A Host of Evil. No group: go straight east into Dustwallow Marsh (these steps "
+                       .. "skip themselves)." } },
+        { complete = 6626, optional = true, at = { 1413, 46.30, 89.60 },
+          note = { ru = "Вокруг входа: по 8 боевых стражей, терноплетов (Иглошкурые) и сектанток Мертвой Головы - "
+                       .. "элита 33-34, на 40 по силам и в одиночку. В подземелье: Белнистраз - «Плеть в холмах» и "
+                       .. "«Уничтожить идола» (гайд их не ведёт).",
+                   en = "Around the entrance: 8 each of Razorfen Battleguards, Thornweavers and Death's Head Cultists - "
+                       .. "elites 33-34, fine solo at 40. Inside: Belnistrasz - Scourge of the Downs and Extinguishing "
+                       .. "the Idol (not tracked by the guide)." } },
+        { turnin = 6626, npc = 12866, optional = true, at = { 1413, 49.01, 94.94 },
+          note = { ru = "Мириам. Дальше на северо-восток в Пылевые топи, к Тенистому Приюту (1 100 ярдов).",
+                   en = "Myriam. Then north-east into Dustwallow Marsh, to Shady Rest (1 100 yards)." } },
         { id = "h-40-brackenwall-arrive", accept = { 1251, 1268, 1269 }, object = { 20992, 21015, 21042 },
           at = { 1445, 29.72, 48.17 },
           note = { ru = "На восток по дороге в Пылевые топи (2-3 минуты) к сгоревшей таверне: черный щит, следы "
@@ -405,9 +470,11 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         -- Brackenwall 2, Darkmist spiders, Jarl 2 (40)
         ------------------------------------------------------------------
-        { turnin = { 1201, 1238 }, npc = 4791, at = { 1445, 35.21, 30.66 },
-          note = { ru = "Обратно на запад в деревню: Назир. «Доки Терамора» не берите.",
-                   en = "Back west to the village: Nazeer. Skip The Theramore Docks." } },
+        { turnin = { 1201, 1238 }, accept = 1202, npc = 4791, at = { 1445, 35.21, 30.66 },
+          note = { ru = "Обратно на запад в деревню: Назир. Возьмите «Доки Терамора» (сундучок капитана - по пути "
+                       .. "от Ярла в Драконью топь).",
+                   en = "Back west to the village: Nazeer. Take The Theramore Docks (the Captain's Footlocker is on the "
+                       .. "way from Jarl to the Wyrmbog)." } },
         { turnin = 1322, accept = 1323, npc = 5087, at = { 1445, 36.53, 30.79 },
           note = { ru = "До'гол.", en = "Do'gol." } },
         { turnin = { 1323, 1273 }, npc = 4926, at = { 1445, 36.42, 31.88 },
@@ -420,13 +487,18 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "На восток к Ярлу.", en = "East to Jarl." } },
         { accept = 1239, object = 20985, at = { 1445, 55.44, 25.92 },
           note = { ru = "Рыхлая земля: «Отрубленная голова».", en = "Loose Dirt: The Severed Head." } },
+        { id = "h40-theramore-docks", complete = 1202, object = 20925, at = { 1445, 71.53, 51.19 },
+          note = { ru = "На юго-восток к Терамору: сундучок капитана лежит под водой у причалов - подплывайте со "
+                       .. "стороны моря, к стражникам на причале (55, элита) не приближайтесь.",
+                   en = "South-east to Theramore: the Captain's Footlocker lies underwater by the docks - swim in from "
+                       .. "the sea side and keep away from the guards on the pier (55, elite)." } },
 
         ------------------------------------------------------------------
         -- Wyrmbog 1 (40)
         ------------------------------------------------------------------
         { complete = { [1166] = { 1 } }, object = 19904, at = { 1445, 44.53, 66.04 },
-          note = { ru = "На юг к Драконьей топи: понюшка Мок'Морокка в разрушенной хижине огров.",
-                   en = "South to the Wyrmbog: Mok'Morokk's Snuff in a ruined ogre hut." } },
+          note = { ru = "На запад к Драконьей топи: понюшка Мок'Морокка в разрушенной хижине огров.",
+                   en = "West to the Wyrmbog: Mok'Morokk's Snuff in a ruined ogre hut." } },
         { id = "h-38-dustwallow-marsh-field", complete = { 1168, 1169 }, at = { 1445, 45.00, 71.50 },
           note = { ru = "Драконья топь: Огнегривые - 15 разведчиков, 10 пеплохвостов, 5 чешуйчатых губителей (41-44); "
                        .. "с опаляющих дракончиков и малышей - 15 огненных языков и 15 пылающих сердец.",
@@ -442,9 +514,9 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         -- Brackenwall 3, Wyrmbog 2, Brackenwall end (40-41)
         ------------------------------------------------------------------
-        { turnin = 1239, npc = 4791, at = { 1445, 35.21, 30.66 },
-          note = { ru = "Назир. «Тролль-знахарь» (в Тернистую долину) не берите.",
-                   en = "Nazeer. Skip The Troll Witchdoctor (Stranglethorn)." } },
+        { turnin = { 1239, 1202 }, npc = 4791, at = { 1445, 35.21, 30.66 },
+          note = { ru = "Назир: голова и бумаги капитана. «Тролль-знахарь» (в Тернистую долину) не берите.",
+                   en = "Nazeer: the head and the captain's papers. Skip The Troll Witchdoctor (Stranglethorn)." } },
         { turnin = 1168, npc = 4502, at = { 1445, 37.37, 31.39 },
           note = { ru = "Тхарг.", en = "Tharg." } },
         { turnin = 1169, accept = 1170, npc = 4501, at = { 1445, 37.15, 33.09 },
@@ -456,12 +528,14 @@ FastesBoooy.AddLibrarySegment({
         { complete = 1172, object = 20359, at = { 1445, 48.48, 74.00 },
           note = { ru = "Снова в Драконью топь: 5 яиц Ониксии в гнездах среди дракончиков.",
                    en = "Back to the Wyrmbog: 5 Eggs of Onyxia in the nests among the whelps." } },
-        -- WARN-OK (level-grind, next step): the end-of-segment gate of the plan (Wyrmbog dragonkin 41-44).
-        { id = "h-37-desolace-dustwallow-level-gate", level = { 40, 0.95 }, at = { 1445, 45.00, 71.50 }, -- WARN-OK: grind
-          note = { ru = "Цель: 40 + 95% (сдача яиц даст 41 - уровень Нагорья Арати и Бесплодных земель). Не хватает - "
-                       .. "Огнегривые и дракончики Драконьей топи (41-44) здесь же.",
-                   en = "Target: 40 + 95% (the egg turn-in makes 41, the level for Arathi and the Badlands). Short: "
-                       .. "the Wyrmbog Firemane and whelps (41-44) right here." } },
+        -- End-of-segment checkpoint of the plan: the Dustwallow quests alone reach it (no grind in the validator's
+        -- model); Arathi and the Badlands need 40 (782 at Kargath), the rest of the deficit waits for the h-41 gate,
+        -- where it is ground at 42-43 (more XP per kill).
+        { id = "h-37-desolace-dustwallow-level-gate", level = { 40, 0.25 }, at = { 1445, 45.00, 71.50 },
+          note = { ru = "Контроль: 40 + 25% (задания Пылевых топей дают это сами; дальше Арати и Бесплодные земли). Не "
+                       .. "хватает (пропустили задания) - Огнегривые и дракончики Драконьей топи (41-44) здесь же.",
+                   en = "Checkpoint: 40 + 25% (the Dustwallow quests get you there; Arathi and the Badlands are next). "
+                       .. "Short (skipped quests): the Wyrmbog Firemane and whelps (41-44) right here." } },
         { id = "h-41-brackenwall-end", turnin = 1172, npc = 4501, at = { 1445, 37.15, 33.09 },
           note = { ru = "Обратно в Гиблотопь: Драз'Зилб. «Вызов властителю Мок'Морокку» (он элита) не берите.",
                    en = "Back to Brackenwall: Draz'Zilb. Skip Challenge Overlord Mok'Morokk (elite)." } },

@@ -28,7 +28,7 @@
 --          east coast crawlers (1430); Tok'Kar 698 > 699; north-east snappers (699) + crawlers; Galen 1393 (escort) >
 --          strongbox; Stonard 1424 > 1429 (carried to the Hinterlands, h-50), 1430.
 --   SW 2 : Tok'Kar 699 > 1422 > Katar 1426 (murlocs, inkspewers, flesheaters) > 1427 > Tok'Kar > Katar 1428
---          (inkspewers, flesheaters, oracles) > Katar; optional level gate (crawlers); hearth Grom'gol.
+--          (inkspewers, flesheaters, oracles) > Katar; hearth Grom'gol.
 --   GG 1 : cauldron 584 > 585 + 586; Jungle Stalkers (572, 196); Mok'thardin 572 > 571; fly Booty Bay.
 --   BB 1 : sethearth; 669 (Seahorn), 209 (Kebok), 600 + 621 (Crank), 348 (Fin), 606 + 2872 (MacKinley; 2872 is carried
 --          to Steamwheedle Port, h-46), 617 (Bloads), 595 (Crazz); Bloodsail Correspondence 595 > 597.
@@ -62,11 +62,14 @@
 -- Skipped: 1389 / 93663 / 93176 (level 35), 1392 / 624 (random drops), 2932 (Hinterlands and back), 208 (King
 --   Bangalash ELITE), 577 (level 36), 580 (level 50), 8551 (Gorlash ELITE), 670 (back to Arathi), 2760-2765 (Galvan,
 --   blacksmithing), 1115-1122 (Dream Dust / Goblin Sponsorship chains, other zones).
--- XP (validator, 44.01 -> 46.01): quests 120 k (Classic values; 7.8 k of it estimated for 1422 / 349, which have no XP
---   in the data and are before the end gate), objective kills ~58 k, the rest ~52 k (~193 same-level kills) from two
---   gates: the optional h44-level-swamp (Monstrous Crawlers 43-44 east of Katar, 44 + 75%) and the end gate
---   h-44-swamp-stranglethorn-level-gate (Bloodsail pirates 43-45 south of Booty Bay, 45 + 90%); the turn-ins after
---   the end gate (576, 587, 604, 608) make 46.0. Group alternative: Zul'Farrak (Tanaris, next segment).
+-- XP (validator, 44.02 -> 46.01): quests 120 k (Classic values; 7.8 k of it estimated for 1422 / 349, which have no XP
+--   in the data and are before the end gate), objective kills ~60 k, the rest ~48 k (~180 same-level kills) from the
+--   end gate h-44-swamp-stranglethorn-level-gate (Bloodsail pirates 43-45 south of Booty Bay, 45 + 90%); the turn-ins
+--   after it (576, 587, 604, 608) make 46.0. Densification pass (34-46): the optional gate h44-level-swamp (Monstrous
+--   Crawlers 43-44 east of Katar, 44 + 75%) is gone - it only moved part of the grind to a lower level; added 1372
+--   Nothing But The Truth (two NPCs side by side in the Deadwind road camp; its follow-up 1383 needs a Desolace drop,
+--   so the rest of the chain stays out). Every other Swamp / Stranglethorn quest of 40-46 is taken or needs an elite,
+--   a dungeon, a profession or another zone (list above). Group alternative: Zul'Farrak (Tanaris, next segment).
 -- Automation notes: transient steps (fp, sethearth) come before the quest steps of their hub; accepts at one NPC are
 --   merged into one step; the class insert anchor h-44-uc-arrive is the flight to Undercity (paladin: training in
 --   Undercity after it; druid: a Moonglade insert fits BEFORE it, at Kargath, where the hearthstone is still bound).
@@ -124,6 +127,12 @@ FastesBoooy.AddLibrarySegment({
         { id = "h44-deadwind-road", go = true, radius = 60, npc = 5414, at = { 1431, 87.50, 35.20 },
           note = { ru = "На северо-восток к лагерю Орды у дороги на Перевал Мертвого Ветра (аптекарь Фаустин).",
                    en = "North-east to the Horde camp at the Deadwind Pass road (Apothecary Faustin)." } },
+        { accept = 1372, npc = 5418, at = { 1431, 87.81, 35.63 },
+          note = { ru = "В лагере: страж смерти Зредус - «Правда и только правда» (поговорить с Фаустином рядом).",
+                   en = "In the camp: Deathstalker Zraedus - Nothing But The Truth (talk to Faustin next to him)." } },
+        { turnin = 1372, npc = 5414, at = { 1431, 87.45, 35.25 },
+          note = { ru = "Аптекарь Фаустин. Продолжение не берите: опухоль глубинного бродяги падает только в Пустошах.",
+                   en = "Apothecary Faustin. Skip the follow-up: the Deepstrider Tumor drops only in Desolace." } },
         { id = "h-44-magtoor", go = true, radius = 60, at = { 1435, 14.80, 52.20 },
           note = { ru = "Через перевал на юго-восток, не сходя с дороги: вокруг Каражана мобы 55-60. Въезд в Болото "
                        .. "Печали; дальше дорога на восток в Каменор (Гавань Магтура на севере не нужна).",
@@ -208,14 +217,6 @@ FastesBoooy.AddLibrarySegment({
                    en = "Back to the south coast: oracles (44-45), flesheaters and inkspewers in one spot." } },
         { turnin = 1428, npc = 5593, at = { 1435, 83.76, 80.41 },
           note = { ru = "Катор.", en = "Katar." } },
-        -- WARN-OK (level-grind, next step): about 60% of the segment's grind, in the densest even-level camp of the
-        -- route (55 crawler spawns on this beach); optional - the end gate takes the rest if it is skipped.
-        { id = "h44-level-swamp", level = { 44, 0.75 }, optional = true, at = { 1435, 94.43, 84.08 }, -- WARN-OK: grind
-          note = { ru = "Желательно 44 + 75% до Тернистой долины: чудовищные крабы (43-44) на пляже к востоку от "
-                       .. "Катора - самый плотный лагерь своего уровня на маршруте. Иначе доберёте в конце у пиратов.",
-                   en = "Best reach 44 + 75% before Stranglethorn: the Monstrous Crawlers (43-44) on the beach east of "
-                       .. "Katar - the densest even-level camp of the route. Otherwise you make it up with the pirates "
-                       .. "at the end." } },
         { id = "h44-hearth-gromgol", hearth = "Grom'gol Base Camp", at = { 1434, 31.49, 29.75 },
           note = { ru = "Камень возвращения в Гром'гол. На откате - в Каменор и полёт у Брейка в Гром'гол.",
                    en = "Hearth to Grom'gol. On cooldown: ride to Stonard and fly from Breyk to Grom'gol." } },
@@ -396,8 +397,9 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Лагерь пиратов к югу от Бухты: карты и приказы на столах, висельники, понюшка, глаз Диззи.",
                    en = "The pirate camp south of Booty Bay: the charts and orders on the tables, Swashbucklers, "
                        .. "snuff, Dizzy's eye." } },
-        -- WARN-OK (level-grind, next step): end-of-segment gate of the plan; the turn-ins after it make 46.0.
-        { id = "h-44-swamp-stranglethorn-level-gate", level = { 45, 0.90 }, at = { 1434, 28.20, 82.21 }, -- WARN-OK: grind
+        -- WARN-OK (level-grind, next step): end-of-segment gate of the plan, the only grind of the segment; the
+        -- turn-ins after it make 46.0 (the hand-off level of h-46).
+        { id = "h-44-swamp-stranglethorn-level-gate", level = { 45, 0.90 }, at = { 1434, 28.20, 82.21 }, -- WARN-OK: level-grind
           note = { ru = "Цель: 45 + 90% (сдачи ниже дадут 46 - уровень Танариса). Не хватает - пираты Кровавого Паруса "
                        .. "здесь и вдоль берега (морские волки и волхвы 43-45). В группе быстрее: Зул'Фаррак (Танарис).",
                    en = "Target: 45 + 90% (the turn-ins below make 46, the level for Tanaris). Short: the Bloodsail "

@@ -2,8 +2,9 @@
 --
 -- Library segment "h-27-ashenvale-needles": levels 27-31, class-neutral (Undead Paladin and Skyborne Druid, Horde).
 -- Sun Rock Retreat -> hearth Thunder Bluff -> fly The Crossroads -> north via Mor'shan Rampart into Ashenvale (Torek,
--- Silverwing Outpost, Splintertree Post, Felmusk, Mystral Lake, the Ashenvale Hunt) -> hearth Thunder Bluff ->
--- optional Skywatcher Plateau (Mulgore, Forever-new Gloomrise chain) -> fly Camp Taurajo -> the Great Lift ->
+-- Silverwing Outpost, Splintertree Post, Felmusk, Raynewood Retreat, Mystral Lake, the Ashenvale Hunt) -> fly Sun
+-- Rock (Ordanus) -> hearth Thunder Bluff -> Skywatcher Plateau (Mulgore, Forever-new Gloomrise chain) -> fly
+-- Camp Taurajo -> optional Razorfen Kraul -> the Great Lift ->
 -- Thousand Needles (Freewind Post, Galak Hold, Dorn, the harpy cave, Highperch, Whitereach Post, Darkcloud Pinnacle)
 -- -> Shimmering Flats (Mirage Raceway) -> hearth Thunder Bluff.
 -- Plan: research plan60.md section 4.3 / plan60.json segments[3] (anchors used with the plan's ids).
@@ -11,38 +12,48 @@
 -- frame) / 1441 (Thousand Needles), map percent, from tools/data/forever_db.lua (NPC / object spawns; centroids of
 -- the objective mob / object spawns for complete steps). Exceptions (route facts, check in game): Silverwing Outpost
 -- assault point and the Lakota escort end (RXP Forever / Classic geometry), the Skywatcher Plateau mountain path
--- (Mulgore 40.3,17.6: web guide snippet), Stolen Freewind Supplies (object 670338 is not in the DB: Wowhead Forever
--- object tooltip, 16 spawns 25.9-28.0 / 47.2-56.2), the Dorn / Highperch / Darkcloud path points (RXP Classic).
+-- (Mulgore 40.3,17.6: web guide snippet), the Dorn / Highperch / Darkcloud path points (RXP Classic). Stolen
+-- Freewind Supplies (object 670338, 16 spawns 25.9-28.0 / 47.2-56.2) is a DB supplement from the Wowhead Forever
+-- tooltip; the Gravelsnout kobold camp by Dorn (51.8-54.4, 43-48.6) is the Wowhead Forever NPC tooltip map of 4113.
 --
 -- Hub plan (Forever DB; every quest is available to Scourge and Skyborne Horde characters of any class):
---   TB1 : hearth from Sun Rock; 1086 (Zamah); optional 97538 (Tah Winterhoof); 1195 (Zangen); fly The Crossroads.
+--   TB1 : hearth from Sun Rock; 1086 (Zamah); 97538 (Tah Winterhoof, Forever-new); 1195 (Zangen); optional 6561
+--         (Bashana, from the optional Blackfathom Deeps run of h-24); fly The Crossroads.
 --   AV1 : Mor'shan Rampart -> Torek 6544 (assault on Silverwing Outpost with Torek's raiders); Kuray'bin 6503
 --         (Outrunners on the road); Splintertree: fp, 6544 (Ertog), 6441 (Pixel), 742 > 6383 (Senani: the Ashenvale
 --         Hunt, 0 XP talk quest that unlocks 23 / 24 / 2), 25 (Mastok).
---   AV2 : Felmusk satyrs 6441; Shadumbra (28) -> 24; Mystral Lake elementals 25 + Tideress (27) -> optional 1918;
---         Ursangous (25) -> 23; Ashenvale Moonwell 1195; Sharptalon (31) -> 2; Splintertree: 6441, 25 + 1918, 23 / 24
---         / 2 > 247 (Senani) = h-28-splintertree-end; hearth (or fly) Thunder Bluff.
+--   AV2 : Felmusk satyrs 6441; Keeper Ordanus (29, top of Raynewood Retreat) 1088 (from h-24); Shadumbra (28) ->
+--         24; Mystral Lake elementals 25 + Tideress (27) -> optional 1918; Ursangous (25) -> 23; Ashenvale Moonwell
+--         1195; Sharptalon (31) -> 2; Splintertree: 6441, 25 + 1918, 23 / 24 / 2 > 247 (Senani) =
+--         h-28-splintertree-end; fly Sun Rock: 1088 (Braelyn, 2350 XP for one flight: the hearthstone is still used
+--         from there); hearth Thunder Bluff.
 --   TB2 : 1131 (Melor Stonehoof); 1195 > 1196 (Zangen) = h-28-tb-arrive (druid training insert after it).
---   SW  : optional, Forever-new (XP unknown): Skywatcher Plateau 96259 + 96261 (Muln), 96241 (Mazu'kon), 96260
---         (Yorn); Gloomrise: spinners, toxin samples, hatchlings + soldiers, Broodmother Valraxx (elite 30) ->
---         item-started 96294; turn-ins; back to Thunder Bluff; fly Camp Taurajo.
+--   SW  : Forever-new (XP unknown, ~20 min next to Thunder Bluff: ~20 quest mobs 27-29 plus three turn-ins beat
+--         grinding the same time): Skywatcher Plateau 96259 (Muln), 96241 (Mazu'kon), 96260 (Yorn); Gloomrise:
+--         spinners, toxin samples, hatchlings + soldiers; optional 96261 Broodmother Valraxx (elite 30) ->
+--         item-started 96294; turn-ins; back to Thunder Bluff; fly Camp Taurajo: 1153 (Tatternack, next to the flight
+--         master; the ore drops from the Gravelsnout kobolds by Dorn; turned in at the start of h-31).
+--   RFK : optional, group: Razorfen Kraul (29-38; entrance on the road south): 1144 Willix the Importer (escort
+--         inside, 7250 XP). 1102 needs level 29 at Thunder Bluff before the run (the simulation is at ~28.4) and
+--         1109 / 1221 are turned in at the Undercity / Ratchet much later: not used.
 --   GL  : south past Razorfen Kraul to the Great Lift: 5881 (Grish), 4542 (Brave Moonhorn).
---   FW1 : fp; 4767 (Elu), 4821 (Hagar), 4542 > 4841 (Longhorn), 5147 (poster), 1196 > 1197 (Rau), optional
---         98069 + 98070 (Jandia).
+--   FW1 : fp; 4767 (Elu), 4821 (Hagar), 4542 > 4841 (Longhorn), 5147 (poster), 1196 > 1197 (Rau), 98069 + 98070
+--         (Jandia, Forever-new, need 27).
 --   GH  : Galak Hold: 4841 centaurs + 1197 brazier (end of the cave); optional 4881 from the Galak Messenger.
---   DO  : Dorn 1149 (leap from the planks) > 1150; Alien Egg 4821 (three spawn points).
+--   DO  : Gravelsnout kobolds 1153 (bg); Dorn 1149 (leap from the planks) > 1150; Alien Egg 4821 (three spawn points).
 --   FW2 : 4841 > 5064 (Longhorn), 1197 (Rau), 4821 > 4865 (Hagar).
---   HC  : harpy cave: optional 98069 + 98070 in the bg, Grenka 1150.
+--   HC  : harpy cave: 98069 + 98070 in the bg, Grenka 1150.
 --   HP  : Highperch: Pao'ka 4770 escort + 4767 wyvern eggs; Steelsnap 1131.
 --   WR  : Whitereach: 4770 + 4865 > 5062 (Motega); optional 4881 > 4966 (Kanati, centaur attack); optional 5151
 --         (Wizlo; the Enraged Panther is elite 30).
 --   DC  : Darkcloud Pinnacle: 5062 agave (bg), 5064 notes, 5147 Arnak, Lakota 4904 escort.
---   FW3 : 4904 (Thalia), 5064 + 5147 (Longhorn), 4767 (Elu), optional 98069 + 98070 (Jandia); Dorn 1150.
+--   FW3 : 4904 (Thalia), 5064 + 5147 (Longhorn), 4767 (Elu), 98069 + 98070 (Jandia); Dorn 1150.
 --   SF  : Mirage Raceway: 1110 + 5762 (Kravel), 1104 (Fizzle), 1105 (Wizzle), 1176 (Pozzik), 1175 (Zherin); north
 --         Flats loop (tortoises, reavers, basilisks, scavengers, rocket car rubble); crystalhides + gazers; level
 --         gate; turn-ins; hearth Thunder Bluff.
 --   TB3 : 1131 (Melor), 5062 (Magatha) = end.
--- Carried out: 532 + 567 (from h-22, for h-31), 5762 (Hemet Nesingwary, Stranglethorn, h-34).
+-- Carried out: 532 + 567 (from h-22, for h-31), 5762 (Hemet Nesingwary, Stranglethorn, h-34), 1153 (Tatternack,
+--   start of h-31), optional 1013 (Book of Ur, Undercity in h-31).
 -- Not used (reasons): 6571 Warsong Supplies (its Warsong Axe Shipment, object 178204, is in Booty Bay: Stranglethorn
 --   1434 26.4,73.3); 6581 (part of 6571); 6482 Freedom to Ruul (Thistlefur, ~1.5k yd off the loop each way + escort:
 --   ~2400 XP for ~8 min, slower than killing at the Flats); 6504 (pages from the Zoram Strand murlocs, far west);
@@ -50,14 +61,15 @@
 --   98823 Earthen Echo (Bashana: the follow-up of 95664, whose Titan Relic comes from the Excavation Site dungeon
 --   in the Wetlands - not offered without it); 1151 / 1152 (Rok'Alim, elite 30 in the far west after a second Dorn
 --   visit; Test of Lore ends in Stonetalon); 5088 Arikara (needs 5062 turned in at Magatha first: a second
---   Needles trip); 1153 (turned in at Camp Taurajo, not revisited); RFK quests (1102 needs level 29 at the second
---   Thunder Bluff visit; Willix 1144 is a group escort - see the level gate note); 1106 / 1107 (35).
+--   Needles trip); 1102 / 1109 / 1221 (RFK, see above); 1106 / 1107 (35; 1107's fins drop in Stranglethorn);
+--   1145-1147 The Swarm Grows (1145 needs 29 at the Crossroads, ~27 here); 1089 The Den (Talon Den keys).
 -- Automation notes: accepts at one NPC sit in one step; transient steps (fp, fly, go, hearth) come before the
 --   quest steps of the same place. The class inserts of the plan go after h-27-tb-arrive (Zamah; next step is Tah
 --   on the central mesa), h-28-tb-arrive (Zangen; next step is the Mulgore path) and h-31-tb-hearth (next step is
 --   Melor on Hunter Rise): no same-NPC accept follows any of them.
 -- Hearthstone: Thunder Bluff all segment (bound by the 1-22 routes). Used three times: Sun Rock -> TB at the start,
---   Splintertree -> TB (or fly, if the hour is not up yet), Shimmering Flats -> TB at the end.
+--   Sun Rock -> TB again after the Ashenvale loop (or fly, if the hour is not up yet), Shimmering Flats -> TB at the
+--   end.
 FastesBoooy.AddLibrarySegment({
     id = "h-27-ashenvale-needles",
     title = { ru = "27-31 Ясеневый лес, Небесное плато, Тысяча Игл",
@@ -74,12 +86,17 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-27-tb-arrive", turnin = 1086, npc = 3419, at = { 1456, 22.81, 20.89 },
           note = { ru = "Через Вершину Духов вниз в Пруды Видений: аптекарь Зама.",
                    en = "Over Spirit Rise down to the Pools of Vision: Apothecary Zamah." } },
-        { turnin = 97538, npc = 3024, at = { 1456, 54.14, 47.05 }, optional = true, -- WARN-OK: xp-unknown (Forever-new)
+        { turnin = 97538, npc = 3024, at = { 1456, 54.14, 47.05 }, -- WARN-OK: xp-unknown (Forever-new)
           note = { ru = "Центральная вершина: Тах Заиндевевшее Копыто — стручки лихолиста.",
                    en = "Central mesa: Tah Winterhoof - the Mirkweed Pods." } },
         { accept = 1195, npc = 4721, at = { 1456, 54.97, 51.41 },
           note = { ru = "Занген Каменное Копыто рядом: «Священное пламя» (лунный колодец в Ясеневом лесу).",
                    en = "Zangen Stonehoof next to her: The Sacred Flame (a moonwell in Ashenvale)." } },
+        { turnin = 6561, npc = 9087, at = { 1456, 71.06, 34.19 }, optional = true,
+          note = { ru = "Если были в Непроглядной Пучине: по мосту на Вершину Старейшин — Башана Рунический Тотем, голова "
+                       .. "Келриса (7850 опыта). Нет головы — «Пропуск».",
+                   en = "If you did Blackfathom Deeps: over the bridge to Elder Rise - Bashana Runetotem, the head of "
+                       .. "Kelris (7850 XP). No head: Skip." } },
         { id = "h-27-thunder-bluff-flight", fly = "The Crossroads", npc = 3615, at = { 1413, 51.50, 30.34 },
           note = { ru = "Тал на центральной вершине: летите на Перекрёсток.",
                    en = "Tal on the central mesa: fly to the Crossroads." } },
@@ -134,6 +151,10 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-27-ashenvale-field-loop", complete = 6441, at = { 1440, 67.10, 54.52 },
           note = { ru = "На северо-запад: сатиры лагеря Фелмуск (25-27) — 16 рогов.",
                    en = "North-west: the Felmusk satyrs (25-27) - 16 horns." } },
+        { complete = 1088, at = { 1440, 62.05, 51.37 },
+          note = { ru = "По пути на запад — Приют Рейнвуда: по спирали на вершину дерева, хранитель Гордан (29) — голова.",
+                   en = "On the way west - Raynewood Retreat: up the spiral to the top of the tree, Keeper Ordanus (29) - "
+                       .. "his head." } },
         { accept = 24, use = 16304, at = { 1440, 57.50, 56.00 },
           note = { ru = "Дальше на запад: Шадумбра (28, ночной саблезуб) — голова, щёлкните её.",
                    en = "On west: Shadumbra (28, nightsaber) - her Head, click it." } },
@@ -157,7 +178,7 @@ FastesBoooy.AddLibrarySegment({
                        .. "potions ready." } },
 
         ------------------------------------------------------------------
-        -- Splintertree Post, last visit -> Thunder Bluff (level 28)
+        -- Splintertree Post, last visit -> Sun Rock Retreat -> Thunder Bluff (level 28)
         ------------------------------------------------------------------
         { turnin = 6441, npc = 12724, at = { 1440, 73.06, 61.48 },
           note = { ru = "Пиксель.", en = "Pixel." } },
@@ -171,9 +192,14 @@ FastesBoooy.AddLibrarySegment({
                    en = "Senani: the three trophies, then The Hunt Completed." } },
         { id = "h-28-splintertree-end", turnin = 247, npc = 12696, at = { 1440, 73.78, 61.46 },
           note = { ru = "Сразу сдайте «Охота завершена» (плащ).", en = "Turn in The Hunt Completed right away (cloak)." } },
+        { fly = "Sun Rock Retreat", npc = 4312, at = { 1442, 45.12, 59.84 },
+          note = { ru = "Вульгра: летите в Приют Солнечного Камня (камень не тратьте).",
+                   en = "Vhulgra: fly to Sun Rock Retreat (keep the hearthstone)." } },
+        { turnin = 1088, npc = 4198, at = { 1442, 45.94, 60.42 },
+          note = { ru = "Брайлин: голова Гордана. «Логово» не берите.", en = "Braelyn: Ordanus' head. Skip The Den." } },
         { id = "h-28-hearth-tb", hearth = "Thunder Bluff", at = { 1456, 45.81, 64.71 },
-          note = { ru = "Камень в Громовой Утёс. Не прошёл час — летите у Вульгры в Громовой Утёс.",
-                   en = "Hearth to Thunder Bluff. Less than an hour since the last one: fly from Vhulgra instead." } },
+          note = { ru = "Камень в Громовой Утёс. Не прошёл час — летите у Тарма в Громовой Утёс.",
+                   en = "Hearth to Thunder Bluff. Less than an hour since the last one: fly from Tharm instead." } },
 
         ------------------------------------------------------------------
         -- Thunder Bluff, second visit (level 28)
@@ -186,43 +212,50 @@ FastesBoooy.AddLibrarySegment({
                    en = "Central mesa: Zangen - the next Sacred Flame (Freewind Post)." } },
 
         ------------------------------------------------------------------
-        -- Optional: Skywatcher Plateau, Gloomrise (Forever-new, level 28)
+        -- Skywatcher Plateau, Gloomrise (Forever-new, level 28; Broodmother Valraxx parts optional)
         ------------------------------------------------------------------
-        { go = true, radius = 25, at = { 1412, 40.30, 17.60 }, optional = true,
-          note = { ru = "По желанию (новое в Forever, опыт неизвестен, ~25 мин): на лифте вниз, на север вдоль утёса "
-                       .. "к горной тропе и по ней наверх на Небесное плато. Пропускаете — эти 13 шагов «Пропуск».",
-                   en = "Optional (new in Forever, XP unknown, ~25 min): take the lift down, run north along the bluff "
-                       .. "to the mountain path and up to Skywatcher Plateau. Skipping: Skip these 13 steps." } },
-        { id = "h-28-skywatcher", accept = { 96259, 96261 }, npc = 259118, at = { 1412, 33.41, 22.58 }, optional = true,
-          note = { ru = "Мулн Ярость Земли в большом шатре: «Защита мёртвых» и «Матриарх выводка».",
-                   en = "Muln Earthfury in the big tent: Defending the Dead and The Broodmother." } },
-        { accept = 96241, npc = 264074, at = { 1412, 32.50, 20.66 }, optional = true,
+        { go = true, radius = 25, at = { 1412, 40.30, 17.60 },
+          note = { ru = "Новое в Forever (опыт неизвестен, ~20 мин, ~20 мобов 27-29 по заданиям): на лифте вниз, на север "
+                       .. "вдоль утёса к горной тропе и по ней наверх на Небесное плато.",
+                   en = "New in Forever (XP unknown, ~20 min, ~20 quest mobs 27-29): take the lift down, run north along "
+                       .. "the bluff to the mountain path and up to Skywatcher Plateau." } },
+        { id = "h-28-skywatcher", accept = 96259, npc = 259118, at = { 1412, 33.41, 22.58 },
+          note = { ru = "Мулн Ярость Земли в большом шатре: «Защита мёртвых».",
+                   en = "Muln Earthfury in the big tent: Defending the Dead." } },
+        { accept = 96261, npc = 259118, at = { 1412, 33.41, 22.58 }, optional = true,
+          note = { ru = "По желанию: у него же «Матриарх выводка» — элитная 30-го (с группой или с зельями).",
+                   en = "Optional: from him too, The Broodmother - an elite 30 (with a group or potions)." } },
+        { accept = 96241, npc = 264074, at = { 1412, 32.50, 20.66 },
           note = { ru = "Мазу'кон: пробы яда (экстрактор дадут с заданием).",
                    en = "Mazu'kon: toxin samples (the extractor comes with the quest)." } },
-        { accept = 96260, npc = 264072, at = { 1412, 32.47, 19.98 }, optional = true,
+        { accept = 96260, npc = 264072, at = { 1412, 32.47, 19.98 },
           note = { ru = "Йорн Зловещий Тотем: 3 кристаллических шёлка.", en = "Yorn Grimtotem: 3 Crystalline Silk." } },
-        { complete = 96260, bg = true, at = { 1412, 33.41, 10.26 }, optional = true,
+        { complete = 96260, bg = true, at = { 1412, 33.41, 10.26 },
           note = { ru = "Попутно: ткачи с Мрачной вершины (28) — шёлк.", en = "On the way: Gloomrise Spinners (28) - silk." } },
-        { complete = 96241, bg = true, use = 273015, at = { 1412, 33.79, 10.22 }, optional = true,
+        { complete = 96241, bg = true, use = 273015, at = { 1412, 33.79, 10.22 },
           note = { ru = "Попутно: экстрактор на обглоданные трупы — 5 проб.",
                    en = "On the way: use the extractor on Gnawed Corpses - 5 samples." } },
-        { id = "h-28-mulgore-skywatcher-plateau", complete = 96259, at = { 1412, 33.59, 11.71 }, optional = true,
+        { id = "h-28-mulgore-skywatcher-plateau", complete = 96259, at = { 1412, 33.59, 11.71 },
           note = { ru = "К северу от лагеря: 10 паучков (27-28) и 5 солдат (28-29) с Мрачной вершины.",
                    en = "Gloomrise north of the camp: 10 Hatchlings (27-28) and 5 Soldiers (28-29)." } },
         { complete = 96261, at = { 1412, 33.23, 8.78 }, optional = true,
-          note = { ru = "В глубине: матриарх Валракс — ЭЛИТНАЯ 30-го. Соло рискованно: зелья или помощь; иначе пропустите.",
-                   en = "At the back: Broodmother Valraxx - ELITE 30. Risky solo: potions or help; otherwise skip." } },
+          note = { ru = "Если брали: в глубине матриарх Валракс — ЭЛИТНАЯ 30-го. Соло рискованно: зелья или помощь; иначе "
+                       .. "пропустите (и два следующих её шага).",
+                   en = "If taken: Broodmother Valraxx at the back - ELITE 30. Risky solo: potions or help; otherwise skip "
+                       .. "(and her next two steps)." } },
         { accept = 96294, use = 273658, at = { 1412, 33.23, 8.78 }, optional = true,
           note = { ru = "С неё — окровавленный пергамент: щёлкните его.",
                    en = "She drops the Bloody Parchment: click it." } },
-        { turnin = 96260, npc = 264072, at = { 1412, 32.47, 19.98 }, optional = true, -- WARN-OK: xp-unknown (Forever-new)
+        { turnin = 96260, npc = 264072, at = { 1412, 32.47, 19.98 }, -- WARN-OK: xp-unknown (Forever-new)
           note = { ru = "Йорн.", en = "Yorn." } },
-        { turnin = 96241, npc = 264074, at = { 1412, 32.50, 20.66 }, optional = true, -- WARN-OK: xp-unknown (Forever-new)
+        { turnin = 96241, npc = 264074, at = { 1412, 32.50, 20.66 }, -- WARN-OK: xp-unknown (Forever-new)
           note = { ru = "Мазу'кон.", en = "Mazu'kon." } },
-        { turnin = { 96259, 96261, 96294 }, npc = 259118, at = { 1412, 33.41, 22.58 }, optional = true, -- WARN-OK: xp-unknown
+        { turnin = 96259, npc = 259118, at = { 1412, 33.41, 22.58 }, -- WARN-OK: xp-unknown (Forever-new)
           note = { ru = "Мулн. Задание про идол (Затонувший город, 40) не берите.",
                    en = "Muln. Skip the idol quest (Drowned City, 40)." } },
-        { go = true, radius = 25, at = { 1412, 40.30, 17.60 }, optional = true,
+        { turnin = { 96261, 96294 }, npc = 259118, at = { 1412, 33.41, 22.58 }, optional = true, -- WARN-OK: xp-unknown
+          note = { ru = "Если убили Валракс: Мулну — оба её задания.", en = "If you killed Valraxx: both her quests to Muln." } },
+        { go = true, radius = 25, at = { 1412, 40.30, 17.60 },
           note = { ru = "Тропой вниз и на юг к лифту Громового Утёса.",
                    en = "Down the path and south to the Thunder Bluff lift." } },
 
@@ -234,6 +267,23 @@ FastesBoooy.AddLibrarySegment({
                    en = "Up the lift to the central mesa: wind rider master Tal." } },
         { id = "h-28-thunder-bluff-flight", fly = "Camp Taurajo", npc = 10378, at = { 1413, 44.45, 59.15 },
           note = { ru = "Тал: летите в Лагерь Таурахо.", en = "Tal: fly to Camp Taurajo." } },
+        { accept = 1153, npc = 3433, at = { 1413, 45.10, 57.68 },
+          note = { ru = "Рядом с распорядителем полётов: Таттернак Стальной Горн — «Образец новой руды» (кобольды-Камнерылы "
+                       .. "у пещеры Дорна в Тысяче Игл; сдадите на 31-м по дороге в Оргриммар).",
+                   en = "Next to the flight master: Tatternack Steelforge - A New Ore Sample (Gravelsnout kobolds by Dorn's "
+                       .. "cave in Thousand Needles; handed in at 31 on the way to Orgrimmar)." } },
+        -- Optional, group: Razorfen Kraul (29-38; quests ~2.4x Classic XP), entrance on the way south.
+        { accept = 1144, at = { 1413, 42.90, 90.20 }, optional = true, -- WARN-OK: at-far-from-giver (Willix is inside the dungeon)
+          note = { ru = "Если собрали группу: Лабиринты Иглошкурых (7250 опыта за Вилликса и много за мобов, ~50 мин). Вход "
+                       .. "к западу от дороги (42.9, 90.2); внутри Импортер Вилликс — «Импортер Вилликс». Без группы — "
+                       .. "«Пропуск» на этих трёх шагах.",
+                   en = "If you have a group: Razorfen Kraul (7250 XP for Willix plus lots of mob XP, ~50 min). The "
+                       .. "entrance is west of the road (42.9, 90.2); inside, Willix the Importer - Willix the Importer. "
+                       .. "No group: Skip these three steps." } },
+        { complete = 1144, at = { 1413, 42.90, 90.20 }, optional = true,
+          note = { ru = "Проводите Вилликса к выходу.", en = "Escort Willix to the exit." } },
+        { turnin = 1144, at = { 1413, 42.90, 90.20 }, optional = true, -- WARN-OK: at-far-from-giver (Willix, inside the dungeon)
+          note = { ru = "Вилликс у выхода.", en = "Willix at the exit." } },
         { go = true, radius = 40, at = { 1413, 44.00, 91.00 },
           note = { ru = "По дороге на юг мимо Лабиринтов Иглошкурых к Великому Подъёмнику.",
                    en = "South along the road past Razorfen Kraul to the Great Lift." } },
@@ -267,11 +317,11 @@ FastesBoooy.AddLibrarySegment({
         { turnin = 1196, accept = 1197, npc = 4722, at = { 1441, 46.14, 51.71 },
           note = { ru = "Рау Скалобег: «Священное пламя» — раздвоенное копыто из жаровни в пещере Галак.",
                    en = "Rau Cliffrunner: The Sacred Flame - the Cloven Hoof from the brazier in the Galak cave." } },
-        { accept = { 98069, 98070 }, npc = 4877, at = { 1441, 46.21, 51.51 }, optional = true,
-          note = { ru = "По желанию (новое в Forever, опыт неизвестен): Джандия — 8 ящиков припасов и по 5 гарпий в "
-                       .. "пещере гарпий (туда всё равно идёте).",
-                   en = "Optional (new in Forever, XP unknown): Jandia - 8 supply crates and 5 of each harpy in the "
-                       .. "harpy cave (you go there anyway)." } },
+        { accept = { 98069, 98070 }, npc = 4877, at = { 1441, 46.21, 51.51 },
+          note = { ru = "Новое в Forever (опыт неизвестен): Джандия — 8 ящиков припасов и по 5 гарпий в пещере гарпий "
+                       .. "(туда всё равно идёте).",
+                   en = "New in Forever (XP unknown): Jandia - 8 supply crates and 5 of each harpy in the harpy cave (you "
+                       .. "go there anyway)." } },
 
         ------------------------------------------------------------------
         -- Galak Hold, Dorn, Alien Egg (level 28)
@@ -290,6 +340,10 @@ FastesBoooy.AddLibrarySegment({
                        .. "Not found in a few minutes: skip it (and the 4881/4966 steps)." } },
         { go = true, radius = 25, at = { 1441, 54.60, 44.30 },
           note = { ru = "На восток: тропа наверх к пещере Дорна.", en = "East: the path up to Dorn's cave." } },
+        { complete = 1153, bg = true, at = { 1441, 53.10, 45.60 },
+          note = { ru = "Попутно: землекопы и геодезисты-Камнерылы (28-30) у тропы к Дорну — неочищенный образец руды.",
+                   en = "On the way: Gravelsnout Diggers and Surveyors (28-30) by the path to Dorn - an Unrefined Ore "
+                       .. "Sample." } },
         { id = "h-28-dorn-plainstalker", accept = 1149, npc = 2986, at = { 1441, 53.95, 41.49 },
           note = { ru = "Дорн Странник Равнин: «Испытание веры».", en = "Dorn Plainstalker: Test of Faith." } },
         { complete = 1149, at = { 1441, 53.95, 41.49 },
@@ -317,7 +371,7 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         -- Harpy cave (level 29)
         ------------------------------------------------------------------
-        { complete = { 98069, 98070 }, bg = true, at = { 1441, 27.03, 52.04 }, optional = true,
+        { complete = { 98069, 98070 }, bg = true, at = { 1441, 27.03, 52.04 },
           note = { ru = "Попутно: визгливые гарпии (28-30) и ящики украденных припасов у пещеры и внутри.",
                    en = "On the way: Screeching harpies (28-30) and Stolen Freewind Supplies around and inside the "
                        .. "cave." } },
@@ -402,7 +456,7 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Длиннорог. «Родословная» (35) не берите.", en = "Longhorn. Skip Family Tree (35)." } },
         { turnin = 4767, npc = 10377, at = { 1441, 44.93, 48.92 },
           note = { ru = "Элу.", en = "Elu." } },
-        { turnin = { 98069, 98070 }, npc = 4877, at = { 1441, 46.21, 51.51 }, optional = true, -- WARN-OK: xp-unknown
+        { turnin = { 98069, 98070 }, npc = 4877, at = { 1441, 46.21, 51.51 }, -- WARN-OK: xp-unknown (Forever-new)
           note = { ru = "Джандия.", en = "Jandia." } },
         { go = true, radius = 25, at = { 1441, 54.60, 44.30 },
           note = { ru = "Тропа к пещере Дорна.", en = "The path to Dorn's cave." } },
@@ -451,10 +505,12 @@ FastesBoooy.AddLibrarySegment({
           at = { 1441, 77.76, 87.73 },
           note = { ru = "Юг: 6 созерцателей (34-35), доберите кристаллошкурых. Затем бейте мобов севера (черепахи, "
                        .. "скорпиды, василиски 30-32 — плотно, лучший опыт рядом) до 30-го + 67%: сдачи на трассе и в "
-                       .. "Громовом Утёсе дадут 31-й. С группой вместо этого — Лабиринты Иглошкурых (Виликс).",
+                       .. "Громовом Утёсе дадут 31-й. Без подземелий (Пучина, Лабиринты) и Валракс это до ~300 убийств: "
+                       .. "еда с «Сытостью» (+5%).",
                    en = "South: 6 Gazers (34-35), finish the Crystalhides. Then kill the north Flats mobs (tortoises, "
                        .. "scorpids, basilisks 30-32: dense, the best XP nearby) up to level 30 + 67%: the raceway and "
-                       .. "Thunder Bluff turn-ins make 31. With a group: Razorfen Kraul (Willix) instead." } },
+                       .. "Thunder Bluff turn-ins make 31. Without the dungeons (Blackfathom, Razorfen Kraul) and Valraxx "
+                       .. "this is up to ~300 kills: Well Fed food (+5%)." } },
         { turnin = 1110, npc = 4452, at = { 1441, 77.79, 77.27 },
           note = { ru = "Кравел. «Начальник порта Диззивиг» (36) не берите.", en = "Kravel. Skip Wharfmaster Dizzywig (36)." } },
         { turnin = 1104, npc = 4454, at = { 1441, 78.06, 77.13 },

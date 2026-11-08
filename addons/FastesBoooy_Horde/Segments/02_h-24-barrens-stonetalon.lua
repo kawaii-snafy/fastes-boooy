@@ -7,41 +7,49 @@
 -- Plan: research plan60.md section 4.2 / plan60.json segments[2] (anchors used with the plan's ids).
 -- Coordinates: Forever uiMap 1456 (Thunder Bluff) / 1413 (The Barrens) / 1442 (Stonetalon Mountains), map percent,
 -- from tools/data/forever_db.lua (NPC / object spawns; centroids of the objective mob/object spawns for complete
--- steps). Exceptions: Sulhasa 14242 (Forever-new giver of 98093, no spawn in the DB) = Wowhead Forever tooltip
--- (zone 17, 47.9,77.6); the Sun Rock east ramp is the 1-22 route's point (ud05), the west entrance and the
--- Windshear Crag road are route facts.
+-- steps). Sulhasa 14242 (Forever-new giver of 98093): DB supplement from the Wowhead Forever tooltip (zone 17,
+-- 47.9,77.6); the Sun Rock east ramp is the 1-22 route's point (ud05), the west entrance and the Windshear Crag
+-- road are route facts.
 --
 -- Hub plan (Forever DB; every quest is available to Scourge and Skyborne Horde characters of any class):
---   TB  : 742 (Windstrider, kept for Splintertree), 1067 > 1086 (Zamah), optional 97538 (Tah Winterhoof).
---   XR1 : 868 (Korran), optional 97003 (Gur'ak), 862 (Grub); fly Camp Taurajo.
+--   TB  : 742 (Windstrider, kept for Splintertree), 1067 > 1086 (Zamah), 97538 (Tah Winterhoof, Forever-new).
+--   XR1 : 868 (Korran), 97003 (Gur'ak, Forever-new; Chol'aruk is an elite 20, killed at ~26), 862 (Grub); fly Camp
+--         Taurajo.
 --   CT1 : 879 (Mangletooth), optional 97250 (Logmar), 874 (Jorn, for Mahren at Ratchet), 893 (Tatternack).
---   BM  : Field of Giants eggs (868) on the way; Gann 843; optional 98093 (Sulhasa); 97250 soldiers (bg); dig site
+--   BM  : Field of Giants eggs (868) on the way; Gann 843; 98093 (Sulhasa, Forever-new); 97250 soldiers (bg); dig site
 --         843 + dig rats 862; Feegly 857; Gann 843 > 846; Bael'dun Keep 846 + 857; Feegly 857; Gann 846 > 849;
 --         flying machine 849; Razorfen Kraul entrance 879 + 893; Gann 849; Sulhasa 98093.
 --   CT2 : 879 > 906 (Mangletooth), 97250, 893; fly Ratchet.
 --   RA  : optional 92706 (WANTED poster, Bruuz elite 20 in the bay), 891 (Brightsun); Mahren 874 > 873, Isha Awak,
 --         873; Northwatch Hold 891; escort 898 (Gilthares) back to Ratchet; 891 + 898; 92706 (Gazlowe).
---   XR2 : run north-west via Thorn Hill (optional Chol'aruk, elite 20); 862, 97003, 868, 906; fly Sun Rock.
---   SR1 : 1087 (Braelyn), 6301 (Tammra; not for Skyborne: the druid route did it), 6282 + optional 86576
---         (Maggran), 6393 (Tsunaman).
+--   XR2 : run north-west via Thorn Hill (Chol'aruk); 862, 97003, 868, 906; fly Sun Rock.
+--   SR1 : 1087 (Braelyn), 6301 (Tammra; not for Skyborne: the druid route did it), 6282 + 86576 (Maggran,
+--         Forever-new), 6393 (Tsunaman).
 --   WC  : 1096 (Ziz); optional 6284 (poster on the Webwinder Path, Besseleth elite 21 in Sishir Canyon); Windshear
 --         Crag 1086 (copter pad) + 1096 (Gerenzo); 1096 (Ziz).
---   ML  : Mirkfallon Lake 6301 + optional 97538 (Mirkweed); Stonetalon Peak 1087.
---   CV1 : Charred Vale from the north: 6282 (28 harpies) + optional 86576 sunstones; 6393 incendrites in the bg.
---   SR2 : (west entrance) 86576 (Mor'rogal), 6284 + 6282 > 6283 + 5881 (Maggran), 1087 (Braelyn), 6301 > 6381.
+--   ML  : Mirkfallon Lake 6301 + 97538 (Mirkweed); Stonetalon Peak 1087.
+--   CV1 : Charred Vale from the north: 6282 (28 harpies) + 86576 sunstones; 6393 incendrites in the bg.
+--   SR2 : (west entrance) 6284 + 6282 > 6283 + 5881 (Maggran), 1087 > 1088 (Braelyn: Keeper
+--         Ordanus is in Raynewood Retreat on the h-27 Ashenvale loop; h-27 flies back here from Splintertree),
+--         6301 > 6381.
 --   BFD : optional, group (plan: optional dungeon of this segment): fly Zoram'gar, 6563 + 6921 (Je'neu), Blackfathom
---         Deeps (sapphires in the entrance tunnel, Fathom Core, item-started 6922 + 6564), Je'neu, fly Sun Rock.
+--         Deeps (sapphires in the entrance tunnel, Fathom Core, item-started 6922 + 6564, 6561 from Argent Guard
+--         Thaelrid inside: turned in at Bashana in Thunder Bluff at the start of h-27, optional there too), Je'neu,
+--         fly Sun Rock.
 --   CV2 : 6381 (Gaea Dirt Mounds), 6393, 6283 (Bloodfury Ripper, elite 26) + level gate 26 + 84% (the three
---         turn-ins after it make 27.0). Solo without BFD the gate is a long grind: validator ~164 kills (UD) /
---         ~171 (SD) of objective-only kill XP; with the BFD quests ~68 / ~75 (the validator counts optional steps).
---   SR3 : 6393 (Tsunaman), 6381 (Tammra), 6283 (Maggran) = end; the next segment flies / hearths to Thunder Bluff.
--- Carried out: 532 + 567 (from h-22, for h-31), 742 (Senani, Splintertree), 1086 + optional 97538 (Zamah / Tah,
---   Thunder Bluff, objectives done), 5881 (Grish Longrunner, Thousand Needles).
--- Not used: 822 (Ratchet keg; 975 XP, Ratchet is not revisited after the Barrens loop), 1153 (ore from Thousand
---   Needles), 1088/1089 (Ordanus is in Ashenvale, turn-in back at Sun Rock), 1058 / 6421 / 6481 (Malaka'jin /
---   Boulderslide, far south), 6565 (Lorgus Jett: needs a second Blackfathom run), 6561 (from Thaelrid inside BFD,
---   turned in at Thunder Bluff: would tie the next segment to an optional dungeon), 4021 (Kolkar wave event at
---   Regthar, off the path).
+--         turn-ins after it make 27.0; 27 keeps Sharptalon (31) and the Freewind quests 98069 / 98070 (need 27)
+--         at most 4 levels up). Without the optional dungeons (Ruins of Lordaeron, Shadowfang Keep, BFD) this gate
+--         is the long grind of the segment (validator worst case); with them it is already reached.
+--   SR3 : 6393 (Tsunaman), 86576 (Mor'rogal: the sunstones drop on both valley loops), 6381 (Tammra), 6283 (Maggran)
+--         = end; the next segment flies / hearths to Thunder Bluff.
+-- Carried out: 532 + 567 (from h-22, for h-31), 742 (Senani, Splintertree), 1086 + 97538 (Zamah / Tah, Thunder
+--   Bluff, objectives done), 5881 (Grish Longrunner, Thousand Needles), 1088 (Ordanus, h-27), optional 1013 (from
+--   h-22, Undercity in h-31) and 6561 (Bashana, h-27).
+-- Not used: 822 (Ratchet keg; 975 XP, Ratchet is not revisited after the Barrens loop), 1153 (taken at Camp Taurajo
+--   in h-27: the ore drops in Thousand Needles), 1089 (Talon Den keys, far north-west), 1058 / 6421 / 6481
+--   (Malaka'jin / Boulderslide, far south), 6565 (Lorgus Jett: needs a second Blackfathom run), 4021 (Kolkar wave
+--   event at Regthar, off the path), 1068 (XT shredders: giver and turn-in at the Barrens border, two detours),
+--   1221 (Razorfen Kraul tubers: turn-in at Ratchet, not revisited).
 -- Automation notes: accepts at one NPC sit in consecutive steps with no transient step between them; fly / go steps
 --   come before the quest steps of the next place. The anchor h-24-tb-arrive (Zamah) is followed by Tah Winterhoof,
 --   so a class training insert after it is not fast-forwarded by a same-NPC accept.
@@ -63,11 +71,11 @@ FastesBoooy.AddLibrarySegment({
                        .. "в сумке — он для Когтистых гор.",
                    en = "Over the bridge to Spirit Rise and down to the Pools of Vision: Apothecary Zamah. Keep the Toxic "
                        .. "Fogger: it is for Stonetalon." } },
-        { accept = 97538, npc = 3024, at = { 1456, 54.14, 47.05 }, optional = true,
-          note = { ru = "По желанию (новое в Forever, опыт неизвестен): Тах Заиндевевшее Копыто на центральной "
-                       .. "вершине, недалеко от Тала — 30 стручков лихолиста с озера в Когтистых горах (по пути).",
-                   en = "Optional (new in Forever, XP unknown): Tah Winterhoof on the central mesa near Tal - 30 "
-                       .. "Mirkweed Pods from the lake in Stonetalon (on the way)." } },
+        { accept = 97538, npc = 3024, at = { 1456, 54.14, 47.05 },
+          note = { ru = "Новое в Forever (опыт неизвестен): Тах Заиндевевшее Копыто на центральной вершине, недалеко от "
+                       .. "Тала — «Пигменты для красок», 30 стручков лихолиста с озера в Когтистых горах (по пути).",
+                   en = "New in Forever (XP unknown): Tah Winterhoof on the central mesa near Tal - Pigments for Paints, "
+                       .. "30 Mirkweed Pods from the lake in Stonetalon (on the way)." } },
         { id = "h-24-tb-fly", fly = "The Crossroads", npc = 3615, at = { 1413, 51.50, 30.34 },
           note = { ru = "Тал на центральной вершине: летите на Перекрёсток.",
                    en = "Tal on the central mesa: fly to the Crossroads." } },
@@ -78,11 +86,11 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-24-the-crossroads", accept = 868, npc = 3428, at = { 1413, 51.07, 29.63 },
           note = { ru = "Корран: «Охота за яйцами» (курганы силитидов к югу от Лагеря Таурахо).",
                    en = "Korran: Egg Hunt (silithid mounds south of Camp Taurajo)." } },
-        { accept = 97003, npc = 267310, at = { 1413, 52.65, 29.06 }, optional = true,
-          note = { ru = "По желанию (новое в Forever, опыт неизвестен): Гур'ак — Чол'арук (элитный 20-й) на холме к "
-                       .. "северо-востоку; убьёте на обратном пути из Кабестана.",
-                   en = "Optional (new in Forever, XP unknown): Gur'ak - Chol'aruk (elite 20) on the hill to the "
-                       .. "north-east; you kill him on the way back from Ratchet." } },
+        { accept = 97003, npc = 267310, at = { 1413, 52.65, 29.06 },
+          note = { ru = "Новое в Forever (опыт неизвестен): Гур'ак — Чол'арук (элитный 20-й, к тому времени на 5-6 уровней "
+                       .. "ниже вас) на холме к северо-востоку; убьёте на обратном пути из Кабестана.",
+                   en = "New in Forever (XP unknown): Gur'ak - Chol'aruk (elite 20, 5-6 levels below you by then) on the "
+                       .. "hill to the north-east; you kill him on the way back from Ratchet." } },
         { accept = 862, npc = 3443, at = { 1413, 55.31, 31.79 },
           note = { ru = "Грязнуля на восточном краю Перекрёстка: «Крысиная похлебка» (пещерные крысы в Бейл Модане).",
                    en = "Grub at the east edge of the Crossroads: Dig Rat Stew (dig rats at Bael Modan)." } },
@@ -118,12 +126,12 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-24-gann-stonespire", accept = 843, npc = 3341, at = { 1413, 45.89, 77.00 },
           note = { ru = "Ганн Каменное Копье на холме севернее Бейл Модана: «Ответный удар Ганна».",
                    en = "Gann Stonespire on the hill north of Bael Modan: Gann's Reclamation." } },
-        { accept = 98093, at = { 1413, 47.90, 77.60 }, optional = true, -- WARN-OK: at-far-from-giver (Sulhasa not in the DB)
-          note = { ru = "По желанию (новое в Forever, опыт неизвестен): Сулхаса в 200 м восточнее Ганна — по 7 "
-                       .. "многозубых ловцов и грозошкуров вокруг.",
-                   en = "Optional (new in Forever, XP unknown): Sulhasa, 200 yd east of Gann - 7 Hecklefang Stalkers "
-                       .. "and 7 Stormhides around here." } },
-        { complete = 98093, bg = true, optional = true, at = { 1413, 46.88, 77.18 },
+        { accept = 98093, npc = 14242, at = { 1413, 47.90, 77.60 },
+          note = { ru = "Новое в Forever (опыт неизвестен): Сулхаса на дереве в 200 м восточнее Ганна — «Полевая "
+                       .. "зачистка», по 7 многозубых ловцов и грозовых ящеров вокруг.",
+                   en = "New in Forever (XP unknown): Sulhasa in the tree 200 yd east of Gann - Field to Clear, 7 "
+                       .. "Hecklefang Stalkers and 7 Stormhides around here." } },
+        { complete = 98093, bg = true, at = { 1413, 46.88, 77.18 },
           note = { ru = "Попутно: гиены и грозошкуры (22-23) бродят между Ганном и раскопками.",
                    en = "On the way: the hyenas and Stormhides (22-23) roam between Gann and the dig site." } },
         { complete = 97250, bg = true, optional = true, at = { 1413, 48.73, 77.00 },
@@ -165,8 +173,8 @@ FastesBoooy.AddLibrarySegment({
         { turnin = 849, npc = 3341, at = { 1413, 45.89, 77.00 },
           note = { ru = "Ганн. Добейте солдат Альянса восточнее, если брали 97250.",
                    en = "Gann. Finish the Alliance soldiers to the east if you took 97250." } },
-        { turnin = 98093, at = { 1413, 47.90, 77.60 }, optional = true, -- WARN-OK: xp-unknown, at-far-from-giver
-          note = { ru = "Сулхаса.", en = "Sulhasa." } },
+        { turnin = 98093, npc = 14242, at = { 1413, 47.90, 77.60 }, -- WARN-OK: xp-unknown (Forever-new)
+          note = { ru = "Сулхаса. Не хватает зверей — они бродят вокруг.", en = "Sulhasa. Beasts missing: they roam around." } },
 
         ------------------------------------------------------------------
         -- Camp Taurajo, second visit -> Ratchet (level 25)
@@ -222,14 +230,13 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         -- Back to the Crossroads on foot (level 26)
         ------------------------------------------------------------------
-        { complete = 97003, optional = true, at = { 1413, 57.95, 26.80 },
-          note = { ru = "Бегом на северо-запад: Чол'арук (элитный 20-й) на холме кентавров — голова. Не брали 97003 — "
-                       .. "летите у Брагока на Перекрёсток.",
-                   en = "Run north-west: Chol'aruk (elite 20) on the centaur hill - his Head. Did not take 97003: fly "
-                       .. "from Bragok to the Crossroads." } },
+        { complete = 97003, at = { 1413, 57.95, 26.80 },
+          note = { ru = "Бегом на северо-запад (~4 мин вместо полёта): Чол'арук (элитный 20-й) на холме кентавров — голова.",
+                   en = "Run north-west (~4 min instead of the flight): Chol'aruk (elite 20) on the centaur hill - his "
+                       .. "Head." } },
         { turnin = 862, npc = 3443, at = { 1413, 55.31, 31.79 },
           note = { ru = "Грязнуля.", en = "Grub." } },
-        { turnin = 97003, npc = 267310, at = { 1413, 52.65, 29.06 }, optional = true, -- WARN-OK: xp-unknown
+        { turnin = 97003, npc = 267310, at = { 1413, 52.65, 29.06 }, -- WARN-OK: xp-unknown (Forever-new)
           note = { ru = "Гур'ак.", en = "Gur'ak." } },
         { turnin = 868, npc = 3428, at = { 1413, 51.07, 29.63 },
           note = { ru = "Корран.", en = "Korran." } },
@@ -250,11 +257,11 @@ FastesBoooy.AddLibrarySegment({
                    en = "Tammra Windfield: Cycle of Rebirth (Gaea Seeds by the lake to the north)." } },
         { accept = 6282, npc = 11860, at = { 1442, 47.20, 61.16 },
           note = { ru = "Землепряд Маггран: «Угроза со стороны гарпий».", en = "Maggran Earthbinder: Harpies Threaten." } },
-        { accept = 86576, npc = 11860, at = { 1442, 47.20, 61.16 }, optional = true,
-          note = { ru = "По желанию (новое в Forever, опыт неизвестен): «Безделушки Кровавой Ярости» — 15 камней с тех "
-                       .. "же гарпий, сдать Мор'рогалу.",
-                   en = "Optional (new in Forever, XP unknown): Bloodfury Trinkets - 15 Glittering Sunstones from the "
-                       .. "same harpies, for Mor'rogal." } },
+        { accept = 86576, npc = 11860, at = { 1442, 47.20, 61.16 },
+          note = { ru = "Новое в Forever (опыт неизвестен): «Безделушки Кровавой Ярости» — 15 камней с тех же гарпий, "
+                       .. "сдать Мор'рогалу.",
+                   en = "New in Forever (XP unknown): Bloodfury Trinkets - 15 Glittering Sunstones from the same "
+                       .. "harpies, for Mor'rogal." } },
         { accept = 6393, npc = 11862, at = { 1442, 47.36, 64.25 },
           note = { ru = "Цунаман: «Война элементалей» (инсендриты с огненных элементалей в долине гарпий).",
                    en = "Tsunaman: Elemental War (Incendrites from the fire elementals in the harpy valley)." } },
@@ -294,7 +301,7 @@ FastesBoooy.AddLibrarySegment({
         { complete = 6301, at = { 1442, 48.77, 40.66 }, race = { "Orc", "Scourge", "Tauren", "Troll" },
           note = { ru = "Озеро: 10 семян Геи на берегу и на мелководье.",
                    en = "The lake: 10 Gaea Seeds on the shore and in the shallows." } },
-        { complete = 97538, bg = true, optional = true, at = { 1442, 48.09, 40.45 },
+        { complete = 97538, bg = true, at = { 1442, 48.09, 40.45 },
           note = { ru = "Попутно у воды: 30 стручков с лихолиста и сухих куч.",
                    en = "On the way by the water: 30 Mirkweed Pods from Mirkweed and Dried Mirkweed Piles." } },
         { complete = 1087, at = { 1442, 36.34, 12.96 },
@@ -312,7 +319,7 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Попутно: 10 инсендритов с духов огня (север долины), опустошителей и разрушителей (юг).",
                    en = "On the way: 10 Incendrites from Rogue Flame Spirits (north of the valley), Burning Ravagers "
                        .. "and Destroyers (south)." } },
-        { complete = 86576, bg = true, optional = true, at = { 1442, 32.00, 65.01 },
+        { complete = 86576, bg = true, at = { 1442, 32.00, 65.01 },
           note = { ru = "Попутно: 15 сверкающих камней с любых гарпий Кровавой Ярости.",
                    en = "On the way: 15 Glittering Sunstones from any Bloodfury harpy." } },
         { complete = 6282, at = { 1442, 32.68, 65.05 },
@@ -327,8 +334,6 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         -- Sun Rock Retreat, second visit (level 26)
         ------------------------------------------------------------------
-        { turnin = 86576, npc = 11861, at = { 1442, 47.22, 64.04 }, optional = true, -- WARN-OK: xp-unknown
-          note = { ru = "Мор'рогал.", en = "Mor'rogal." } },
         { turnin = 6284, npc = 11860, at = { 1442, 47.20, 61.16 }, optional = true,
           note = { ru = "Маггран: клык Бесселета.", en = "Maggran: Besseleth's Fang." } },
         { turnin = 6282, accept = 6283, npc = 11860, at = { 1442, 47.20, 61.16 },
@@ -336,9 +341,11 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-25-sun-rock-retreat-2", accept = 5881, npc = 11860, at = { 1442, 47.20, 61.16 },
           note = { ru = "Маггран: «Смена караула» — письмо для Тысячи Игл (следующий сегмент).",
                    en = "Maggran: Calling in the Reserves - a letter for Thousand Needles (next segment)." } },
-        { turnin = 1087, npc = 4198, at = { 1442, 45.94, 60.42 },
-          note = { ru = "Брайлин. «Орданус» не берите (он в Ясеневом лесу).",
-                   en = "Braelyn. Skip Ordanus (he is in Ashenvale)." } },
+        { turnin = 1087, accept = 1088, npc = 4198, at = { 1442, 45.94, 60.42 },
+          note = { ru = "Брайлин: «Гордан» — хранитель Гордан сидит на вершине Приюта Рейнвуда в Ясеневом лесу (по пути, "
+                       .. "следующий сегмент); сдадите здесь же.",
+                   en = "Braelyn: Ordanus - Keeper Ordanus sits on top of Raynewood Retreat in Ashenvale (on the way, next "
+                       .. "segment); you hand it in back here." } },
         { turnin = 6301, npc = 11864, at = { 1442, 47.46, 58.38 }, race = { "Orc", "Scourge", "Tauren", "Troll" },
           note = { ru = "Таммра.", en = "Tammra." } },
         { accept = 6381, npc = 11864, at = { 1442, 47.46, 58.38 },
@@ -349,10 +356,12 @@ FastesBoooy.AddLibrarySegment({
         -- Optional, group: Blackfathom Deeps from Zoram'gar (level 26)
         ------------------------------------------------------------------
         { id = "h-26-bfd-fly", fly = "Zoram'gar Outpost", npc = 11901, at = { 1440, 12.24, 33.80 }, optional = true,
-          note = { ru = "По желанию, с группой: Непроглядная Пучина (~50 мин, ~17 тыс. опыта за задания вместо гринда у "
-                       .. "гарпий). Тарм: летите в Зорам'гар. Соло — «Пропуск» на этих 8 шагах.",
-                   en = "Optional, with a group: Blackfathom Deeps (~50 min, ~17k quest XP instead of grinding "
-                       .. "harpies). Tharm: fly to Zoram'gar. Solo: Skip these 8 steps." } },
+          note = { ru = "Если собрали группу: Непроглядная Пучина (~60 мин, ~17 тыс. опыта за задания здесь и ещё 7850 "
+                       .. "в Громовом Утёсе — вместо гринда у гарпий). Тарм: летите в Зорам'гар. Без группы — «Пропуск» "
+                       .. "на этих 10 шагах.",
+                   en = "If you have a group: Blackfathom Deeps (~60 min, ~17k quest XP here and 7850 more in Thunder "
+                       .. "Bluff - instead of grinding harpies). Tharm: fly to Zoram'gar. No group: Skip these 10 "
+                       .. "steps." } },
         { accept = { 6563, 6921 }, npc = 12736, at = { 1440, 11.56, 34.29 }, optional = true,
           note = { ru = "Дже'неу Санкри: «Сущность Аку'май» и «Среди руин».",
                    en = "Je'neu Sancrea: The Essence of Aku'Mai and Amongst the Ruins." } },
@@ -363,15 +372,24 @@ FastesBoooy.AddLibrarySegment({
         { complete = 6921, at = { 1440, 14.50, 14.20 }, optional = true,
           note = { ru = "Внутри: Глубинный сердечник из Глубинного Камня — появится Барон Акванис.",
                    en = "Inside: the Fathom Core from the Fathom Stone - Baron Aquanis appears." } },
-        { accept = 6922, use = 16782, at = { 1440, 14.50, 14.20 }, optional = true, -- WARN-OK: item-started quest
+        { accept = 6922, use = 16782, at = { 1440, 14.50, 14.20 }, optional = true,
           note = { ru = "Странная водяная сфера с Барона Акваниса: используйте — «Барон Акванис».",
                    en = "Strange Water Globe from Baron Aquanis: use it - Baron Aquanis." } },
-        { accept = 6564, use = 16790, at = { 1440, 14.50, 14.20 }, optional = true, -- WARN-OK: item-started quest
+        { accept = 6564, use = 16790, at = { 1440, 14.50, 14.20 }, optional = true,
           note = { ru = "Отсыревшая записка (с жриц прилива): используйте — «Верность Древним богам».",
                    en = "Damp Note (from the Tide Priestesses): use it - Allegiance to the Old Gods." } },
+        { accept = 6561, at = { 1440, 14.50, 14.20 }, optional = true, -- WARN-OK: at-far-from-giver (Thaelrid is inside the dungeon)
+          note = { ru = "Страж Талрид из ордена Серебряного Рассвета (в глубине, у алтаря): «Жестокость Черных Глубин» — "
+                       .. "голова Келриса (босс). Сдадите Башане в Громовом Утёсе (7850 опыта).",
+                   en = "Argent Guard Thaelrid (deep inside, by the altar): Blackfathom Villainy - the head of Kelris "
+                       .. "(boss). Hand it in to Bashana in Thunder Bluff (7850 XP)." } },
+        { complete = 6561, at = { 1440, 14.50, 14.20 }, optional = true,
+          note = { ru = "Повелитель сумрака Келрис: голова.", en = "Twilight Lord Kelris: his head." } },
         { turnin = { 6563, 6921, 6922, 6564 }, npc = 12736, at = { 1440, 11.56, 34.29 }, optional = true,
-          note = { ru = "Обратно к Дже'неу. Второе «Верность Древним богам» (Лоргус Джетт) — только со второй группой.",
-                   en = "Back to Je'neu. The second Allegiance to the Old Gods (Lorgus Jett) only with another run." } },
+          note = { ru = "Обратно к Дже'неу. Второе «Верность Древним богам» (Лоргус Джетт) — только со второй группой. "
+                       .. "Голову Келриса держите до Громового Утёса.",
+                   en = "Back to Je'neu. The second Allegiance to the Old Gods (Lorgus Jett) only with another run. Keep "
+                       .. "the head of Kelris for Thunder Bluff." } },
         { id = "h-26-bfd-fly-back", fly = "Sun Rock Retreat", npc = 4312, at = { 1442, 45.12, 59.84 }, optional = true,
           note = { ru = "Андрук: обратно в Приют Солнечного Камня.", en = "Andruk: back to Sun Rock Retreat." } },
 
@@ -388,14 +406,14 @@ FastesBoooy.AddLibrarySegment({
                        .. "опустошители (24-25) и разрушители (26-27) у курганов.",
                    en = "Plant 10 seeds in the Gaea Dirt Mounds (south of the valley). Finish the Incendrites: Burning "
                        .. "Ravagers (24-25) and Destroyers (26-27) by the mounds." } },
-        { id = "h-24-barrens-stonetalon-level-gate", complete = 6283, level = { 26, 0.84 }, -- WARN-OK: level-grind
+        { id = "h-24-barrens-stonetalon-level-gate", complete = 6283, level = { 26, 0.84 }, -- WARN-OK: level-grind (worst case)
           at = { 1442, 30.75, 61.91 },
           note = { ru = "Потрошительница (элитная 26-я) в западной части долины (30.8, 61.9) — останки. Затем бейте гарпий и "
                        .. "элементалей долины (24-27, плотные лагеря — лучший опыт рядом) до 26-го + 84%: три сдачи в "
-                       .. "Приюте дадут 27-й. Без Пучины это долго (до ~150 убийств): ешьте еду с «Сытостью» (+5%).",
+                       .. "Приюте дадут 27-й. Без подземелий это долго (до ~210 убийств): ешьте еду с «Сытостью» (+5%).",
                    en = "The Bloodfury Ripper (elite 26) in the west of the valley (30.8, 61.9): her Remains. Then kill the valley "
                        .. "harpies and elementals (24-27, dense camps: the best XP nearby) up to level 26 + 84%: the "
-                       .. "three Sun Rock turn-ins make 27. Without Blackfathom this is long (up to ~150 kills): eat "
+                       .. "three Sun Rock turn-ins make 27. Without the dungeons this is long (up to ~210 kills): eat "
                        .. "Well Fed food (+5%)." } },
         { go = true, radius = 30, at = { 1442, 38.70, 68.60 },
           note = { ru = "К западному входу в Приют.", en = "To the west entrance of Sun Rock Retreat." } },
@@ -405,6 +423,8 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         { turnin = 6393, npc = 11862, at = { 1442, 47.36, 64.25 },
           note = { ru = "Цунаман.", en = "Tsunaman." } },
+        { turnin = 86576, npc = 11861, at = { 1442, 47.22, 64.04 }, -- WARN-OK: xp-unknown (Forever-new)
+          note = { ru = "Рядом Мор'рогал: 15 сверкающих камней.", en = "Mor'rogal next to him: the 15 sunstones." } },
         { turnin = 6381, npc = 11864, at = { 1442, 47.46, 58.38 },
           note = { ru = "Таммра.", en = "Tammra." } },
         { id = "h-27-sunrock-end", turnin = 6283, npc = 11860, at = { 1442, 47.20, 61.16 },

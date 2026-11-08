@@ -20,7 +20,7 @@
 --   BB 1   : on foot along the road: 575, 605, 189 + 213, 201; flight path; hearth back to Grom'gol.
 --   north  : Nesingwary 5762, 583 > 194 / 185 / 190; camp: young tigers, young panthers, river crocolisks (575);
 --            > 186 / 191; west: tigers + panthers, raptors + crystal spine basilisks (194, 605), Bloodscalp outer
---            village (581, 189, 596; optional level 35 gate); > 195 / 187 / 192; Lake Nazferiti (213), lashtails
+--            village (581, 189, 596); > 195 / 187 / 192; Lake Nazferiti (213), lashtails
 --            (568 + 195), elder tigers (187); > 195 / 187 > 188; Sin'Dall.
 --   GG 2   : 568 > 569, 581 > 582; Mosh'Ogg outpost (569), Shadowmaw panthers / tigresses (192, 570); 569, 570.
 --   west   : Vile Reef (629), Bloodscalp inner village (582, rest of 596; level gate); Nesingwary 188, 192;
@@ -42,11 +42,14 @@
 --   background goal (581 / 189 / 596) is followed by its stateful steps with no transient step in between; the
 --   hearth / fly steps come right after turn-ins that cannot be done before them. Kill objectives shared by two
 --   quests (lashtails 568 / 195, Shadowmaw panthers 192 / 570) are completed in one combined step.
--- XP (validator, Classic quest XP + objective kills, ~46 k + ~51 k): the questing alone ends near 35.5. The
---   optional gate h34-level-35 (outer village, densest 34-35 camp, before the 37-38 quests) and the gate
---   h-34-stranglethorn-level-gate (inner village, 36-37 trolls that also drop the 582 / 596 items) cover the
---   rest (~480 same-level kills in the validator's model, fewer with the mobs killed on the way); the remaining
---   turn-ins after the gate then make 37.0.
+-- XP (validator, Classic quest XP + objective kills, ~46 k + ~51 k): the questing alone ends near 35.6. Every
+--   quest of Stranglethorn that fits 34-37 and needs no elite is already taken (the rest are pages, elite, dungeon or
+--   start/end far away), so the segment does not add quests; the densification is the grind: the optional gate
+--   h34-level-35 (35 + 25%) is gone and h-34-stranglethorn-level-gate (inner village, 36-37 trolls that also drop
+--   the 582 / 596 items) is lowered from 36 + 72% to 35 + 75% (~150 same-level kills instead of ~460), so the segment
+--   ends at 36.06 (within 1 of the planned 37). The deficit moves to the Desolace gates, where it is ground at a
+--   higher level (more XP per kill) and the Desolace quests are turned in at a lower one (less level penalty): the
+--   gate retune of the range 34-46 saves ~30 kills (normal) / ~15 (worst case) for the same end level, 46.01.
 FastesBoooy.AddLibrarySegment({
     id = "h-34-stranglethorn",
     title = { ru = "34-37 Тернистая долина", en = "34-37 Stranglethorn Vale" },
@@ -164,15 +167,6 @@ FastesBoooy.AddLibrarySegment({
                        .. "15 ушей; ожерелья (596) копите. Вглубь, к вождям, не ходите.",
                    en = "The outer Bloodscalp village (scouts, mystics, hunters 34-35): 9 tusks, 15 ears; keep the "
                        .. "necklaces (596). Do not go deep, to the chiefs." } },
-        -- WARN-OK (level-grind, next step): about half of the segment's XP deficit (quests + objective kills end
-        -- near 35.5), in the densest same-level camp, before the 37-38 quests; optional (a later turn-in passes it).
-        { id = "h34-level-35", level = { 35, 0.25 }, optional = true, at = { 1434, 25.03, 11.38 }, -- WARN-OK: grind
-          note = { ru = "Желательно 35 + 25% до возвращения в лагерь: дальше задания 37-38 (огры, тенебрюхие "
-                       .. "пантеры, Син'Далл). Лучшее место - здесь: самая плотная деревня троллей 34-35, и с "
-                       .. "каждого падают ожерелья (596).",
-                   en = "Best reach 35 + 25% before going back to the camp: the quests ahead are 37-38 (ogres, "
-                       .. "Shadowmaw cats, Sin'Dall). This is the place: the densest 34-35 troll village, and every "
-                       .. "troll drops necklaces (596)." } },
         { turnin = 194, accept = 195, npc = 715, at = { 1434, 35.66, 10.81 },
           note = { ru = "Обратно в лагерь.", en = "Back to the camp." } },
         { turnin = 186, accept = 187, npc = 717, at = { 1434, 35.62, 10.62 },
@@ -239,15 +233,15 @@ FastesBoooy.AddLibrarySegment({
                    en = "North into the inner Bloodscalp village: headhunters (20 Shrunken Heads), berserkers and "
                        .. "witch doctors 36-37; finish the 25 necklaces. Leave chiefs Gan'zulah and Nezzliok (40-41) "
                        .. "alone." } },
-        -- WARN-OK (level-grind, next step): the rest of the deficit; 36 + 72% plus the remaining turn-ins = 37.0,
-        -- the plan's level for Desolace / Dustwallow (next segment).
-        { id = "h-34-stranglethorn-level-gate", level = { 36, 0.72 }, at = { 1434, 22.52, 10.62 }, -- WARN-OK: grind
-          note = { ru = "Цель: 36 + 72% (с оставшимися сдачами будет 37 - уровень Пустошей и Пылевых топей). Не "
+        -- WARN-OK (level-grind, next step): the minimum for Desolace (its first quests are 37-39 with mobs 34-40):
+        -- 35 + 75% plus the remaining turn-ins = 36.06; the rest of the deficit is ground later, in Desolace.
+        { id = "h-34-stranglethorn-level-gate", level = { 35, 0.75 }, at = { 1434, 22.52, 10.62 }, -- WARN-OK: level-grind
+          note = { ru = "Цель: 35 + 75% (с оставшимися сдачами будет 36 - хватит для первых заданий Пустошей). Не "
                        .. "хватает - бейте троллей здесь же: плотные лагеря 36-37, быстрый респаун, попутно падают "
-                       .. "головы и ожерелья. Альтернатива - Монастырь Алого ордена (Оружейная) в группе.",
-                   en = "Target: 36 + 72% (the remaining turn-ins then make 37, the level for Desolace and "
-                       .. "Dustwallow). Short: keep killing trolls right here - dense 36-37 camps, quick respawns, "
-                       .. "heads and necklaces drop on the side. Alternative: Scarlet Monastery (Armory) in a group." } },
+                       .. "головы и ожерелья. Альтернатива - Монастырь Алого ордена (Кладбище) в группе.",
+                   en = "Target: 35 + 75% (the remaining turn-ins then make 36, enough for the first Desolace "
+                       .. "quests). Short: keep killing trolls right here - dense 36-37 camps, quick respawns, heads "
+                       .. "and necklaces drop on the side. Alternative: Scarlet Monastery (Graveyard) in a group." } },
         { turnin = 188, npc = 717, at = { 1434, 35.62, 10.62 },
           note = { ru = "На восток в лагерь Эрнестуэя.", en = "East to Nesingwary's camp." } },
         { turnin = 192, npc = 718, at = { 1434, 35.55, 10.55 },

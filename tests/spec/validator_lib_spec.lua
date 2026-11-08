@@ -227,6 +227,23 @@ describe("fbdb", function()
             assert.is_true(c["spawnsThinned.worstYards"] < 300)
         end)
 
+        it("fills the research-input gaps of build_db_snapshot.py SUPPLEMENT_* tables", function()
+            local c = db.meta.counts
+            assert.are.equal(3, c["supplements.questEnders"])
+            assert.are.equal(1, c["supplements.npcFlagsCleared"])
+            assert.are.equal(1, c["supplements.npcSpawns"])
+            assert.are.equal(1, c["supplements.objects"])
+            -- 97539 Silky Sutures: turned in to its giver Doctor Gregory Victor
+            assert.are.same({ 12920 }, db.quests[97539].finish.npcs)
+            -- 11741 Dredge Crusher is a kill target of 8281, no quest giver
+            assert.is_nil(db.npcs[11741].flags)
+            assert.is_false(DB.IsQuestNpc(db, 11741))
+            -- Sulhasa (98093) spawns in the southern Barrens; the Stolen Freewind Supplies containers
+            assert.are.same({ { 47.9, 77.6 } }, db.npcs[14242].spawns[1413])
+            assert.are.equal("Stolen Freewind Supplies", db.objects[670338].name)
+            assert.are.equal(16, #db.objects[670338].spawns[1441])
+        end)
+
         it("indexes quests and NPCs outside the scope", function()
             local b = DB.QuestBrief(db, 1097) -- Elmore's Task (Stormwind)
             assert.is_not_nil(b)

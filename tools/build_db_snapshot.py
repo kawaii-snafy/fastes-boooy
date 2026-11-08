@@ -59,6 +59,10 @@ SPAWN_GRID x SPAWN_GRID map-unit cell (the one nearest the cell centre), so ever
 keeps a representative; such records carry `spawnsGrid = SPAWN_GRID` (every real spawn is
 within SPAWN_GRID * sqrt(2) map units of a kept one).
 
+Supplements: gaps of the research inputs found while writing routes (a missing quest ender, a wrong
+npcFlags bit, a missing spawn or object) are filled from the SUPPLEMENT_* tables before anything
+else, only where the input lacks the data; each entry names its source (meta.counts.supplements.*).
+
 The output is deterministic (sorted keys, no wall-clock timestamp; the snapshot date is
 the fixed --date value). Run:
 
@@ -198,6 +202,34 @@ RACEFILE_TO_KEY = OrderedDict([
     ("Human", "HUMAN"), ("Orc", "ORC"), ("Dwarf", "DWARF"), ("NightElf", "NIGHT_ELF"),
     ("Scourge", "UNDEAD"), ("Tauren", "TAUREN"), ("Gnome", "GNOME"), ("Troll", "TROLL"),
     ("Goblin", "GOBLIN"),
+])
+# Gaps of the research inputs found while writing routes, filled from other sources (explicit, minimal,
+# deterministic: applied to the raw QuestieDB records before anything else, counted in
+# meta.counts.supplements.*). Every entry names its source.
+#   * quest enders missing in QuestieDB (Forever-new quests whose trace has a starter only) where the
+#     objective text names the starter as the recipient (QuestieDB foreverQuestTraces objectivesText,
+#     identical in the Wowhead Forever tooltip https://nether.wowhead.com/forever/tooltip/quest/<id>):
+SUPPLEMENT_QUEST_ENDERS = OrderedDict([
+    (96222, [253066]),  # Khan Hratha: "Bring the Maraudine Key Fragment to Umarak in the Desolace."
+    (97265, [268705]),  # Hate the Hatefury: "... and then return to Aka'rai in S..."
+    (97539, [12920]),   # Silky Sutures: "Return 12 Surgical Spidersilk to Doctor Gregory Victor in Hammerfall"
+])
+#   * npcFlags bits wrongly set: 11741 Dredge Crusher carries QUEST_GIVER (2) but is a hostile beast
+#     (factionID 14, Wowhead Forever tooltip "Level 57 - 58 Beast (Normal)") that starts / ends no quest
+#     -- the flag made the validator treat the 20 kills of 8281 Stepping Up Security as a service NPC:
+SUPPLEMENT_NPC_FLAGS_CLEAR = OrderedDict([(11741, 2)])
+#   * spawns missing in QuestieDB: {npcId: (AreaID, [[x, y], ...], source)}
+SUPPLEMENT_NPC_SPAWNS = OrderedDict([
+    # Sulhasa, Forever-new giver / ender of 98093 Field to Clear (QuestieDB authored row without spawns)
+    (14242, (17, [[47.9, 77.6]], "Wowhead Forever tooltip npc/14242: map zone 17 (The Barrens) 47.9,77.6")),
+])
+#   * objects missing in QuestieDB but referenced by an item (objectDrops): {objectId: (name, AreaID, points, source)}
+SUPPLEMENT_OBJECTS = OrderedDict([
+    # Stolen Freewind Supplies (container), drop source of item 279383 for 98069 Stolen Freewind Supplies
+    (670338, ("Stolen Freewind Supplies", 400, [
+        [25.9, 52.5], [26.1, 54.9], [26.1, 56], [26.4, 52.2], [26.5, 53.2], [26.6, 51.9], [26.7, 56.2], [26.8, 53.5],
+        [27, 47.2], [27, 55.3], [27.1, 48.7], [27.3, 51], [27.6, 48.4], [27.6, 49.4], [27.9, 50.4], [28, 50.5]],
+        "Wowhead Forever tooltip object/670338: map zone 400 (Thousand Needles), 16 spawns")),
 ])
 HORDE_RACE_KEYS = ("ORC", "UNDEAD", "TAUREN", "TROLL", "SKYBORNE_HORDE")
 ALLIANCE_RACE_KEYS = ("HUMAN", "DWARF", "NIGHT_ELF", "GNOME", "SKYBORNE_ALLIANCE")
@@ -529,6 +561,42 @@ class Builder:
         self.transport = OrderedDict()
         self.sizes = {}  # {uiMapID: [widthYards, heightYards]} (set by main before build_entities)
         self.thin_worst = {"maps": 0, "units": 0.0, "yards": 0.0, "yardsMap": None}
+        self.apply_supplements()
+
+    def apply_supplements(self):
+        """Fill the research-input gaps of the SUPPLEMENT_* tables (only where the input lacks the data)."""
+        n = OrderedDict([("questEnders", 0), ("npcFlagsCleared", 0), ("npcSpawns", 0), ("objects", 0)])
+        for qid, npcs in SUPPLEMENT_QUEST_ENDERS.items():
+            q = self.qraw.get(qid)
+            fb = (q or {}).get("finishedBy") or {}
+            if q is not None and not fb.get("npcs") and not fb.get("objects"):
+                q = dict(q)
+                q["finishedBy"] = {"npcs": [{"id": i} for i in npcs], "objects": []}
+                self.qraw[qid] = q
+                n["questEnders"] += 1
+        for nid, bit in SUPPLEMENT_NPC_FLAGS_CLEAR.items():
+            r = self.nraw.get(nid)
+            if r is not None and has_bit(r.get("npcFlags") or 0, bit):
+                r = dict(r)
+                r["npcFlags"] = (r.get("npcFlags") or 0) - bit
+                self.nraw[nid] = r
+                n["npcFlagsCleared"] += 1
+        for nid, (area, pts, _src) in SUPPLEMENT_NPC_SPAWNS.items():
+            r = self.nraw.get(nid)
+            if r is not None and not r.get("spawns"):
+                r = dict(r)
+                r["spawns"] = {str(area): [list(p) for p in pts]}
+                if not r.get("zoneID"):
+                    r["zoneID"] = area
+                self.nraw[nid] = r
+                n["npcSpawns"] += 1
+        for oid, (name, area, pts, _src) in SUPPLEMENT_OBJECTS.items():
+            if oid not in self.oraw:
+                self.oraw[oid] = {"id": oid, "name": name, "zoneID": area,
+                                  "spawns": {str(area): [list(p) for p in pts]}}
+                n["objects"] += 1
+        for k, v in n.items():
+            self.stats["supplements." + k] = v
 
     # -- quest helpers -----------------------------------------------------
 

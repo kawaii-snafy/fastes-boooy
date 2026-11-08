@@ -79,6 +79,27 @@ describe("tools/validate_routes.lua", function()
         os.remove(md)
     end)
 
+    it("prints the grind report; --incidental-pct takes a percent 0..100", function()
+        local code, out = run("lua5.1 tools/validate_routes.lua " .. FX .. "FastesBoooy_FxClean")
+        assert.are.equal(0, code, out)
+        assert.matches("\n  grind kills: %d+ %(worst case %d+%); worst case = 0 optional step%(s%) not done", out)
+        assert.matches("\n  grind kills band: incidental kills 0%% %-> %d+ %(worst case %d+%), 15%% of quest XP %-> %d+", out)
+        assert.matches("\n  grind kills per segment ", out)
+        assert.matches("\n  gate +kills +worst +%+15%% +worst%+15%% +step\n", out)
+        code, out = run("lua5.1 tools/validate_routes.lua --incidental-pct 15 " .. FX .. "FastesBoooy_FxClean")
+        assert.are.equal(0, code, out)
+        assert.matches("with incidental kills 15%% of quest XP %(%+%d+ XP%)", out)
+        -- -q stays the per-route result lines only
+        code, out = run("lua5.1 tools/validate_routes.lua -q " .. FX .. "FastesBoooy_FxClean")
+        assert.are.equal(0, code, out)
+        assert.not_matches("grind kills", out)
+        for _, bad in ipairs({ "abc", "-1", "101" }) do
+            code, out = run("lua5.1 tools/validate_routes.lua --incidental-pct " .. bad .. " " .. FX .. "FastesBoooy_FxClean")
+            assert.are.equal(2, code, out)
+            assert.matches("bad %-%-incidental%-pct", out)
+        end
+    end)
+
     it("produces byte-identical reports on repeated runs", function()
         local a, b = tmpname(), tmpname()
         run(("lua5.1 tools/validate_routes.lua -q --markdown %s %sFastesBoooy_FxClean"):format(a, FX))

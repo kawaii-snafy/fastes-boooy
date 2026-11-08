@@ -5,9 +5,10 @@
 -- into Felwood (Emerald Sanctuary, Bloodvenom Post, Jaedenar / Shadow Hold, Ruins of Constellas, Shatter Scar Vale)
 -- -> Timbermaw Hold (Nafien) -> Winterspring (Salfa, Donova Snowden, Deadwood Cauldron and Toxic Horrors back in
 -- Felwood, Everlook, Winterfall Village, Ice Thistle Hills, Darkwhisper Gorge) -> back through Timbermaw Hold to
--- Bloodvenom Post -> hearth Orgrimmar -> zeppelin -> Undercity (hearth) -> The Bulwark and five Western Plaguelands
--- loops (cauldron chain, Kirsta, Andorhal / Chromie, Mulgris) -> hearth Undercity -> Bulwark -> Eastern Plaguelands
--- (Tirion, Nathanos, Pamela, Light's Hope, north field, Augustus / Egan, Undercroft) -> Light's Hope Chapel at 60.
+-- Bloodvenom Post -> Emerald Sanctuary (Maybess) -> hearth Orgrimmar -> zeppelin -> Undercity (hearth) -> The Bulwark
+-- and five Western Plaguelands loops (cauldron chain, Kirsta, Andorhal / Chromie, Mulgris, an excursion to Pamela in
+-- Darrowshire) -> hearth Undercity -> Bulwark -> Eastern Plaguelands (Tirion, Nathanos, Light's Hope, north field,
+-- Augustus / Egan, Undercroft) -> Light's Hope Chapel at 60.
 -- Plan: research plan60.md section 4.12 / plan60.json segments[12] (all 38 anchors used with the plan's ids).
 -- Coordinates: Forever uiMap 1451 (Silithus) / 1446 (Tanaris) / 1454 (Orgrimmar) / 1440 (Ashenvale) / 1448
 -- (Felwood) / 1452 (Winterspring) / 1411 (Durotar) / 1420 (Tirisfal) / 1458 (Undercity) / 1422 (Western
@@ -21,35 +22,39 @@
 --
 -- Hub plan (Forever DB; every quest is open to Scourge and Skyborne Horde characters of any class):
 --   ORG : 4300 (Jes'rimon), hearth Orgrimmar (used from Bloodvenom Post at the end of Kalimdor).
---   FEL : ES 5155 + 5156; Bloodvenom fp, 4505, 4521, 6162; Shadow Hold key 5202 > 5203 (escort); Jaedenar 5155;
---         Constellas 4505 > 4506 (kitten); Shatter Scar 5156; ES 5155 > 5157, 5156, 5203 > 5204; Jaedenar well
---         5157; Rakaiah + Trey 5204 > 5385; ES 5157, 5385; Ror 6162; Bloodvenom 6162.
---   TIM : Nafien 8461 > 8465 (Deadwood in Felpaw Village); through Timbermaw Hold.
+--   FEL : Grazle 8460; ES 5155 + 5156; Maybess 4102; Bloodvenom fp, 4505, 4521, 6162; Shadow Hold key 5202 > 5203
+--         (escort); Jaedenar 5155; Constellas 4505 > 4506 (kitten); Shatter Scar 5156; ES 5155 > 5157, 5156, 5203 >
+--         5204; Jaedenar well 5157; Rakaiah + Trey 5204 > 5385; ES 5157, 5385; Deadwood Village 8460 + Ror 6162;
+--         Grazle 8460 > 8462; Bloodvenom 6162.
+--   TIM : Nafien 8462, 8461 > 8465 (Deadwood in Felpaw Village); through Timbermaw Hold.
 --   WSW : Salfa 8465 > 8464; Donova 980 + 3908 > 4842 + 5082; west Winterfall camps (5082, firewater flask 5083);
---         Donova 5083 > 5084; Deadwood Cauldron 5084 > 5085; Donova 5085 > 5086; Toxic Horrors (Felwood) 5086;
+--         Donova 5083 > 5084; Deadwood Cauldron 5084 > 5085; Donova 5085 > 5086; Toxic Horrors (Felwood) 5086, Irontree
+--         Warpwoods 4102;
 --         Donova 5086 > 5087; runners 5087; Donova 5087.
 --   WSE : Everlook fp, 4808 > 4809, 3783, (5054), 6029 + 6030; loop A: Raging Owlbeasts, (Ursius), yetis,
 --         chimaeras, Winterfall Village (5082, 8464); Everlook 3783 > 977, 4809, (5054 > 5055); loop B: Ice
 --         Thistle matriarchs (977), (Brumeran), Everlook 977, Darkwhisper Gorge 4842; Donova 4842 + 5082; Salfa 8464;
---         through Timbermaw Hold, Bloodvenom 4521; hearth Orgrimmar.
---   UC  : zeppelin; hearth Undercity; 3542; 3568 > 3569 > 3570; 5961 (Sylvanas).
+--         through Timbermaw Hold, Bloodvenom 4521; Maybess 4102; hearth Orgrimmar.
+--   UC  : zeppelin; hearth Undercity; 81952 (Owen Thadd); 5094 (Balthazad); 3542; 3568 > 3569 > 3570; 5961 (Sylvanas).
 --   WPL : Bulwark 6029 + 5405, 5094 > 5096, flame; L1 Scarlet camp 5096; Bulwark 5096 > 5098 + 5228, 5228 > 5229;
 --         L2 Felstone (5021 > 5023, cauldron 5229 > 5230), Andorhal towers 5098; Bulwark 5230 > 5231, 5098 > 838 > 964;
 --         L3 Dalson's Tears 5231 > 5232, Dalson's farm 5060, Kirsta 6004 > 6023 > 6025 (Northridge Scarlet, Radley,
 --         Durgen, Hearthglen overlook), Chromie 4971 > 4972, Andorhal skeletons 964; Bulwark 5232 > 5233, 964;
---         L4 Mulgris 4984 > 4985, Writhing Haunt 5233 > 5234, Marlene 5142; Bulwark 5234 > 5235; L5 Gahrron's
+--         L4 Mulgris 4984 > 4985, Writhing Haunt 5233 > 5234, Marlene 5142; Darrowshire (EPL) Pamela 5142 > 5149 >
+--         5241 + 5152; Marlene 5152 > 5153 (monument), Chromie 5153 > 5154 (Andorhal tome) > 5210; Bulwark 5234 > 5235; L5 Gahrron's
 --         Withering 5235 > 5236; hearth Undercity 5023 > 5049 > 5050; Bulwark 5236, 5238; Felstone 5050 > 5051.
---   EPL : Tirion 5542 + 5543 + 5544; south-west runts / bats / grubs; Nathanos 5961 > 6022 + 6042 + 6133; Pamela
---         5142 > 5149 > 5241; Corin's Crossing 6022, central hounds / bats; Light's Hope fp, 5241 > 5211, 6030,
---         6021 + 5281; north field 6042 + frenzied hounds, lodge 6133, spirits 5211; Augustus 6164, Egan 5281; Tirion
---         5542-5544 > 5742 > 5781; Nathanos 6022 + 6042 + 6133; Undercroft 5781 + 6021; Tirion 5781; level gate in
---         the north field; Light's Hope 5211 + 6021 (end, level 60).
--- XP (validator from 56.01, Classic quest XP + objective kills, optional steps counted): questing alone reaches 58.25
---   (Felwood 56.3, Winterspring 57.0, Western Plaguelands 57.7); the rest (~351k XP, ~1050 same-level kills) is grind
---   at the densest camps on the way: h57-winterspring-grind (optional, 57 + 86% at the Ice Thistle matriarchs /
---   patriarchs / yetis 55-58, so the 58 training in Orgrimmar / Undercity is available) and the mandatory end gate
---   (59 + 96% in the Eastern Plaguelands north field 56-58; the chapel turn-ins make 60). Incidental kills and rested XP
---   are not modelled, so the real gates are shorter.
+--   EPL : Tirion 5542 + 5543 + 5544; south-west runts / bats / grubs; Nathanos 5961 > 6022 + 6042 + 6133; Corin's
+--         Crossing 6022, central hounds / bats; Light's Hope fp, 5241 + 5210 > 5211 + 5181, 6030, (optional
+--         Stratholme: 5251, 5212, 5243, 5214), 6021 + 5281; north field 6042 + frenzied hounds, lodge 6133, spirits 5211;
+--         Augustus 6164, Egan 5281 (optional 5282 + Stratholme); Tirion 5542-5544 > 5742 > 5781; Nathanos 6022 + 6042 +
+--         6133; Undercroft 5781 + 6021; Tirion 5781; Horgus' Skull + Marduk's Sword (5181); Light's Hope 5211 + 5181
+--         (optional Stratholme turn-ins); level gate at the Diseased Flayers north of the chapel; Alen 6021 (end, 60).
+-- XP (validator from ~55.0, Classic quest XP + objective kills, optional steps counted): Felwood + Winterspring
+--   questing reaches ~56.3; h57-winterspring-grind (now mandatory, level 57 at the Ice Thistle matriarchs / patriarchs
+--   / yetis 55-58, ~590 same-level kills) sets up the Plaguelands (quests 55-60); the rest is the end gate (59 + 98% at
+--   the Diseased Flayers 57-59 right north of Light's Hope Chapel, after the chapel turn-ins; Alen's turn-in makes 60;
+--   ~725 kills, ~860 without the optional steps). Incidental kills and rested XP are not modelled, so the real gates
+--   are shorter.
 -- Deviations from the plan (documented in the handoff):
 --   * 3541 / 3507 were turned in by h-53, so Orgrimmar only takes 4300; the start uses the Gadgetzan hearth.
 --   * 5163 (Umi 3) needs Sprinkle (Gadgetzan) and Quixxil (Un'Goro): skipped. 6603 (breadcrumb to 5082) skipped:
@@ -65,9 +70,25 @@
 --     Undercity, the UC hearth), 6021 (Zaeldarr, next to Mercutio), 5281 (a delivery to Egan; only its follow-up is
 --     Stratholme), 5405 (Argent Dawn Commission, accept + turn in), 8465 turned in at Salfa (plan carried it).
 --   * 5228 needs 5096 turned in first: the Bulwark gets one more visit (Scarlet camp loop first).
---   * Hearth: Orgrimmar (Felwood / Winterspring, used from Bloodvenom), Undercity (Plaguelands), not Everlook.
+--   * Not taken (densify scan): 5901 / 5902 / 6390 termites (mounds in the north-west of the Eastern Plaguelands,
+--     turned in at the Bulwark - no Bulwark visit after it), 4741 Wild Guardians 2 (a second Winterspring trip), 6603 /
+--     6605 / 5601 (breadcrumbs of quests already taken), 8470 / 8471 (Neutral with Timbermaw), Scholomance quests.
+--   * Hearth: Orgrimmar (Felwood / Winterspring, used from Maybess south of Bloodvenom), Undercity (Plaguelands), not
+--     Everlook.
+--   * Densify pass (r3): added 8460 Timbermaw Ally > 8462 Speak to Nafien (Grazle; Deadwood Village next to Ror),
+--     4102 Cleansing Felwood (Maybess; Blood Amber from the Irontree Warpwoods next to the Toxic Horrors), 81952 turn-in
+--     (library book from Azshara, XP unknown), 5094 (moved here from the Undercity of h-50), the Redpath chain 5152 >
+--     5153 > 5154 > 5210 > 5181 (the Pamela visit, same id h-58-pamela-redpath, moved into the Western Plaguelands loop
+--     4 as an excursion to Darrowshire; Marlene, Joseph's monument, Chromie and the Andorhal tome on the way back;
+--     Carlin's villains on the way from Tirion to the chapel), an optional Stratholme block (5251, 5212, 5243, 5214 at
+--     the chapel, 5282 at Egan; the main gate is next to Terrordale). h57-winterspring-grind is mandatory now (57, no
+--     longer 57 + 86%); the end gate moved after the chapel turn-ins (Diseased Flayers north of the chapel) so that
+--     the optional Stratholme turn-ins count before it.
 -- Automation notes: transient steps (fp, sethearth, hearth, fly, go) come before the quest steps of their hub; one
 --   step per NPC; bg goals have a later non-bg finishing step; optional steps are followed by a mandatory anchor.
+--   Class anchors: h-58-org-arrive / h-58-uc-arrive are at ~57.2 since the densify pass; the last Undercity stop
+--   (after h59-hearth-uc) ends at ~57.99 and 58 comes at the Bulwark (h-59-wpl-end, ~58.05): the 58 ranks are best
+--   trained with the 60 set after h-60-end (docs/routes/horde-22-60.md section 10).
 FastesBoooy.AddLibrarySegment({
     id = "h-56-felwood-winterspring-plaguelands",
     title = { ru = "56-60 Оскверненный лес, Зимние Ключи, Чумные земли",
@@ -100,12 +121,22 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         -- Felwood: Emerald Sanctuary, Bloodvenom Post, Jaedenar (level 56)
         ------------------------------------------------------------------
+        { accept = 8460, npc = 11554, at = { 1448, 50.93, 85.01 },
+          note = { ru = "У дороги перед Изумрудным святилищем, Гразл (Древобрюхи): «Союзник Древобрюхов» (фурболги "
+                       .. "деревни Мертвого Леса чуть южнее — позже, вместе с властителем Рором).",
+                   en = "By the road before the Emerald Sanctuary, Grazle (Timbermaw): Timbermaw Ally (the Deadwood "
+                       .. "furbolgs just south - later, together with Overlord Ror)." } },
         { id = "h-56-emerald-sanctuary", accept = 5155, npc = 10922, at = { 1448, 51.21, 82.11 },
           note = { ru = "Изумрудное святилище, Грета Замшелое Копыто: «Силы Джеденара».",
                    en = "Emerald Sanctuary, Greta Mosshoof: Forces of Jaedenar." } },
         { accept = 5156, npc = 10921, at = { 1448, 50.89, 81.62 },
           note = { ru = "Тарун Красное Перо: «Проверка на порчу» (долина Рваных Ран, позже).",
                    en = "Taronn Redfeather: Verifying the Corruption (Shatter Scar Vale, later)." } },
+        { accept = 4102, npc = 9529, at = { 1448, 46.75, 83.13 },
+          note = { ru = "Западнее святилища, Мэйбесс Речной Ветер: «Очищение Оскверненного леса» (15 кровавых янтарей — с "
+                       .. "древесных живодеров и кромсателей на севере, позже).",
+                   en = "West of the sanctuary, Maybess Riverbreeze: Cleansing Felwood (15 Blood Amber - from the Warpwood "
+                       .. "Moss Flayers and Shredders in the north, later)." } },
         { id = "h-56-bloodvenom-arrive", fp = "Bloodvenom Post", npc = 11900, at = { 1448, 34.44, 53.96 },
           note = { ru = "На северо-запад по дороге: Застава Отравленной Крови, Браккар — точка полёта.",
                    en = "North-west along the road: Bloodvenom Post, Brakkar - learn the flight point." } },
@@ -180,20 +211,26 @@ FastesBoooy.AddLibrarySegment({
                    en = "Emerald Sanctuary, Greta: the water. Skip Seeking Spiritual Aid (the Barrens)." } },
         { turnin = 5385, npc = 11019, at = { 1448, 51.35, 82.01 },
           note = { ru = "Джессира: останки Трея.", en = "Jessir: Trey's remains." } },
+        { complete = 8460, at = { 1448, 47.93, 90.80 },
+          note = { ru = "На юг, деревня Мертвого Леса у дороги: по 6 воинов, следопытов и садовников Мертвого Леса (48-50).",
+                   en = "South, Deadwood Village by the road: 6 Deadwood Warriors, Pathfinders and Gardeners (48-50)." } },
         { complete = 6162, at = { 1448, 48.23, 94.28 },
           note = { ru = "На юг, деревня Мертвого Леса у дороги: властитель Рор (51) — коготь.",
                    en = "South, Deadwood Village by the road: Overlord Ror (51) - his claw." } },
+        { turnin = 8460, accept = 8462, npc = 11554, at = { 1448, 50.93, 85.01 },
+          note = { ru = "Назад к Гразлу: фурболги; возьмите «Поговорите с Нафиэном» (у крепости Древобрюхов, позже).",
+                   en = "Back to Grazle: the furbolgs; take Speak to Nafien (at Timbermaw Hold, later)." } },
         { id = "h-57-bloodvenom-end", turnin = 6162, npc = 9620, at = { 1448, 34.80, 52.73 },
           note = { ru = "Назад на Заставу Отравленной Крови: Дрека'Сур.", en = "Back to Bloodvenom Post: Dreka'Sur." } },
 
         ------------------------------------------------------------------
         -- Timbermaw Hold -> Winterspring west: Salfa, Donova (level 57)
         ------------------------------------------------------------------
-        { id = "h-56-timbermaw-hold", accept = 8461, npc = 15395, at = { 1448, 64.77, 8.13 },
-          note = { ru = "На север по дороге до конца леса: Нафиэн у входа в крепость Древобрюхов — «Северные фурболги "
-                       .. "Мертвого Леса».",
-                   en = "North along the road to the end of the forest: Nafien at the Timbermaw Hold entrance - "
-                       .. "Deadwood of the North." } },
+        { id = "h-56-timbermaw-hold", turnin = 8462, accept = 8461, npc = 15395, at = { 1448, 64.77, 8.13 },
+          note = { ru = "На север по дороге до конца леса: Нафиэн у входа в крепость Древобрюхов — сдайте «Поговорите с "
+                       .. "Нафиэном», возьмите «Северные фурболги Мертвого Леса».",
+                   en = "North along the road to the end of the forest: Nafien at the Timbermaw Hold entrance - turn in "
+                       .. "Speak to Nafien, take Deadwood of the North." } },
         { complete = 8461, at = { 1448, 62.11, 8.88 },
           note = { ru = "Деревня фурболгов рядом (западнее и южнее): по 6 дозорных, мстителей и шаманов Мертвого Леса "
                        .. "(53-55). Котел в деревне (60.2,5.8) — позже.",
@@ -242,6 +279,11 @@ FastesBoooy.AddLibrarySegment({
                        .. "3 капли.",
                    en = "Through the hold into Felwood again, south-west (49.7,25.0): Toxic Horrors (53-54) - 3 "
                        .. "droplets." } },
+        { complete = 4102, at = { 1448, 57.30, 19.30 },
+          note = { ru = "Восточнее, лес Железного Дерева (57,19): древесные живодеры и кромсатели (52-54) — 15 кровавых "
+                       .. "янтарей; дальше на северо-восток по дороге к крепости.",
+                   en = "East of them, Irontree Woods (57,19): Warpwood Moss Flayers and Shredders (52-54) - 15 Blood "
+                       .. "Amber; then north-east along the road to the hold." } },
         { turnin = 5086, accept = 5087, npc = 9298, at = { 1452, 31.27, 45.16 },
           note = { ru = "Назад к Донове: капли; возьмите «Гонцы Зимней Спячки».",
                    en = "Back to Donova: the droplets; take Winterfall Runners." } },
@@ -304,12 +346,11 @@ FastesBoooy.AddLibrarySegment({
         { complete = 977, at = { 1452, 69.20, 40.74 },
           note = { ru = "На восток, Холмы ледополоха: матриархи и патриархи ледополохов (56-58) — 2 рога.",
                    en = "East, Ice Thistle Hills: Ice Thistle Matriarchs and Patriarchs (56-58) - 2 horns." } },
-        { id = "h57-winterspring-grind", level = { 57, 0.86 }, optional = true, at = { 1452, 69.20, 40.74 }, -- WARN-OK: level-grind
-          note = { ru = "Рекомендуется: здесь же (матриархи, патриархи и йети 55-58 — самое плотное поле зоны) до 57-го "
-                       .. "+ 86%: сдачи до Оргриммара дают 58-й — тренировка 58 в Оргриммаре / Подгороде.",
-                   en = "Recommended: grind right here (matriarchs, patriarchs and yetis 55-58 - the densest field of the "
-                       .. "zone) to 57 + 86%: the turn-ins up to Orgrimmar make 58 - the 58 training in Orgrimmar / "
-                       .. "Undercity." } },
+        { id = "h57-winterspring-grind", level = 57, at = { 1452, 69.20, 40.74 }, -- WARN-OK: level-grind
+          note = { ru = "Здесь же (матриархи, патриархи и йети 55-58 — самое плотное поле зоны) до 57-го: задания Чумных "
+                       .. "земель — 55-60 (Дольный Очаг, пустошь Гаррона, Сторожка Кель'Литиен).",
+                   en = "Right here (matriarchs, patriarchs and yetis 55-58 - the densest field of the zone) up to 57: the "
+                       .. "Plaguelands quests are 55-60 (Hearthglen, Gahrron's Withering, Quel'Lithien Lodge)." } },
         { complete = 5055, optional = true, at = { 1452, 62.54, 57.90 },
           note = { ru = "Необязательно: Брумеран (элита 58) среди химер на юге.",
                    en = "Optional: Brumeran (elite 58) among the chimaeras in the south." } },
@@ -336,6 +377,10 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         -- Orgrimmar -> Undercity (level 58)
         ------------------------------------------------------------------
+        { turnin = 4102, npc = 9529, at = { 1448, 46.75, 83.13 },
+          note = { ru = "По дороге на юг к Изумрудному святилищу, Мэйбесс: янтарь. Продолжения («Мазь ...») не берите.",
+                   en = "South along the road to the Emerald Sanctuary, Maybess: the amber. Skip the follow-ups (Salve via "
+                       .. "...)." } },
         { id = "h-58-org-arrive", hearth = "Orgrimmar", at = { 1454, 54.10, 68.41 },
           note = { ru = "Камень возвращения в Оргриммар.", en = "Hearth to Orgrimmar." } },
         { id = "h58-zeppelin-uc", go = true, radius = 15, npc = 9564, at = { 1411, 50.82, 13.54 },
@@ -349,6 +394,12 @@ FastesBoooy.AddLibrarySegment({
                        .. "земель).",
                    en = "Innkeeper Norman: bind the hearthstone (you hearth back from the Western "
                        .. "Plaguelands)." } },
+        { turnin = 81952, npc = 211022, at = { 1458, 73.40, 33.00 }, -- WARN-OK: xp-unknown (Forever-new library quest; /fb xp records it)
+          note = { ru = "Квартал Магов, Оуэн Тэдд: книга «Этикет на каждый день» из Азшары.",
+                   en = "Magic Quarter, Owen Thadd: the book Everyday Etiquette from Azshara." } },
+        { accept = 5094, npc = 10879, at = { 1458, 63.90, 44.08 },
+          note = { ru = "Предвестник Балтазад: «Призыв к оружию: Чумные земли!» (сдача в Бастионе).",
+                   en = "Harbinger Balthazad: A Call to Arms: The Plaguelands! (turned in at the Bulwark)." } },
         { turnin = 3542, npc = 6522, at = { 1458, 54.81, 76.33 },
           note = { ru = "Андрон Гант (54.8,76.3): доставка. Его плату для Джедиги не берите.",
                    en = "Andron Gant (54.8,76.3): the delivery. Skip his payment for Jediga." } },
@@ -513,6 +564,34 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-57-marlene-redpath", accept = 5142, npc = 10927, at = { 1422, 49.17, 78.57 },
           note = { ru = "На юг (49.2,78.6): Марлен Редпат у дома — «Малышка Памела».",
                    en = "South (49.2,78.6): Marlene Redpath at her house - Little Pamela." } },
+        -- Darrowshire excursion (the Pamela visit moved here from the Eastern Plaguelands part): the Redpath chain needs
+        -- Marlene (Western Plaguelands) between two Pamela steps; Chromie and the Musty Tome are in Andorhal on the way
+        -- back to the Bulwark.
+        { id = "h-58-pamela-redpath", turnin = 5142, accept = 5149, npc = 10926, at = { 1423, 31.15, 77.98 },
+          note = { ru = "На восток через реку в Восточные Чумные земли, Дарроушир: Памела Редпат — «Кукла Памелы».",
+                   en = "East across the river into the Eastern Plaguelands, Darrowshire: Pamela Redpath - Pamela's "
+                       .. "Doll." } },
+        { complete = 5149, use = 12886, at = { 1423, 33.39, 78.77 },
+          note = { ru = "Голова и две половинки куклы лежат в домах Дарроушира (32.6-34.1, 77-80); соедините их.",
+                   en = "The head and the two halves lie in the Darrowshire houses (32.6-34.1, 77-80); combine them." } },
+        { turnin = 5149, accept = { 5241, 5152 }, npc = 10926, at = { 1423, 31.15, 77.98 },
+          note = { ru = "Памела: кукла; возьмите «Дядюшка Карлин» (Часовня Последней Надежды, позже) и «Тетушка Марлен».",
+                   en = "Pamela: the doll; take Uncle Carlin (Light's Hope Chapel, later) and Auntie Marlene." } },
+        { turnin = 5152, accept = 5153, npc = 10927, at = { 1422, 49.17, 78.57 },
+          note = { ru = "Назад на запад к Марлен Редпат: возьмите «Странный историк».",
+                   en = "Back west to Marlene Redpath: take A Strange Historian." } },
+        { complete = 5153, object = 176145, at = { 1422, 49.70, 76.80 },
+          note = { ru = "Памятник Джозефу Редпату рядом с домом (49.7,76.8): обручальное кольцо Джозефа.",
+                   en = "Joseph Redpath's Monument next to the house (49.7,76.8): Joseph's Wedding Ring." } },
+        { turnin = 5153, accept = 5154, npc = 10667, at = { 1422, 39.46, 66.76 },
+          note = { ru = "На северо-запад в Андорал, таверна: Хроми — «Летопись Дарроушира».",
+                   en = "North-west to Andorhal, the inn: Chromie - The Annals of Darrowshire." } },
+        { complete = 5154, object = 176150, at = { 1422, 43.45, 69.45 },
+          note = { ru = "Ратуша Андорала (43.4,69.5): среди заплесневелых фолиантов найдите летопись.",
+                   en = "Andorhal town hall (43.4,69.5): find the Annals among the Musty Tomes." } },
+        { turnin = 5154, accept = 5210, npc = 10667, at = { 1422, 39.46, 66.76 },
+          note = { ru = "Хроми: возьмите «Брат Карлин» (Часовня Последней Надежды, позже).",
+                   en = "Chromie: take Brother Carlin (Light's Hope Chapel, later)." } },
         { turnin = 5234, accept = 5235, npc = 11055, at = { 1420, 83.04, 71.91 },
           note = { ru = "Назад в Бастион, Вандис: «Цель: пустошь Гаррона».",
                    en = "Back to the Bulwark, Vandis: Target: Gahrron's Withering." } },
@@ -572,15 +651,6 @@ FastesBoooy.AddLibrarySegment({
                    en = "South along the west edge, Marris Stead: Nathanos Blightcaller - The Champion of the Banshee "
                        .. "Queen; take To Kill With Purpose (the mortar), Un-Life's Little Annoyances and The Ranger "
                        .. "Lord's Behest." } },
-        { id = "h-58-pamela-redpath", turnin = 5142, accept = 5149, npc = 10926, at = { 1423, 31.15, 77.98 },
-          note = { ru = "На юго-восток, Дарроушир: Памела Редпат — «Кукла Памелы».",
-                   en = "South-east, Darrowshire: Pamela Redpath - Pamela's Doll." } },
-        { complete = 5149, use = 12886, at = { 1423, 33.39, 78.77 },
-          note = { ru = "Голова и две половинки куклы лежат в домах Дарроушира (32.6-34.1, 77-80); соедините их.",
-                   en = "The head and the two halves lie in the Darrowshire houses (32.6-34.1, 77-80); combine them." } },
-        { turnin = 5149, accept = 5241, npc = 10926, at = { 1423, 31.15, 77.98 },
-          note = { ru = "Памела: кукла; возьмите «Дядюшка Карлин». «Тетушку Марлен» не берите.",
-                   en = "Pamela: the doll; take Uncle Carlin. Skip Auntie Marlene." } },
         { id = "h-58-eastern-plaguelands-field", complete = 5543, at = { 1423, 21.56, 63.75 },
           note = { ru = "Юго-запад: добейте чумных нетопырей.", en = "South-west: finish the Plaguebats." } },
         { complete = 5544, at = { 1423, 24.53, 61.54 },
@@ -606,11 +676,27 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-59-lightshope-arrive", fp = "Light's Hope Chapel", npc = 12636, at = { 1423, 70.53, 47.55 },
           note = { ru = "На восток к Часовне Последней Надежды: Георгия — точка полёта.",
                    en = "East to Light's Hope Chapel: Georgia - learn the flight point." } },
-        { turnin = 5241, accept = 5211, npc = 11063, at = { 1423, 71.70, 50.04 },
-          note = { ru = "Карлин Редпат: возьмите «Защитники Дарроушира».",
-                   en = "Carlin Redpath: take Defenders of Darrowshire." } },
+        { turnin = { 5241, 5210 }, accept = { 5211, 5181 }, npc = 11063, at = { 1423, 71.70, 50.04 },
+          note = { ru = "Карлин Редпат: «Дядюшка Карлин» и «Брат Карлин»; возьмите «Защитники Дарроушира» и «Злодеи "
+                       .. "Дарроушира».",
+                   en = "Carlin Redpath: Uncle Carlin and Brother Carlin; take Defenders of Darrowshire and Villains of "
+                       .. "Darrowshire." } },
         { turnin = 6030, npc = 11039, at = { 1423, 71.63, 50.09 },
           note = { ru = "Герцог Николас Зверенхофф: донесение.", en = "Duke Nicholas Zverenhoff: the report." } },
+        -- Optional group content: Stratholme (58-60, main gate in the north-west next to Terrordale); turned in at the
+        -- chapel before the last level gate.
+        { accept = 5251, npc = 11039, optional = true, at = { 1423, 71.63, 50.09 },
+          note = { ru = "По желанию, если собрали группу в Стратхольм: герцог — «Архивариус».",
+                   en = "Optional, if you have a group for Stratholme: the Duke - The Archivist." } },
+        { accept = 5212, npc = 11035, optional = true, at = { 1423, 71.66, 49.94 },
+          note = { ru = "По желанию (Стратхольм): Бетина Бигглцинк — «Плоть не лжет».",
+                   en = "Optional (Stratholme): Betina Bigglezink - The Flesh Does Not Lie." } },
+        { accept = 5243, npc = 11036, optional = true, at = { 1423, 71.89, 48.29 },
+          note = { ru = "По желанию (Стратхольм): Леонид Бартоломей Почтенный — «Дома Света».",
+                   en = "Optional (Stratholme): Leonid Barthalomew the Revered - Houses of the Holy." } },
+        { accept = 5214, npc = 11033, optional = true, at = { 1423, 70.88, 48.43 },
+          note = { ru = "По желанию (Стратхольм): Смоки ЛаРю — «Великий Эзра Грим».",
+                   en = "Optional (Stratholme): Smokey LaRue - The Great Ezra Grimm." } },
         { accept = { 6021, 5281 }, npc = 11038, at = { 1423, 69.93, 53.72 },
           note = { ru = "Управляющий Ален: «Зельдарр Изгой» (Крипта на юге) и «Мятущиеся души» (только поговорить с "
                        .. "Эганом на северо-западе; продолжение — Стратхольм).",
@@ -651,6 +737,18 @@ FastesBoooy.AddLibrarySegment({
         { turnin = 5281, npc = 11140, at = { 1423, 11.36, 26.60 },
           note = { ru = "Эган рядом: «Мятущиеся души». Продолжение (Стратхольм) — только в группе.",
                    en = "Egan next to him: The Restless Souls. The follow-up (Stratholme) - group only." } },
+        { accept = 5282, npc = 11140, optional = true, at = { 1423, 11.36, 26.60 },
+          note = { ru = "По желанию, если собрали группу: Эган — «Мятущиеся души» (вторая часть, бластер Эгана).",
+                   en = "Optional, if you have a group: Egan - The Restless Souls (part 2, Egan's Blaster)." } },
+        { complete = { 5251, 5212, 5243, 5214, 5282 }, optional = true, at = { 1423, 26.52, 10.36 },
+          note = { ru = "По желанию: Стратхольм (главные ворота к северо-востоку, 26.5,10.4) — архивариус Гальфорд и "
+                       .. "архив, 10 образцов чумной плоти, 5 ящиков со святой водой, табак Эзры Грима, 15 мятущихся "
+                       .. "душ.",
+                   en = "Optional: Stratholme (main gate to the north-east, 26.5,10.4) - Archivist Galford and the "
+                       .. "archive, 10 Plagued Flesh Samples, 5 supply crates of holy water, Ezra Grimm's tobacco, 15 "
+                       .. "restless souls." } },
+        { turnin = 5282, npc = 11140, optional = true, at = { 1423, 11.36, 26.60 },
+          note = { ru = "По желанию: Эган — души.", en = "Optional: Egan - the souls." } },
         { turnin = { 5542, 5543, 5544 }, accept = 5742, npc = 1855, at = { 1423, 5.16, 35.57 },
           note = { ru = "На юг к хижине Тириона: три задания; возьмите «Спасение».",
                    en = "South to Tirion's hut: the three quests; take Redemption." } },
@@ -671,16 +769,28 @@ FastesBoooy.AddLibrarySegment({
         { turnin = 5781, npc = 1855, at = { 1423, 5.16, 35.57 },
           note = { ru = "Назад к Тириону: молот. «Символ утраченной чести» (северо-восток и обратно) не берите.",
                    en = "Back to Tirion: the hammer. Skip Of Lost Honor (north-east and back)." } },
-        { id = "h-56-felwood-winterspring-plaguelands-level-gate", level = { 59, 0.96 }, -- WARN-OK: level-grind
-          at = { 1423, 51.41, 28.09 },
-          note = { ru = "По пути на восток: поле бесноватых чумных псов, чудовищных нетопырей и пожирателей (56-58) — "
-                       .. "самое плотное. До 59-го + 96%: сдача в часовне даёт 60-й. В группе — Некроситет или "
-                       .. "Стратхольм.",
-                   en = "On the way east: the Frenzied Plaguehound / Monstrous Plaguebat / Devourer field (56-58), the "
-                       .. "densest. Up to 59 + 96%: the chapel turn-ins make 60. In a group: Scholomance or "
-                       .. "Stratholme." } },
-        { turnin = 5211, npc = 11063, at = { 1423, 71.70, 50.04 },
-          note = { ru = "Часовня Последней Надежды, Карлин: духи.", en = "Light's Hope Chapel, Carlin: the spirits." } },
+        { complete = { [5181] = { 1 } }, object = 176208, at = { 1423, 44.34, 41.18 },
+          note = { ru = "На восток через центр: череп Хоргуса лежит у дороги (44.3,41.2).",
+                   en = "East through the centre: Horgus' Skull lies by the road (44.3,41.2)." } },
+        { complete = 5181, object = 176209, at = { 1423, 46.86, 55.43 },
+          note = { ru = "Южнее (46.9,55.4): сломанный меч Мардука.", en = "South of it (46.9,55.4): the Shattered Sword of Marduk." } },
+        { turnin = { 5211, 5181 }, npc = 11063, at = { 1423, 71.70, 50.04 },
+          note = { ru = "Часовня Последней Надежды, Карлин: духи и злодеи Дарроушира.",
+                   en = "Light's Hope Chapel, Carlin: the spirits and the villains of Darrowshire." } },
+        { turnin = 5251, npc = 11039, optional = true, at = { 1423, 71.63, 50.09 },
+          note = { ru = "По желанию (после Стратхольма): герцог — архив.", en = "Optional (after Stratholme): the Duke - the archive." } },
+        { turnin = 5212, npc = 11035, optional = true, at = { 1423, 71.66, 49.94 },
+          note = { ru = "По желанию: Бетина — образцы плоти.", en = "Optional: Betina - the flesh samples." } },
+        { turnin = 5243, npc = 11036, optional = true, at = { 1423, 71.89, 48.29 },
+          note = { ru = "По желанию: Леонид — святая вода.", en = "Optional: Leonid - the holy water." } },
+        { turnin = 5214, npc = 11033, optional = true, at = { 1423, 70.88, 48.43 },
+          note = { ru = "По желанию: Смоки — табак.", en = "Optional: Smokey - the tobacco." } },
+        { id = "h-56-felwood-winterspring-plaguelands-level-gate", level = { 59, 0.98 }, -- WARN-OK: level-grind
+          at = { 1423, 70.85, 37.95 },
+          note = { ru = "Сразу к северу от часовни: зараженные свежеватели (57-59, плотно, лучший лагерь рядом с "
+                       .. "часовней). До 59-го + 98%: сдача Алену даёт 60-й. В группе — Стратхольм (выше).",
+                   en = "Just north of the chapel: Diseased Flayers (57-59, dense - the best camp next to the chapel). Up "
+                       .. "to 59 + 98%: the turn-in to Alen makes 60. In a group: Stratholme (above)." } },
         { id = "h-60-end", turnin = 6021, npc = 11038, at = { 1423, 69.93, 53.72 },
           note = { ru = "Ален: голова Зельдарра. 60-й уровень!", en = "Alen: Zaeldarr's head. Level 60!" } },
     },

@@ -86,7 +86,9 @@ FastesBoooy.AddSegment("horde-skyborne-druid", {
               ru = "Tal на башне ветрокрылов: откройте карту полётов (точка изучится).",
               en = "Tal on the wind rider tower: open the flight map (learns the point).",
           } },
-        { id = "sd03-fly-org", fly = "Orgrimmar", npc = 3310, at = { 1454, 45.12, 63.89 },
+        -- The RestedXP Skyborne guide flies Thunder Bluff -> Orgrimmar right here (Skyborne start flight points are
+        -- not in the DB; the shared h-22 segment teaches Orgrimmar in any case).
+        { id = "sd03-fly-org", fly = "Orgrimmar", npc = 3310, at = { 1454, 45.12, 63.89 }, -- WARN-OK: fly-unknown-fp
           note = {
               ru = "Летите в Оргриммар. Его нет на карте полётов - бегите через Перекрёсток (долго).",
               en = "Fly to Orgrimmar. Not on the flight map - run there via the Crossroads (long).",

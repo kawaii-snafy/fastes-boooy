@@ -1,7 +1,8 @@
 -- FastesBoooy_Horde / Segments/04_h-31-hillsbrad-arathi.lua
 --
 -- Library segment "h-31-hillsbrad-arathi": levels 31-34, class-neutral (Undead Paladin and Skyborne Druid, Horde).
--- Thunder Bluff -> fly Orgrimmar -> zeppelin -> Undercity (1164) -> fly Tarren Mill (hearth bound there) -> two
+-- Thunder Bluff -> fly Camp Taurajo (1153) -> fly Orgrimmar -> zeppelin -> Undercity (1164) -> fly Tarren Mill (hearth
+-- bound there) -> two
 -- Hillsbrad / Alterac loops (Syndicate camp, Growless Cave, Dalaran camp, Hillsbrad town hall; Alterac yeti cave,
 -- Dalaran dome, Azurelode Mine, Growless Cave, Helcular's Grave, Mudsnout gnolls) -> optional Strahnbrad (Gol'dir) ->
 -- through Thoradin's Wall into Arathi (Boulderfist Hall, Dabyrie's Farmstead, Shards of Myzrael) -> Hammerfall
@@ -19,8 +20,10 @@
 -- ruRU names in the notes: Wowhead Forever ruRU tooltips (nether.wowhead.com/forever/ru/tooltip/...).
 --
 -- Hub plan (Forever DB; every quest is open to Scourge and Skyborne Horde characters of any class):
---   TB/UC: fly Orgrimmar, zeppelin to Tirisfal, 1164 (Genavie Callow, next to the Undercity flight master), fly
---          Tarren Mill.
+--   TB/UC: fly Camp Taurajo: 1153 (Tatternack, from h-27; Taurajo is a short hop off the Thunder Bluff -> Orgrimmar
+--          flight); fly Orgrimmar, zeppelin to Tirisfal, optional 1013 (Bel'dugur: The Book of Ur from the optional
+--          Shadowfang Keep run of h-22, quest level 26 = full XP at 31), 1164 (Genavie Callow, next to the Undercity
+--          flight master), fly Tarren Mill.
 --   TM1  : hearth (Innkeeper Shay); 552 (Thaivand), 533 (Krusk), 544 (Voidglare), 556 (Bel'varil), 676 (Tallow),
 --          509 (Lydon). 532 and 567 come in from h-22.
 --   L1   : south Alterac Syndicate camp (533 missive) -> Growless Cave yetis (552 rod) -> Dalaran internment camp
@@ -33,13 +36,13 @@
 --   TM3  : 557 (Bel'varil), 545 (Voidglare), 509 > 513 (Lydon); optional Strahnbrad out-and-back (Jailor Borhuin
 --          37 key, free Gol'dir: 503 > 506; 506 at Krusk); 539 + 567 (Darthalia) = h-33-tarrenmill-end.
 --   AR   : Thoradin's Wall gate -> Boulderfist Hall (676) -> Dabyrie's Farmstead (1164) -> Shards of Myzrael (642).
---   HF1  : fp, hearth; 655 (Gor'mul); 676 > 677 (Drum Fel); 655 > 671 + 672 (Tor'gan); optional 97539 (Victor).
+--   HF1  : fp, hearth; 655 (Gor'mul); 676 > 677 (Drum Fel); 655 > 671 + 672 (Tor'gan); 97539 (Victor, Forever-new).
 --   A    : Witherbark Village (677, level gate), Drywhisker kobolds (642 motes) -> Iridescent Shards (642); raptor
---          eyes (672) and optional spidersilk (97539) all the time.
+--          eyes (672) and spidersilk (97539) all the time.
 --   HF2  : 672 > 674 (Tor'gan) > 675 (Gor'mul); 677 > 678 (Drum Fel); 675 > 701 (Tor'gan).
 --   B    : Highland Fleshstalkers (701) + Boulderfist Brutes / Magi (678) -> Boulderfist Hall -> Northfold Manor
 --          (671) -> hearth.
---   HF3  : 678 (Drum Fel); 701 + 671 > 702 (Tor'gan) > 847 (Gor'mul); optional 97539 (Victor); 847 (Tor'gan) =
+--   HF3  : 678 (Drum Fel); 701 + 671 > 702 (Tor'gan) > 847 (Gor'mul); 97539 (Victor); 847 (Tor'gan) =
 --          h-34-hammerfall-end.
 -- Deviations from the plan:
 --   * 639 Sigil of Strom is not taken: the Sigil drops only from the Stromgarde Syndicate (Prowler 36-37, Conjuror
@@ -58,9 +61,9 @@
 --   * 567 Dangerous!: Horrace (town hall, loop 1) and Hackett (Azurelode Mine, loop 2). Objectives 2 + 4 (Wilkes,
 --     Kalaba) were killed in h-22, but the state format cannot record partial objectives, so the town-hall step also
 --     lists them (leftovers are in the fields next to it; ~250 kill XP counted twice).
---   * Added optional Forever-new 97539 Silky Sutures (Doctor Gregory Victor, Hammerfall; Surgical Spidersilk from the
---     Plains Creepers that are everywhere on the Arathi loops; XP unknown; the DB has no ender, the Wowhead Forever
---     tooltip says "Return ... to Doctor Gregory Victor in Hammerfall").
+--   * Added Forever-new 97539 Silky Sutures (Doctor Gregory Victor, Hammerfall; Surgical Spidersilk from the Plains
+--     Creepers that are everywhere on the Arathi loops; XP unknown; ender Victor: DB supplement from the Wowhead
+--     Forever tooltip "Return ... to Doctor Gregory Victor in Hammerfall"). On the path, so not optional.
 --   * Hearthstone: bound in Tarren Mill on arrival and not used in Hillsbrad (the druid's level-32 insert after
 --     h-33-tarrenmill-end uses it to come back from Moonglade), bound in Hammerfall on arrival there and used from
 --     Northfold Manor at the end of loop B.
@@ -72,10 +75,10 @@
 --   95663 (Excavation Site dungeon), 673 / 679 / 680 (40, h-41), 1051 (SM Graveyard + elite Nancy Vishas), 92519 /
 --   92707 / 92867 (no giver in the data), 79976 / 79949 (SoD-era ids).
 -- Carried out: 513 (Faranell, Undercity), 1164 (Genavie Callow, Undercity) -> h-34; 5762 (Hemet, Stranglethorn).
--- XP (validator, Classic quest XP + objective kills, optional steps counted): quests ~59 k + objective kills ~44 k
---   from 31.01 end at ~32.9 (plan: 32.91). The gate h-31-hillsbrad-arathi-level-gate (33 + 43%: ~307 same-level
---   kills in the validator's model, fewer with the mobs killed on the way) covers the rest; the turn-ins and
---   objective kills after it make 34.0 even without the optional 97539.
+-- XP (validator, Classic quest XP + objective kills, optional steps counted): quests ~67 k (1153 and the optional
+--   1013 included) + objective kills ~44 k from 31.01. The gate h-31-hillsbrad-arathi-level-gate (33 + 43%: ~269
+--   same-level kills in the validator's model, ~323 without the optional steps, fewer with the mobs killed on the
+--   way) covers the rest; the turn-ins and objective kills after it make 34.05 in both cases.
 -- Automation notes: accepts at one NPC sit in one step; transient steps (fp, sethearth, fly, go, hearth) come before
 --   the quest steps of the same place. The class insert anchors h-31-uc-arrive (next: fly), h-31-tarrenmill-arrive
 --   (sethearth; next: Thaivand) and h-33-tarrenmill-end (Darthalia, last Tarren Mill step; next: the go step east)
@@ -94,8 +97,16 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-31-tb-fly", go = true, radius = 10, npc = 2995, at = { 1456, 47.00, 49.83 },
           note = { ru = "С Вершины Старейшин по мостам на центральную вершину: распорядитель ветрокрылов Тал.",
                    en = "From Elder Rise over the bridges to the central mesa: wind rider master Tal." } },
+        { fly = "Camp Taurajo", npc = 10378, at = { 1413, 44.45, 59.15 },
+          note = { ru = "Сначала летите в Лагерь Таурахо (почти по пути в Оргриммар).",
+                   en = "First fly to Camp Taurajo (almost on the way to Orgrimmar)." } },
+        { turnin = 1153, npc = 3433, at = { 1413, 45.10, 57.68 },
+          note = { ru = "Таттернак Стальной Горн рядом с распорядителем полётов: образец руды. Руда не выпала — бросьте 1153 "
+                       .. "и летите сразу в Оргриммар.",
+                   en = "Tatternack Steelforge next to the flight master: the ore sample. No ore dropped: abandon 1153 and "
+                       .. "fly straight to Orgrimmar." } },
         { id = "h-31-org", fly = "Orgrimmar", npc = 3310, at = { 1454, 45.12, 63.89 },
-          note = { ru = "Летите в Оргриммар.", en = "Fly to Orgrimmar." } },
+          note = { ru = "Омуса: летите в Оргриммар.", en = "Omusa: fly to Orgrimmar." } },
         { go = true, radius = 15, npc = 9564, at = { 1411, 50.82, 13.54 },
           note = { ru = "Через главные ворота на восток к башне дирижаблей: площадка Фреззы, дирижабль в Тирисфальские "
                        .. "леса (Подгород).",
@@ -104,6 +115,9 @@ FastesBoooy.AddLibrarySegment({
         { go = true, radius = 40, npc = 9566, at = { 1420, 60.74, 58.87 },
           note = { ru = "Прибытие к башне в Тирисфальских лесах (Запетта).",
                    en = "Arrival at the Tirisfal Glades tower (Zapetta)." } },
+        { turnin = 1013, npc = 2934, at = { 1458, 53.74, 54.46 }, optional = true,
+          note = { ru = "Если брали «Книгу Ура» в Крепости Темного Клыка: в Подгород, хранитель Бел'дугур (5600 опыта).",
+                   en = "If you got The Book of Ur in Shadowfang Keep: into the Undercity, Keeper Bel'dugur (5600 XP)." } },
         { id = "h-31-uc-arrive", accept = 1164, npc = 4486, at = { 1458, 63.83, 49.45 },
           note = { ru = "В Руины Лордерона, на лифте вниз: Генави Кэллоу рядом с распорядителем полётов — «Ограбить "
                        .. "воров» (братья Дабири, Нагорье Арати).",
@@ -280,11 +294,11 @@ FastesBoooy.AddLibrarySegment({
         { turnin = 655, accept = { 671, 672 }, npc = 2706, at = { 1417, 74.72, 36.29 },
           note = { ru = "Тор'ган: «Зловещая магия» (Синдикат на северо-западе) и «Вызов духов» (10 глаз ящеров).",
                    en = "Tor'gan: Foul Magics (the Syndicate in the north-west) and Raising Spirits (10 raptor eyes)." } },
-        { accept = 97539, npc = 12920, at = { 1417, 73.41, 36.89 }, optional = true,
-          note = { ru = "По желанию (новое в Forever, опыт неизвестен): доктор Грегори Виктор — 12 паучьих шелков с "
+        { accept = 97539, npc = 12920, at = { 1417, 73.41, 36.89 },
+          note = { ru = "Новое в Forever (опыт неизвестен): доктор Грегори Виктор — 12 хирургических паучьих шелков с "
                        .. "равнинных ползунов, они повсюду.",
-                   en = "Optional (new in Forever, XP unknown): Doctor Gregory Victor - 12 Surgical Spidersilk from "
-                       .. "the Plains Creepers, they are everywhere." } },
+                   en = "New in Forever (XP unknown): Doctor Gregory Victor - 12 Surgical Spidersilk from the Plains "
+                       .. "Creepers, they are everywhere." } },
 
         ------------------------------------------------------------------
         -- Arathi loop A: Witherbark Village (level gate) -> Drywhisker kobolds -> Iridescent Shards (level 33)
@@ -292,7 +306,7 @@ FastesBoooy.AddLibrarySegment({
         { complete = 672, bg = true, at = { 1417, 69.06, 46.43 },
           note = { ru = "Попутно: глаза с долгоногов (30-31) и твердозубов (33-34) — 10 штук.",
                    en = "On the way: eyes from Highland Striders (30-31) and Thrashers (33-34) - 10 of them." } },
-        { complete = 97539, bg = true, optional = true, at = { 1417, 65.23, 51.99 },
+        { complete = 97539, bg = true, at = { 1417, 65.23, 51.99 },
           note = { ru = "Попутно: шёлк с равнинных ползунов (32-36).",
                    en = "On the way: spidersilk from the Plains Creepers (32-36)." } },
         { id = "h-31-arathi-highlands-field", complete = 677, at = { 1417, 67.54, 67.88 },
@@ -361,7 +375,7 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Тор'ган. «Зловещая магия» (40, элита) не берите.", en = "Tor'gan. Skip the next Foul Magics (40, elite)." } },
         { turnin = 702, accept = 847, npc = 2792, at = { 1417, 72.64, 33.93 },
           note = { ru = "Гор'муль.", en = "Gor'mul." } },
-        { turnin = 97539, npc = 12920, at = { 1417, 73.41, 36.89 }, optional = true, -- WARN-OK: xp-unknown (Forever-new)
+        { turnin = 97539, npc = 12920, at = { 1417, 73.41, 36.89 }, -- WARN-OK: xp-unknown (Forever-new)
           note = { ru = "Доктор Виктор: паучий шёлк.", en = "Doctor Victor: the spidersilk." } },
         { id = "h-34-hammerfall-end", turnin = 847, npc = 2706, at = { 1417, 74.72, 36.29 },
           note = { ru = "Тор'ган. Эликсир 513 и головы 1164 сдадите в Подгороде.",

@@ -2,8 +2,8 @@
 --
 -- Library segment "h-22-hillsbrad": levels 22-24, class-neutral (Undead Paladin and Skyborne Druid, Horde).
 -- Thunder Bluff (1065) -> Orgrimmar (flight point for everybody) -> zeppelin -> Undercity -> fly The Sepulcher
--- (493) -> south through Silverpine (optional Offering Stone pair at Beren's Peril) -> Deathstalker Lesh (494)
--- -> Tarren Mill -> four Hillsbrad loops -> hearth to Thunder Bluff.
+-- (493; optional Ruins of Lordaeron / Shadowfang Keep with a group) -> south through Silverpine (Offering Stone
+-- pair at Beren's Peril) -> Deathstalker Lesh (494) -> Tarren Mill -> four Hillsbrad loops -> hearth to Thunder Bluff.
 -- Plan: research plan60.md section 4.1 / plan60.json segments[1] (anchors used with the plan's ids).
 -- Coordinates: Forever uiMap 1456 (Thunder Bluff) / 1413 (The Barrens) / 1454 (Orgrimmar) / 1411 (Durotar) /
 -- 1420 (Tirisfal Glades) / 1458 (Undercity) / 1421 (Silverpine Forest) / 1424 (Hillsbrad Foothills), map percent,
@@ -15,16 +15,24 @@
 --   Org : everybody learns the Orgrimmar flight point here (later segments fly there; the druid route never
 --         learned it): Undead/Orc/Tauren/Troll fly Thunder Bluff -> Orgrimmar and click Doras on landing,
 --         Skyborne fly The Crossroads and run via Far Watch Post. Zeppelin to Tirisfal, fly to The Sepulcher.
---   SP  : 493 (Renferrel); Forever-new 95883 -> 95885 at the Offering Stone of Beren's Peril (optional, XP
---         unknown, 150 yd off the road); 494 (Lesh, Hillsbrad west).
---   TM1 : fp; 1065 + 493 > 496, 501, 1066 (Lydon); 494 > 527 (+ optional 98094) (Darthalia); 549 + 567
---         (posters); 498 (Krusk).
+--   RoL : optional, group: Ruins of Lordaeron (Forever-new dungeon 15-22, entrance Undercity 72.48,11.33, quests
+--         ~2.2x Classic XP): 92421 (Morbin Lightbane), 95216 (Theodore Griffs), item-started 95204 (Crest of
+--         Lordaeron) + 97288 (Abominable Head, from the Baron); turn-ins at Faranell / Theodore / Morbin / Oran
+--         Snakewrithe; optional 1013 The Book of Ur (Bel'dugur) for Shadowfang Keep. Skipped: 92422 (Kristof, XP
+--         unknown, a Tirisfal detour after the run), 92401 (giver at the Sepulcher, reached only after the run),
+--         97289-97292 (Faranell's follow-ups: order and items unclear in the data).
+--   SP  : 493 (Renferrel); optional, group: Shadowfang Keep (20-30, entrance 44.8,67.8, ~2.7x Classic XP): 1098
+--         (Hadrec; Vincent inside) + 1014 (Dalar: back to the Sepulcher) + 1013 (Book of Ur, turned in at the
+--         Undercity in h-31); Forever-new 95883 -> 95885 at the Offering Stone of Beren's Peril (XP unknown, 150 yd
+--         off the road: on the path, so not optional any more); 494 (Lesh, Hillsbrad west).
+--   TM1 : fp; 1065 + 493 > 496, 501, 1066 (Lydon); 494 > 527 + 98094 (Darthalia); 549 + 567 (posters); 498
+--         (Krusk).
 --   F1  : Hillsbrad Fields: 527 (farmers, farmhands, Ray, Getz). bg all the time: 496 (bears + 1 creeper ichor),
 --         501 (Starving Mountain Lions), 567 Wilkes + Kalaba.
 --   TM2 : 527 > 528 (Darthalia); 546 (Samsa).
 --   D   : Durnholde Keep: 549 + 1066 (Syndicate), 498 (jailor keys, Drull, Tog'thar); the Syndicate also drop
 --         546 skulls (that is why Durnholde comes after TM2, not before F1: same distance, ~20 fewer skull kills).
---   M   : Deathstalker Masoj: 98094 (optional delivery, 200 yd south of the Durnholde -> fields line).
+--   M   : Deathstalker Masoj: 98094 (delivery, 200 yd south of the Durnholde -> fields line).
 --   F2  : 528 (15 peasants) + skulls.
 --   TM3 : 496 > 499 (> Umpi), 501 > 502, 1066 > 1067 (Lydon); 528 + 549 > 529 (Darthalia); 498 (Krusk).
 --   F3  : 502 Stanley (kill Enraged Stanley), 529 (smithy), rest of the skulls, level gate.
@@ -33,13 +41,15 @@
 --   (h-31: Clerk Horrace stands next to Burnside in the town hall, Miner Hackett L29 is in Azurelode Mine next
 --   to the 539 miners; both are too dangerous at 23-24).
 -- Skipped: 98095 Valuable Vantages (Masoj: three vials on Hillsbrad peaks - the peak positions are not in any
---   offline data, XP unknown), 509 (needs 24, done in h-31), 547 (26+), 95981 / 516 (Silverpine, turn-ins back
---   at the Sepulcher), Shadowfang Keep quests (group; 1098 / 1014 / 92401 could be an optional class/dungeon
---   insert before h-22-uc-fly).
+--   offline data, XP unknown), 509 (needs 24, done in h-31), 516 Beren's Peril and Forever-new 95981 / 98299
+--   (Silverpine: turn-ins back at the Sepulcher, a second trip north), 541 / 547 (Dun Garok: every mob is elite),
+--   7321 (needs Cooking), the Owen Thadd library books (78127, 79096, ...: WCLBox 0 XP).
+-- Optional dungeon blocks: nothing later depends on them (the 1013 turn-in in h-31 is optional as well). The
+--   validator counts optional steps as done; its worst case (tools/README.md section 5) leaves them out.
 -- Automation notes: accepts at one NPC sit in one step; transient steps (fp, fly, go) come before the quest steps
 --   of the same place. 496 / 501 (bears, lions) and 567 (Wilkes, Kalaba) are bg-only until their turn-in steps:
 --   they can finish on any loop, and a non-bg `complete` that is done early would make the engine fast-forward
---   the optional Masoj step behind it. The 546 skulls are a bg goal until the level gate, which shares its step
+--   the transient steps behind it. The 546 skulls are a bg goal until the level gate, which shares its step
 --   with them (an anchor only when both are done).
 -- Hearthstone: Thunder Bluff (bound by both 1-22 routes), used from Tarren Mill at the end.
 FastesBoooy.AddLibrarySegment({
@@ -89,30 +99,84 @@ FastesBoooy.AddLibrarySegment({
         { go = true, radius = 40, npc = 9566, at = { 1420, 60.74, 58.87 },
           note = { ru = "Прибытие к башне в Тирисфальских лесах (Запетта).",
                    en = "Arrival at the Tirisfal Glades tower (Zapetta)." } },
+        -- Optional, group: Ruins of Lordaeron (Forever-new dungeon 15-22 above the Undercity; quests ~2.2x Classic XP).
+        { accept = 92421, npc = 266484, at = { 1458, 58.08, 89.51 }, optional = true,
+          note = { ru = "Если собрали группу: Руины Лордерона (новое подземелье 15-22, ~19 тыс. опыта за 4 задания, ~40 мин). "
+                       .. "Морбин Погибель Света в Королевском квартале: «Правосудие Света». Без группы — «Пропуск» на этих "
+                       .. "семи шагах.",
+                   en = "If you have a group: Ruins of Lordaeron (new dungeon 15-22, ~19k XP for 4 quests, ~40 min). Morbin "
+                       .. "Lightbane in the Royal Quarter: Light's Justice. No group: Skip these seven steps." } },
+        { accept = 95216, npc = 11835, at = { 1458, 46.31, 71.91 }, optional = true,
+          note = { ru = "Квартал аптекарей: Теодор Гриффс — «Новая чума».",
+                   en = "The Apothecarium: Theodore Griffs - The New Plague." } },
+        { complete = { 92421, 95216 }, at = { 1458, 72.48, 11.33 }, optional = true,
+          note = { ru = "Наверх, в руины над городом: вход в подземелье. Внутри — 25 сохранившихся конечностей и штамм с "
+                       .. "Сухожвала. Подберите герб Лордерона и чудовищную голову с Барона — они начинают задания.",
+                   en = "Up to the ruins above the city: the dungeon entrance. Inside: 25 Intact Limbs and the strain from "
+                       .. "Witherfang. Loot the Crest of Lordaeron and the Abominable Head from the Baron: they start "
+                       .. "quests." } },
+        { accept = { 95204, 97288 }, use = 275521, at = { 1458, 72.48, 11.33 }, optional = true,
+          note = { ru = "Щёлкните герб Лордерона и чудовищную голову: «Герб Лордерона» и «Неизбывные мучения».",
+                   en = "Click the Crest of Lordaeron and the Abominable Head: Crest of Lordaeron and Unending Torment." } },
+        { turnin = { 97288, 95216 }, npc = { 2055, 11835 }, at = { 1458, 47.57, 70.60 }, optional = true,
+          note = { ru = "Квартал аптекарей: голова — мастеру аптекарю Фаранеллу, штамм — Теодору.",
+                   en = "The Apothecarium: the head to Master Apothecary Faranell, the strain to Theodore." } },
+        { turnin = 92421, npc = 266484, at = { 1458, 58.08, 89.51 }, optional = true,
+          note = { ru = "Морбин в Королевском квартале.", en = "Morbin in the Royal Quarter." } },
+        { turnin = 95204, npc = 7825, at = { 1458, 73.06, 32.85 }, optional = true,
+          note = { ru = "Оран Змеиные Кольца: герб.", en = "Oran Snakewrithe: the crest." } },
+        { accept = 1013, npc = 2934, at = { 1458, 53.74, 54.46 }, optional = true,
+          note = { ru = "Если идёте в Крепость Темного Клыка (ниже, в Серебряном бору): хранитель Бел'дугур — «Книга Ура» "
+                       .. "(сдадите здесь же на 31-м).",
+                   en = "If you go to Shadowfang Keep (below, in Silverpine): Keeper Bel'dugur - The Book of Ur (handed in "
+                       .. "here at 31)." } },
         { go = true, radius = 12, npc = 4551, at = { 1458, 63.25, 48.56 },
           note = { ru = "На юг в Руины Лордерона, на лифте вниз: распорядитель полётов Майкл Гаррет.",
                    en = "South into the Ruins of Lordaeron, take a lift down: flight master Michael Garrett." } },
         { id = "h-22-uc-fly", fly = "The Sepulcher", npc = 2226, at = { 1421, 45.62, 42.60 },
           note = { ru = "Летите в Гробницу (Серебряный бор).", en = "Fly to The Sepulcher (Silverpine Forest)." } },
         { id = "h-22-the-sepulcher-apothecary", accept = 493, npc = 1937, at = { 1421, 42.80, 40.86 },
-          note = { ru = "Аптекарь Ренферрел в склепе: «Путешествие в Предгорья Хилсбрада». Больше здесь ничего не берите.",
-                   en = "Apothecary Renferrel in the crypt: Journey to Hillsbrad Foothills. Take nothing else here." } },
+          note = { ru = "Аптекарь Ренферрел в склепе: «Путешествие в Предгорья Хилсбрада». Задания Серебряного бора не "
+                       .. "берите (сдавать их здесь же).",
+                   en = "Apothecary Renferrel in the crypt: Journey to Hillsbrad Foothills. Skip the Silverpine quests "
+                       .. "(their turn-ins are back here)." } },
+        -- Optional, group: Shadowfang Keep (20-30; quests ~2.7x Classic XP). 1014 brings you back to the Sepulcher.
+        { accept = { 1098, 1014 }, npc = { 1952, 1938 }, at = { 1421, 43.81, 40.34 }, optional = true,
+          note = { ru = "Если собрали группу: Крепость Темного Клыка (~14 тыс. опыта, ~50 мин; с «Книгой Ура» ~20 тыс.). "
+                       .. "Верховный палач Хадрик — «Пропавшие стражи смерти», Далар Ткач Рассвета — «Смерть Аругалу!». "
+                       .. "Без группы — «Пропуск» на этих пяти шагах.",
+                   en = "If you have a group: Shadowfang Keep (~14k XP, ~50 min; ~20k with The Book of Ur). High Executor "
+                       .. "Hadrec - Deathstalkers in Shadowfang, Dalar Dawnweaver - Arugal Must Die. No group: Skip these "
+                       .. "five steps." } },
+        { turnin = 1098, at = { 1421, 44.80, 67.80 }, optional = true, -- WARN-OK: at-far-from-giver (Vincent is inside the dungeon)
+          note = { ru = "На юг к крепости на холме (вход 44.8, 67.8). Внутри, за двором: поговорите со стражем смерти "
+                       .. "Винсентом.",
+                   en = "South to the keep on the hill (entrance 44.8, 67.8). Inside, past the courtyard: talk to "
+                       .. "Deathstalker Vincent." } },
+        { complete = 1013, at = { 1421, 44.80, 67.80 }, optional = true,
+          note = { ru = "Если брали «Книгу Ура»: книга лежит в библиотеке перед Аругалом.",
+                   en = "If you took The Book of Ur: the book lies in the library before Arugal." } },
+        { complete = 1014, at = { 1421, 44.80, 67.80 }, optional = true,
+          note = { ru = "Архимаг Аругал (последний босс): его голова.", en = "Archmage Arugal (last boss): his head." } },
+        { turnin = 1014, npc = 1938, at = { 1421, 44.20, 39.81 }, optional = true,
+          note = { ru = "Обратно в Гробницу: Далар. «Книгу Ура» держите до Подгорода (31-й).",
+                   en = "Back to the Sepulcher: Dalar. Keep The Book of Ur for the Undercity (31)." } },
         { go = true, radius = 40, at = { 1421, 61.47, 67.47 },
           note = { ru = "По дороге на юго-восток мимо Янтарной мельницы.",
                    en = "South-east along the road past Ambermill." } },
-        -- Forever-new pair at the Offering Stone, 150 yd west of the road (XP unknown, optional).
-        { id = "h-22-offering-stone", accept = 95883, object = 645153, at = { 1421, 58.12, 69.77 }, optional = true,
-          note = { ru = "По желанию (новое в Forever, опыт неизвестен, ~3 мин): Камень подношений у Погибели Берена "
-                       .. "чуть западнее дороги. Не нужно — «Пропуск» на этих четырёх шагах.",
-                   en = "Optional (new in Forever, XP unknown, ~3 min): the Offering Stone at Beren's Peril just west "
-                       .. "of the road. Not wanted: Skip these four steps." } },
-        { complete = 95883, at = { 1421, 58.70, 71.15 }, optional = true,
+        -- Forever-new pair at the Offering Stone, 150 yd west of the road (XP unknown).
+        { id = "h-22-offering-stone", accept = 95883, object = 645153, at = { 1421, 58.12, 69.77 },
+          note = { ru = "Новое в Forever (опыт неизвестен, ~3 мин): Камень подношений у Погибели Берена чуть западнее "
+                       .. "дороги.",
+                   en = "New in Forever (XP unknown, ~3 min): the Offering Stone at Beren's Peril just west of the "
+                       .. "road." } },
+        { complete = 95883, at = { 1421, 58.70, 71.15 },
           note = { ru = "Нежить Когтя Ворона (19-21) у пещеры: Терзаемая душа.",
                    en = "Ravenclaw undead (19-21) by the cave: a Tortured Soul." } },
-        { turnin = 95883, accept = 95885, object = 645153, at = { 1421, 58.12, 69.77 }, optional = true, -- WARN-OK: xp-unknown
+        { turnin = 95883, accept = 95885, object = 645153, at = { 1421, 58.12, 69.77 }, -- WARN-OK: xp-unknown (Forever-new)
           note = { ru = "Сдайте душу у камня и возьмите «Подношение крови».",
                    en = "Hand in the soul at the stone and take The Offering of Blood." } },
-        { turnin = 95885, object = 645153, at = { 1421, 58.12, 69.77 }, optional = true, -- WARN-OK: xp-unknown
+        { turnin = 95885, object = 645153, at = { 1421, 58.12, 69.77 }, -- WARN-OK: xp-unknown (Forever-new)
           note = { ru = "Используйте Терзаемую душу у камня и сдайте задание.",
                    en = "Use the Tortured Soul at the stone and hand the quest in." } },
         { go = true, radius = 40, at = { 1421, 67.14, 79.06 },
@@ -134,9 +198,9 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Аптекарь Лидон.", en = "Apothecary Lydon." } },
         { turnin = 494, accept = 527, npc = 2215, at = { 1424, 62.33, 20.45 },
           note = { ru = "Верховный палач Дарталия.", en = "High Executor Darthalia." } },
-        { accept = 98094, npc = 2215, at = { 1424, 62.33, 20.45 }, optional = true,
-          note = { ru = "По желанию (новое в Forever, опыт неизвестен): приказ для Масоджа — он почти по пути.",
-                   en = "Optional (new in Forever, XP unknown): orders for Masoj - he is almost on the way." } },
+        { accept = 98094, npc = 2215, at = { 1424, 62.33, 20.45 },
+          note = { ru = "Новое в Forever (опыт неизвестен): приказ для Масоджа — он почти по пути.",
+                   en = "New in Forever (XP unknown): orders for Masoj - he is almost on the way." } },
         { accept = { 549, 567 }, object = { 1763, 556670, 2008, 556669 }, at = { 1424, 62.56, 20.20 },
           note = { ru = "Две доски объявлений у дороги: «Разыскиваются: члены Синдиката» и «Опасно!».",
                    en = "The two posters by the road: WANTED: Syndicate Personnel and Dangerous!" } },
@@ -190,7 +254,7 @@ FastesBoooy.AddLibrarySegment({
         { complete = { [498] = { 1 } }, object = 1721, at = { 1424, 75.33, 41.50 },
           note = { ru = "Друлл у западной стены: вторым ключом.",
                    en = "Drull by the west wall: use the other key." } },
-        { id = "h-22-deathstalker-masoj", turnin = 98094, npc = 270438, at = { 1424, 63.58, 53.11 }, optional = true, -- WARN-OK: xp-unknown
+        { id = "h-22-deathstalker-masoj", turnin = 98094, npc = 270438, at = { 1424, 63.58, 53.11 }, -- WARN-OK: xp-unknown (Forever-new)
           note = { ru = "Следопыт Масодж к юго-западу от крепости. Его «Ценные высоты» (пузырьки на вершинах) не "
                        .. "берите: где вершины — неизвестно.",
                    en = "Deathstalker Masoj south-west of the keep. Skip his Valuable Vantages (vials on peaks): the "
@@ -234,8 +298,8 @@ FastesBoooy.AddLibrarySegment({
                    en = "The smithy: Blacksmith Verringtan (26), 4 Apprentice Blacksmiths (24-25) and the Shipment of "
                        .. "Iron crate inside." } },
         -- 529 is listed again so this step cannot become a forward anchor before Tarren Mill 3 (the 546 skulls can
-        -- be finished early; with the level reached, the optional Masoj turn-in would be skipped)
-        { id = "h-22-hillsbrad-level-gate", complete = { 529, 546 }, level = { 23, 0.85 }, -- WARN-OK: level-grind
+        -- be finished early; with the level reached, the travel steps before it would be skipped)
+        { id = "h-22-hillsbrad-level-gate", complete = { 529, 546 }, level = { 23, 0.85 }, -- WARN-OK: level-grind (worst case)
           at = { 1424, 33.20, 41.51 },
           note = { ru = "Добейте черепа на полях (крестьяне, фермеры, батраки 22-25 — лучший опыт рядом) до 23-го + 85%: "
                        .. "сдача 546 и 529 даст ещё ~16% — это 24-й к Громовому Утёсу.",

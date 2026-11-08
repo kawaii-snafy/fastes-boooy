@@ -1,6 +1,6 @@
 -- FastesBoooy_UndeadPaladin / Segments / 04_Barrens.lua
 --
--- Segment ud-04-barrens: Durotar zeppelin tower -> (optional Orgrimmar flight path) -> Razor Hill ->
+-- Segment ud-04-barrens: Durotar zeppelin tower -> Orgrimmar flight path -> Razor Hill ->
 -- Far Watch Post -> The Crossroads hub -> east (Razormane) -> Ratchet + pirate coast -> west (Regthar,
 -- Forgotten Pools) -> north-east and north (Echeyakee, Boulder Lode Mine, Sludge Fen, Samophlange,
 -- Vrang Wildgore, Witchwing harpies) -> hearth -> Ratchet -> south (Stagnant Oasis, raptor nests,
@@ -61,20 +61,19 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
     levels = { 15, 18 },
     steps = {
         ------------------------------------------------------------------
-        -- Durotar: optional Orgrimmar flight path, Razor Hill, Far Watch Post (level 15)
+        -- Durotar: Orgrimmar flight path (needed at 22: the Horde library flies Thunder Bluff -> Orgrimmar),
+        -- Razor Hill, Far Watch Post (level 15)
         ------------------------------------------------------------------
-        { id = "ud04-org-gate", go = true, optional = true, at = { 1454, 48.97, 92.84 },
-          note = { ru = "По желанию (+3 мин): точка полёта Оргриммара — ворота в 300 ярдах от башни дирижаблей. "
-                       .. "В этом сегменте она не нужна, пригодится позже для дирижаблей. Не нужна — нажмите "
-                       .. "«Пропуск» на обоих шагах и идите на юг к Колючему Холму.",
-                   en = "Optional (+3 min): the Orgrimmar flight path - the gate is 300 yd from the zeppelin "
-                       .. "tower. Not used in this segment, handy later for zeppelins. Not wanted: press Skip on "
-                       .. "both steps and head south to Razor Hill." } },
-        { id = "ud04-org-fp", fp = "Orgrimmar", npc = 3310, optional = true, at = { 1454, 45.12, 63.89 },
-          note = { ru = "Дорас на башне в Долине Силы: откройте карту полётов. Никуда не летите, назад через "
-                       .. "главные ворота.",
-                   en = "Doras on the tower in the Valley of Strength: open the flight map. Do not fly; go back "
-                       .. "out through the main gate." } },
+        { id = "ud04-org-gate", go = true, at = { 1454, 48.97, 92.84 },
+          note = { ru = "Точка полёта Оргриммара (+3 мин): ворота в 300 ярдах от башни дирижаблей. В этом сегменте "
+                       .. "она не используется, но на 22-м маршрут летит из Громового Утёса в Оргриммар.",
+                   en = "The Orgrimmar flight path (+3 min): the gate is 300 yd from the zeppelin tower. Not used in "
+                       .. "this segment, but at 22 the route flies from Thunder Bluff to Orgrimmar." } },
+        { id = "ud04-org-fp", fp = "Orgrimmar", npc = 3310, at = { 1454, 45.12, 63.89 },
+          note = { ru = "Дорас на башне в Долине Силы: откройте карту полётов (нужна на 22-м). Никуда не летите, "
+                       .. "назад через главные ворота.",
+                   en = "Doras on the tower in the Valley of Strength: open the flight map (needed at 22). Do not "
+                       .. "fly; go back out through the main gate." } },
         { id = "ud04-840", accept = 840, npc = 3336, at = { 1411, 50.84, 43.59 },
           note = { ru = "Колючий Холм: Такрин Следопыт у входа в казарму. По дороге на юг от Оргриммара.",
                    en = "Razor Hill: Takrin Pathseeker by the barracks. South along the road from Orgrimmar." } },
@@ -152,7 +151,9 @@ FastesBoooy.AddSegment("horde-undead-paladin", {
                        .. "лагеря (58.5, 27.0) — его клык. Ящики снабжения Перекрёстка — по краям лагеря.",
                    en = "The far Razormane camp: 8 Geomancers, 8 Defenders, Kreenig Snarlsnout (15) on the south "
                        .. "side (58.5, 27.0) for his tusk. The Crossroads' Supply Crates are around the camp." } },
-        { complete = 845, at = { 1413, 60.5, 21.5 },
+        -- 872 again (already credited, no extra XP): with 845 alone this step would be done as soon as the bg
+        -- hooves are, become the forward anchor and fast-forward the optional keg check before it.
+        { complete = { 845, 872 }, at = { 1413, 60.5, 21.5 },
           note = { ru = "Не хватает копыт — зебры сразу к северо-востоку от лагеря. Потом на юго-восток в Кабестан.",
                    en = "Missing hooves? Zhevra right north-east of the camp. Then south-east to Ratchet." } },
 

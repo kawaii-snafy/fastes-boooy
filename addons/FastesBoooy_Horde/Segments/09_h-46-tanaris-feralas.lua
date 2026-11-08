@@ -19,13 +19,13 @@
 --         2781 + 2875 (Wanted Poster); 3362 (Tran'rek); 992 (Fizzledowser).
 --   W   : Sandsorrow Watch water hole (992) > Fizzledowser 992 > 82.
 --   E   : Wastewander north camp (1690, pouches 379/1707); Steamwheedle Port: 2872 > 2873 (Stoley), 8366, 3520,
---         8365; Lost Rigger Cove (8366, 8365, 2873, 2875; optional 2876 from a Pirate's Footlocker); Waterspring
+--         8365; Lost Rigger Cove (8366, 8365, 2873, 2875; the book 81949; optional 2876 from a Pirate's Footlocker); Waterspring
 --         Field (2781 Caliph, rest of the pouches); Steamwheedle Port turn-ins.
 --   G2  : 1690 + 379 + 2781 > 1691; 1707; 654 from the power source (379 reward, 2 h timer).
 --   S   : Waterspring Field (1691) -> Marvon (3161) -> Gahz'ridian -> Dunemaul (5863) -> Thistleshrub Valley (2605,
 --         3362) -> Noxious Lair (82); 654 samples on the way; hearth.
 --   G3  : 1691 + 654 > 864; 5863; 2605 > 2606; 3362; 2606 > 2641 (Sprinkle); 82 (Pestlezugg); 10 (Fizzledowser).
---   SE  : Marvon 3161; Hazzali hive (10; optional level 48 gate); optional OOX-17/TN (351, beacon drop).
+--   SE  : Marvon 3161; Hazzali hive (10; optional level 47 top-up); optional OOX-17/TN (351, beacon drop).
 --   G4  : 10 > 110 > 113, optional Zul'Farrak block (2768, 3042, 2865; skipped by the next turn-in), 113 > 32.
 --         Fly Freewind Post.
 --   M1  : fp, hearth; 2987, 2975, 2973, 2862, 2822.
@@ -37,7 +37,7 @@
 --         OOX-22/FE (2766), Feral Scar Vale (2822).
 --   M5  : 7730 + 7731 > 7732; 2822 > 7734; 2980 + 2979 > 3002; 3063 (+ optional 3062, elite).
 --   F5  : Rage Scar Hold (7734), Zorbin (7003, 7721 on the Forgotten Coast), Northspring harpies (3063, level gate;
---         optional Edana 3062), hearth.  M6: 7734, (3062), 3063.
+--         optional Edana 3062), hearth.  M6: 7734, (3062), 3121 (Uzer'i, for Orgrimmar), 3063.
 -- Deviations from the plan (documented in the handoff):
 --   * 654 Tanaris Field Sampling is a 2-hour timed quest: the plan carried it for the rest of the route (it would
 --     fail); here it is done during the Tanaris loop S and turned in (+ 864 Return to Apothecary Zinge, carried to
@@ -51,19 +51,23 @@
 --     close the big western loop; the hearthstone is bound in Gadgetzan and used from the Noxious Lair, then bound
 --     in Camp Mojache and used from the Northspring harpies.
 --   * 10 The Scrimshank Redemption is offered by Fizzledowser (not Pestlezugg, who takes 82).
--- Skipped: 2874 Deliver to MacKinley (Booty Bay), 648 / 2767 / 1560 escorts, 3121-3129 Uzer'i chain (needs an
---   Orgrimmar round trip and a later Feralas visit), 4120 (Felwood), 3380 (Sunken Temple chain), 2981 (breadcrumb from
---   Orgrimmar), 2770 Gahz'rilla (turned in at the Mirage Raceway, not passed again), 1878 / 7738 (repeatable).
--- Carried out: 32, 864 (Undercity), 2976, 3002, 7732 (Orgrimmar), 2641 (Hinterlands, Violet Tragan), 3520 (back to
---   Yeh'kinya, Steamwheedle Port, h-53), 1429 (from h-44, untouched: the Atal'ai Exile in h-50). (592 is no longer
---   carried: h-44 skips 591 / 592, Mai'Zoth is elite.)
--- XP (validator, from 46.00; Classic quest XP + objective kills; optional steps counted): Tanaris questing ends at
---   46.89, Feralas questing adds ~1 level. All Tanaris + Feralas quests give ~166 k quest XP and ~91 k objective kill
---   XP of the 529 k needed for 46 -> 50, so ~281 k XP (~990 same-level kills, without incidental kills / rested XP)
---   come from the two level gates: h48-tanaris-level-gate (optional, Hazzali hive 47-50, to 48) and
---   h-46-tanaris-feralas-level-gate (Northspring harpies 48-50, to 49 + 96%; the M6 turn-ins make 50.0 even without
---   the optional 3062). 50 is a real requirement of the next segment (4494 March of the Silithid, reqLevel 50, in
---   Orgrimmar; paladin training 50). The optional Zul'Farrak block replaces part of the grind for grouped players.
+--   * Densify pass (r3): added 81949 Legends of the Tidesages (Forever-new library book in Lost Rigger Cove, XP
+--     unknown; turned in to Owen Thadd in the Undercity of h-50) and 3121 A Strange Request (Uzer'i, delivery to Neeru
+--     Fireblade in the Orgrimmar of h-50; 3122+ not taken). Level gates lowered to what the next hubs need: the
+--     optional Hazzali gate 48 -> 47 (top-up only), the end gate 49 + 96% -> 49 + 30% (the segment ends at ~49.4: the
+--     Hinterlands quests are 47-51 and their elites come at the end of the zone; 4494 March of the Silithid, reqLevel
+--     50, moved to the Orgrimmar visit of h-53).
+-- Skipped: 2874 Deliver to MacKinley (Booty Bay), 648 / 2767 / 1560 escorts, 3122-3129 Uzer'i chain (needs a second
+--   Feralas visit and the Hinterlands owlbeasts), 4120 (Felwood), 3380 (Sunken Temple chain), 2981 (breadcrumb from
+--   Orgrimmar), 2770 Gahz'rilla (turned in at the Mirage Raceway, not passed again), 1878 / 7738 (repeatable), 81951
+--   (library book at Jademir Lake among level 60-62 elites).
+-- Carried out: 32, 864 (Undercity), 2976, 3002, 3121, 7732 (Orgrimmar), 81949 (Undercity), 2641 (Hinterlands, Violet
+--   Tragan), 3520 (back to Yeh'kinya, Steamwheedle Port, h-53), 1429 (from h-44, untouched: the Atal'ai Exile in
+--   h-50). (592 is no longer carried: h-44 skips 591 / 592, Mai'Zoth is elite.)
+-- XP (validator, from 46.01; Classic quest XP + objective kills; optional steps counted): Tanaris questing ends at
+--   ~46.9, Feralas questing adds ~1.2 levels. The rest comes from the end gate at the Northspring harpies (to 49 +
+--   30%, ~590 same-level kills; ~730 without the optional steps, without incidental kills / rested XP). The optional
+--   Zul'Farrak block replaces part of the grind for grouped players.
 -- Automation notes: transient steps (fp, sethearth) come before the quest steps of their hub; accepts at one NPC are
 --   merged into one step; optional steps never sit before a non-bg step that a bg goal can finish early (the forward
 --   limit would skip them). Water pouches (379 / 1707 count the same 10 pouches: collect 10), the 654 samples and the
@@ -158,6 +162,11 @@ FastesBoooy.AddLibrarySegment({
                    en = "South along the coast to Lost Rigger Cove: 10 of each Southsea Pirate, Freebooter, Dock Worker, "
                        .. "Swashbuckler (44-45) and 20 hats; the Stolen Cargo crates lie on the ground (72,47); Andre "
                        .. "Firebeard is in the cove (73,47)." } },
+        { accept = 81949, complete = 81949, object = 441248, at = { 1446, 72.60, 47.80 },
+          note = { ru = "В бухте же (72.6,47.8) лежит книга «Легенды о волнопевах» — возьмите задание и книгу (сдача — "
+                       .. "Оуэн Тэдд в Подгороде, следующий сегмент; новое задание Forever, опыт неизвестен).",
+                   en = "In the cove (72.6,47.8) lies the book Legends of the Tidesages - take the quest and the book (turn "
+                       .. "in: Owen Thadd in Undercity, next segment; a Forever-new quest, XP unknown)." } },
         { complete = 2781, at = { 1446, 61.77, 38.17 },
           note = { ru = "На запад в южный лагерь Скитальцев: Калиф Жало Скорпида (46) в центре лагеря.",
                    en = "West to the southern Wastewander camp: Caliph Scorpidsting (46) in its middle." } },
@@ -267,12 +276,12 @@ FastesBoooy.AddLibrarySegment({
         { complete = 10, object = 144053, at = { 1446, 55.96, 71.17 },
           note = { ru = "Дальше на юг в улей Хаззали: обозревательное устройство Холстомера (56,71) среди ос (47-50).",
                    en = "On south into the Hazzali hive: Scrimshank's Surveying Gear (56,71) among the wasps (47-50)." } },
-        { id = "h48-tanaris-level-gate", level = 48, optional = true, at = { 1446, 54.95, 70.24 }, -- WARN-OK: level-grind
-          note = { ru = "По желанию (без Зул'Фаррака): квестов Танариса и Фераласа на 50-й не хватает. Осы Хаззали (47-50) "
-                       .. "— самый плотный лагерь своего уровня: бейте до 48-го, остальное доберёте у гарпий Фераласа.",
-                   en = "Optional (no Zul'Farrak): Tanaris and Feralas quests alone do not make 50. The Hazzali wasps "
-                       .. "(47-50) are the densest camp of your level: kill them up to 48, the rest comes at the Feralas "
-                       .. "harpies." } },
+        { id = "h48-tanaris-level-gate", level = 47, optional = true, at = { 1446, 54.95, 70.24 }, -- WARN-OK: level-grind
+          note = { ru = "По желанию (без Зул'Фаррака): если до 47-го не хватает — добейте ос Хаззали (47-50, самый плотный "
+                       .. "лагерь рядом). Больше здесь не гриндите: основной гринд — у гарпий Фераласа в конце сегмента.",
+                   en = "Optional (no Zul'Farrak): if you are short of 47, top up on the Hazzali wasps (47-50, the densest "
+                       .. "camp nearby). Do not grind more here: the main grind is at the Feralas harpies at the end of the "
+                       .. "segment." } },
         { accept = 351, use = 8623, optional = true, at = { 1446, 60.23, 64.72 },
           note = { ru = "По желанию: с мобов Танариса выпал аварийный маяк КПХ-17/TN — кликните его.",
                    en = "Optional: an OOX-17/TN Distress Beacon dropped from a Tanaris mob - right-click it." } },
@@ -466,14 +475,16 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "По желанию: рог Когтя Ненависти падает с гарпий; Эдана (элита 50) — на севере руин (40.5,8.6).",
                    en = "Optional: the Horn of Hatetalon drops from the harpies; Edana (elite 50) is at the north end of "
                        .. "the ruins (40.5,8.6)." } },
-        { id = "h-46-tanaris-feralas-level-gate", complete = 3063, level = { 49, 0.96 }, -- WARN-OK: level-grind
+        { id = "h-46-tanaris-feralas-level-gate", complete = 3063, level = { 49, 0.30 }, -- WARN-OK: level-grind
           at = { 1444, 39.31, 13.46 },
           note = { ru = "На север к руинам гарпий (элитных великанов на равнине объезжайте): по 4 гарпии Студеных Ключей "
-                       .. "каждого вида. Бейте гарпий (48-50, стоят плотно — лучший опыт рядом) до 49-го + 96%: сдачи в "
-                       .. "лагере дадут 50-й, он нужен в Оргриммаре («Нашествие силитидов», 50+).",
+                       .. "каждого вида. Бейте гарпий (48-50, стоят плотно — лучший опыт рядом) до 49-го + 30%: сдачи в "
+                       .. "лагере дадут ~49.4 — хватит для Внутренних земель (элитные тролли Джинта'Алора 50-51 — к концу "
+                       .. "зоны вы будете 50-го).",
                    en = "North to the harpy ruins (ride around the elite giants on the plain): 4 Northspring harpies of "
-                       .. "each kind. Keep killing the harpies (48-50, dense: the best XP nearby) up to 49 + 96%: the camp "
-                       .. "turn-ins make 50, needed in Orgrimmar (March of the Silithid, 50+)." } },
+                       .. "each kind. Keep killing the harpies (48-50, dense: the best XP nearby) up to 49 + 30%: the camp "
+                       .. "turn-ins make ~49.4 - enough for the Hinterlands (the Jintha'Alor elite trolls 50-51 come at the "
+                       .. "end of the zone, you will be 50 by then)." } },
         { id = "h50-mojache-hearth", hearth = "Camp Mojache", at = { 1444, 74.80, 45.18 },
           note = { ru = "Камень возвращения в Лагерь Мохаче.", en = "Hearth to Camp Mojache." } },
 
@@ -484,6 +495,11 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Джангор.", en = "Jangdor." } },
         { turnin = 3062, npc = 7776, optional = true, at = { 1444, 76.18, 43.83 },
           note = { ru = "По желанию: «Тёмное сердце».", en = "Optional: Dark Heart." } },
+        { accept = 3121, npc = 8115, at = { 1444, 74.42, 43.36 },
+          note = { ru = "Рядом, знахарь Узер'и: «Странная просьба» (сушеная голова — Нииру Огненному Клинку в Оргриммаре, "
+                       .. "следующий сегмент). Продолжение у Нииру не берите.",
+                   en = "Next to him, Witch Doctor Uzer'i: A Strange Request (the shrunken head goes to Neeru Fireblade in "
+                       .. "Orgrimmar, next segment). Do not take Neeru's follow-up." } },
         { id = "h-50-mojache-end", turnin = 3063, npc = 7776, at = { 1444, 76.18, 43.83 },
           note = { ru = "Тало. Дальше — полёт в Оргриммар (следующий сегмент).",
                    en = "Talo. Next: fly to Orgrimmar (next segment)." } },

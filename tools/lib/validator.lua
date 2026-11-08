@@ -50,6 +50,11 @@ V.DEFAULTS = {
     -- optimistic level is too low, otherwise a WARN (the shortfall may be an estimation artifact)
     unknownXpOptimism = 2.0,  -- unknown (estimated) quest XP x2
     guessedKillOptimism = 1.5, -- objective kills whose count was assumed x1.5
+    -- incidental kills while travelling (--incidental-pct): every turn-in also gives this percent
+    -- of its quest XP as kill XP (0 = off: only objective kills and level-step grinding count)
+    incidentalPct = 0,
+    -- grind band printed for every run (V.RunProfile): incidental kills 0% and this percent
+    incidentalBandPct = 15,
 }
 
 V.SEVERITIES = { "ERROR", "WARN", "INFO" }
@@ -153,9 +158,15 @@ function V.NewRun(db, schema, route, profile, opts)
         active = {}, activeCount = 0, maxLog = 0,
         accepted = {}, turnedIn = {}, abandoned = {}, completed = {}, credited = {},
         collected = {}, hearth = nil, hearthAt = nil, lastAt = nil, flightPaths = {},
-        xp = { quest = 0, questEstimated = 0, kill = 0, grind = 0, grindKills = 0,
+        xp = { quest = 0, questEstimated = 0, kill = 0, grind = 0, grindKills = 0, incidental = 0,
                unknownXpQuests = 0, turnins = 0, accepts = 0 },
         segments = {}, seg = nil,
+        gates = {}, gateSteps = {}, gateByStep = {}, -- level steps (H.level): grind per gate
+        walked = {}, walkedOrd = {}, -- steps processed for this profile, in order (skip-ahead check)
+        ordinal = 0, msgOrd = {}, -- step ordinal of every message (merging shadow-run messages)
+        -- worst case (opts.worstCase, V.RunProfile): optional steps are not done
+        worst = opts.worstCase and true or false,
+        optQuest = {}, optTurnin = {}, optSkipped = 0, optAccepts = 0,
     }, Run)
     r.letter = profile.faction == "Horde" and "H" or (profile.faction == "Alliance" and "A" or nil)
     r.facts = { race = profile.race, class = profile.class, faction = profile.faction }
@@ -281,6 +292,8 @@ function Run:EndState()
 end
 
 function Run:add(sev, code, step, msg, ...)
+    -- shadow runs (V.RunProfile) keep only the codes they report into the main run
+    if self.opts.keepCodes and not self.opts.keepCodes[code] then return end
     if self.opts.ignore and self.opts.ignore[code] then
         self.suppressed = self.suppressed + 1
         return
@@ -301,6 +314,8 @@ function Run:add(sev, code, step, msg, ...)
     end
     self.messages[#self.messages + 1] = m
     self.counts[sev] = self.counts[sev] + 1
+    self.msgOrd[m] = self.ordinal
+    return m
 end
 
 -- "363 \"Rude Awakening\""
@@ -679,6 +694,11 @@ function Run:giveQuestXp(id, q, step)
     local optGained = DB.QuestXp(self.db, optBase, q.level, self.opt.level)
     if estimated then self.xp.questEstimated = self.xp.questEstimated + gained end
     self:gainXp(gained, "quest", optGained)
+    -- --incidental-pct: kills on the way between the steps, as a share of the quest XP
+    local pct = self.opts.incidentalPct or V.DEFAULTS.incidentalPct
+    if pct > 0 then
+        self:gainXp(floor(gained * pct / 100 + 0.5), "incidental", floor(optGained * pct / 100 + 0.5))
+    end
 end
 
 -- @param optKills kills for the optimistic simulation (default = kills)
@@ -1060,6 +1080,14 @@ function H.level(self, a, step)
     local optCur = DB.CumXp(db, self.opt.level) + self.opt.xp
     if optCur < target then DB.AddXp(db, self.opt, target - optCur) end
     local cur = DB.CumXp(db, self.st.level) + self.st.xp
+    -- every level step is a gate of the grind report (V.RunProfile compares the runs per gate)
+    local gate = { segment = step.segment, step = step.segIndex, stepId = step.id, level = a.level, frac = a.frac or 0,
+                   from = round2(DB.LevelValue(db, self.st)), kills = 0, xp = 0 }
+    if type(step.library) == "string" then gate.library = step.library end
+    if step.optional then gate.optional = true end -- not done in the worst case
+    self.gates[#self.gates + 1] = gate
+    self.gateSteps[#self.gates] = step
+    self.gateByStep[step] = gate
     if cur >= target then return end
     local before = self:levelStr()
     local kills, gained = 0, 0
@@ -1073,6 +1101,7 @@ function H.level(self, a, step)
         cur = DB.CumXp(db, self.st.level) + self.st.xp
     end
     self.xp.grindKills = self.xp.grindKills + kills
+    gate.kills, gate.xp = kills, gained
     if self.seg then
         local s = self.segments[#self.segments]
         s.xpGrind = (s.xpGrind or 0) + gained
@@ -1243,7 +1272,91 @@ function V.OrderedActions(step)
     return out
 end
 
+---------------------------------------------------------------------------
+-- worst case (opts.worstCase, a shadow run of V.RunProfile): optional steps are not done
+---------------------------------------------------------------------------
+
+--- An optional step skipped in the worst case: its quests are not taken / not turned in.
+function Run:skipOptional(step)
+    self.optSkipped = self.optSkipped + 1
+    if self.seg then
+        local s = self.segments[#self.segments]
+        s.optionalSkipped = (s.optionalSkipped or 0) + 1
+    end
+    for _, a in ipairs(step.actions) do
+        local q = a.quest
+        if a.type == "accept" and not self.active[q] and not self.turnedIn[q] and not self.optQuest[q] then
+            self.optQuest[q] = step
+            self.optAccepts = self.optAccepts + 1
+        elseif a.type == "turnin" and not self.turnedIn[q] and not self.optTurnin[q] then
+            self.optTurnin[q] = step
+        end
+    end
+end
+
+--- Worst case, a required step: does it need a quest that only optional steps take or turn in?
+-- complete / turnin / abandon of a quest accepted only on a skipped optional step are not done (no XP);
+-- on a non-bg step (the cursor would wait there for a quest the player does not have) and for an
+-- accept whose prerequisite is turned in only on an optional step: ERROR optional-dependency.
+-- @return true when the action is skipped
+function Run:worstSkip(a, step)
+    local q, t = a.quest, a.type
+    if not q then return false end
+    if (t == "complete" or t == "turnin" or t == "abandon") and not self.active[q] and self.optQuest[q] then
+        if t ~= "abandon" and not step.bg then
+            self:add("ERROR", "optional-dependency", step, "required step depends on optional quest %s: %s needs it "
+                .. "in the quest log, but it is accepted only at optional step %s (worst case: optional steps not "
+                .. "done; make this step optional too, or the accept required)", self:qn(q), t,
+                self:stepRef(self.optQuest[q]))
+        end
+        return true
+    end
+    if t == "accept" and not step.bg then
+        local rec = DB.Quest(self.db, q, self.profile.class)
+        if not rec then return false end
+        local function optionalSource(p)
+            if self.turnedIn[p] then return nil end
+            return self.optTurnin[p] or self.optQuest[p]
+        end
+        local reported = false
+        for _, p in ipairs(rec.preGroup or {}) do
+            local src = optionalSource(p)
+            if src then
+                reported = true
+                self:add("ERROR", "optional-dependency", step, "required step depends on optional quest %s: accept "
+                    .. "%s needs it turned in, but only optional step %s does that (worst case: optional steps not "
+                    .. "done)", self:qn(p), self:qn(q), self:stepRef(src))
+            end
+        end
+        if not reported and rec.preSingle and #rec.preSingle > 0 then
+            local any, src, srcQ = false, nil, nil
+            for _, p in ipairs(rec.preSingle) do
+                if self.turnedIn[p] then any = true break end
+                if not src then src, srcQ = optionalSource(p), p end
+            end
+            if not any and src then
+                self:add("ERROR", "optional-dependency", step, "required step depends on optional quest %s: accept "
+                    .. "%s needs one of %s turned in, but only optional step %s does that (worst case: optional steps "
+                    .. "not done)", self:qn(srcQ), self:qn(q), self:names(rec.preSingle, Run.qn), self:stepRef(src))
+            end
+        end
+    end
+    return false
+end
+
+--- Stable sort of the messages by step ordinal (messages added after the walk about a step).
+function Run:sortMessages()
+    local keyed = {}
+    for i, m in ipairs(self.messages) do keyed[i] = { m = m, i = i, o = self.msgOrd[m] or self.ordinal } end
+    table.sort(keyed, function(x, y)
+        if x.o ~= y.o then return x.o < y.o end
+        return x.i < y.i
+    end)
+    for i, k in ipairs(keyed) do self.messages[i] = k.m end
+end
+
 function Run:processStep(step)
+    self.ordinal = self.ordinal + 1
     if not self.schema.FiltersMatch(step.filters, self.facts) then
         self:add("INFO", "step-skipped", step, "step filtered out for %s (class/race/faction filter)",
             profileLabel(self.profile))
@@ -1253,12 +1366,152 @@ function Run:processStep(step)
         end
         return
     end
-    self:checkEntities(step)
+    if self.worst and step.optional then
+        self:skipOptional(step)
+        return
+    end
+    self.walked[#self.walked + 1] = step
+    self.walkedOrd[#self.walked] = self.ordinal
+    -- shadow runs only simulate (their position messages would be dropped anyway)
+    if not self.opts.shadow then self:checkEntities(step) end
     for _, a in ipairs(V.OrderedActions(step)) do
         local h = H[a.type]
-        if h then h(self, a, step) end
+        if h and not (self.worst and self:worstSkip(a, step)) then h(self, a, step) end
     end
     if step.at then self.lastAt = step.at end
+end
+
+---------------------------------------------------------------------------
+-- skip-ahead: steps the engine's fast-forward can pass over (Core/Engine.lua)
+---------------------------------------------------------------------------
+
+-- "h-22-hillsbrad#45 id=h-22-gate" (the id only when it is not the default "<segment>:<n>")
+local function stepLabel(step)
+    local ref = format("%s#%d", tostring(step.segment), step.segIndex or 0)
+    if step.id and step.id ~= format("%s:%d", tostring(step.segment), step.segIndex or 0) then
+        ref = ref .. " id=" .. tostring(step.id)
+    end
+    return ref
+end
+
+-- "fly Orgrimmar, train" (short action list of a step for messages)
+local function stepActions(step)
+    local out = {}
+    for _, a in ipairs(step.actions or {}) do
+        local v = a.quest or a.place or a.item or (a.type == "level" and a.level) or nil
+        out[#out + 1] = v and format("%s %s", a.type, tostring(v)) or a.type
+    end
+    return table.concat(out, ", ")
+end
+V.StepActions = stepActions
+
+--- WARN skip-ahead. The engine's forward anchor is the last non-bg step with accept/turnin/complete
+-- whose stateful actions are all done; every transient action and every `optional` step before it
+-- then counts as done. A non-bg step whose accept / complete can be finished EARLY -- by an earlier
+-- bg step (a bg `complete` covering its objectives, a bg `accept` / `turnin` of its quest), by an
+-- earlier step completing the same objectives, or by the start state (quest in "complete") --
+-- becomes that anchor as soon as the earlier goal is done, and the travel / transient / optional
+-- non-bg steps between the two are fast-forwarded although the player never did them (its
+-- turnin / abandon actions, read from the game, keep a step from being early). Reported once per
+-- such step, at that step (`-- WARN-OK: reason` goes there).
+function Run:checkSkipAhead()
+    local steps = self.walked
+    local cover = {}     -- quest -> { [objective index] = { index, step } } (first early source)
+    local acceptSrc = {} -- quest -> { index, step }: bg accept / turnin
+    local acceptAt = {}  -- quest -> index of its last accept so far (0: in the start state's log)
+    local nObj = {}
+    local function objectiveCount(q)
+        if nObj[q] == nil then
+            local rec = DB.Quest(self.db, q, self.profile.class)
+            nObj[q] = rec and #objectiveList(rec) or 0
+        end
+        return nObj[q]
+    end
+    local function wanted(a)
+        if a.objectives and #a.objectives > 0 then return a.objectives end
+        local out = {}
+        for k = 1, math.max(objectiveCount(a.quest), 1) do out[k] = k end
+        return out
+    end
+    local function coverAll(q, src)
+        cover[q] = cover[q] or {}
+        for k = 1, math.max(objectiveCount(q), 1) do
+            if not cover[q][k] then cover[q][k] = src end
+        end
+    end
+    local state = self.opts.startState
+    for _, q in ipairs(state and state.log or {}) do acceptAt[q] = 0 end
+    for _, q in ipairs(state and state.complete or {}) do coverAll(q, { index = 0 }) end
+    local reported = {}
+    for i, s in ipairs(steps) do
+        if not s.bg then
+            local early, src, quest = -1, nil, nil
+            local anchor, ok = false, true
+            for _, a in ipairs(s.actions) do
+                local t = a.type
+                if t == "complete" then
+                    anchor = true
+                    local cov = cover[a.quest]
+                    for _, k in ipairs(wanted(a)) do
+                        local c = cov and cov[k]
+                        if not c then ok = false break end
+                        if c.index > early then early, src, quest = c.index, c, a.quest end
+                    end
+                    -- the bg goal counts only once the quest is in the log
+                    local acc = acceptAt[a.quest]
+                    if ok and acc and acc > early then early = acc end
+                elseif t == "accept" then
+                    anchor = true
+                    local c = acceptSrc[a.quest]
+                    if not c then ok = false
+                    elseif c.index > early then early, src, quest = c.index, c, a.quest end
+                elseif t == "turnin" or t == "abandon" then
+                    ok = false -- read from the game, not finished by a bg goal
+                end
+                -- collect / level may be done early anyway; transient actions are no anchor evidence
+                if not ok then break end
+            end
+            if ok and anchor and src then
+                for j = early + 1, i - 1 do
+                    local v = steps[j]
+                    if not v.bg and (v.transient or v.optional) and not reported[v] then
+                        reported[v] = true
+                        local how
+                        if src.step then
+                            how = format("as soon as %sstep %s [%s] is done", src.step.bg and "bg " or "earlier ",
+                                stepLabel(src.step), stepActions(src.step))
+                        else
+                            how = format("from the start (quest %s is complete in the start state)", self:qn(quest))
+                        end
+                        local m = self:add("WARN", "skip-ahead", v, "%s step [%s] can be fast-forwarded: the later step %s [%s] "
+                            .. "is done %s, becomes the forward anchor, and the guide then counts the travel / "
+                            .. "transient / optional steps before it as done (move this step before the bg goal or "
+                            .. "after the later step, or drop the overlap)", v.optional and "optional" or "transient",
+                            stepActions(v), stepLabel(s), stepActions(s), how)
+                        if m then self.msgOrd[m] = self.walkedOrd[j] end
+                    end
+                end
+            end
+        end
+        -- this step as an early source for the later ones
+        for _, a in ipairs(s.actions) do
+            local q = a.quest
+            if a.type == "accept" then
+                acceptAt[q] = i
+                if s.bg and not acceptSrc[q] then acceptSrc[q] = { index = i, step = s } end
+            elseif a.type == "complete" then
+                -- a bg goal -- or an earlier step completing the same objectives (the later one is then
+                -- done the moment the earlier one is: same effect)
+                cover[q] = cover[q] or {}
+                for _, k in ipairs(wanted(a)) do
+                    if not cover[q][k] then cover[q][k] = { index = i, step = s } end
+                end
+            elseif s.bg and a.type == "turnin" then
+                coverAll(q, { index = i, step = s })
+                if not acceptSrc[q] then acceptSrc[q] = { index = i, step = s } end
+            end
+        end
+    end
 end
 
 function Run:execute()
@@ -1272,6 +1525,12 @@ function Run:execute()
             self:processStep(step)
         end
         self:endSegment(seg)
+    end
+    self.ordinal = self.ordinal + 1 -- messages about the whole run come after every step message
+    if not self.opts.shadow then
+        local before = #self.messages
+        self:checkSkipAhead()
+        if #self.messages > before then self:sortMessages() end
     end
     for _, id in ipairs(sortedKeys(self.active)) do
         if route.harness then
@@ -1313,9 +1572,119 @@ function Run:result()
             xpKill = self.xp.kill, xpGrind = self.xp.grind, grindKills = self.xp.grindKills,
             unknownXpQuests = self.xp.unknownXpQuests, accepts = self.xp.accepts, turnins = self.xp.turnins,
             maxQuestLog = self.maxLog, carried = carried, steps = #self.route.steps,
+            incidentalPct = self.opts.incidentalPct or V.DEFAULTS.incidentalPct, xpIncidental = self.xp.incidental,
+            gates = self.gates,
         },
         endState = self:EndState(), -- --write-state (not part of the JSON report)
     }
+end
+
+---------------------------------------------------------------------------
+-- one profile: the main run + the shadow runs of the grind report
+---------------------------------------------------------------------------
+
+local KEEP_WORST = { ["optional-dependency"] = true }
+
+local function hasOptionalStep(route)
+    for _, s in ipairs(route.steps or {}) do
+        if s.optional then return true end
+    end
+    return false
+end
+
+-- insert the messages of a shadow run into the main run's list after the main messages of the same step
+local function mergeShadowMessages(main, shadow)
+    main.suppressed = main.suppressed + shadow.suppressed
+    if #shadow.messages == 0 then return end
+    local out, j = {}, 1
+    local extra = shadow.messages
+    for _, m in ipairs(main.messages) do
+        local o = main.msgOrd[m] or main.ordinal
+        while j <= #extra and (shadow.msgOrd[extra[j]] or shadow.ordinal) < o do
+            out[#out + 1] = extra[j]
+            j = j + 1
+        end
+        out[#out + 1] = m
+    end
+    for k = j, #extra do out[#out + 1] = extra[k] end
+    for _, m in ipairs(extra) do
+        main.counts[m.severity] = main.counts[m.severity] + 1
+        main.msgOrd[m] = shadow.msgOrd[m]
+    end
+    main.messages = out
+end
+
+--- Validate one route x profile: the main run (opts as given; its messages, levels and end state are
+-- the report) and the shadow runs of the grind report, which only simulate:
+--   * worst case (opts.worstCase): steps marked `optional = true` are not done -- their XP is not
+--     counted, quests they accept are not taken (later complete / turnin of them are skipped too) and
+--     quests they turn in stay open; a required step that needs such a quest is an ERROR
+--     `optional-dependency` (reported into the main run);
+--   * the incidental band: incidental kills 0% and V.DEFAULTS.incidentalBandPct (15%) of the quest
+--     XP, each in the normal and the worst case (runs equal to an existing one are reused).
+-- Adds to the result: summary.grindKillsWorst / xpGrindWorst / endLevelWorst / optionalSkipped /
+-- optionalAccepts / band (["0"], ["15"]: grindKills, grindKillsWorst, endLevel, endLevelWorst),
+-- segments[i].grindKillsWorst / optionalSkipped / band, summary.gates[i].killsWorst / band.
+-- @return the result table of the main run (Run:result)
+function V.RunProfile(db, schema, route, profile, opts)
+    opts = opts or {}
+    local mainPct = opts.incidentalPct or V.DEFAULTS.incidentalPct
+    local main = V.NewRun(db, schema, route, profile, opts)
+    local res = main:execute()
+    local optional = hasOptionalStep(route)
+    local runs = { [tostring(mainPct) .. ":normal"] = main }
+    local function get(pct, worst)
+        if worst and not optional then worst = false end -- nothing optional: the worst case is the normal run
+        local key = tostring(pct) .. (worst and ":worst" or ":normal")
+        if not runs[key] then
+            local o = {}
+            for k, v in pairs(opts) do o[k] = v end
+            o.incidentalPct, o.worstCase, o.shadow = pct, worst, true
+            o.keepCodes = (worst and pct == mainPct) and KEEP_WORST or {}
+            local r = V.NewRun(db, schema, route, profile, o)
+            r:execute()
+            runs[key] = r
+        end
+        return runs[key]
+    end
+    local worst = get(mainPct, true)
+    if worst ~= main then mergeShadowMessages(main, worst) end
+    res.messages, res.suppressed = main.messages, main.suppressed
+    local function lv(r) return round2(DB.LevelValue(db, r.st)) end
+    local sm = res.summary
+    sm.grindKillsWorst, sm.xpGrindWorst, sm.endLevelWorst = worst.xp.grindKills, worst.xp.grind, lv(worst)
+    sm.optionalSkipped, sm.optionalAccepts = worst.optSkipped, worst.optAccepts
+    local pcts = { 0, V.DEFAULTS.incidentalBandPct }
+    local band = json.object({})
+    for _, p in ipairs(pcts) do
+        local n, w = get(p, false), get(p, true)
+        band[tostring(p)] = json.object({ incidentalPct = p, grindKills = n.xp.grindKills, grindKillsWorst = w.xp.grindKills,
+                                          endLevel = lv(n), endLevelWorst = lv(w) })
+    end
+    sm.band = band
+    for i, s in ipairs(res.segments) do
+        local ws = worst.segments[i]
+        s.grindKillsWorst = ws and ws.grindKills or 0
+        s.optionalSkipped = ws and ws.optionalSkipped or 0
+        local b = json.object({})
+        for _, p in ipairs(pcts) do
+            local n, w = get(p, false).segments[i], get(p, true).segments[i]
+            b[tostring(p)] = json.object({ kills = n and n.grindKills or 0, worst = w and w.grindKills or 0 })
+        end
+        s.band = b
+    end
+    for i, g in ipairs(main.gates) do
+        local step = main.gateSteps[i]
+        local wg = worst.gateByStep[step]
+        g.killsWorst = wg and wg.kills or 0 -- an optional level step is not done in the worst case
+        local b = json.object({})
+        for _, p in ipairs(pcts) do
+            local ng, wgp = get(p, false).gateByStep[step], get(p, true).gateByStep[step]
+            b[tostring(p)] = json.object({ kills = ng and ng.kills or 0, worst = wgp and wgp.kills or 0 })
+        end
+        g.band = b
+    end
+    return res
 end
 
 ---------------------------------------------------------------------------
@@ -1428,8 +1797,7 @@ function V.ValidateModule(dir, opts)
             local first
             local routeResults = {}
             for _, profile in ipairs(profiles) do
-                local run = V.NewRun(opts.db, opts.schema, route, profile, opts)
-                local res = run:execute()
+                local res = V.RunProfile(opts.db, opts.schema, route, profile, opts)
                 first = first or res
                 out.results[#out.results + 1] = res
                 routeResults[#routeResults + 1] = res
@@ -1485,8 +1853,7 @@ function V.ValidateHarness(hb, opts)
     local res
     if hb.route then
         local profile = V.Profiles(hb.route)[1]
-        local run = V.NewRun(opts.db, opts.schema, hb.route, profile, opts)
-        res = run:execute()
+        res = V.RunProfile(opts.db, opts.schema, hb.route, profile, opts)
         local extra = {}
         for _, m in ipairs(V.RouteChecks(opts.db, hb.route, { profile })) do
             if opts.ignore and opts.ignore[m.code] then
@@ -1539,6 +1906,53 @@ local function textOf(t)
     return t and tostring(t) or ""
 end
 
+local function gateLevel(g)
+    return format("%d%s", g.level, (g.frac or 0) > 0 and format(" +%d%%", floor(g.frac * 100 + 0.5)) or "")
+end
+V.GateLevel = gateLevel
+
+--- Grind report lines of one result (V.RunProfile): the level gates and the segments with the
+-- same-level kills needed in the normal / worst case, each without and with incidental kills, and the
+-- summary lines "grind kills: N (worst case M)" + the incidental band. {} for results without it.
+function V.GrindLines(r)
+    local out = {}
+    local sm = r.summary or {}
+    if not (sm.endLevel and sm.band) then return out end
+    local bp = V.DEFAULTS.incidentalBandPct
+    local b0, bh = tostring(0), tostring(bp)
+    local function band(b, key, field) return (b and b[key] and b[key][field]) or 0 end
+    if sm.gates and #sm.gates > 0 then
+        out[#out + 1] = format("  level gates: same-level kills to reach the level of each level step; worst = steps "
+            .. "marked optional (and their quests) not done; +%d%% = incidental kills worth %d%% of the quest XP", bp, bp)
+        out[#out + 1] = format("  %-9s %6s %6s %6s %9s  %s", "gate", "kills", "worst", "+" .. bp .. "%",
+            "worst+" .. bp .. "%", "step")
+        for _, g in ipairs(sm.gates) do
+            -- an optional level step is not done in the worst case: "-" (its grind moves to the next gate)
+            local function worst(key) return g.optional and "-" or tostring(band(g.band, key, "worst")) end
+            out[#out + 1] = format("  %-9s %6d %6s %6d %9s  %s%s", gateLevel(g), band(g.band, b0, "kills"), worst(b0),
+                band(g.band, bh, "kills"), worst(bh), locStr({ segment = g.segment, step = g.step, stepId = g.stepId }),
+                g.optional and " (optional)" or "")
+        end
+    end
+    if #(r.segments or {}) > 0 then
+        out[#out + 1] = format("  %-28s %6s %6s %6s %9s %8s", "grind kills per segment", "kills", "worst",
+            "+" .. bp .. "%", "worst+" .. bp .. "%", "optional")
+        for _, s in ipairs(r.segments) do
+            out[#out + 1] = format("  %-28s %6d %6d %6d %9d %8d", tostring(s.id):sub(1, 28), band(s.band, b0, "kills"),
+                band(s.band, b0, "worst"), band(s.band, bh, "kills"), band(s.band, bh, "worst"), s.optionalSkipped or 0)
+        end
+    end
+    local pct = sm.incidentalPct or 0
+    out[#out + 1] = format("  grind kills: %d (worst case %d)%s; worst case = %d optional step(s) not done (%d quest "
+        .. "accept(s)), end level %.2f", sm.grindKills or 0, sm.grindKillsWorst or 0,
+        pct > 0 and format(" with incidental kills %g%% of quest XP (+%d XP)", pct, sm.xpIncidental or 0) or "",
+        sm.optionalSkipped or 0, sm.optionalAccepts or 0, sm.endLevelWorst or 0)
+    out[#out + 1] = format("  grind kills band: incidental kills 0%% -> %d (worst case %d), %d%% of quest XP -> %d "
+        .. "(worst case %d)", band(sm.band, b0, "grindKills"), band(sm.band, b0, "grindKillsWorst"), bp,
+        band(sm.band, bh, "grindKills"), band(sm.band, bh, "grindKillsWorst"))
+    return out
+end
+
 --- Human-readable report lines.
 function V.FormatText(all, opts)
     opts = opts or {}
@@ -1575,6 +1989,7 @@ function V.FormatText(all, opts)
                     sm.xpQuestEstimated, sm.unknownXpQuests, sm.xpKill, sm.xpGrind, sm.grindKills, sm.maxQuestLog,
                     #(sm.carried or {})))
             end
+            for _, line in ipairs(V.GrindLines(r)) do w(line) end
             w(format("  result: %d error(s), %d warning(s), %d info%s", r.counts.ERROR, r.counts.WARN, r.counts.INFO,
                 (r.suppressed or 0) > 0 and format(", %d suppressed", r.suppressed) or ""))
             w("")
@@ -1623,6 +2038,35 @@ V.IN_GAME_ONLY = {
     "**Секретные значения** (`issecretvalue` и т. п.) в ограниченных контекстах (подземелья, бой): "
         .. "аддон их не читает, но реальный набор ограничений Forever виден только в клиенте.",
 }
+
+--- Markdown lines of the grind report of one result (V.RunProfile; {} without it).
+function V.GrindMarkdown(r)
+    local L = {}
+    local sm = r.summary or {}
+    if not (sm.endLevel and sm.band) then return L end
+    local bp = V.DEFAULTS.incidentalBandPct
+    local b0, bh = tostring(0), tostring(bp)
+    local function band(b, key, field) return (b and b[key] and b[key][field]) or 0 end
+    L[#L + 1] = format("Гринд до порогов уровня (шаги `level`): ~%d убийств мобов своего уровня%s; худший случай "
+        .. "(не выполнены шаги `optional = true` — %d — и их квесты): ~%d. С попутными убийствами в пути на %d %% "
+        .. "опыта квестов: ~%d (худший случай ~%d).", sm.grindKills or 0,
+        (sm.incidentalPct or 0) > 0 and format(" (попутные убийства %g %% опыта квестов)", sm.incidentalPct) or "",
+        sm.optionalSkipped or 0, sm.grindKillsWorst or 0, bp, band(sm.band, bh, "grindKills"),
+        band(sm.band, bh, "grindKillsWorst"))
+    L[#L + 1] = ""
+    if sm.gates and #sm.gates > 0 then
+        L[#L + 1] = format("| порог уровня | шаг | убийств | худший случай | +%d %% | худший +%d %% |", bp, bp)
+        L[#L + 1] = "|---|---|---:|---:|---:|---:|"
+        for _, g in ipairs(sm.gates) do
+            local function worst(key) return g.optional and "—" or tostring(band(g.band, key, "worst")) end
+            L[#L + 1] = format("| %s%s | %s | %d | %s | %d | %s |", gateLevel(g), g.optional and " (необязательный)" or "",
+                mdEscape(locStr({ segment = g.segment, step = g.step, stepId = g.stepId })), band(g.band, b0, "kills"),
+                worst(b0), band(g.band, bh, "kills"), worst(bh))
+        end
+        L[#L + 1] = ""
+    end
+    return L
+end
 
 --- Markdown report (docs/VALIDATION.md).
 function V.FormatMarkdown(all, db)
@@ -1683,6 +2127,7 @@ function V.FormatMarkdown(all, db)
                     sm.xpQuestEstimated, sm.unknownXpQuests, sm.xpKill, sm.xpGrind, sm.grindKills, sm.maxQuestLog,
                     db.questLogSize or 40, sm.accepts, sm.turnins, #(sm.carried or {})))
                 w("")
+                for _, line in ipairs(V.GrindMarkdown(r)) do w(line) end
             end
             if #r.segments > 0 then
                 w("| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (убийств) | журнал |")
@@ -1772,6 +2217,9 @@ options:
   --ignore CODE,...     suppress message codes (e.g. xp-unknown)
   --xp-optimism N       optimistic factor for estimated quest XP (default 2.0): a level
                         requirement is an ERROR only if even the optimistic level is too low
+  --incidental-pct P    incidental kills while travelling: every turn-in also gives P% of its
+                        quest XP as kill XP (default 0 = off). The grind report always shows
+                        the band 0% / 15%, each also for the worst case (optional steps not done)
   --state FILE          start the simulation from a character state (JSON, see tools/README.md):
                         level / xpFrac, done, log / complete, hearth, at, flightPaths
   --write-state FILE    write the character state at the END of the run (same format; needs
@@ -1826,6 +2274,10 @@ function V.ParseArgs(argv)
         elseif a == "--tolerance" then o.tolerance = tonumber(val()) or error("bad --tolerance", 0)
         elseif a == "--hard-tolerance" then o.hardTolerance = tonumber(val()) or error("bad --hard-tolerance", 0)
         elseif a == "--xp-optimism" then o.unknownXpOptimism = tonumber(val()) or error("bad --xp-optimism", 0)
+        elseif a == "--incidental-pct" then
+            local v = tonumber(val())
+            if not v or v < 0 or v > 100 then error("bad --incidental-pct (a percent 0..100)", 0) end
+            o.incidentalPct = v
         elseif a == "--ignore" then
             for c in val():gmatch("[^,%s]+") do o.ignore[c] = true end
         elseif a == "-v" or a == "--verbose" then o.verbose = true
@@ -1901,7 +2353,7 @@ function V.Main(argv, root)
             db = db, schema = schema, route = o.route, profile = o.profile, tolerance = o.tolerance,
             hardTolerance = o.hardTolerance, toleranceYards = o.toleranceYards,
             hardToleranceYards = o.hardToleranceYards, ignore = o.ignore, unknownXpOptimism = o.unknownXpOptimism,
-            startState = startState,
+            startState = startState, incidentalPct = o.incidentalPct,
         }
         for k, v in pairs(extra or {}) do opts[k] = v end
         return opts
