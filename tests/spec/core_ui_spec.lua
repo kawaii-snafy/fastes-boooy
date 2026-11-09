@@ -907,7 +907,7 @@ describe("slash commands", function()
         assert.same({ "Unknown route 'nope'. Type /fb routes." }, slash("/fb route nope"))
         out = slash("/fastesboooy status")
         assert.same({
-            "FastesBoooy 0.3.0 (route API 1.1)",
+            "FastesBoooy 0.3.1 (route API 1.1)",
             "Route: Test route (test-route)",
             "Step 1/26: Accept: Rude Awakening",
             "Automation: on",

@@ -22,7 +22,7 @@
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1922500 (из них оценено 121565; квестов с неизвестным опытом: 126), за убийства по целям 813449, гринд 1348795 (~4878 убийств); максимум квестов в журнале 23 из 40; принято 727, сдано 727, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4878 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 159 — и их квесты): ~6070. С попутными убийствами в пути на 15 % опыта квестов: ~3883 (худший случай ~5159).
+Гринд до порогов уровня (шаги `level`): ~4878 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 161 — и их квесты): ~6082. С попутными убийствами в пути на 15 % опыта квестов: ~3883 (худший случай ~5172).
 
 | порог уровня | шаг | убийств | худший случай | +15 % | худший +15 % |
 |---|---|---:|---:|---:|---:|
@@ -33,22 +33,22 @@
 | 16 | sd-04-barrens#61 | 0 | 0 | 0 | 0 |
 | 20 | sd-05-stonetalon-ashenvale#44 id=sd05-level-20 | 0 | 0 | 0 | 0 |
 | 22 | sd-05-stonetalon-ashenvale#86 id=sd05-level-22 | 0 | 40 | 0 | 0 |
-| 23 +85% | h-22-hillsbrad#58 id=h-22-hillsbrad-level-gate | 0 | 45 | 0 | 0 |
-| 26 +84% | h-24-barrens-stonetalon#90 id=h-24-barrens-stonetalon-level-gate | 0 | 228 | 0 | 159 |
+| 23 +85% | h-22-hillsbrad#57 id=h-22-hillsbrad-level-gate | 0 | 57 | 0 | 0 |
+| 26 +84% | h-24-barrens-stonetalon#90 id=h-24-barrens-stonetalon-level-gate | 0 | 229 | 0 | 172 |
 | 29 | h-27-ashenvale-needles#117 | 0 | 0 | 0 | 0 |
 | 30 +67% | h-27-ashenvale-needles#120 id=h-27-ashenvale-needles-level-gate | 109 | 313 | 0 | 259 |
-| 33 +43% | h-31-hillsbrad-arathi#56 id=h-31-hillsbrad-arathi-level-gate | 273 | 327 | 117 | 291 |
+| 33 +43% | h-31-hillsbrad-arathi#56 id=h-31-hillsbrad-arathi-level-gate | 273 | 326 | 117 | 291 |
 | 35 +75% | h-34-stranglethorn#50 id=h-34-stranglethorn-level-gate | 152 | 152 | 119 | 119 |
-| 37 +50% | h-37-desolace-dustwallow#36 id=h38-level-maraudine | 325 | 345 | 297 | 320 |
+| 37 +50% | h-37-desolace-dustwallow#36 id=h38-level-maraudine | 325 | 346 | 297 | 320 |
 | 39 +78% | h-37-desolace-dustwallow#63 id=h39-level-mannoroc | 683 | 683 | 672 | 671 |
 | 40 +25% | h-37-desolace-dustwallow#117 id=h-37-desolace-dustwallow-level-gate | 0 | 0 | 0 | 0 |
-| 43 +80% | h-41-arathi-badlands#70 id=h-41-arathi-badlands-level-gate | 765 | 919 | 695 | 864 |
-| 45 +90% | h-44-swamp-stranglethorn#89 id=h-44-swamp-stranglethorn-level-gate | 177 | 184 | 109 | 117 |
+| 43 +80% | h-41-arathi-badlands#70 id=h-41-arathi-badlands-level-gate | 765 | 918 | 695 | 864 |
+| 45 +90% | h-44-swamp-stranglethorn#89 id=h-44-swamp-stranglethorn-level-gate | 177 | 185 | 109 | 117 |
 | 47 (необязательный) | h-46-tanaris-feralas#54 id=h48-tanaris-level-gate | 29 | — | 0 | — |
 | 49 +30% | h-46-tanaris-feralas#108 id=h-46-tanaris-feralas-level-gate | 589 | 715 | 528 | 641 |
 | 52 +30% | h-50-hinterlands-searing-steppes#139 id=h-50-hinterlands-searing-steppes-level-gate | 154 | 308 | 46 | 201 |
 | 54 | h-53-azshara-ungoro-silithus#108 id=h55-silithus-grind | 0 | 0 | 0 | 0 |
-| 54 +74% | h-53-azshara-ungoro-silithus#114 id=h55-silithus-field-grind | 318 | 350 | 200 | 239 |
+| 54 +74% | h-53-azshara-ungoro-silithus#114 id=h55-silithus-field-grind | 318 | 349 | 200 | 239 |
 | 55 | h-53-azshara-ungoro-silithus#127 id=h-53-azshara-ungoro-silithus-level-gate | 0 | 0 | 0 | 0 |
 | 57 | h-56-felwood-winterspring-plaguelands#72 id=h57-winterspring-grind | 584 | 604 | 511 | 534 |
 | 59 +98% | h-56-felwood-winterspring-plaguelands#206 id=h-56-felwood-winterspring-plaguelands-level-gate | 720 | 857 | 589 | 744 |
@@ -182,7 +182,7 @@
 | WARN | [library FastesBoooy_Horde] h-22-hillsbrad#22 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `at-far-from-giver` | turnin 1098 "Deathstalkers in Shadowfang": no quest ender spawns on uiMap 1421 |
 | WARN | [library FastesBoooy_Horde] h-22-hillsbrad#29 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `xp-unknown` | turnin 95883 "The Tortured Soul": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
 | WARN | [library FastesBoooy_Horde] h-22-hillsbrad#30 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `xp-unknown` | turnin 95885 "The Offering of Blood": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#49 id=h-22-deathstalker-masoj (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `xp-unknown` | turnin 98094 "Scout Support": quest XP unknown in the DB (Forever-new quest?); estimated 2000 (median of level-25 quests). Record the real value in game with /fb xp |
+| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#58 id=h-22-deathstalker-masoj (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `xp-unknown` | turnin 98094 "Scout Support": quest XP unknown in the DB (Forever-new quest?); estimated 2000 (median of level-25 quests). Record the real value in game with /fb xp |
 | WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#28 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `xp-unknown` | turnin 98093 "Field to Clear": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
 | WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#30 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `xp-unknown` | turnin 97250 "Wrongly Blamed, Justly Corrected": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
 | WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#43 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `xp-unknown` | turnin 92706 "WANTED: Bruuz": quest XP unknown in the DB (Forever-new quest?); estimated 780 (median of level-20 quests). Record the real value in game with /fb xp |
@@ -324,15 +324,15 @@
 - sd-05-stonetalon-ashenvale#84 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 6442 "Naga at the Zoram Strand": ~30 kills, +3564 kill XP (estimate); level now 22.10
 - [library FastesBoooy_Horde] h-22-hillsbrad#3 id=h-22-tb-fly-org (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `step-skipped` step filtered out for Skyborne DRUID Horde (class/race/faction filter)
 - [library FastesBoooy_Horde] h-22-hillsbrad#28 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 95883 "The Tortured Soul": ~2 kills, +204 kill XP (estimate); level now 23.43
-- [library FastesBoooy_Horde] h-22-hillsbrad#39 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 496 "Elixir of Suffering": ~17 kills, +2168 kill XP (estimate); level now 23.74
-- [library FastesBoooy_Horde] h-22-hillsbrad#40 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 501 "Elixir of Pain": ~15 kills, +2400 kill XP (estimate); level now 23.82
-- [library FastesBoooy_Horde] h-22-hillsbrad#41 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 567 "Dangerous!": ~2 kills, +352 kill XP (estimate); level now 23.84
-- [library FastesBoooy_Horde] h-22-hillsbrad#42 id=h-22-hillsbrad-foothills-field (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 527 "Battle of Hillsbrad": ~14 kills, +2122 kill XP (estimate); level now 23.91
-- [library FastesBoooy_Horde] h-22-hillsbrad#45 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 546 "Souvenirs of Death": ~45 kills, +6560 kill XP (estimate); level now 24.18
-- [library FastesBoooy_Horde] h-22-hillsbrad#46 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 549 "WANTED: Syndicate Personnel": ~20 kills, +1930 kill XP (estimate); level now 24.24
-- [library FastesBoooy_Horde] h-22-hillsbrad#46 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 1066 "Blood of Innocents": ~8 kills, +840 kill XP (estimate); level now 24.27
-- [library FastesBoooy_Horde] h-22-hillsbrad#51 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 528 "Battle of Hillsbrad": ~15 kills, +2475 kill XP (estimate); level now 24.41
-- [library FastesBoooy_Horde] h-22-hillsbrad#57 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-no-kill` complete 529 "Battle of Hillsbrad": no kill XP for objective 1 2404 "Blacksmith Verringtan": service NPC (repair, vendor); 2 2265 "Hillsbrad Apprentice Blacksmith": service NPC (questgiver, vendor)
+- [library FastesBoooy_Horde] h-22-hillsbrad#38 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 496 "Elixir of Suffering": ~17 kills, +2168 kill XP (estimate); level now 23.74
+- [library FastesBoooy_Horde] h-22-hillsbrad#39 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 501 "Elixir of Pain": ~15 kills, +2400 kill XP (estimate); level now 23.82
+- [library FastesBoooy_Horde] h-22-hillsbrad#40 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 567 "Dangerous!": ~2 kills, +352 kill XP (estimate); level now 23.84
+- [library FastesBoooy_Horde] h-22-hillsbrad#41 id=h-22-hillsbrad-foothills-field (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 527 "Battle of Hillsbrad": ~14 kills, +2122 kill XP (estimate); level now 23.91
+- [library FastesBoooy_Horde] h-22-hillsbrad#44 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 546 "Souvenirs of Death": ~45 kills, +6560 kill XP (estimate); level now 24.18
+- [library FastesBoooy_Horde] h-22-hillsbrad#45 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 549 "WANTED: Syndicate Personnel": ~20 kills, +1930 kill XP (estimate); level now 24.24
+- [library FastesBoooy_Horde] h-22-hillsbrad#45 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 1066 "Blood of Innocents": ~8 kills, +840 kill XP (estimate); level now 24.27
+- [library FastesBoooy_Horde] h-22-hillsbrad#49 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 528 "Battle of Hillsbrad": ~15 kills, +2475 kill XP (estimate); level now 24.35
+- [library FastesBoooy_Horde] h-22-hillsbrad#56 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-no-kill` complete 529 "Battle of Hillsbrad": no kill XP for objective 1 2404 "Blacksmith Verringtan": service NPC (repair, vendor); 2 2265 "Hillsbrad Apprentice Blacksmith": service NPC (questgiver, vendor)
 - [library FastesBoooy_Horde] h-24-barrens-stonetalon#7 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `quest-profession` accept 862 "Dig Rat Stew": requires Cooking 15 (profession); optional step
 - [library FastesBoooy_Horde] h-24-barrens-stonetalon#16 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 98093 "Field to Clear": ~14 kills, +1512 kill XP (estimate); level now 25.06
 - [library FastesBoooy_Horde] h-24-barrens-stonetalon#17 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 97250 "Wrongly Blamed, Justly Corrected": ~3 kills, +471 kill XP (estimate); level now 25.07
@@ -626,7 +626,7 @@
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1900615 (из них оценено 94825; квестов с неизвестным опытом: 77), за убийства по целям 815322, гринд 1368910 (~4972 убийств); максимум квестов в журнале 23 из 40; принято 712, сдано 712, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4972 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 154 — и их квесты): ~6166. С попутными убийствами в пути на 15 % опыта квестов: ~3954 (худший случай ~5257).
+Гринд до порогов уровня (шаги `level`): ~4972 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 156 — и их квесты): ~6179. С попутными убийствами в пути на 15 % опыта квестов: ~3954 (худший случай ~5271).
 
 | порог уровня | шаг | убийств | худший случай | +15 % | худший +15 % |
 |---|---|---:|---:|---:|---:|
@@ -639,25 +639,25 @@
 | 21 | ud-05-stonetalon-ashenvale#77 id=ud05-lvl-21 | 0 | 3 | 0 | 0 |
 | 21 +85% | ud-05-stonetalon-ashenvale#82 id=ud05-lvl-grind | 74 | 107 | 0 | 14 |
 | 22 | ud-05-stonetalon-ashenvale#84 id=ud05-lvl-22 | 0 | 0 | 0 | 0 |
-| 23 +85% | h-22-hillsbrad#58 id=h-22-hillsbrad-level-gate | 0 | 37 | 0 | 11 |
-| 26 +84% | h-24-barrens-stonetalon#90 id=h-24-barrens-stonetalon-level-gate | 0 | 220 | 0 | 185 |
+| 23 +85% | h-22-hillsbrad#57 id=h-22-hillsbrad-level-gate | 0 | 49 | 0 | 25 |
+| 26 +84% | h-24-barrens-stonetalon#90 id=h-24-barrens-stonetalon-level-gate | 0 | 221 | 0 | 185 |
 | 29 | h-27-ashenvale-needles#117 | 0 | 0 | 0 | 0 |
 | 30 +67% | h-27-ashenvale-needles#120 id=h-27-ashenvale-needles-level-gate | 84 | 313 | 0 | 259 |
-| 33 +43% | h-31-hillsbrad-arathi#56 id=h-31-hillsbrad-arathi-level-gate | 274 | 327 | 139 | 291 |
-| 35 +75% | h-34-stranglethorn#50 id=h-34-stranglethorn-level-gate | 151 | 151 | 119 | 119 |
+| 33 +43% | h-31-hillsbrad-arathi#56 id=h-31-hillsbrad-arathi-level-gate | 274 | 326 | 139 | 291 |
+| 35 +75% | h-34-stranglethorn#50 id=h-34-stranglethorn-level-gate | 151 | 152 | 119 | 119 |
 | 37 +50% | h-37-desolace-dustwallow#36 id=h38-level-maraudine | 325 | 346 | 297 | 319 |
 | 39 +78% | h-37-desolace-dustwallow#63 id=h39-level-mannoroc | 684 | 683 | 672 | 672 |
 | 40 +25% | h-37-desolace-dustwallow#117 id=h-37-desolace-dustwallow-level-gate | 0 | 0 | 0 | 0 |
-| 43 +80% | h-41-arathi-badlands#70 id=h-41-arathi-badlands-level-gate | 764 | 919 | 695 | 863 |
-| 45 +90% | h-44-swamp-stranglethorn#89 id=h-44-swamp-stranglethorn-level-gate | 178 | 184 | 109 | 117 |
+| 43 +80% | h-41-arathi-badlands#70 id=h-41-arathi-badlands-level-gate | 764 | 918 | 695 | 864 |
+| 45 +90% | h-44-swamp-stranglethorn#89 id=h-44-swamp-stranglethorn-level-gate | 178 | 185 | 109 | 117 |
 | 47 (необязательный) | h-46-tanaris-feralas#54 id=h48-tanaris-level-gate | 28 | — | 0 | — |
-| 49 +30% | h-46-tanaris-feralas#108 id=h-46-tanaris-feralas-level-gate | 589 | 715 | 528 | 642 |
+| 49 +30% | h-46-tanaris-feralas#108 id=h-46-tanaris-feralas-level-gate | 589 | 715 | 528 | 641 |
 | 52 +30% | h-50-hinterlands-searing-steppes#139 id=h-50-hinterlands-searing-steppes-level-gate | 154 | 308 | 47 | 201 |
 | 54 | h-53-azshara-ungoro-silithus#108 id=h55-silithus-grind | 0 | 23 | 0 | 0 |
-| 54 +74% | h-53-azshara-ungoro-silithus#114 id=h55-silithus-field-grind | 362 | 369 | 248 | 285 |
+| 54 +74% | h-53-azshara-ungoro-silithus#114 id=h55-silithus-field-grind | 362 | 368 | 248 | 285 |
 | 55 | h-53-azshara-ungoro-silithus#127 id=h-53-azshara-ungoro-silithus-level-gate | 0 | 0 | 0 | 0 |
 | 57 | h-56-felwood-winterspring-plaguelands#72 id=h57-winterspring-grind | 584 | 604 | 511 | 534 |
-| 59 +98% | h-56-felwood-winterspring-plaguelands#206 id=h-56-felwood-winterspring-plaguelands-level-gate | 720 | 856 | 589 | 745 |
+| 59 +98% | h-56-felwood-winterspring-plaguelands#206 id=h-56-felwood-winterspring-plaguelands-level-gate | 720 | 857 | 589 | 745 |
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (убийств) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -738,7 +738,7 @@
 | WARN | [library FastesBoooy_Horde] h-22-hillsbrad#22 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `at-far-from-giver` | turnin 1098 "Deathstalkers in Shadowfang": no quest ender spawns on uiMap 1421 |
 | WARN | [library FastesBoooy_Horde] h-22-hillsbrad#29 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `xp-unknown` | turnin 95883 "The Tortured Soul": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
 | WARN | [library FastesBoooy_Horde] h-22-hillsbrad#30 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `xp-unknown` | turnin 95885 "The Offering of Blood": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#49 id=h-22-deathstalker-masoj (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `xp-unknown` | turnin 98094 "Scout Support": quest XP unknown in the DB (Forever-new quest?); estimated 2000 (median of level-25 quests). Record the real value in game with /fb xp |
+| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#58 id=h-22-deathstalker-masoj (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `xp-unknown` | turnin 98094 "Scout Support": quest XP unknown in the DB (Forever-new quest?); estimated 2000 (median of level-25 quests). Record the real value in game with /fb xp |
 | WARN | [library FastesBoooy_Horde] h-22-hillsbrad (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `segment-level` | segment h-22-hillsbrad ends at simulated level 25.11; planned end level 24 |
 | WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#28 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `xp-unknown` | turnin 98093 "Field to Clear": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
 | WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#30 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `xp-unknown` | turnin 97250 "Wrongly Blamed, Justly Corrected": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
@@ -880,15 +880,15 @@
 - h-22-hillsbrad#20 id=pal-22-key (Inserts.lua) `complete-kill-xp` complete 91862 "Lumina Windsinger": ~2 kills, +164 kill XP (estimate); level now 22.95
 - h-22-hillsbrad#20 id=pal-22-escort (Inserts.lua) `complete-no-objectives` complete 96204 "The Windshaper's Wrath": the DB lists no objectives
 - [library FastesBoooy_Horde] h-22-hillsbrad#28 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 95883 "The Tortured Soul": ~2 kills, +204 kill XP (estimate); level now 23.60
-- [library FastesBoooy_Horde] h-22-hillsbrad#39 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 496 "Elixir of Suffering": ~17 kills, +2168 kill XP (estimate); level now 23.91
-- [library FastesBoooy_Horde] h-22-hillsbrad#40 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 501 "Elixir of Pain": ~15 kills, +2400 kill XP (estimate); level now 23.99
-- [library FastesBoooy_Horde] h-22-hillsbrad#41 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 567 "Dangerous!": ~2 kills, +352 kill XP (estimate); level now 24.00
-- [library FastesBoooy_Horde] h-22-hillsbrad#42 id=h-22-hillsbrad-foothills-field (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 527 "Battle of Hillsbrad": ~14 kills, +1917 kill XP (estimate); level now 24.06
-- [library FastesBoooy_Horde] h-22-hillsbrad#45 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 546 "Souvenirs of Death": ~45 kills, +6480 kill XP (estimate); level now 24.33
-- [library FastesBoooy_Horde] h-22-hillsbrad#46 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 549 "WANTED: Syndicate Personnel": ~20 kills, +1930 kill XP (estimate); level now 24.39
-- [library FastesBoooy_Horde] h-22-hillsbrad#46 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 1066 "Blood of Innocents": ~8 kills, +840 kill XP (estimate); level now 24.41
-- [library FastesBoooy_Horde] h-22-hillsbrad#51 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 528 "Battle of Hillsbrad": ~15 kills, +2475 kill XP (estimate); level now 24.56
-- [library FastesBoooy_Horde] h-22-hillsbrad#57 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-no-kill` complete 529 "Battle of Hillsbrad": no kill XP for objective 1 2404 "Blacksmith Verringtan": service NPC (repair, vendor); 2 2265 "Hillsbrad Apprentice Blacksmith": service NPC (questgiver, vendor)
+- [library FastesBoooy_Horde] h-22-hillsbrad#38 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 496 "Elixir of Suffering": ~17 kills, +2168 kill XP (estimate); level now 23.91
+- [library FastesBoooy_Horde] h-22-hillsbrad#39 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 501 "Elixir of Pain": ~15 kills, +2400 kill XP (estimate); level now 23.99
+- [library FastesBoooy_Horde] h-22-hillsbrad#40 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 567 "Dangerous!": ~2 kills, +352 kill XP (estimate); level now 24.00
+- [library FastesBoooy_Horde] h-22-hillsbrad#41 id=h-22-hillsbrad-foothills-field (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 527 "Battle of Hillsbrad": ~14 kills, +1917 kill XP (estimate); level now 24.06
+- [library FastesBoooy_Horde] h-22-hillsbrad#44 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 546 "Souvenirs of Death": ~45 kills, +6480 kill XP (estimate); level now 24.33
+- [library FastesBoooy_Horde] h-22-hillsbrad#45 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 549 "WANTED: Syndicate Personnel": ~20 kills, +1930 kill XP (estimate); level now 24.39
+- [library FastesBoooy_Horde] h-22-hillsbrad#45 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 1066 "Blood of Innocents": ~8 kills, +840 kill XP (estimate); level now 24.41
+- [library FastesBoooy_Horde] h-22-hillsbrad#49 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 528 "Battle of Hillsbrad": ~15 kills, +2475 kill XP (estimate); level now 24.49
+- [library FastesBoooy_Horde] h-22-hillsbrad#56 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-no-kill` complete 529 "Battle of Hillsbrad": no kill XP for objective 1 2404 "Blacksmith Verringtan": service NPC (repair, vendor); 2 2265 "Hillsbrad Apprentice Blacksmith": service NPC (questgiver, vendor)
 - [library FastesBoooy_Horde] h-24-barrens-stonetalon#7 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `quest-profession` accept 862 "Dig Rat Stew": requires Cooking 15 (profession); optional step
 - [library FastesBoooy_Horde] h-24-barrens-stonetalon#16 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 98093 "Field to Clear": ~14 kills, +1512 kill XP (estimate); level now 25.19
 - [library FastesBoooy_Horde] h-24-barrens-stonetalon#17 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 97250 "Wrongly Blamed, Justly Corrected": ~3 kills, +471 kill XP (estimate); level now 25.21

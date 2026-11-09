@@ -177,6 +177,7 @@ ns.Engine = Engine
 
 local EMPTY = {}
 local END_ID = "<end>"
+local LOG_READY_DELAY = 3 -- seconds after the start: see Engine:Start
 local THROTTLE = 0.1
 local ARRIVAL_TICK = 0.25
 local MAX_PASSES = 6
@@ -1029,7 +1030,10 @@ function Engine:Evaluate()
             ctx.abandonedLater = self.abandonAfter[i]
             local d = Steps:IsStepDone(s, ctx)
             done[i] = d
-            if d and not ctx.manual and not ctx.forwarded and type(bgDone) == "table" and needsBgMemory(s) then
+            -- only a goal the player has reached: items that were in the bags once, long before the
+            -- step, may be sold or used up by the time the route gets there
+            if d and i < reach and not ctx.manual and not ctx.forwarded and type(bgDone) == "table"
+                and needsBgMemory(s) then
                 bgDone[s.id] = true -- done by its own actions: keep it done (items consumed / flags lost later)
             end
         end
@@ -1261,7 +1265,7 @@ function Engine:Next()
     self:Refresh()
 end
 
---- "Prev": shows the previous non-bg step. From the natural cursor, a step that
+--- "Prev": shows the previous non-bg step. A step that
 -- is done only because of a manual/skip mark is un-marked (undo) -- not below the level-sync
 -- floor (cdb.syncFloor: those steps are done by the floor, Prev only pins); un-marking a step
 -- that ends a quest given up by hand drops that give-up (Engine:RestoreQuest), and so
@@ -1276,12 +1280,14 @@ function Engine:Prev()
     if p < 1 then return end
     local s = steps[p]
     -- a step below the level-sync floor is done by the floor: Prev only shows it (pin)
-    if not self.pinned and p >= (self.floor or 0) then
+    if p >= (self.floor or 0) then
         local cdb = ns.cdb
         local last = self.lastGaveUp
-        if last and last.natural == self.natural then
+        if not self.pinned and last and last.natural == self.natural then
             self:RestoreQuest(last.quest) -- undo the give-up that just happened
         end
+        -- also while the view is pinned: a skip is not always the step right before the cursor
+        -- (Forward on step N with N+1 already done moves the cursor past both)
         if cdb.manual[s.id] or cdb.skipped[s.id] then
             local records = gaveUpRecords()
             for _, a in ipairs(s.actions) do
@@ -1801,6 +1807,12 @@ end
 function Engine:UpdateSync()
     local sug = self:ComputeSyncSuggestion()
     if sug and not self.applyingSync and self:SyncMode() == "auto" then
+        -- not from the first evaluation at login: with the quest log not loaded yet its quests look
+        -- "not taken" and a jump would be saved (and report them as dropped)
+        if not self.logReady then
+            self:SetSyncSuggestion(nil)
+            return
+        end
         self:ApplySync(true)
         return
     end
@@ -2009,7 +2021,25 @@ function Engine:Start()
         ns.Print(L().MSG_ROUTE_ERRORS, #errors, tostring(errors[1]))
     end
     self:ActivateRoute(route, true)
+    -- the quest log is trusted from the first QUEST_LOG_UPDATE on (below), or after this delay if
+    -- the client sends none
+    if C_Timer and C_Timer.After then
+        C_Timer.After(LOG_READY_DELAY, function() Engine:SetLogReady() end)
+    else
+        self.logReady = true
+    end
 end
+
+--- The quest log can be read: the "auto" level sync may apply from now on.
+function Engine:SetLogReady()
+    if self.logReady then return end
+    self.logReady = true
+    if self.started then self:RequestRefresh() end
+end
+
+ns:On("QUEST_LOG_UPDATE", function()
+    if Engine.started then Engine:SetLogReady() end
+end)
 
 ns:On("PLAYER_LOGIN", function()
     Engine:Start()
@@ -2150,12 +2180,23 @@ local function windowNpcMatches(s, npc)
     return false
 end
 
+-- A taxi map of another flight master than the step's (the player flies part of the way to a new
+-- flight point) does not learn the step's point -- unless it was opened at the step's place (the
+-- route may name another NPC than the one standing there).
+local function fpWindowMatches(s, npc)
+    if windowNpcMatches(s, npc) then return true end
+    if not s.at then return false end
+    local d = ns.Compat.DistanceTo(s.at.map, s.at.x, s.at.y)
+    return d ~= nil and d <= max(s.radius or 0, KEPT_FP_RADIUS)
+end
+
 -- ids of the observed steps that have an action of the given type (and, when `npc` is
--- given, whose `npc` list contains it -- or that have no `npc`)
+-- given, whose `npc` list contains it -- or that have no `npc`; a flight path: fpWindowMatches)
 function Engine:ObservedIds(actionType, npc)
     local ids = {}
+    local matches = (actionType == "fp") and fpWindowMatches or windowNpcMatches
     for _, s in ipairs(self:ObservedSteps()) do
-        if ns.Steps:HasAction(s, actionType) and windowNpcMatches(s, npc) and self:KeptVisitMatches(s, actionType) then
+        if ns.Steps:HasAction(s, actionType) and matches(s, npc) and self:KeptVisitMatches(s, actionType) then
             ids[#ids + 1] = s.id
         end
     end
@@ -2187,7 +2228,7 @@ end
 
 -- window kinds whose NPC must be the step's `npc` (a riding trainer next to the class
 -- trainer, a vendor next to the quest giver must not complete the step)
-local NPC_WINDOWS = { train = true, vendor = true }
+local NPC_WINDOWS = { train = true, vendor = true, fp = true }
 
 --- A trainer ("train") / merchant ("vendor") / taxi map ("fp") window opened.
 -- The client fires the legacy event AND the interaction-manager event for the
