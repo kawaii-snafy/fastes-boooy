@@ -37,7 +37,7 @@ local function arrowTexture()
     return widget(function(_, st) return st.type == "Texture" and st.parent == f end)
 end
 
-local BACK, FORWARD = "\194\171 Back", "Forward \194\187"
+local BACK, FORWARD = "Back", "Forward"
 
 -- Problems of the button row's anchor chain: every point of a button must lead to the
 -- window's TOP edge through the row itself, never through a content region (rows, banner).
@@ -136,7 +136,7 @@ describe("step window", function()
         assert.is_true(has(t, "4/26"))
     end)
 
-    it("has three buttons: \194\171 Back, Forward \194\187 and Settings, each with an explaining tooltip", function()
+    it("has three buttons: Back, Forward and Settings (plain labels, no arrow symbols), each with an explaining tooltip", function()
         m, ns = H.boot()
         local f = frame()
         assert.same({ f.prevButton, f.forwardButton, f.settingsButton }, f.buttons)
@@ -351,7 +351,7 @@ describe("step window", function()
         local f = frame()
         local t = texts(f)
         for _, want in ipairs({ "Тестовый маршрут", "1-4 Мертвый Звон", "Взять: Rude Awakening",
-            "Поговорите с Гробовщиком Мордо", "Далее", "« Назад", "Вперёд »", "Настройки" }) do
+            "Поговорите с Гробовщиком Мордо", "Далее", "Назад", "Вперёд", "Настройки" }) do
             assert.is_true(has(t, want), "missing text: " .. want .. " in " .. table.concat(t, " | "))
         end
         m:Enter(f.prevButton)
@@ -387,6 +387,33 @@ describe("step window", function()
         assert.is_false(m:IsWidgetVisible(frame()))
         m:LeaveCombat()
         assert.is_true(m:IsWidgetVisible(frame()))
+    end)
+
+    it("keeps the position of a window that is hidden while being dragged", function()
+        m, ns = H.boot()
+        local f = frame()
+        local UIParent = m.env.UIParent
+        UI().SetSetting("hideInCombat", true)
+        f:GetScript("OnDragStart")(f)
+        f:ClearAllPoints()
+        f:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 30, -40)
+        m:EnterCombat() -- hidden: the client sends no OnDragStop
+        assert.is_false(m:IsWidgetVisible(f))
+        assert.is_falsy(f.isMoving)
+        local saved = ns.db.frames.steps
+        assert.same({ "TOPLEFT", "TOPLEFT", 30, -40 }, { saved.point, saved.relativePoint, saved.x, saved.y })
+        m:LeaveCombat()
+        UI().SetSetting("shownNext", 2) -- any setting re-applies the saved position
+        assert.same({ "TOPLEFT", UIParent, "TOPLEFT", 30, -40 }, { f:GetPoint(1) })
+    end)
+
+    it("says at login that the guide is hidden (the flag is account-wide)", function()
+        m, ns = H.boot()
+        assert.is_false(H.chatHas(m, "Guide hidden."), "nothing to say while the guide is shown")
+        slash("/fb hide")
+        m, ns = H.reload(m) -- a new client: a new chat log
+        assert.is_false(m:IsWidgetVisible(frame()))
+        assert.is_true(H.chatHas(m, "Guide hidden. Type /fb show to bring it back."))
     end)
 end)
 
@@ -550,6 +577,12 @@ describe("arrow", function()
         assert.is_false(m:IsWidgetVisible(f))
         UI().SetSetting("arrow", true)
         assert.is_true(m:IsWidgetVisible(f))
+        -- between the waypoint ticks the arrow turns with the player every frame
+        m:SetFacing(math.pi)
+        m:Advance(0.01)
+        assert.is_true(math.abs(tex:GetRotation() - (-math.pi)) < 1e-9 or math.abs(tex:GetRotation() - math.pi) < 1e-9)
+        -- the texts below / beside the frame are clamped to the screen too
+        assert.same({ -65, 65, 0, -40 }, { f:GetClampRectInsets() })
         m:MoveTo(1411, 50, 50) -- another continent: no direction
         m:Advance(0.15)
         assert.is_false(m:IsWidgetVisible(f))
@@ -644,7 +677,7 @@ describe("item button", function()
         assert.equal("item:3264", b:GetAttribute("item1"))
     end)
 
-    it("hides before the lockdown with hideInCombat and is created after combat on a /reload in combat", function()
+    it("stays in combat with hideInCombat (only /fb hide hides it); created after combat on a /reload in combat", function()
         m, ns = H.boot()
         local b = ib()
         H.playTo(m, ns, "tr-collect-376")
@@ -652,10 +685,25 @@ describe("item button", function()
         H.settle(m)
         UI().SetSetting("hideInCombat", true)
         m:EnterCombat()
-        assert.is_false(m:IsWidgetVisible(b), "hidden on PLAYER_REGEN_DISABLED, before the lockdown")
+        assert.is_true(m:IsWidgetVisible(b), "quest items are used in fights: the button stays")
+        assert.equal("item:3264", b:GetAttribute("item1"))
         assert.is_false(m:IsWidgetVisible(frame()))
         m:LeaveCombat()
         assert.is_true(m:IsWidgetVisible(b))
+        slash("/fb hide")
+        assert.is_false(m:IsWidgetVisible(b))
+        slash("/fb show")
+        assert.is_true(m:IsWidgetVisible(b))
+        -- a right-button drag in progress when combat starts is finished before the lockdown
+        b:GetScript("OnDragStart")(b)
+        assert.is_true(b.isMoving)
+        b:ClearAllPoints()
+        b:SetPoint("CENTER", m.env.UIParent, "CENTER", 10, 20)
+        m:EnterCombat()
+        assert.is_falsy(b.isMoving)
+        assert.same({ "CENTER", "CENTER", 10, 20 }, { ns.db.frames.item.point, ns.db.frames.item.relativePoint,
+            ns.db.frames.item.x, ns.db.frames.item.y })
+        m:LeaveCombat()
         -- /reload while in combat: the secure button is created once the lockdown ends
         m.player.inCombat = true
         local m2, ns2 = H.reload(m)
@@ -990,6 +1038,19 @@ describe("slash commands", function()
         assert.is_true(ns.db.settings.locked)
         slash("/fb unlock")
         assert.is_false(ns.db.settings.locked)
+        -- resetpos: the default places again, the hidden flag untouched
+        local a = arrow()
+        a:GetScript("OnDragStart")(a)
+        a:ClearAllPoints()
+        a:SetPoint("BOTTOMLEFT", m.env.UIParent, "BOTTOMLEFT", 5, 5)
+        a:GetScript("OnDragStop")(a)
+        assert.equal("BOTTOMLEFT", ns.db.frames.arrow.point)
+        ns.db.frames.item.x = 9999
+        assert.same({ "The guide window, the arrow and the item button are back at their default places." },
+            slash("/fb resetpos"))
+        assert.same({ "TOP", m.env.UIParent, "TOP", 0, -140 }, { a:GetPoint(1) })
+        assert.equal(-388, ns.db.frames.item.x)
+        assert.equal("TOPRIGHT", ns.db.frames.steps.point)
         assert.same({ "Debug output: on" }, slash("/fb debug"))
         assert.is_true(ns.IsDebug())
         slash("/fb debug")

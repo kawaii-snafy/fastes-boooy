@@ -611,6 +611,9 @@ function Options:Build()
     local xpBtn = UI.CreateButton(panel, L.UI_OPT_EXPORT_XP, L.UI_OPT_EXPORT_XP_TT,
         function() Options:ShowXPExport() end, 180, 22)
     xpBtn:SetPoint("TOPLEFT", toggleBtn, "BOTTOMLEFT", 0, -4)
+    local posBtn = UI.CreateButton(panel, L.UI_OPT_RESET_POS, L.UI_OPT_RESET_POS_TT,
+        function() if UI.ResetPositions() then out(L.UI_POS_RESET) end end, 180, 22)
+    posBtn:SetPoint("TOPLEFT", xpBtn, "BOTTOMLEFT", 0, -4)
 
     -- right column: sliders, level sync, then routes
     local rx, ry = 330, -72
@@ -742,7 +745,7 @@ end
 
 local function printHelp()
     out(L.UI_HELP_HEADER)
-    for _, k in ipairs({ "show", "lock", "next", "sync", "reset", "routes", "route", "config", "delay", "status",
+    for _, k in ipairs({ "show", "lock", "resetpos", "next", "sync", "reset", "routes", "route", "config", "delay", "status",
         "xp", "debug" }) do
         out(L["UI_HELP_" .. k])
     end
@@ -848,7 +851,11 @@ COMMANDS.unlock = function()
     Options:Refresh()
     out(L.UI_UNLOCKED)
 end
--- the window's buttons: "« Back" = Engine:Prev, "Forward »" = Engine:Forward (UI.Forward);
+-- the item button is only shown on some steps: a misplaced one cannot be found and dragged back
+COMMANDS.resetpos = function()
+    if UI.ResetPositions() then out(L.UI_POS_RESET) end
+end
+-- the window's buttons: "Back" = Engine:Prev, "Forward" = Engine:Forward (UI.Forward);
 -- next / skip keep their own meaning (mark the step done / skipped)
 COMMANDS.next = function() if needEngine() then ns.Engine:Next() end end
 COMMANDS.prev = function() if needEngine() then UI.Back() end end

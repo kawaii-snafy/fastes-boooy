@@ -15,7 +15,8 @@
 -- blocked while InCombatLockdown() is true. Every change goes through Update(), which
 -- then only remembers that an update is pending and runs it on PLAYER_REGEN_ENABLED
 -- (the icon / count regions may change any time). PLAYER_REGEN_DISABLED fires before
--- the lockdown starts: "hide in combat" hides the button then.
+-- the lockdown starts: a drag in progress is finished then. "Hide in combat" does not hide the
+-- button (quest items are used in fights); only /fb hide does.
 --
 -- Global name FastesBoooyItemButton: a macro `/click FastesBoooyItemButton` (key
 -- binding) uses the item too. Right button: drag to move (unless the frames are locked).
@@ -103,7 +104,9 @@ function IB:Update()
         return
     end
     local id = nil
-    if not (UI.ShouldHide and UI.ShouldHide()) then id = self:PickItem() end
+    -- only "/fb hide" hides the button: "hide in combat" keeps it, quest items are used in fights
+    -- (and a hidden button would make the /click macro do nothing)
+    if not (UI.IsGuideHidden and UI.IsGuideHidden()) then id = self:PickItem() end
     if id then
         if id ~= shownItem then
             button:SetAttribute("type1", "item")
@@ -147,6 +150,15 @@ local function onEnter(self)
     UI.ShowTooltip(self, ns.Steps:ItemName(id), lines)
 end
 
+-- Finish a right-button drag and save the position. Also called when the button is hidden and on
+-- PLAYER_REGEN_DISABLED (before the lockdown: a protected frame cannot be stopped during it).
+local function stopDrag(f)
+    if not (f and f.isMoving) then return end
+    f.isMoving = false
+    f:StopMovingOrSizing()
+    UI.SavePosition(f, "item")
+end
+
 --- Create the button (out of combat only: deferred to the end of combat otherwise).
 function IB:Create()
     if button then return button end
@@ -180,12 +192,8 @@ function IB:Create()
         f.isMoving = true
         f:StartMoving()
     end)
-    b:SetScript("OnDragStop", function(f)
-        if not f.isMoving then return end
-        f.isMoving = false
-        f:StopMovingOrSizing()
-        UI.SavePosition(f, "item")
-    end)
+    b:SetScript("OnDragStop", stopDrag)
+    b:SetScript("OnHide", stopDrag) -- hidden while being dragged: no OnDragStop comes
     b:SetScript("OnEnter", onEnter)
     b:SetScript("OnLeave", UI.HideTooltip)
     b:Hide()
@@ -214,7 +222,8 @@ ns:On("BAG_UPDATE_DELAYED", update)
 -- set the combat flag here too: handler order between UI files is not guaranteed
 ns:On("PLAYER_REGEN_DISABLED", function()
     UI.inCombat = true
-    update() -- the lockdown starts after this event: "hide in combat" still applies
+    stopDrag(button) -- the lockdown starts after this event: a drag can still be finished
+    update()
 end)
 ns:On("PLAYER_REGEN_ENABLED", function()
     UI.inCombat = false
