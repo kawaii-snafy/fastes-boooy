@@ -6,7 +6,13 @@
 --                                    [--skip GLOB] [--keep GLOB] [module-dir ...]
 --   lua5.1 tools/simulate_routes.lua --harness <module-dir> [--segments ID,...]
 --                                    --profile race=,class=[,faction=] [--state FILE] [--write-state FILE]
+--   lua5.1 tools/simulate_routes.lua --list-routes [--fixtures] [--route ...] [--skip GLOB] [--keep GLOB]
+--                                    [module-dir ...]
 --
+-- --list-routes simulates nothing: it prints the route ids of the modules (one per line, in the order
+-- the modules are discovered / given and the routes are registered) and exits 0. A module that does
+-- not load cleanly makes it print NO id, a message on stderr and exit 1 (`make simulate` builds its
+-- job list from this output: a broken module must stop the target, not shorten the list).
 -- --route takes a comma list with `*` wildcards ('orc-*,troll-mage') and is repeatable; every entry
 -- must match a route.
 -- --skip / --keep (repeatable, `*` wildcard, matched against the TOC path with forward slashes) leave
@@ -34,7 +40,11 @@
 --             the dialog event, the mock clock is advanced by the longest delay while an
 --             action is scheduled (the summary counts these "delayed actions")
 --   turnin    QUEST_PROGRESS / QUEST_COMPLETE / gossip / greeting; the automation must
---             complete and take the reward (the step `reward` choice is asserted); quest XP
+--             complete and take the reward. The expected choice is resolved from the offline
+--             route the way Engine:GetRewardChoice does it -- a step `reward` of the profile's
+--             steps first (the step that turns the quest in, else the first that names it),
+--             then the class reward table route.data.rewards[<class>][<quest>] (AddLibraryData) --
+--             the mock quest gets that many choices and the chosen index is asserted; quest XP
 --             comes from tools/data/forever_db.lua (unknown XP: median of the quest level)
 --   complete  quest objectives are progressed (only the listed ones when given); exploration /
 --             escort objectives (DB objectives.event) and quests the route completes but whose
@@ -143,6 +153,9 @@ usage: lua5.1 tools/simulate_routes.lua [options] [module-dir ...]
   --no-overrides   do not apply the DB overrides of tools/overrides/*.lua
   --overrides DIR  read the DB overrides from DIR instead
   --no-reload      skip the /reload and cold-start checks
+  --list-routes    simulate nothing: print the route ids of the modules, one per line, in
+                   registration order (honours --fixtures, --route, --skip / --keep and the
+                   module dirs); exit 1 with a message and no id when a module has load errors
   --state FILE     start from a character state (JSON, see tools/README.md "Harness")
   --write-state FILE  write the game state at the end (needs exactly one simulation)
   --ahead L        player ahead of the route: a fresh character at level L at the route start;
@@ -186,6 +199,7 @@ local function parseArgs(argv)
             o[key] = o[key] or {}
             o[key][#o[key] + 1] = (v:gsub("\\", "/"))
         elseif a == "--no-reload" then o.reload = false
+        elseif a == "--list-routes" then o.listRoutes = true
         elseif a == "--ahead" then
             i = i + 1
             local v = tonumber(argv[i])
@@ -433,6 +447,60 @@ checkCollect = function(S, step, a)
         a.item, a.count, table.concat(l, ", "))
 end
 
+-- Does a (composed, offline) step show for the profile of this run? (the engine's step list is the
+-- route's steps whose class / race / faction filters match the player)
+local function stepShown(step, p)
+    local f = step.filters
+    if not f then return true end
+    return (not f.class or f.class[p.class] == true) and (not f.race or f.race[p.race] == true)
+        and (not f.faction or f.faction == p.faction)
+end
+
+-- The reward choice the automation must take for quest q, resolved from the OFFLINE route the way
+-- the engine resolves it (Engine:GetRewardChoice): a step-level `reward` of the profile's steps
+-- first -- the step that turns the quest in, else the first step that names it -- then the class
+-- reward table route.data.rewards[<class>][<quest>] (FastesBoooy.AddLibraryData{ rewards = ... }).
+-- @return index | nil, "step <id>" | "class table <CLASS>"
+local function expectedReward(S, q)
+    local cache = S.rewardWant
+    if not cache then
+        cache = {}
+        S.rewardWant = cache
+    end
+    local hit = cache[q]
+    if hit == nil then
+        hit = false
+        local fallback
+        for _, s in ipairs(S.route.steps or {}) do
+            local r = s.reward and s.reward[q]
+            if r and stepShown(s, S.profile) then
+                local turnsIn = false
+                for _, a in ipairs(s.actions or {}) do
+                    if a.type == "turnin" and a.quest == q then turnsIn = true break end
+                end
+                if turnsIn then
+                    hit = { r, "step " .. stepName(s) }
+                    break
+                end
+                fallback = fallback or { r, "step " .. stepName(s) }
+            end
+        end
+        if not hit and fallback then hit = fallback end
+        if not hit then
+            local data = S.route.data
+            local rewards = type(data) == "table" and data.rewards
+            local mine = type(rewards) == "table" and rewards[S.profile.class]
+            local idx = type(mine) == "table" and mine[q] or nil
+            if type(idx) == "number" and idx >= 1 and idx % 1 == 0 then
+                hit = { idx, "class table " .. tostring(S.profile.class) }
+            end
+        end
+        cache[q] = hit
+    end
+    if hit then return hit[1], hit[2] end
+    return nil
+end
+
 local function prepareTurnin(S, step, q)
     local m = S.m
     if m:IsQuestCompleted(q) then return end
@@ -449,7 +517,7 @@ local function prepareTurnin(S, step, q)
         def.xp = FBDB.EstimateQuestXp(S.db, def.level)
         S.stats.estimatedXP = S.stats.estimatedXP + 1
     end
-    local idx = step.reward and step.reward[q]
+    local idx = expectedReward(S, q)
     if idx then
         def.choices = def.choices or {}
         for i = #def.choices + 1, max(idx, 2) do
@@ -488,10 +556,14 @@ local function checkQuestResults(S, step, turnins, accepts, mark)
             fail(S, "step %s: the automation did not turn in quest %d (chat: %s)", stepName(step), q,
                 tostring(m.chat[#m.chat]))
         end
-        local want = step.reward and step.reward[q]
-        if want and r[3] ~= want then
-            fail(S, "step %s: quest %d turned in with reward choice %s, step wants %d", stepName(step), q,
-                tostring(r[3]), want)
+        local want, from = expectedReward(S, q)
+        if want then
+            if r[3] ~= want then
+                fail(S, "step %s: quest %d turned in with reward choice %s, the route wants %d (%s)", stepName(step), q,
+                    tostring(r[3]), want, from)
+            end
+            S.stats.rewards = S.stats.rewards + 1
+            vlog(S, "    reward choice %d of quest %d (%s)", want, q, from)
         end
         S.stats.turnedIn = S.stats.turnedIn + 1
     end
@@ -1399,7 +1471,7 @@ local function runOne(opts, module, toc, route, profile, db, extra)
         opts = opts, module = module, toc = toc, route = route, profile = profile, db = db,
         warnings = {}, bgSeen = {}, bgOpen = {}, gossipUsed = {},
         stats = { steps = 0, iterations = 0, accepted = 0, turnedIn = 0, bg = 0, gossip = 0, delayed = 0,
-            estimatedXP = 0, dropped = 0, travelled = 0, leftInLog = 0 },
+            estimatedXP = 0, dropped = 0, travelled = 0, leftInLog = 0, rewards = 0 },
         state = opts.startState, harness = extra and extra.harness, flightPaths = {}, syncs = {},
     }
     for _, fp in ipairs(S.state and S.state.flightPaths or {}) do S.flightPaths[fp] = true end
@@ -1422,10 +1494,11 @@ local function runOne(opts, module, toc, route, profile, db, extra)
         local p = S.m.player
         local xpMax = S.m:XPMax(p.level)
         print(format("OK   %s: %d steps, %d iterations, %d accepted, %d turned in, %d bg, %d gossip, "
-            .. "%d delayed actions; level %d (%d%%)%s; %s%s",
+            .. "%d delayed actions; level %d (%d%%)%s%s; %s%s",
             label, st.steps, st.iterations, st.accepted, st.turnedIn, st.bg, st.gossip, st.delayed, p.level,
             xpMax > 0 and floor(p.xp / xpMax * 100) or 0,
             st.estimatedXP > 0 and format(", %d quest XP estimated", st.estimatedXP) or "",
+            st.rewards > 0 and format(", %d reward choice(s) checked", st.rewards) or "",
             S.coldStart or "no restart checks",
             #S.warnings > 0 and format(", %d warning(s)", #S.warnings) or ""))
         if opts.sync then
@@ -1482,6 +1555,45 @@ local function profileMatches(filter, p)
     if not filter then return true end
     return (not filter.race or filter.race == p.race) and (not filter.class or filter.class == p.class)
         and (not filter.faction or filter.faction == p.faction)
+end
+
+-- --list-routes: the route ids of the modules, one per line, in registration order; nothing is
+-- simulated. Any module that does not load cleanly: no id at all, the errors on stderr, exit 1.
+local function mainListRoutes(opts, schema, dirs)
+    local ids, broken = {}, 0
+    for _, dir in ipairs(dirs) do
+        local toc = Loader.FindToc(dir)
+        if not toc then
+            broken = broken + 1
+            io.stderr:write(format("simulate_routes: --list-routes: %s: no TOC\n", dir))
+        else
+            local mod = Loader.LoadModule(dir, { schema = schema, skipGlobs = opts.skip, keepGlobs = opts.keep })
+            if #mod.errors > 0 then
+                broken = broken + 1
+                io.stderr:write(format("simulate_routes: --list-routes: %s: %d load/schema error(s)\n", mod.name,
+                    #mod.errors))
+                for i, e in ipairs(mod.errors) do
+                    if i > 10 then break end
+                    io.stderr:write(format("     %s: %s\n", tostring(e.file), tostring(e.msg)))
+                end
+            else
+                for _, route in ipairs(mod.routes) do
+                    if not opts.routeList or Glob.ListMatch(opts.routeList, route.id) then ids[#ids + 1] = route.id end
+                end
+            end
+        end
+    end
+    if broken > 0 then
+        io.stderr:write(format("simulate_routes: --list-routes: %d module(s) did not load: no route list\n", broken))
+        return 1
+    end
+    local unmatched = opts.routeList and Glob.Unmatched(opts.routeList) or {}
+    if #unmatched > 0 then
+        io.stderr:write("simulate_routes: --route " .. table.concat(unmatched, ",") .. " matched no route\n")
+        return 1
+    end
+    for _, id in ipairs(ids) do print(id) end
+    return 0
 end
 
 -- --harness: one synthetic route over library segments, one profile
@@ -1547,6 +1659,26 @@ local function main(argv)
     if opts.segments and not opts.harness then
         io.stderr:write("simulate_routes: --segments is only used with --harness\n")
         return 2
+    end
+    if opts.listRoutes then
+        if opts.harness or opts.state or opts.writeState or opts.sync or opts.profile then
+            io.stderr:write("simulate_routes: --list-routes only lists route ids: it takes --fixtures, --route, "
+                .. "--skip / --keep and module directories, nothing else\n")
+            return 2
+        end
+        local dirs = {}
+        if #opts.dirs > 0 then
+            for _, d in ipairs(opts.dirs) do dirs[#dirs + 1] = (d:gsub("[/\\]+$", "")) end
+        else
+            for _, d in ipairs(Loader.DiscoverModules("addons")) do dirs[#dirs + 1] = d end
+            if opts.fixtures then
+                for _, d in ipairs(Loader.DiscoverModules("tests/fixtures/core")) do dirs[#dirs + 1] = d end
+            end
+        end
+        local bad = Loader.UnmatchedFilters(dirs, opts.skip, opts.keep)
+        for _, line in ipairs(bad) do io.stderr:write("simulate_routes: " .. line .. "\n") end
+        if #bad > 0 then return 2 end
+        return mainListRoutes(opts, Loader.LoadSchema("."), dirs)
     end
     if opts.state then
         local st, errs = Harness.ReadState(opts.state)

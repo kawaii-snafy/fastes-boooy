@@ -35,6 +35,8 @@ local function write(path, content)
 end
 
 local TOC = "## Interface: 16001\n## Dependencies: FastesBoooy\n%s\n"
+-- the plain fixture route (no shared content): its turn-in of 3901 carries a step-level `reward`
+local TEST_ROUTE_DIR = "tests/fixtures/core/FastesBoooy_TestRoute"
 
 describe("a mixed module (shared segments + shared inserts + routes) in the offline tools", function()
     setup(function()
@@ -303,6 +305,177 @@ FastesBoooy.UseSegments("sh", { "sl" })
             code, out = run("lua5.1 tools/simulate_routes.lua --no-overrides --route tg-troll-mage " .. H.GUIDES_DIR)
             assert.equal(0, code, out)
             assert.matches("simulate_routes: 1 simulation%(s%), 1 passed, 0 failed", out)
+        end)
+    end)
+
+    -- docs/dev/PLAN.md A.6.5: the class reward table (FastesBoooy.AddLibraryData{ rewards = { CLASS =
+    -- { [quest] = index } } }) is exercised end to end. The fixture turns 789 (Durotar) and 3901
+    -- (Deathknell) in on shared steps without a `reward`; Classes/*.lua name the choice per class.
+    describe("simulate_routes: reward choices from the class reward table", function()
+        it("resolves the expected choice like the engine and asserts the index the automation took", function()
+            local code, out = run("lua5.1 tools/simulate_routes.lua --no-overrides --verbose " .. H.GUIDES_DIR)
+            assert.equal(0, code, out)
+            -- the same quest, another choice per class; the paladin's quest is another one
+            assert.matches("\n    reward choice 2 of quest 3901 %(class table PALADIN%)\n", out)
+            assert.matches("\n    reward choice 1 of quest 789 %(class table WARRIOR%)\n", out)
+            assert.matches("\n    reward choice 2 of quest 789 %(class table MAGE%)\n", out)
+            local _, n = out:gsub("\n    reward choice %d+ of quest %d+ %(", "")
+            assert.equal(3, n, "one reward choice per route, none for the other turn-ins")
+            for _, id in ipairs(H.GUIDES_ROUTES) do
+                assert.matches("OK   " .. id:gsub("%-", "%%-") .. " [^\n]*, 1 reward choice%(s%) checked; ", out)
+            end
+        end)
+
+        it("a step-level `reward` still wins, and is named as the source", function()
+            local code, out = run("lua5.1 tools/simulate_routes.lua --no-overrides --verbose " .. TEST_ROUTE_DIR)
+            assert.equal(0, code, out)
+            assert.matches("\n    reward choice %d+ of quest %d+ %(step [^\n]+%)\n", out)
+            assert.is_nil(out:find("class table", 1, true))
+        end)
+
+        -- A second repository root with a COPY of the core whose engine ignores the class table (or
+        -- reads it wrongly); tools, tests and the fixture are this checkout's. The simulator must fail.
+        local function brokenCore(name, from, to)
+            local p = assert(io.popen("pwd"))
+            local here = p:read("*l")
+            p:close()
+            local alt = root .. "/" .. name
+            os.execute(("mkdir -p '%s/addons'"):format(alt))
+            assert.equal(0, (run(("cp -R '%s/addons/FastesBoooy' '%s/addons/FastesBoooy'"):format(here, alt))))
+            for _, link in ipairs({ "tests", "tools" }) do
+                assert.equal(0, (run(("ln -s '%s/%s' '%s/%s'"):format(here, link, alt, link))))
+            end
+            local path = alt .. "/addons/FastesBoooy/Core/Engine.lua"
+            local fh = assert(io.open(path, "rb"))
+            local text = fh:read("*a")
+            fh:close()
+            local s, e = text:find(from, 1, true)
+            assert.is_truthy(s, "Engine:GetRewardChoice reads the class table with this line")
+            fh = assert(io.open(path, "wb"))
+            fh:write(text:sub(1, s - 1) .. to .. text:sub(e + 1))
+            fh:close()
+            return function(args)
+                return run(("cd '%s' && lua5.1 tools/simulate_routes.lua --no-overrides %s"):format(alt, args))
+            end
+        end
+        local TABLE_LINE = 'local idx = type(mine) == "table" and mine[questID] or nil'
+
+        it("fails when the engine does not read the table (the reward window stays open)", function()
+            local sim = brokenCore("no-table", TABLE_LINE, "local idx = mine and nil")
+            local code, out = sim("--route tg-troll-mage " .. H.GUIDES_DIR)
+            assert.equal(1, code, out)
+            assert.matches("FAIL tg%-troll%-mage [^\n]*the automation did not turn in quest 789", out)
+            -- the unbroken part still passes there: the copy is otherwise the real core
+            code, out = sim(TEST_ROUTE_DIR)
+            assert.equal(0, code, out)
+        end)
+
+        it("fails when the engine takes another index than the table says", function()
+            local sim = brokenCore("wrong-index", TABLE_LINE,
+                'local idx = type(mine) == "table" and mine[questID] and 1 or nil')
+            local code, out = sim("--route tg-troll-mage " .. H.GUIDES_DIR)
+            assert.equal(1, code, out)
+            assert.matches("FAIL tg%-troll%-mage [^\n]*quest 789 turned in with reward choice 1, the route wants 2 "
+                .. "%(class table MAGE%)", out)
+            -- the warrior's entry IS 1: that route passes with the same broken engine
+            code, out = sim("--route tg-orc-warrior " .. H.GUIDES_DIR)
+            assert.equal(0, code, out)
+        end)
+    end)
+
+    -- docs/dev/PLAN.md A.6.5 / A.7: `make simulate` builds its job list from this output
+    describe("simulate_routes --list-routes", function()
+        local LIST = "lua5.1 tools/simulate_routes.lua --no-overrides --list-routes "
+
+        local function onlyStdout(cmd)
+            local p = assert(io.popen(cmd .. " 2>/dev/null"))
+            local out = p:read("*a")
+            p:close()
+            return out
+        end
+
+        it("prints one route id per line, in registration order, and simulates nothing", function()
+            local code, out = run(LIST .. H.GUIDES_DIR)
+            assert.equal(0, code, out)
+            assert.equal(table.concat(H.GUIDES_ROUTES, "\n") .. "\n", out)
+            -- several modules: in the order given; a library module has no route and prints nothing
+            code, out = run(LIST .. H.COMPOSED_DIR .. " " .. H.LIB_DIR .. " " .. H.GUIDES_DIR)
+            assert.equal(0, code, out)
+            assert.equal("test-composed\n" .. table.concat(H.GUIDES_ROUTES, "\n") .. "\n", out)
+        end)
+
+        it("without directories: the modules under addons, with --fixtures also the core fixtures", function()
+            -- what the route modules of this checkout register (a module that does not load cleanly --
+            -- another author's half-written file in a parallel phase -- must give exit 1 and no list)
+            local expected, clean = {}, true
+            for _, dir in ipairs(Loader.DiscoverModules("addons")) do
+                local mod = Loader.LoadModule(dir, { schema = Schema })
+                if #mod.errors > 0 then clean = false end
+                for _, r in ipairs(mod.routes) do expected[#expected + 1] = r.id end
+            end
+            local code, out = run(LIST)
+            if not clean then
+                assert.equal(1, code, out)
+                assert.equal("", onlyStdout(LIST))
+                return
+            end
+            assert.equal(0, code, out)
+            assert.is_true(#expected > 0)
+            assert.equal(table.concat(expected, "\n") .. "\n", out)
+            assert.is_nil(out:find("OK   ", 1, true))
+            code, out = run(LIST .. "--fixtures")
+            assert.equal(0, code, out)
+            assert.matches("\ntest%-route\n", out)
+            assert.matches("\ntg%-troll%-mage\n", out)
+        end)
+
+        it("honours --route and the file filter", function()
+            local code, out = run(LIST .. "--route 'tg-*-mage,tg-orc-*' " .. H.GUIDES_DIR)
+            assert.equal(0, code, out)
+            assert.equal("tg-orc-warrior\ntg-troll-mage\n", out)
+            -- the Durotar zone file announces the Orc and Troll routes: without it only the Undead is left
+            code, out = run(LIST .. "--skip 'Segments/Durotar/*' --skip 'Classes/*' --skip 'Races/*' " .. H.GUIDES_DIR)
+            assert.equal(0, code, out)
+            assert.equal("tg-undead-paladin\n", out)
+            code, out = run(LIST .. "--route tg-nobody " .. H.GUIDES_DIR)
+            assert.equal(1, code, out)
+            assert.matches("%-%-route tg%-nobody matched no route", out)
+            code, out = run(LIST .. "--skip 'Nope/*' " .. H.GUIDES_DIR)
+            assert.equal(2, code, out)
+        end)
+
+        it("a module with load errors: exit 1, a message on stderr and NO id on stdout", function()
+            write("FastesBoooy_LrBroken/FastesBoooy_LrBroken.toc", TOC:format("Route.lua\nSegments.lua"))
+            write("FastesBoooy_LrBroken/Route.lua", [[
+FastesBoooy.RegisterRoute({ api = 1, id = "lr-broken", title = "t", faction = "Horde", races = { "Scourge" },
+    classes = { "PALADIN" } })
+]])
+            write("FastesBoooy_LrBroken/Segments.lua", "FastesBoooy.AddSegment('lr-broken', { id = 's', steps = { {\n")
+            local broken = root .. "/FastesBoooy_LrBroken"
+            local code, out = run(LIST .. broken)
+            assert.equal(1, code, out)
+            assert.matches("%-%-list%-routes: FastesBoooy_LrBroken: %d+ load/schema error%(s%)", out)
+            assert.matches("Segments%.lua: ", out)
+            assert.matches("did not load: no route list", out)
+            -- a good module next to it does not make the list "partly" valid
+            code, out = run(LIST .. H.GUIDES_DIR .. " " .. broken)
+            assert.equal(1, code, out)
+            assert.equal("", onlyStdout(LIST .. H.GUIDES_DIR .. " " .. broken))
+            assert.equal("", onlyStdout(LIST .. broken))
+            -- no TOC at all
+            os.execute(("mkdir -p '%s/FastesBoooy_LrEmpty'"):format(root))
+            code, out = run(LIST .. root .. "/FastesBoooy_LrEmpty")
+            assert.equal(1, code, out)
+            assert.matches("no TOC", out)
+        end)
+
+        it("takes no simulation options", function()
+            for _, extra in ipairs({ "--ahead 10", "--level-plus 2", "--profile race=Orc,class=WARRIOR",
+                "--write-state /dev/null" }) do
+                local code, out = run(LIST .. extra .. " " .. H.GUIDES_DIR)
+                assert.equal(2, code, extra .. ": " .. out)
+                assert.matches("%-%-list%-routes only lists route ids", out)
+            end
         end)
     end)
 end)

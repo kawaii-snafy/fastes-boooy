@@ -136,7 +136,7 @@ describe("validator gates", function()
             -- the Markdown report lists it apart from the warnings
             local md = table.concat(V.FormatMarkdown({ { module = "m", results = { r } } }, db), "\n")
             assert.matches("Принятые предупреждения, `ok` %(1%)", md)
-            assert.is_nil(md:find("| WARN |", 1, true))
+            assert.is_nil(md:find("\n| WARN |", 1, true), "no WARN row in the route's table")
         end)
 
         it("form 2, a list of codes; a code that is not listed still counts", function()

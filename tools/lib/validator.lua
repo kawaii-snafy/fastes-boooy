@@ -15,7 +15,12 @@
 -- (see tools/README.md for the list); `--ignore code,code` suppresses codes.
 -- Next to the text a message carries stable fields where they apply: `quest` (the quest of the
 -- action), `npc` / `object`, `kills`, `level` (the simulated level in the text), `file`, and
--- `shared = true` on a shared step / segment (a library segment step or a shared-insert step).
+-- `shared = true` on a shared step / segment (a library segment step or a shared-insert step),
+-- `inserted = true` on a step of an insert (AddInsert / AddLibraryInsert: a class or race step).
+--
+-- Reports: V.FormatText (the complete view of every route), V.ReportTable (--json, complete) and
+-- V.FormatMarkdown = lib/report.lua (docs/VALIDATION.md: aggregated over the routes -- the messages
+-- on steps of shared segments once for all routes, a gate matrix, INFO as counts).
 --
 -- Acknowledged warnings: a WARN whose code is listed in `ok` of its step (of its segment for a
 -- message about the segment) is ACCEPTED: m.accepted = true, counted in result.acceptedWarn instead of
@@ -56,6 +61,7 @@ local json = require("lib.json")
 local Harness = require("lib.harness")
 local Glob = require("lib.glob")
 local ModuleChecks = require("lib.module_checks")
+local Report = require("lib.report")
 
 local V = {}
 
@@ -399,6 +405,8 @@ function Run:addx(sev, code, step, fields, msg, ...)
         m.stepId = step.id
         m.file = step.file
         if type(step.library) == "string" then m.library = step.library end
+        -- a step of an insert (AddInsert / AddLibraryInsert): a class or race step, not the base path
+        if step.inserted then m.inserted = true end
         okT = step.ok
     elseif self.seg then
         m.segment = self.seg.id
@@ -1314,6 +1322,9 @@ function H.level(self, a, step)
     local gate = { segment = step.segment, step = step.segIndex, stepId = step.id, level = a.level, frac = a.frac or 0,
                    from = round2(DB.LevelValue(db, self.st)), kills = 0, xp = 0 }
     if type(step.library) == "string" then gate.library = step.library end
+    if step.inserted then gate.inserted = true end
+    -- the kill ceiling of the step's acknowledgement (ok = { ["level-grind"] = N }), for the gate matrix
+    if step.ok and type(step.ok["level-grind"]) == "number" then gate.okCeiling = step.ok["level-grind"] end
     if step.optional then gate.optional = true end -- not done in the worst case
     self.gates[#self.gates + 1] = gate
     self.gateSteps[#self.gates] = step
@@ -1502,6 +1513,7 @@ function Run:beginSegment(seg)
         id = seg.id, title = seg.title, file = seg.file, levels = seg.levels,
         startLevel = round2(DB.LevelValue(self.db, self.st)), accepts = 0, turnins = 0,
         xpQuest = 0, xpKill = 0, xpGrind = 0, grindKills = 0, skipped = 0, steps = #seg.steps,
+        library = type(seg.library) == "string" and seg.library or nil, -- a shared segment
     }
 end
 
@@ -2102,6 +2114,7 @@ function V.RouteChecks(db, route, profiles, opts)
         if step then
             m.segment, m.step, m.stepId, m.file = step.segment, step.segIndex, step.id, step.file
             if type(step.library) == "string" then m.library, m.shared = step.library, true end
+            if step.inserted then m.inserted = true end
             if sev == "WARN" and step.ok then acknowledge(step.ok, m) end
         end
         out[#out + 1] = m
@@ -2527,11 +2540,6 @@ local function locStr(m)
 end
 V.LocStr = locStr
 
-local function textOf(t)
-    if type(t) == "table" then return t.en or t.ru or "" end
-    return t and tostring(t) or ""
-end
-
 local function gateLevel(g)
     return format("%d%s", g.level, (g.frac or 0) > 0 and format(" +%d%%", floor(g.frac * 100 + 0.5)) or "")
 end
@@ -2659,10 +2667,6 @@ function V.FormatText(all, opts)
     return lines
 end
 
-local function mdEscape(s)
-    return (tostring(s):gsub("|", "\\|"):gsub("\n", " "))
-end
-
 -- What no offline check (luacheck std, strict mock, validator, simulator) can confirm: the
 -- static "only in game" section of docs/VALIDATION.md (README.md links here).
 V.IN_GAME_ONLY = {
@@ -2699,165 +2703,11 @@ V.IN_GAME_ONLY = {
         .. "аддон их не читает, но реальный набор ограничений Forever виден только в клиенте.",
 }
 
---- Markdown lines of the grind report of one result (V.RunProfile; {} without it).
-function V.GrindMarkdown(r)
-    local L = {}
-    local sm = r.summary or {}
-    if not (sm.endLevel and sm.band) then return L end
-    local bp = V.DEFAULTS.incidentalBandPct
-    local b0, bh = tostring(0), tostring(bp)
-    local function band(b, key, field) return (b and b[key] and b[key][field]) or 0 end
-    L[#L + 1] = format("Гринд до порогов уровня (шаги `level`): ~%d убийств мобов своего уровня%s; худший случай "
-        .. "(не выполнены шаги `optional = true` — %d — и их квесты): ~%d. С попутными убийствами в пути на %d %% "
-        .. "опыта квестов: ~%d (худший случай ~%d).", sm.grindKills or 0,
-        (sm.incidentalPct or 0) > 0 and format(" (попутные убийства %g %% опыта квестов)", sm.incidentalPct) or "",
-        sm.optionalSkipped or 0, sm.grindKillsWorst or 0, bp, band(sm.band, bh, "grindKills"),
-        band(sm.band, bh, "grindKillsWorst"))
-    L[#L + 1] = ""
-    if sm.gates and #sm.gates > 0 then
-        L[#L + 1] = format("| порог уровня | шаг | убийств | худший случай | +%d %% | худший +%d %% |", bp, bp)
-        L[#L + 1] = "|---|---|---:|---:|---:|---:|"
-        for _, g in ipairs(sm.gates) do
-            local function worst(key) return g.optional and "—" or tostring(band(g.band, key, "worst")) end
-            L[#L + 1] = format("| %s%s | %s | %d | %s | %d | %s |", gateLevel(g), g.optional and " (необязательный)" or "",
-                mdEscape(locStr({ segment = g.segment, step = g.step, stepId = g.stepId })), band(g.band, b0, "kills"),
-                worst(b0), band(g.band, bh, "kills"), worst(bh))
-        end
-        L[#L + 1] = ""
-    end
-    return L
-end
-
---- Markdown report (docs/VALIDATION.md).
+--- Markdown report (docs/VALIDATION.md): the aggregated layout of lib/report.lua -- totals, module
+-- entries, route summary, path comparison, the shared path once for all routes, the gate matrix, one
+-- section per route with its own messages, INFO as counts, the "only in game" list.
 function V.FormatMarkdown(all, db)
-    local L = {}
-    local function w(s) L[#L + 1] = s end
-    local meta = db.meta or {}
-    w("# Отчёт валидатора маршрутов")
-    w("")
-    w("<!-- GENERATED by tools/validate_routes.lua --markdown docs/VALIDATION.md (make report). DO NOT EDIT. -->")
-    w("")
-    w(format("Снимок БД: World of Warcraft: Forever %s.%s (Interface %s), дата снимка %s, `%s`.",
-        tostring(meta.build and meta.build[1]), tostring(meta.build and meta.build[2]), tostring(meta.interface),
-        tostring(meta.generated), "tools/data/forever_db.lua"))
-    w("")
-    w("Как читать: **ERROR** — маршрут сломан (квест недоступен, не тот NPC, нарушена цепочка, переполнен журнал, "
-        .. "уровень ниже требуемого); **WARN** — вероятная проблема (NPC далеко от точки `at`, опыт квеста неизвестен "
-        .. "и оценён, квест не сдан к концу маршрута); **INFO** — справка (пропущенные по фильтру шаги, оценки "
-        .. "опыта за убийства). Симуляция опыта — оценка: опыт квестов из БД (для новых квестов Forever — медиана "
-        .. "по уровню), опыт за мобов — формула Classic со штрафом Forever за «зелёных» мобов, без rested-бонуса.")
-    w("")
-    w("Перегенерировать: `make report` (или `lua5.1 tools/validate_routes.lua --markdown docs/VALIDATION.md`).")
-    w("")
-    local te, tw, ti, ta = 0, 0, 0, 0
-    for _, mres in ipairs(all) do
-        for _, r in ipairs(mres.results) do
-            te, tw, ti = te + r.counts.ERROR, tw + r.counts.WARN, ti + r.counts.INFO
-            ta = ta + (r.acceptedWarn or 0)
-        end
-    end
-    w(format("**Итого: %d ERROR, %d WARN, %d INFO%s.**", te, tw, ti,
-        ta > 0 and format("; принято предупреждений (`ok`): %d", ta) or ""))
-    w("")
-    if #all == 0 then
-        w("_Модули маршрутов не найдены._")
-    end
-    for _, mres in ipairs(all) do
-        for _, r in ipairs(mres.results) do
-            if r.library then
-                w(format("## Библиотека %s", mdEscape(mres.module)))
-                w("")
-                w(format("Модуль общих сегментов (%s): шаги проверяются в маршрутах, которые их используют "
-                    .. "(`UseSegments`), сообщения о них помечены `[library %s]`. Результат: **%d ERROR, %d WARN, "
-                    .. "%d INFO**.", mdEscape(r.profileLabel), mdEscape(mres.module), r.counts.ERROR, r.counts.WARN,
-                    r.counts.INFO))
-            elseif r.shared then
-                w(format("## Общая часть модуля %s", mdEscape(mres.module)))
-                w("")
-                w(format("Проверки шаблонов (%s): общие сегменты и общие вставки (`AddLibraryInsert`) проверяются "
-                    .. "один раз для всех маршрутов. Результат: **%d ERROR, %d WARN, %d INFO**.",
-                    mdEscape(r.profileLabel), r.counts.ERROR, r.counts.WARN, r.counts.INFO))
-            elseif r.overrides then
-                w("## Поправки к БД (`tools/overrides`)")
-                w("")
-                w(format("Результат: **%d ERROR, %d WARN, %d INFO**.", r.counts.ERROR, r.counts.WARN, r.counts.INFO))
-            else
-                w(format("## %s — %s", mdEscape(r.route), mdEscape(textOf(r.title))))
-                w("")
-                w(format("Модуль `%s`, профиль: %s. Результат: **%d ERROR, %d WARN, %d INFO**.", tostring(mres.module),
-                    r.profileLabel, r.counts.ERROR, r.counts.WARN, r.counts.INFO))
-            end
-            w("")
-            local sm = r.summary or {}
-            if sm.endLevel then
-                w(format("Симуляция: конец маршрута на уровне **%.2f** (оптимистично %.2f; план %s); опыт квестов %d "
-                    .. "(из них оценено %d; "
-                    .. "квестов с оценённым опытом: %d, %.1f %% опыта квестов), за убийства по целям %d, гринд %d "
-                    .. "(~%d убийств); максимум квестов в журнале %d из %d; принято %d, сдано %d, не сдано к концу %d.",
-                    sm.endLevel, sm.endLevelOptimistic or sm.endLevel,
-                    sm.plannedLevels and tostring(sm.plannedLevels[2]) or "—", sm.xpQuest,
-                    sm.xpQuestEstimated, sm.unknownXpQuests, sm.xpQuestEstimatedPct or 0, sm.xpKill, sm.xpGrind,
-                    sm.grindKills, sm.maxQuestLog,
-                    db.questLogSize or 40, sm.accepts, sm.turnins, #(sm.carried or {})))
-                w("")
-                for _, line in ipairs(V.GrindMarkdown(r)) do w(line) end
-            end
-            if #r.segments > 0 then
-                w("| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (убийств) | журнал |")
-                w("|---|---|---|---:|---:|---:|---:|")
-                for _, s in ipairs(r.segments) do
-                    w(format("| `%s` %s | %s | %.2f → %.2f | %d | %d | %d (%d) | %d |", mdEscape(s.id),
-                        mdEscape(textOf(s.title)), s.levels and format("%d–%d", s.levels[1], s.levels[2]) or "—",
-                        s.startLevel, s.endLevel or 0, s.xpQuest or 0, s.xpKill or 0, s.xpGrind or 0,
-                        s.grindKills or 0, s.questLog or 0))
-                end
-                w("")
-            end
-            local shown = 0
-            for _, m in ipairs(r.messages) do
-                if m.severity ~= "INFO" and not m.accepted then
-                    if shown == 0 then
-                        w("| уровень | где | код | сообщение |")
-                        w("|---|---|---|---|")
-                    end
-                    shown = shown + 1
-                    w(format("| %s | %s | `%s` | %s |", m.severity, mdEscape(locStr(m)), m.code, mdEscape(m.msg)))
-                end
-            end
-            if shown == 0 then w("Ошибок и предупреждений нет.") end
-            w("")
-            if (r.acceptedWarn or 0) > 0 then
-                w(format("<details><summary>Принятые предупреждения, `ok` (%d)</summary>", r.acceptedWarn))
-                w("")
-                for _, m in ipairs(r.messages) do
-                    if m.accepted then w(format("- %s `%s` %s", mdEscape(locStr(m)), m.code, mdEscape(m.msg))) end
-                end
-                w("")
-                w("</details>")
-                w("")
-            end
-            if r.counts.INFO > 0 then
-                w(format("<details><summary>INFO (%d)</summary>", r.counts.INFO))
-                w("")
-                for _, m in ipairs(r.messages) do
-                    if m.severity == "INFO" then
-                        w(format("- %s `%s` %s", mdEscape(locStr(m)), m.code, mdEscape(m.msg)))
-                    end
-                end
-                w("")
-                w("</details>")
-                w("")
-            end
-        end
-    end
-    w("## Что подтверждается только в игре")
-    w("")
-    w("Офлайн-проверки (luacheck по списку API Forever, строгий мок клиента, валидатор по снимку БД, "
-        .. "симуляция маршрутов) этого не покрывают:")
-    w("")
-    for _, item in ipairs(V.IN_GAME_ONLY) do w("* " .. item) end
-    w("")
-    return L
+    return Report.Markdown(V, all, db)
 end
 
 --- JSON-friendly report table.
@@ -3209,6 +3059,7 @@ function V.CheckOkUnused(all, ignore)
         if u.where.step then
             local step = u.where.step
             m.segment, m.step, m.stepId, m.file = step.segment, step.segIndex, step.id, step.file
+            if step.inserted then m.inserted = true end
             what = "this step"
         else
             m.segment, m.file = u.where.segment.id, u.where.segment.file

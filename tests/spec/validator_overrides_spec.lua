@@ -565,7 +565,9 @@ return { quests = {
         it("the fixture targets of the Makefile pass $(NO_OVERRIDES)", function()
             local bad, seen = {}, 0
             for line in (readFile("Makefile") .. "\n"):gmatch("([^\n]*)\n") do
-                if line:find("^\t") and line:find("tools/", 1, true) and line:find("$(FIXTURE_", 1, true) then
+                -- (a recipe runs a tool as `$(LUA) tools/<tool>.lua` or, the simulator, as `$(SIM)`)
+                local tool = line:find("tools/", 1, true) or line:find("$(SIM)", 1, true)
+                if line:find("^\t") and tool and line:find("$(FIXTURE_", 1, true) then
                     seen = seen + 1
                     if not line:find("$(NO_OVERRIDES)", 1, true) then bad[#bad + 1] = line end
                 end
