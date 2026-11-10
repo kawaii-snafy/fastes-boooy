@@ -511,3 +511,122 @@ describe("quest XP log", function()
         assert.equal(3, ns.db.xpLogLevel[3901])
     end)
 end)
+
+-- Reward choices of quests turned in on SHARED steps differ per class; a shared step carries no
+-- `reward`, so each class file gives its choices as route data:
+-- FastesBoooy.AddLibraryData({ rewards = { CLASS = { [questID] = index } } }) (Engine:GetRewardChoice).
+describe("automation: class reward table (route data `rewards`)", function()
+    local gm, gns
+
+    after_each(function()
+        if gm then gm:AssertClean() end
+        gm, gns = nil, nil
+    end)
+
+    -- complete quest q, open its reward window with n choices, let the automation act
+    -- @return the chosen index (nil when the automation did not turn in)
+    local function turnIn(q, n)
+        if not gm:IsOnQuest(q) then gm:AddQuestToLog(q) end
+        gm:CompleteObjectives(q)
+        local mark = #gm.actions
+        gm:OpenQuestComplete(q, n)
+        H.waitAuto(gm, gns)
+        local r = H.actionsSince(gm, mark, "GetQuestReward")
+        if #r == 0 then gm:CloseInteraction() end
+        return r[1] and r[1][3] or nil
+    end
+
+    it("takes the choice of the character's class for a quest turned in on a shared step", function()
+        -- the fixture: Classes/Warrior.lua says [789] = 1, Classes/Mage.lua [789] = 2 (both routes turn 789
+        -- in on the shared step tg-dur-789-in, which has no `reward`)
+        for id, want in pairs({ ["tg-orc-warrior"] = 1, ["tg-troll-mage"] = 2 }) do
+            gm, gns = H.boot({ guides = true, db = true, player = H.GUIDES_PLAYER[id] })
+            assert.equal(id, gns.Engine:GetRoute().id)
+            assert.is_nil(gns.Engine:GetRoute().stepById["tg-dur-789-in"].reward)
+            assert.equal(want, gns.Engine:GetRewardChoice(789), id)
+            assert.is_nil(gns.Engine:GetRewardChoice(3901), "the paladin's entry is another class's")
+            assert.equal(want, turnIn(789, 3), id)
+            assert.is_true(gm:IsQuestCompleted(789))
+            gm:AssertClean()
+        end
+    end)
+
+    it("no entry for the class: several choices are left to the player", function()
+        gm, gns = H.boot({ guides = true, db = true, player = H.GUIDES_PLAYER["tg-orc-warrior"] })
+        assert.is_nil(gns.Engine:GetRewardChoice(788))
+        local chatMark = #gm.chat
+        assert.is_nil(turnIn(788, 2))
+        assert.is_true(H.chatHas(gm, "Choose a reward for \"Cutting Teeth\" yourself.", chatMark + 1))
+    end)
+
+    it("one table per class: a second AddLibraryData call with the same class key replaces the first", function()
+        gm, gns = H.boot({ fixture = false, register = function(api)
+            api.AddLibrarySegment({ id = "rw-lib", title = "Shared", steps = {
+                { id = "rw-363", accept = 363 },
+                { id = "rw-364", turnin = 363, accept = 364 },
+                { id = "rw-364-in", turnin = 364 },
+            } })
+            api.AddLibraryData({ rewards = { PALADIN = { [363] = 1, [364] = 2 }, WARRIOR = { [363] = 2 } } })
+            api.AddLibraryData({ rewards = { PALADIN = { [363] = 3 } } })
+            api.RegisterRoute({ api = 1, id = "rw", title = "Rewards", faction = "Horde", races = { "Scourge" },
+                classes = { "PALADIN" }, levels = { 1, 5 } })
+            api.UseSegments("rw", { "rw-lib" })
+        end })
+        local E = gns.Engine
+        assert.equal("rw", E:GetRoute().id)
+        assert.equal(3, E:GetRewardChoice(363), "the second table")
+        assert.is_nil(E:GetRewardChoice(364), "a key of the first table only is gone: replaced, not merged")
+        assert.same({ PALADIN = { [363] = 3 }, WARRIOR = { [363] = 2 } }, gns.Registry.library.data.rewards,
+            "the other class keeps its table")
+        assert.equal(3, turnIn(363, 3))
+        assert.same({}, gns.Registry.errors)
+        -- That holds while the route is not composed (every file of a module is loaded before login).
+        -- Library data that arrives later only fills what the composed route does not have yet, as
+        -- for every data kind: the class table already in use stays.
+        gm.env.FastesBoooy.AddLibraryData({ rewards = { PALADIN = { [363] = 2, [364] = 1 }, MAGE = { [363] = 1 } } })
+        local route = gns.Registry:Get("rw") -- (recomposed: the library changed)
+        assert.equal(route, E:GetRoute())
+        assert.same({ [363] = 1 }, route.data.rewards.MAGE, "a new class key is merged")
+        assert.same({ [363] = 3 }, route.data.rewards.PALADIN)
+        assert.equal(3, E:GetRewardChoice(363))
+        assert.is_nil(E:GetRewardChoice(364))
+    end)
+
+    it("a step-level reward wins over the class table; invalid table entries are ignored", function()
+        gm, gns = H.boot({ fixture = false, register = function(api)
+            api.RegisterRoute({ api = 1, id = "rw", title = "Rewards", faction = "Horde", races = { "Scourge" },
+                classes = { "PALADIN", "WARRIOR" }, levels = { 1, 5 } })
+            api.AddSegment("rw", { id = "rw-s", title = "S", steps = {
+                { id = "rw-363", accept = 363 },
+                { id = "rw-364", turnin = 363, accept = 364 },
+                { id = "rw-364-in", turnin = 364, reward = { [364] = 3 } },
+                { id = "rw-376", accept = 376 },
+                { id = "rw-376-in", turnin = 376 },
+            } })
+            -- (a plain route: AddRouteData; a route with shared segments gets the table from AddLibraryData)
+            api.AddRouteData("rw", { rewards = {
+                PALADIN = { [363] = 2, [364] = 1, [376] = 2, [380] = "two", [3901] = 0, [3902] = 1.5 },
+                WARRIOR = { [363] = 3 },
+            } })
+        end })
+        local E = gns.Engine
+        assert.equal("rw", E:GetRoute().id)
+        assert.equal(2, E:GetRewardChoice(363), "class table (PALADIN)")
+        assert.equal(3, E:GetRewardChoice(364), "the step's `reward` wins")
+        assert.equal(2, E:GetRewardChoice(376))
+        assert.is_nil(E:GetRewardChoice(380), "not a positive integer")
+        assert.is_nil(E:GetRewardChoice(3901))
+        assert.is_nil(E:GetRewardChoice(3902))
+        assert.is_nil(E:GetRewardChoice(9999))
+        assert.equal(2, turnIn(363, 3))
+        assert.equal(3, turnIn(364, 3))
+        -- a table index that the reward window does not have: the automatic rule (as for a step's `reward`)
+        gm:DefineQuest(376, { title = "The Damned", level = 2, xp = 170, choices = { 5001 } })
+        gm:AddQuestToLog(376)
+        gm:CompleteObjectives(376)
+        local mark = #gm.actions
+        gm:OpenQuestComplete(376)
+        H.waitAuto(gm, gns)
+        assert.equal(1, H.actionsSince(gm, mark, "GetQuestReward")[1][3])
+    end)
+end)

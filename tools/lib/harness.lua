@@ -417,7 +417,9 @@ function Harness.Build(libDir, opts)
     local _, uerrs = Compose.AddUses(route, hb.segments, Harness.SOURCE)
     for _, e in ipairs(uerrs or {}) do hb.errors[#hb.errors + 1] = { file = Harness.SOURCE, msg = e } end
     for _, e in ipairs(Compose.Build(route, mod.lib)) do
-        hb.errors[#hb.errors + 1] = { file = e.source or Harness.SOURCE, msg = e.msg }
+        local src = e.source
+        if type(src) == "table" then src = src.file end -- a shared insert: { module, file }
+        hb.errors[#hb.errors + 1] = { file = src or Harness.SOURCE, msg = e.msg }
     end
     hb.route = route
     return hb

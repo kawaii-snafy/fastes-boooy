@@ -115,13 +115,26 @@ function M.CollectIds(route)
     return M.CollectStepIds(own)
 end
 
---- Collect referenced ids of the library segments registered by a library module.
+--- Collect referenced ids of the shared content registered by a module: its library segments
+-- and its shared inserts (AddLibraryInsert; the templates, so every class and race is covered).
 function M.CollectLibraryIds(mod)
     local steps = {}
     for _, seg in ipairs(mod.librarySegments or {}) do
         for _, step in ipairs(seg.steps) do steps[#steps + 1] = step end
     end
+    for _, ins in ipairs(mod.libraryInserts or {}) do
+        for _, step in ipairs(ins.steps) do steps[#steps + 1] = step end
+    end
     return M.CollectStepIds(steps)
+end
+
+--- Does the route own anything (a step of its own segments or of its per-route inserts)?
+-- A route made of shared segments and shared inserts only needs no AddRouteData block.
+function M.OwnsSteps(route)
+    for _, step in ipairs(route.steps) do
+        if not step.library then return true end
+    end
+    return false
 end
 
 --- AreaTable id per enUS area name of the DB snapshot (the smallest id when a name repeats).
@@ -267,8 +280,10 @@ local function renderBody(out, ids, db, label, missing, notes, areaIds)
     end
 end
 
---- Render the Data.lua text of a loaded module: AddLibraryData for the library segments it
--- registers (a library module), then AddRouteData per route it registers.
+--- Render the Data.lua text of a loaded module: AddLibraryData for the shared content it
+-- registers (library segments, shared inserts), then AddRouteData per route that owns steps
+-- (a route made of shared content only gets no block: Data.lua may then be listed in the TOC
+-- before the file that registers the routes).
 -- @return text, missing (array of "kind id" not found in the DB), notes (array of strings)
 function M.Render(mod, db)
     local meta = db.meta or {}
@@ -281,7 +296,7 @@ function M.Render(mod, db)
     }
     local missing, notes = {}, {}
     local areaIds = M.AreaIds(db)
-    if #(mod.librarySegments or {}) > 0 or mod.isLibrary then
+    if #(mod.librarySegments or {}) > 0 or #(mod.libraryInserts or {}) > 0 or mod.isLibrary then
         -- (a library module declared in its TOC may have no segment yet: empty data)
         out[#out + 1] = "FastesBoooy.AddLibraryData({"
         renderBody(out, M.CollectLibraryIds(mod), db, "library " .. mod.name, missing, notes, areaIds)
@@ -289,7 +304,9 @@ function M.Render(mod, db)
         out[#out + 1] = ""
     end
     local routes = {}
-    for _, r in ipairs(mod.routes) do routes[#routes + 1] = r end
+    for _, r in ipairs(mod.routes) do
+        if M.OwnsSteps(r) then routes[#routes + 1] = r end
+    end
     table.sort(routes, function(a, b) return a.id < b.id end)
     for _, route in ipairs(routes) do
         out[#out + 1] = string.format("FastesBoooy.AddRouteData(%s, {", luaString(route.id))

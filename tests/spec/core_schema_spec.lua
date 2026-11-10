@@ -258,6 +258,122 @@ describe("Schema routes and segments", function()
     end)
 end)
 
+describe("Schema: core 0.4.0 additions", function()
+    it("`ok` (acknowledged validator warnings): a code, a list of codes, codes with a ceiling", function()
+        local s, errors = step({ accept = 1, ok = "at-far-from-giver" })
+        assert.same({}, errors)
+        assert.same({ ["at-far-from-giver"] = true }, s.ok)
+
+        s, errors = step({ accept = 1, ok = { "at-far-from-giver", "quest-out-of-scope" } })
+        assert.same({}, errors)
+        assert.same({ ["at-far-from-giver"] = true, ["quest-out-of-scope"] = true }, s.ok)
+
+        s, errors = step({ level = 30, ok = { ["level-grind"] = 700 } })
+        assert.same({}, errors)
+        assert.same({ ["level-grind"] = 700 }, s.ok)
+
+        s, errors = step({ level = 30, ok = { "skip-ahead", ["level-grind"] = 90 } })
+        assert.same({}, errors)
+        assert.same({ ["skip-ahead"] = true, ["level-grind"] = 90 }, s.ok)
+
+        -- absent: no key at all; the engine never reads it
+        s, errors = step({ accept = 1 })
+        assert.same({}, errors)
+        assert.is_nil(s.ok)
+    end)
+
+    it("`ok`: only the shape is checked (codes are [a-z-]+, a ceiling is a number >= 0)", function()
+        local function okErrors(v)
+            local s, errors = step({ accept = 1, ok = v })
+            return errors, s
+        end
+        assert.is_true(hasError(okErrors(5), "t: ok must be a message code"))
+        assert.is_true(hasError(okErrors(true), "t: ok must be a message code"))
+        assert.is_true(hasError(okErrors(""), "t: ok must be a message code"))
+        assert.is_true(hasError(okErrors("Level_Grind"), "t: ok must be a message code"))
+        assert.is_true(hasError(okErrors({}), "t: ok is empty"))
+        assert.is_true(hasError(okErrors({ "ok-code", "BAD" }), "t: ok%[2%] is not a message code"))
+        assert.is_true(hasError(okErrors({ ["level-grind"] = "many" }), "t: ok%['level%-grind'%] must be a number >= 0"))
+        assert.is_true(hasError(okErrors({ ["level-grind"] = -1 }), "t: ok%['level%-grind'%] must be a number >= 0"))
+        assert.is_true(hasError(okErrors({ ["level-grind"] = true }), "t: ok%['level%-grind'%] must be a number >= 0"))
+        assert.is_true(hasError(okErrors({ [7.5] = 1 }), "t: ok has an invalid key 7.5"))
+        assert.is_true(hasError(okErrors({ Bad = 1 }), "t: ok has an invalid key Bad"))
+        -- the valid part of a partly wrong value is kept
+        local errors, s = okErrors({ "skip-ahead", "BAD", ["level-grind"] = 0 })
+        assert.equal(1, #errors)
+        assert.same({ ["skip-ahead"] = true, ["level-grind"] = 0 }, s.ok)
+        -- any code that looks like one is accepted here: the validator knows the codes
+        errors, s = okErrors("no-such-code")
+        assert.same({}, errors)
+        assert.same({ ["no-such-code"] = true }, s.ok)
+    end)
+
+    it("`ok` on a segment (segment-level)", function()
+        local r = Schema.NormalizeRoute({ api = 1, id = "r", title = "R" })
+        local seg, errors = Schema.AddSegment(r, { id = "s", title = "S", levels = { 1, 2 }, ok = "segment-level",
+            steps = { { accept = 1 } } })
+        assert.same({}, errors)
+        assert.same({ ["segment-level"] = true }, seg.ok)
+        local _, errors2 = Schema.AddSegment(r, { id = "s2", title = "S", ok = 5, steps = { { accept = 2 } } })
+        assert.is_true(hasError(errors2, "segment s2: ok must be a message code"))
+        -- `ok` is not a route key
+        local _, rerrors = Schema.NormalizeRoute({ api = 1, id = "r2", title = "R", ok = "x" })
+        assert.is_true(hasError(rerrors, "route r2: unknown key 'ok'"))
+    end)
+
+    it("route `aliases`: one former id or a list", function()
+        local r, errors = Schema.NormalizeRoute({ api = 1, id = "new", title = "N", aliases = "old" })
+        assert.same({}, errors)
+        assert.same({ "old" }, r.aliases)
+        r, errors = Schema.NormalizeRoute({ api = 1, id = "new", title = "N", aliases = { "old-1", "old_2", "old-1" } })
+        assert.same({}, errors)
+        assert.same({ "old-1", "old_2" }, r.aliases)
+        r, errors = Schema.NormalizeRoute({ api = 1, id = "new", title = "N" })
+        assert.same({}, errors)
+        assert.is_nil(r.aliases)
+        r, errors = Schema.NormalizeRoute({ api = 1, id = "new", title = "N", aliases = { "has space", 7, "", "new", "fine" } })
+        assert.equal(4, #errors)
+        assert.is_true(hasError(errors, "route new: aliases%[1%] must be a route id"))
+        assert.is_true(hasError(errors, "route new: aliases%[2%] must be a route id"))
+        assert.is_true(hasError(errors, "route new: aliases%[3%] must be a route id"))
+        assert.is_true(hasError(errors, "route new: alias 'new' is the id of the route itself"))
+        assert.same({ "fine" }, r.aliases)
+    end)
+
+    it("marks positional step ids (`autoId`): they are no insert anchors", function()
+        local r = Schema.NormalizeRoute({ api = 1, id = "r", title = "R" })
+        local seg = Schema.AddSegment(r, { id = "s", title = "S", steps = { { accept = 1 }, { id = "named", turnin = 1 } } })
+        assert.equal("s:1", seg.steps[1].id)
+        assert.is_true(seg.steps[1].autoId)
+        assert.equal("named", seg.steps[2].id)
+        assert.is_nil(seg.steps[2].autoId)
+    end)
+
+    it("Schema.NormalizeFilters: the class / race / faction keys of a step or of an insert scope", function()
+        local errors = {}
+        assert.is_nil(Schema.NormalizeFilters({ accept = 1 }, "w", errors))
+        assert.same({ class = { PALADIN = true } }, Schema.NormalizeFilters({ class = "PALADIN" }, "w", errors))
+        assert.same({ class = { PALADIN = true, DRUID = true }, race = { Orc = true, Troll = true }, faction = "Horde" },
+            Schema.NormalizeFilters({ class = { "PALADIN", "DRUID" }, race = { "Orc", "Troll" }, faction = "Horde" },
+                "w", errors))
+        assert.same({}, errors)
+        -- the same code path as a step's own filters
+        local s = step({ accept = 1, class = "MAGE", race = "Troll" })
+        assert.same({ class = { MAGE = true }, race = { Troll = true } }, s.filters)
+        -- errors: unknown class token, bad faction, a race token that is not a string (the race NAMES are
+        -- client data: only the offline tools know them)
+        Schema.NormalizeFilters({ class = "PALADN", race = { 5 }, faction = "Neutral" }, "w", errors)
+        assert.same({
+            "w: unknown class token 'PALADN'",
+            "w: race tokens must be strings (UnitRace raceFile)",
+            "w: faction must be Horde or Alliance",
+        }, errors)
+        errors = {}
+        assert.same({ race = { Undead = true } }, Schema.NormalizeFilters({ race = "Undead" }, "w", errors))
+        assert.same({}, errors)
+    end)
+end)
+
 describe("Compose (Core/Compose.lua) loaded with the Schema", function()
     it("is pure and shares the tools' Schema", function()
         local S, C = Loader.LoadSchema(".")
@@ -288,6 +404,22 @@ describe("Compose (Core/Compose.lua) loaded with the Schema", function()
         -- idempotent
         assert.same({}, C.Build(r, lib))
         assert.same({ "s:1", "lib:1", "lib:2+1", "lib:2" }, H.ids(r.steps))
+        -- a shared insert with a source (the offline loader): tags, scope, per-route copies
+        local ins, ierrors = C.AddLibraryInsert(lib, { after = "lib:1", class = "PALADIN",
+            steps = { { id = "shared-1", manual = true } } }, { module = "Lib", file = "Lib/y.lua" })
+        assert.same({}, ierrors)
+        assert.equal(1, #lib.inserts)
+        assert.equal(ins, lib.inserts[1])
+        assert.same({ class = { PALADIN = true } }, ins.scope)
+        assert.equal("Lib", ins.steps[1].library)
+        assert.equal("Lib/y.lua", ins.steps[1].file)
+        local berrors = C.Build(r, lib)
+        assert.same({ "s:1", "lib:1", "shared-1", "lib:2+1", "lib:2" }, H.ids(r.steps))
+        -- the positional anchor is reported with the insert's source
+        assert.equal(1, #berrors)
+        assert.matches("anchor 'lib:1' is a positional step id", berrors[1].msg)
+        assert.same({ module = "Lib", file = "Lib/y.lua" }, berrors[1].source)
+        assert.same({ plain = true }, ins.applied)
         -- MergeData: fillOnly keeps existing values
         local d = C.MergeData({ quests = { [1] = "own" } }, { quests = { [1] = "lib", [2] = "lib2" }, x = 1 }, true)
         assert.same({ quests = { [1] = "own", [2] = "lib2" }, x = 1 }, d)

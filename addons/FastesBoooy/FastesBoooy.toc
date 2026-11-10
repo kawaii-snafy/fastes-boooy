@@ -3,7 +3,7 @@
 ## Notes: Modular leveling guide for World of Warcraft: Forever (core: route engine, quest automation, navigation arrow).
 ## Notes-ruRU: Модульный гайд прокачки для World of Warcraft: Forever (ядро: движок маршрутов, автоматизация квестов, стрелка-навигатор).
 ## Author: FastesBoooy contributors
-## Version: 0.3.1
+## Version: 0.4.0
 ## Category: Quests
 ## Category-ruRU: Задания
 ## IconTexture: Interface\Icons\INV_Scroll_04

@@ -90,4 +90,48 @@ return a, b, c, d, e, f, g, h
         assert.matches("C_QuestLog", out)
         assert.matches("FastesBoooyDB", out)
     end)
+
+    it("route modules: the shared-insert API and the pure Lua base are known; writes and other globals are not", function()
+        -- the shape of a Route.lua that registers its routes from a table, and of a class file
+        local code, out = luacheck([[
+if not FastesBoooy.AddLibraryInsert then return end
+local _, ns = ...
+local list = { "a", "b" }
+for i, id in ipairs(list) do
+    FastesBoooy.RegisterRoute({ api = 1, id = id .. tostring(i), title = string.format("%s %d", id, math.floor(i)) })
+end
+for k, v in pairs(ns) do
+    if type(v) == "table" and next(v) ~= nil then
+        FastesBoooy.AddLibraryInsert({ after = k, steps = { unpack(v) } })
+    end
+end
+FastesBoooy.AddLibraryData({ rewards = { DRUID = { [tonumber("92461")] = select(1, 1) } } })
+return table.concat(list, ",")
+]], "addons/FastesBoooy_Probe/Classes/Druid.lua")
+        assert.are.equal(0, code, out)
+        -- still errors: writes to the base, WoW API, SavedVariables, a global of the module's own, io / os / print,
+        -- a function FastesBoooy does not have
+        local bad
+        bad, out = luacheck([[
+ipairs = nil
+string.extra = 1
+local t = C_Timer.After
+FastesBoooyCharDB = {}
+MyGlobal = 1
+print(os.time(), io.open("x"), t)
+FastesBoooy.AddLibraryInsrt({})
+FastesBoooy.AddLibraryInsert = nil
+]], "tests/fixtures/core/FastesBoooy_Probe/Route.lua")
+        assert.are.equal(1, bad)
+        assert.matches("W121.-ipairs", out)
+        assert.matches("W122.-extra", out)
+        assert.matches("W113.-C_Timer", out)
+        assert.matches("W111.-FastesBoooyCharDB", out)
+        assert.matches("W111.-MyGlobal", out)
+        assert.matches("W113.-print", out)
+        assert.matches("W113.-'os'", out)
+        assert.matches("W113.-'io'", out)
+        assert.matches("W143.-AddLibraryInsrt", out)
+        assert.matches("W122.-AddLibraryInsert", out)
+    end)
 end)

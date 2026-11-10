@@ -126,17 +126,22 @@ stds.fastesboooy = {
     },
 }
 
--- Route modules and library modules (shared segments, e.g. FastesBoooy_Horde) may only
--- READ the registration API of the core.
+-- Guide modules (routes and shared content, e.g. FastesBoooy_Guides) may only READ the
+-- registration API of the core, plus the pure Lua base the offline sandbox offers as well
+-- (tools/lib/route_loader.lua baseEnv): enough to register routes from a table. No WoW API,
+-- no SavedVariables, no global of their own.
 stds.fastesboooy_route = {
     read_globals = {
         FastesBoooy = {
             fields = {
                 RegisterRoute = {}, AddSegment = {}, AddRouteData = {},
-                UseSegments = {}, AddInsert = {},              -- route modules (Core/Compose.lua)
-                AddLibrarySegment = {}, AddLibraryData = {},   -- library modules
+                UseSegments = {}, AddInsert = {},              -- per route (Core/Compose.lua)
+                AddLibrarySegment = {}, AddLibraryData = {},   -- shared content
+                AddLibraryInsert = {},                         -- shared inserts (core 0.4.0, API_MINOR 2)
             },
         },
+        "ipairs", "pairs", "next", "select", "type", "tostring", "tonumber", "unpack",
+        string = { other_fields = true }, table = { other_fields = true }, math = { other_fields = true },
     },
 }
 
@@ -156,8 +161,9 @@ files["addons/FastesBoooy/**/*.lua"] = {
     std = "forever+fastesboooy",
 }
 
--- Route and library modules (content-only addons): nothing but the FastesBoooy registration API
--- (RegisterRoute/AddSegment/AddRouteData/UseSegments/AddInsert/AddLibrarySegment/AddLibraryData).
+-- Guide modules (content-only addons): nothing but the FastesBoooy registration API
+-- (RegisterRoute/AddSegment/AddRouteData/UseSegments/AddInsert/AddLibrarySegment/AddLibraryData/
+-- AddLibraryInsert) and the pure Lua base (std fastesboooy_route above).
 files["addons/FastesBoooy_*/**/*.lua"] = {
     std = "fastesboooy_route",
 }

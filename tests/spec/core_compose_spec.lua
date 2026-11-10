@@ -153,9 +153,10 @@ describe("core composition (library segments, UseSegments, AddInsert)", function
         assert.same({}, ns.Registry.errors, "composition is lazy")
         local r = ns.Registry:Get("r1")
         assert.same({ "r1-go", "lib-a-1", "lib-a-2" }, H.ids(r.steps))
-        assert.equal(1, #errorsMatching("unknown library segment 'lib%-missing'"))
+        assert.equal(1, #errorsMatching("unknown shared segment 'lib%-missing'"))
         assert.equal(1, #errorsMatching("unknown anchor step 'nope'"))
-        assert.matches("^route r1: UseSegments: unknown library segment", ns.Registry.errors[1])
+        assert.matches("^route r1: UseSegments: unknown shared segment 'lib%-missing' %(is its file listed in the TOC before "
+            .. "Route%.lua%?%)", ns.Registry.errors[1])
         -- another change recomposes the route; the same errors are not recorded again
         FB.AddInsert("r1", { before = "lib-a-2", steps = { { id = "r1-y", manual = true } } })
         r = ns.Registry:Get("r1")

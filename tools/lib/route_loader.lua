@@ -4,7 +4,7 @@
 -- Route.lua, Data.lua and Segments/*.lua. The files are executed in a SANDBOX whose
 -- only global besides the pure Lua libraries is a stub `FastesBoooy` table that
 -- captures RegisterRoute / AddSegment / AddRouteData / AddLibrarySegment /
--- AddLibraryData / UseSegments / AddInsert and normalizes them with the real
+-- AddLibraryData / AddLibraryInsert / UseSegments / AddInsert and normalizes them with the real
 -- route-format contract (addons/FastesBoooy/Core/Schema.lua) and composes the routes
 -- with the real composition code (addons/FastesBoooy/Core/Compose.lua), exactly like
 -- the addon's Registry does (registrations that arrive before their route are queued
@@ -19,6 +19,8 @@
 --   local Loader = require("lib.route_loader")
 --   local Schema = Loader.LoadSchema(root)          -- Schema.Compose = Core/Compose.lua
 --   local mod = Loader.LoadModule(dir, { schema = Schema, skip = { ["Data.lua"] = true } })
+--   Loader.LoadModule(dir, { schema = Schema, replace = { ["Segments/A.lua"] = "/other/file.lua" } })
+--                     -- the TOC entry Segments/A.lua is read from the other file
 --   mod.routes        -- array of normalized, composed routes registered by the module itself
 --   mod.errors        -- array of { file = "Segments/01.lua", msg = "...", library = "<Dep>"|nil }
 --   mod.data[id]      -- merged AddRouteData tables per route id (+ library data under it)
@@ -27,9 +29,17 @@
 --   mod.deps          -- { { name, dir, toc }, ... } dependency modules in load order
 --   mod.lib           -- library store (Compose.NewLibrary) of the whole load
 --   mod.librarySegments -- library segments registered by the module's own files
+--   mod.libraryInserts  -- shared inserts (AddLibraryInsert) registered by the module's own files: the
+--                          TEMPLATES { side, anchor, steps, scope = filters | nil, file, applied = { [routeId] =
+--                          true } } (Compose.AddLibraryInsert). A route's copy of a template step t (of a
+--                          shared insert or of a library segment) is route.libCopies[t]: it exists when t was
+--                          composed into the route (and is then route.stepById[t.id])
+--   mod.aliases       -- [former route id] = route (RegisterRoute{ aliases = ... })
 --   mod.declaredLibrary -- the TOC says "## X-FastesBoooy-Module: library"
---   mod.isLibrary     -- no route, and library segments / data registered or declared in the TOC
+--   mod.isLibrary     -- no route, and library segments / inserts / data registered or declared in the TOC
 --                        (a declared library may still be empty: placeholder segment files)
+-- A module without the TOC line "## X-FastesBoooy-Module: library" may register shared content AND
+-- routes (FastesBoooy_Guides); a declared library may not register routes.
 
 local Loader = {}
 
@@ -156,6 +166,8 @@ end
 -- capture the registrations and compose the module's routes.
 -- @param dir module directory
 -- @param opts { schema = Schema (required), skip = { [relpath] = true } (module's own files),
+--               replace = { [relpath] = "<path of another file>" } (module's own files: the TOC entry
+--               is read from that path; the file name reported stays the TOC path),
 --               files = {override list}, compose = Compose (default schema.Compose),
 --               addons = directory of the dependencies (default: the parent of dir),
 --               deps = false (do not load dependencies) }
@@ -172,6 +184,7 @@ function Loader.LoadModule(dir, opts)
         dir = dir, name = basename(dir), routes = {}, routeById = {}, errors = {},
         data = {}, segmentFile = {}, files = {}, pending = {}, deps = {},
         lib = Compose.NewLibrary(), librarySegments = {}, librarySegmentFile = {}, libraryData = false,
+        libraryInserts = {}, aliases = {},
     }
     local lib = mod.lib
     local currentFile, currentModule = "?", mod.name
@@ -242,10 +255,25 @@ function Loader.LoadModule(dir, opts)
             addError(("route %s: registered twice (second definition ignored)"):format(id))
             return nil
         end
+        if mod.aliases[id] then
+            addError(("route %s: its id is an alias of route %s (alias ignored)"):format(id, tostring(mod.aliases[id].id)))
+            mod.aliases[id] = nil
+        end
         route.file = currentFile
         route.module = currentModule
         route.data = {}
         mod.routeById[id] = route
+        -- former ids, like Registry:RegisterRoute (a route id always wins over an alias)
+        for _, alias in ipairs(route.aliases or {}) do
+            if mod.routeById[alias] then
+                addError(("route %s: alias '%s' is the id of a registered route (alias ignored)"):format(id, alias))
+            elseif mod.aliases[alias] then
+                addError(("route %s: alias '%s' is already used by route %s (alias ignored)"):format(id, alias,
+                    tostring(mod.aliases[alias].id)))
+            else
+                mod.aliases[alias] = route
+            end
+        end
         if currentModule == mod.name then
             mod.routes[#mod.routes + 1] = route
             mod.data[id] = route.data
@@ -316,6 +344,16 @@ function Loader.LoadModule(dir, opts)
         return seg
     end
 
+    function api.AddLibraryInsert(def)
+        local ins, errs = Compose.AddLibraryInsert(lib, def, { module = currentModule, file = currentFile })
+        addErrors(errs, "library")
+        if ins then
+            ins.file, ins.module = currentFile, currentModule
+            if currentModule == mod.name then mod.libraryInserts[#mod.libraryInserts + 1] = ins end
+        end
+        return ins
+    end
+
     function api.AddLibraryData(data)
         local ok, err = Compose.AddLibraryData(lib, data)
         if not ok then
@@ -327,7 +365,7 @@ function Loader.LoadModule(dir, opts)
     end
 
     -- run the files of one module (`prefix` qualifies the file names of dependencies)
-    local function runFiles(mdir, mname, files, skip, prefix)
+    local function runFiles(mdir, mname, files, skip, prefix, replace)
         -- one private addon table shared by every file of the module (`local _, ns = ...`),
         -- like the WoW client and Mock.loadAddon
         local private = {}
@@ -335,7 +373,7 @@ function Loader.LoadModule(dir, opts)
             if not (skip and skip[rel]) then
                 currentFile, currentModule = prefix .. rel, mname
                 if mname == mod.name then mod.files[#mod.files + 1] = rel end
-                local path = mdir .. "/" .. rel
+                local path = (replace and replace[rel]) or (mdir .. "/" .. rel)
                 if not rel:match("%.lua$") then
                     addError("only .lua files are supported in route modules (got " .. rel .. ")")
                 else
@@ -443,7 +481,19 @@ function Loader.LoadModule(dir, opts)
         loadDeps(Loader.Dependencies(toc), mod.name)
     end
 
-    runFiles(dir, mod.name, files, opts.skip, "")
+    if opts.replace then
+        local listed = {}
+        for _, rel in ipairs(files) do listed[rel] = true end
+        local unknown = {}
+        for rel in pairs(opts.replace) do
+            if not listed[rel] then unknown[#unknown + 1] = tostring(rel) end
+        end
+        table.sort(unknown)
+        for _, rel in ipairs(unknown) do
+            addError("replace: " .. rel .. " is not a file of the TOC", mod.tocFile or rel)
+        end
+    end
+    runFiles(dir, mod.name, files, opts.skip, "", opts.replace)
 
     for routeId, list in pairs(mod.pending) do
         for _, p in ipairs(list) do
@@ -453,15 +503,31 @@ function Loader.LoadModule(dir, opts)
     end
     currentModule = mod.name
 
-    -- compose the routes (UseSegments / AddInsert), exactly like the addon's Registry
+    -- compose the routes (UseSegments / AddInsert / the shared inserts), exactly like the addon's
+    -- Registry; each composition error once per route, like Registry:Finalize
     for _, route in ipairs(mod.routes) do
         if route.own then
+            local seen = {}
             for _, e in ipairs(Compose.Build(route, lib)) do
-                addError("route " .. tostring(route.id) .. ": " .. e.msg, e.source or route.file)
+                local msg = "route " .. tostring(route.id) .. ": " .. e.msg
+                local src, srcModule = e.source, mod.name
+                if type(src) == "table" then
+                    -- a shared insert: { module, file } (Compose.AddLibraryInsert)
+                    src, srcModule = src.file, src.module or mod.name
+                end
+                local file = src or route.file
+                local key = msg .. "\0" .. tostring(file)
+                if not seen[key] then
+                    seen[key] = true
+                    currentModule = srcModule
+                    addError(msg, file)
+                    currentModule = mod.name
+                end
             end
         end
     end
-    mod.isLibrary = #mod.routes == 0 and (#mod.librarySegments > 0 or mod.libraryData or mod.declaredLibrary or false)
+    mod.isLibrary = #mod.routes == 0 and (#mod.librarySegments > 0 or #mod.libraryInserts > 0 or mod.libraryData
+        or mod.declaredLibrary or false)
     if mod.declaredLibrary and #mod.routes > 0 then
         addError("## X-FastesBoooy-Module: library, but the module registers route(s): a library module only "
             .. "registers library segments / data", mod.tocFile)

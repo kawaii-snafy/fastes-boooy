@@ -37,10 +37,15 @@ VALIDATE_FLAGS =
 # validate / simulate stages check something even before the first route module exists.
 # FastesBoooy_TestComposed = own segments + library segments of FastesBoooy_TestLib (UseSegments)
 # + class inserts (AddInsert); the library module itself is validated / regenerated, not simulated.
+# FastesBoooy_TestGuides = one module with shared segments per start zone, shared class / race inserts
+# (AddLibraryInsert), a class reward table and three routes registered from a table (the shape of
+# FastesBoooy_Guides).
 FIXTURE_VALIDATE = tests/fixtures/validator/FastesBoooy_FxClean tests/fixtures/validator/FastesBoooy_FxNs \
 	tests/fixtures/core/FastesBoooy_TestRoute tests/fixtures/core/FastesBoooy_TestLib \
-	tests/fixtures/core/FastesBoooy_TestComposed tests/fixtures/validator/FastesBoooy_FxHarnessLib
-FIXTURE_SIMULATE = tests/fixtures/core/FastesBoooy_TestRoute tests/fixtures/core/FastesBoooy_TestComposed
+	tests/fixtures/core/FastesBoooy_TestComposed tests/fixtures/validator/FastesBoooy_FxHarnessLib \
+	tests/fixtures/core/FastesBoooy_TestGuides
+FIXTURE_SIMULATE = tests/fixtures/core/FastesBoooy_TestRoute tests/fixtures/core/FastesBoooy_TestComposed \
+	tests/fixtures/core/FastesBoooy_TestGuides
 # make simulate-sync: start levels of the "player ahead of the route" runs (tools/simulate_routes.lua --ahead)
 SYNC_LEVELS = 10 23 35 48
 # mid-route jumps with a quest log (--ahead L --ahead-at SEG,...: the first listed segment the route has;
@@ -49,7 +54,8 @@ SYNC_MID = 21/ud-04-barrens,sd-04-barrens 29/h-24-barrens-stonetalon
 # levels above the route's plan during normal play, levelSync "auto" (--level-plus N)
 SYNC_PLUS = 2 4
 FIXTURE_ROUTEDATA = tests/fixtures/validator/FastesBoooy_FxClean tests/fixtures/core/FastesBoooy_TestLib \
-	tests/fixtures/core/FastesBoooy_TestComposed tests/fixtures/validator/FastesBoooy_FxHarnessLib
+	tests/fixtures/core/FastesBoooy_TestComposed tests/fixtures/validator/FastesBoooy_FxHarnessLib \
+	tests/fixtures/core/FastesBoooy_TestGuides
 # Start-state harness fixture (tools/lib/harness.lua): a library module that validates /
 # simulates cleanly only from its start state, for both 22-60 profiles.
 FIXTURE_HARNESS_LIB = tests/fixtures/validator/FastesBoooy_FxHarnessLib

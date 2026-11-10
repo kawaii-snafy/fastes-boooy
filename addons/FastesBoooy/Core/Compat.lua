@@ -91,6 +91,11 @@ do
     Compat.IsForever = camelot or (Compat.interface ~= nil and Compat.interface >= 16000 and Compat.interface < 17000)
 end
 
+--- Is the addon `name` loaded (C_AddOns.IsAddOnLoaded)? false when the client does not know it.
+function Compat.IsAddOnLoaded(name)
+    return pubBool((try(C_AddOns and C_AddOns.IsAddOnLoaded, name)))
+end
+
 ---------------------------------------------------------------------------
 -- session state (filled by events below)
 ---------------------------------------------------------------------------

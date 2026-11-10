@@ -498,8 +498,8 @@ function Engine:BuildDependents(route, acceptAt)
     self.itemQuests = items
 end
 
---- Route for this character: the saved choice (cdb.route) if registered, else
--- ns.Registry:Select(facts).
+--- Route for this character: the saved choice (cdb.route, a route id or a former id of a
+-- route: Registry:Get resolves `aliases`) if registered, else ns.Registry:Select(facts).
 function Engine:SelectRoute()
     local facts = ns.Compat.PlayerFacts()
     self.facts = facts
@@ -509,8 +509,32 @@ function Engine:SelectRoute()
     return route
 end
 
+-- A route that was renamed keeps its former ids as `aliases` (Core/Registry.lua): the progress
+-- saved under a former id (the manual choice, the high-water mark, the level-sync floor and its
+-- dismissal) moves to the new id when the route is activated. Marks keyed by step id need nothing.
+local function adoptAliases(route)
+    local aliases = ns.Registry.aliases
+    if not route or not aliases or next(aliases) == nil then return end
+    local id = route.id
+    local function former(v)
+        return type(v) == "string" and v ~= id and aliases[v] == route
+    end
+    local cdb = ns.cdb
+    if former(cdb.route) then cdb.route = id end
+    if former(cdb.cursorHintRoute) then cdb.cursorHintRoute = id end
+    local f, depth = cdb.syncFloor, 0
+    while type(f) == "table" and depth < 8 do -- the floor and its undo record(s)
+        if former(f.route) then f.route = id end
+        if type(f.hint) == "table" and former(f.hint[3]) then f.hint[3] = id end
+        f, depth = f.prev, depth + 1
+    end
+    local d = cdb.syncDismissed
+    if type(d) == "table" and former(d.route) then d.route = id end
+end
+
 function Engine:ActivateRoute(route, force)
     if route == self.route and not force then return end
+    adoptAliases(route)
     self.route = route
     self.pinned = nil
     self.cursor, self.natural = nil, nil
@@ -536,11 +560,12 @@ end
 -- @return true on success
 function Engine:SetRoute(id)
     if id ~= nil then
-        if not ns.Registry:Get(id) then
+        local chosen = ns.Registry:Get(id)
+        if not chosen then
             ns.Print(L().MSG_UNKNOWN_ROUTE, tostring(id))
             return false
         end
-        ns.cdb.route = id
+        ns.cdb.route = chosen.id -- (`id` may be a former id of the route: an alias)
     else
         ns.cdb.route = nil
     end
@@ -1969,8 +1994,10 @@ function Engine:GetTurninQuests()
     return self.turninSet
 end
 
---- Reward choice index configured with `reward = { [questID] = index }`.
--- Steps turning the quest in are preferred over other steps.
+--- Reward choice index: a step's `reward = { [questID] = index }` wins (steps turning the quest
+-- in are preferred over other steps); otherwise the class reward table of the route data,
+-- `rewards = { CLASS = { [questID] = index } }` (AddLibraryData / AddRouteData: the choice for a
+-- quest turned in on a shared step, which cannot carry a per-class `reward`).
 function Engine:GetRewardChoice(questID)
     local fallback
     for _, s in ipairs(self.steps) do
@@ -1982,7 +2009,15 @@ function Engine:GetRewardChoice(questID)
             fallback = fallback or r
         end
     end
-    return fallback
+    if fallback then return fallback end
+    local data = self.route and self.route.data
+    local rewards = type(data) == "table" and data.rewards
+    local class = (self.facts or ns.Compat.PlayerFacts()).class
+    local mine = type(rewards) == "table" and class and rewards[class]
+    local idx = type(mine) == "table" and mine[questID] or nil
+    -- same validity rule as a step's `reward` (Schema: a positive integer index)
+    if type(idx) == "number" and idx >= 1 and idx % 1 == 0 then return idx end
+    return nil
 end
 
 ---------------------------------------------------------------------------
@@ -2012,9 +2047,10 @@ function Engine:Start()
     if self.started then return end
     self.started = true
     -- selecting the route composes only the routes this character can use (the saved choice,
-    -- Registry:Matching); the others are composed when listed or chosen (/fb routes, /fb route,
-    -- settings), so a paladin does not pay for the druid route. Their composition errors are
-    -- reported then; the ones of the usable routes are part of this report.
+    -- Registry:Matching); the others are composed only when chosen (/fb route <id>), so a paladin
+    -- does not pay for the routes of the other races and classes (/fb routes and the settings list
+    -- them without composing). Their composition errors are reported then; the ones of the usable
+    -- routes are part of this report.
     local route = self:SelectRoute()
     local errors = ns.Registry.errors
     if #errors > 0 then

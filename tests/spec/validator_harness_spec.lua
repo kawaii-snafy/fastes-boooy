@@ -322,7 +322,7 @@ describe("start-state harness", function()
             assert.is_nil(es.meta.startState)
         end)
 
-        it("step-no-profile is not reported for the single harness profile; filtered steps are skipped", function()
+        it("a shared step of another class is not composed into the harness route (no step-no-profile)", function()
             local root = tmpname()
             os.execute(("mkdir -p '%s/FastesBoooy_HxLib'"):format(root))
             writeFile(root .. "/FastesBoooy_HxLib/FastesBoooy_HxLib.toc",
@@ -334,11 +334,16 @@ FastesBoooy.AddLibrarySegment({ id = "hx", title = "X", levels = { 1, 2 }, steps
     { id = "hx-2", turnin = 363, npc = 1569, at = { 1420, 30.8, 66.2 } },
 } })
 ]])
-            local r = harness(nil, { lib = root .. "/FastesBoooy_HxLib" })
+            local r, hb = harness(nil, { lib = root .. "/FastesBoooy_HxLib" })
             os.execute(("rm -rf '%s'"):format(root))
             assert.are.equal(0, r.counts.ERROR + r.counts.WARN)
             assert.is_nil(codes(r)["step-no-profile"])
-            assert.are.equal(1, codes(r, "INFO")["step-skipped"])
+            -- the harness route has one race and one class: Core/Compose.lua leaves the DRUID step out
+            -- (before core 0.4.0 it was composed and skipped by the profile: INFO step-skipped)
+            local ids = {}
+            for i, s in ipairs(hb.route.steps) do ids[i] = s.id end
+            assert.are.same({ "hx-1", "hx-2" }, ids)
+            assert.is_nil(codes(r, "INFO")["step-skipped"])
         end)
     end)
 

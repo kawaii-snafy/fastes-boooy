@@ -62,6 +62,35 @@ for _, e in ipairs(H.COMPOSED_ALL) do
     if e[1] ~= "tc-warrior-only" then H.COMPOSED_IDS[#H.COMPOSED_IDS + 1] = e[1] end
 end
 
+-- Mixed fixture: FastesBoooy_TestGuides (the shape of FastesBoooy_Guides) = shared segments per
+-- start zone, shared class / race inserts (AddLibraryInsert), a class reward table and three
+-- routes registered from a table. Needs the DB snapshot for its Durotar quests (opts.db = true).
+H.GUIDES_DIR = "tests/fixtures/core/FastesBoooy_TestGuides"
+H.GUIDES_NAME = "FastesBoooy_TestGuides"
+H.GUIDES_TOC = H.GUIDES_DIR .. "/" .. H.GUIDES_NAME .. ".toc"
+H.GUIDES_ROUTES = { "tg-undead-paladin", "tg-orc-warrior", "tg-troll-mage" } -- registration order
+-- composed step ids per route (every step can match its route: nothing else is composed)
+H.GUIDES_IDS = {
+    ["tg-undead-paladin"] = {
+        "tg-ud-363", "tg-ud-364", "tg-ud-zombies", "tg-ud-364-in", "tg-pal-train-1", "tg-ud-lvl-2", "tg-ud-376",
+        "tg-ud-bg-376", "tg-ud-rattlecages", "tg-ud-3901-in", "tg-ud-376-in",
+    },
+    ["tg-orc-warrior"] = {
+        "tg-dur-4641", "tg-dur-788", "tg-dur-boars", "tg-dur-788-in", "tg-war-letter-orc", "tg-war-frang",
+        "tg-war-train-2", "tg-dur-scorpids-orc", "tg-dur-789-in",
+    },
+    ["tg-troll-mage"] = {
+        "tg-dur-4641", "tg-dur-788", "tg-dur-boars", "tg-dur-788-in", "tg-mag-letter-troll", "tg-mag-maiah",
+        "tg-tro-vendor", "tg-dur-scorpids-troll", "tg-tro-back", "tg-dur-789-in",
+    },
+}
+-- a character for each route (H.boot{ guides = true, db = true, player = H.GUIDES_PLAYER[id] })
+H.GUIDES_PLAYER = {
+    ["tg-undead-paladin"] = { race = "Scourge", class = "PALADIN", mapID = 1420, x = 30.2, y = 71.7 },
+    ["tg-orc-warrior"] = { race = "Orc", class = "WARRIOR", mapID = 1411, x = 43.3, y = 68.5 },
+    ["tg-troll-mage"] = { race = "Troll", class = "MAGE", mapID = 1411, x = 43.3, y = 68.5 },
+}
+
 local dbCache
 --- tools/data/forever_db.lua (loaded once per process).
 function H.db()
@@ -94,11 +123,12 @@ function H.defineQuests(m)
 end
 
 --- Route / library modules a helper boot loads after the core: { { toc, name }, ... }.
--- opts.modules overrides; opts.composed = the library + the composed route; opts.fixture ==
--- false = none; default = the test route.
+-- opts.modules overrides; opts.guides = the mixed module FastesBoooy_TestGuides; opts.composed =
+-- the library + the composed route; opts.fixture == false = none; default = the test route.
 function H.modules(opts)
     opts = opts or {}
     if opts.modules then return opts.modules end
+    if opts.guides then return { { H.GUIDES_TOC, H.GUIDES_NAME } } end
     if opts.fixture == false then return {} end
     if opts.composed then
         return { { H.LIB_TOC, H.LIB_NAME }, { H.COMPOSED_TOC, H.COMPOSED_NAME } }
@@ -115,7 +145,8 @@ end
 --- Create a mock with the core addon (and the test route unless opts.fixture == false) loaded.
 -- opts: locale, player = {...}, savedVariables, db (use the Forever DB snapshot), quests
 -- (define the test route quests, default true), fixture, composed (load the library +
--- composed route instead), modules (see H.modules), mock = { extra Mock.new options },
+-- composed route instead), guides (load FastesBoooy_TestGuides instead), modules (see H.modules),
+-- mock = { extra Mock.new options },
 -- register = function(api, m) -- registers routes through the public FastesBoooy API after the
 -- modules are loaded (before ADDON_LOADED / PLAYER_LOGIN), like a route module would.
 function H.new(opts)
@@ -152,8 +183,9 @@ function H.reload(m, opts)
     local U = Mock.util
     local m2, ns2 = H.new({
         locale = opts.locale, savedVariables = sv, quests = false, fixture = opts.fixture,
-        composed = opts.composed, modules = opts.modules, register = opts.register,
-        player = { level = m.player.level, xp = m.player.xp, mapID = m.player.mapID, x = m.player.x, y = m.player.y,
+        composed = opts.composed, guides = opts.guides, modules = opts.modules, register = opts.register,
+        player = { race = m.player.race, class = m.player.class, faction = m.player.faction,
+            level = m.player.level, xp = m.player.xp, mapID = m.player.mapID, x = m.player.x, y = m.player.y,
             inCombat = m.player.inCombat },
         setup = function(n)
             n.questDB = U.deepcopy(m.questDB)
