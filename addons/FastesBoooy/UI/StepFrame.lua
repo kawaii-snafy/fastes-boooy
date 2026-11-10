@@ -2,7 +2,7 @@
 --
 -- The guide window, top to bottom:
 --   header      route title, player level / XP; segment title, step n/total
---   button row  « Back / Forward » / Settings -- FIXED offsets from the window's top edge
+--   button row  Back / Forward / Settings -- FIXED offsets from the window's top edge
 --   sync banner optional: "you outleveled this segment, jump?" [Jump] [Stay]
 --               (ns.Engine:GetSyncSuggestion), or "jumped to X" + an Undo link for
 --               UNDO_SECONDS after a level sync (until the next step change)
@@ -13,7 +13,7 @@
 -- nothing in the button row is anchored to a content region.
 --
 -- Also defines the small shared UI toolkit (ns.UI) used by UI/Arrow.lua,
--- UI/ItemButton.lua and UI/Options.lua: locale proxy, settings setter (fires
+-- UI/Options.lua: locale proxy, settings setter (fires
 -- SETTINGS_CHANGED), frame position save/restore, guide visibility / combat state,
 -- engine actions shared with the slash commands (UI.Forward, UI.ApplySync...).
 --
@@ -175,7 +175,7 @@ function UI.MakeMovable(frame, key, topAnchored)
         self.isMoving = true
         self:StartMoving()
     end)
-    frame:SetScript("OnDragStop", function(self)
+    local function stopDrag(self)
         if not self.isMoving then return end
         self.isMoving = false
         self:StopMovingOrSizing()
@@ -184,7 +184,30 @@ function UI.MakeMovable(frame, key, topAnchored)
             if point then setTopPoint(self, point, relPoint, x, y) end
         end
         UI.SavePosition(self, key)
-    end)
+    end
+    frame:SetScript("OnDragStop", stopDrag)
+    -- hidden while being dragged (combat with "hide in combat", the arrow losing its target): a hidden
+    -- frame gets no OnDragStop, so finish the drag here and keep the position the player chose
+    frame:SetScript("OnHide", stopDrag)
+end
+
+--- Put the guide window and the arrow back to their default positions (the "hidden" flag of
+-- the guide is kept). Listeners of SETTINGS_CHANGED re-apply the positions.
+function UI.ResetPositions()
+    local frames = ns.db and ns.db.frames
+    local defaults = ns.DEFAULTS and ns.DEFAULTS.db and ns.DEFAULTS.db.frames
+    if type(frames) ~= "table" or type(defaults) ~= "table" then return false end
+    for key, def in pairs(defaults) do
+        local t = frames[key]
+        if type(t) ~= "table" then
+            t = {}
+            frames[key] = t
+        end
+        t.point, t.relativePoint, t.x, t.y = def.point, def.relativePoint, def.x, def.y
+        t[1], t[2], t[3], t[4] = nil, nil, nil, nil
+    end
+    if ns.Fire then ns:Fire("SETTINGS_CHANGED", "frames") end
+    return true
 end
 
 -- guide visibility (/fb show | hide) and combat state ---------------------------
@@ -580,7 +603,8 @@ local function addStep(y, step, mode, lines)
                 desaturate = upcoming,
                 font = (mode == "current" and kind ~= "objective" and kind ~= "note")
                     and "GameFontHighlight" or "GameFontHighlightSmall",
-                maxLines = upcoming and 2 or ((kind == "note") and 6 or 0),
+                -- the current step shows its whole note: it is the instruction to follow
+                maxLines = upcoming and 2 or ((kind == "note" and mode ~= "current") and 6 or 0),
             })
         end
     end
@@ -904,9 +928,9 @@ function SF:Create()
 
     -- button row: fixed offsets from the top edge, chained only to each other
     local bw = floor((WIDTH - 2 * PAD - 2 * BUTTON_GAP) / 3)
-    frame.prevButton = UI.CreateButton(frame, format(L.UI_BTN_BACK_FMT, L.UI_BTN_PREV),
+    frame.prevButton = UI.CreateButton(frame, L.UI_BTN_PREV,
         { L.UI_BTN_PREV, { L.UI_TT_BACK } }, function() UI.Back() end, bw, BUTTON_H)
-    frame.forwardButton = UI.CreateButton(frame, format(L.UI_BTN_FORWARD_FMT, L.UI_BTN_FORWARD),
+    frame.forwardButton = UI.CreateButton(frame, L.UI_BTN_FORWARD,
         { L.UI_BTN_FORWARD, { L.UI_TT_FORWARD, { L.UI_TT_FORWARD_BACK, 0.75, 0.75, 0.75 },
             { L.UI_TT_FORWARD_AUTO, 0.6, 0.6, 0.6 } } }, function() UI.Forward() end, bw, BUTTON_H)
     frame.nextButton = frame.forwardButton -- older name (tools/simulate_routes.lua clicks it)
@@ -1022,6 +1046,8 @@ ns:On("PLAYER_LOGIN", function()
         SF:Refresh()
         SF:ApplySettings()
     end
+    -- "/fb hide" is account-wide and survives a relog: say why there is no guide on this character
+    if UI.IsGuideHidden() and ns.Print then ns.Print("%s", L.UI_HIDDEN) end
 end)
 ns:On("PLAYER_XP_UPDATE", markDirty)
 ns:On("PLAYER_LEVEL_UP", markDirty)

@@ -1,6 +1,6 @@
 -- UI tests on the strict widget mock: step window (layout invariants: top anchor, fixed
 -- button row; Back / Forward / Settings; upcoming list; level-sync banner + Undo link), arrow,
--- item button, settings panel (incl. level sync) and the slash commands (/fb ... incl. status,
+-- settings panel (incl. level sync) and the slash commands (/fb ... incl. status,
 -- xp, sync), in enUS and ruRU.
 
 local H = require("fixtures.core.helpers")
@@ -37,7 +37,7 @@ local function arrowTexture()
     return widget(function(_, st) return st.type == "Texture" and st.parent == f end)
 end
 
-local BACK, FORWARD = "\194\171 Back", "Forward \194\187"
+local BACK, FORWARD = "Back", "Forward"
 
 -- Problems of the button row's anchor chain: every point of a button must lead to the
 -- window's TOP edge through the row itself, never through a content region (rows, banner).
@@ -136,7 +136,7 @@ describe("step window", function()
         assert.is_true(has(t, "4/26"))
     end)
 
-    it("has three buttons: \194\171 Back, Forward \194\187 and Settings, each with an explaining tooltip", function()
+    it("has three buttons: Back, Forward and Settings (plain labels, no arrow symbols), each with an explaining tooltip", function()
         m, ns = H.boot()
         local f = frame()
         assert.same({ f.prevButton, f.forwardButton, f.settingsButton }, f.buttons)
@@ -351,7 +351,7 @@ describe("step window", function()
         local f = frame()
         local t = texts(f)
         for _, want in ipairs({ "Тестовый маршрут", "1-4 Мертвый Звон", "Взять: Rude Awakening",
-            "Поговорите с Гробовщиком Мордо", "Далее", "« Назад", "Вперёд »", "Настройки" }) do
+            "Поговорите с Гробовщиком Мордо", "Далее", "Назад", "Вперёд", "Настройки" }) do
             assert.is_true(has(t, want), "missing text: " .. want .. " in " .. table.concat(t, " | "))
         end
         m:Enter(f.prevButton)
@@ -387,6 +387,33 @@ describe("step window", function()
         assert.is_false(m:IsWidgetVisible(frame()))
         m:LeaveCombat()
         assert.is_true(m:IsWidgetVisible(frame()))
+    end)
+
+    it("keeps the position of a window that is hidden while being dragged", function()
+        m, ns = H.boot()
+        local f = frame()
+        local UIParent = m.env.UIParent
+        UI().SetSetting("hideInCombat", true)
+        f:GetScript("OnDragStart")(f)
+        f:ClearAllPoints()
+        f:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 30, -40)
+        m:EnterCombat() -- hidden: the client sends no OnDragStop
+        assert.is_false(m:IsWidgetVisible(f))
+        assert.is_falsy(f.isMoving)
+        local saved = ns.db.frames.steps
+        assert.same({ "TOPLEFT", "TOPLEFT", 30, -40 }, { saved.point, saved.relativePoint, saved.x, saved.y })
+        m:LeaveCombat()
+        UI().SetSetting("shownNext", 2) -- any setting re-applies the saved position
+        assert.same({ "TOPLEFT", UIParent, "TOPLEFT", 30, -40 }, { f:GetPoint(1) })
+    end)
+
+    it("says at login that the guide is hidden (the flag is account-wide)", function()
+        m, ns = H.boot()
+        assert.is_false(H.chatHas(m, "Guide hidden."), "nothing to say while the guide is shown")
+        slash("/fb hide")
+        m, ns = H.reload(m) -- a new client: a new chat log
+        assert.is_false(m:IsWidgetVisible(frame()))
+        assert.is_true(H.chatHas(m, "Guide hidden. Type /fb show to bring it back."))
     end)
 end)
 
@@ -550,147 +577,15 @@ describe("arrow", function()
         assert.is_false(m:IsWidgetVisible(f))
         UI().SetSetting("arrow", true)
         assert.is_true(m:IsWidgetVisible(f))
+        -- between the waypoint ticks the arrow turns with the player every frame
+        m:SetFacing(math.pi)
+        m:Advance(0.01)
+        assert.is_true(math.abs(tex:GetRotation() - (-math.pi)) < 1e-9 or math.abs(tex:GetRotation() - math.pi) < 1e-9)
+        -- the texts below / beside the frame are clamped to the screen too
+        assert.same({ -65, 65, 0, -40 }, { f:GetClampRectInsets() })
         m:MoveTo(1411, 50, 50) -- another continent: no direction
         m:Advance(0.15)
         assert.is_false(m:IsWidgetVisible(f))
-    end)
-end)
-
-describe("item button", function()
-    after_each(function() m:AssertClean() end)
-
-    local function ib() return UI().ItemButton:GetFrame() end
-
-    it("is a top-level secure button that shows the step's `use` item while it is in the bags", function()
-        m, ns = H.boot()
-        local b = ib()
-        assert.equal(m.env.FastesBoooyItemButton, b, "named for /click macros")
-        assert.equal(m.env.UIParent, b:GetParent())
-        assert.equal(m.env.UIParent, select(2, b:GetPoint(1)), "anchored to UIParent, not to the step window")
-        assert.is_true((b:IsProtected()))
-        assert.is_false((frame():IsProtected()), "the step window stays unprotected")
-        assert.is_false(m:IsWidgetVisible(b), "step 1 has no item")
-        H.playTo(m, ns, "tr-collect-376") -- use = 3264 (Duskbat Wing)
-        refresh()
-        assert.is_false(m:IsWidgetVisible(b), "the item is not in the bags yet")
-        m:AddItem(3264, 2)
-        H.settle(m)
-        assert.is_true(m:IsWidgetVisible(b))
-        assert.equal(3264, UI().ItemButton:GetItem())
-        assert.equal("item", b:GetAttribute("type1"))
-        assert.equal("item:3264", b:GetAttribute("item1"))
-        assert.is_true(has(texts(b), "2"), "stack count")
-        m:Enter(b)
-        local tt = m:TooltipLines()
-        assert.equal("Duskbat Wing", tt[1])
-        assert.is_true(has(tt, "Click to use (macro: /click FastesBoooyItemButton)."))
-        m:Leave(b)
-        m:Click(b)
-        assert.same({ { "SecureAction", "item", "item:3264", "LeftButton" } }, m:Actions("SecureAction"))
-        -- the step is done: the next step has no item
-        m:AddItem(3264, 4)
-        m:AddItem(3265, 6)
-        H.settle(m)
-        assert.equal("tr-complete-3901", H.cur(ns))
-        assert.is_false(m:IsWidgetVisible(b))
-        assert.is_nil(b:GetAttribute("type1"))
-        assert.is_nil(UI().ItemButton:GetItem())
-        -- /fb hide hides it too
-        assert.same({ "Guide hidden. Type /fb show to bring it back." }, slash("/fb hide"))
-        ns.Engine:Prev()
-        H.settle(m)
-        assert.equal("tr-collect-376", H.cur(ns))
-        assert.is_false(m:IsWidgetVisible(b))
-        slash("/fb show")
-        assert.is_true(m:IsWidgetVisible(b))
-    end)
-
-    it("defers attribute and visibility changes during combat lockdown", function()
-        m, ns = H.boot()
-        local b = ib()
-        H.playTo(m, ns, "tr-collect-376")
-        m:AddItem(3264, 1)
-        H.settle(m)
-        assert.is_true(m:IsWidgetVisible(b))
-        m:EnterCombat()
-        -- the step completes in combat: the step window refreshes, the button must wait
-        m:AddItem(3264, 5)
-        m:AddItem(3265, 6)
-        H.settle(m)
-        assert.equal("tr-complete-3901", H.cur(ns))
-        assert.is_true(UI().ItemButton:IsPending())
-        assert.is_true(m:IsWidgetVisible(b), "unchanged during the lockdown")
-        assert.equal("item:3264", b:GetAttribute("item1"))
-        assert.is_true(has(texts(b), "6"), "the count (a plain region) follows the bags")
-        UI().SetSetting("frameScale", 1.2) -- settings during combat: deferred too
-        m:LeaveCombat()
-        assert.is_false(UI().ItemButton:IsPending())
-        assert.is_false(m:IsWidgetVisible(b))
-        assert.is_nil(b:GetAttribute("item1"))
-        assert.equal(1.2, b:GetScale())
-        -- an item that appears during combat shows after it
-        ns.Engine:Prev()
-        H.settle(m)
-        assert.equal("tr-collect-376", H.cur(ns))
-        m:RemoveItem(3264, 6)
-        H.settle(m)
-        assert.is_false(m:IsWidgetVisible(b))
-        m:EnterCombat()
-        m:AddItem(3264, 1)
-        H.settle(m)
-        assert.is_false(m:IsWidgetVisible(b))
-        m:LeaveCombat()
-        assert.is_true(m:IsWidgetVisible(b))
-        assert.equal("item:3264", b:GetAttribute("item1"))
-    end)
-
-    it("hides before the lockdown with hideInCombat and is created after combat on a /reload in combat", function()
-        m, ns = H.boot()
-        local b = ib()
-        H.playTo(m, ns, "tr-collect-376")
-        m:AddItem(3264, 1)
-        H.settle(m)
-        UI().SetSetting("hideInCombat", true)
-        m:EnterCombat()
-        assert.is_false(m:IsWidgetVisible(b), "hidden on PLAYER_REGEN_DISABLED, before the lockdown")
-        assert.is_false(m:IsWidgetVisible(frame()))
-        m:LeaveCombat()
-        assert.is_true(m:IsWidgetVisible(b))
-        -- /reload while in combat: the secure button is created once the lockdown ends
-        m.player.inCombat = true
-        local m2, ns2 = H.reload(m)
-        m, ns = m2, ns2
-        assert.is_nil(ib())
-        assert.is_true(UI().ItemButton:IsPending())
-        m:LeaveCombat()
-        assert.is_table(ib())
-        assert.is_true(m:IsWidgetVisible(ib()))
-    end)
-
-    it("offers the item of an active background step when the displayed step has none", function()
-        m, ns = H.new({ fixture = false })
-        local FB = m.env.FastesBoooy
-        FB.RegisterRoute({ api = 1, id = "ib", title = "Item", faction = "Horde", default = true })
-        FB.AddSegment("ib", { id = "s", title = "S", steps = {
-            { id = "a363", accept = 363 },
-            { id = "bg", complete = 364, bg = true, use = 2876 },
-            { id = "a364", accept = 364, use = 3264 },
-            { id = "m1", manual = true },
-        } })
-        H.Mock.boot(m, { "FastesBoooy" })
-        H.settle(m)
-        m:AddItem(2876, 1)
-        m:AddItem(3264, 1)
-        m:AddQuestToLog(363)
-        H.settle(m)
-        assert.equal("a364", H.cur(ns))
-        assert.equal(3264, UI().ItemButton:GetItem(), "the displayed step first")
-        m:AddQuestToLog(364)
-        H.settle(m)
-        assert.equal("m1", H.cur(ns))
-        assert.same({ "bg" }, H.ids(ns.Engine:GetBackground()))
-        assert.equal(2876, UI().ItemButton:GetItem(), "then the background steps")
-        assert.equal("item:2876", ib():GetAttribute("item1"))
     end)
 end)
 
@@ -859,7 +754,7 @@ describe("slash commands", function()
         assert.same({ "Unknown route 'nope'. Type /fb routes." }, slash("/fb route nope"))
         out = slash("/fastesboooy status")
         assert.same({
-            "FastesBoooy 0.3.0 (route API 1.1)",
+            "FastesBoooy 0.3.1 (route API 1.1)",
             "Route: Test route (test-route)",
             "Step 1/26: Accept: Rude Awakening",
             "Automation: on",
@@ -990,6 +885,16 @@ describe("slash commands", function()
         assert.is_true(ns.db.settings.locked)
         slash("/fb unlock")
         assert.is_false(ns.db.settings.locked)
+        -- resetpos: the default places again, the hidden flag untouched
+        local a = arrow()
+        a:GetScript("OnDragStart")(a)
+        a:ClearAllPoints()
+        a:SetPoint("BOTTOMLEFT", m.env.UIParent, "BOTTOMLEFT", 5, 5)
+        a:GetScript("OnDragStop")(a)
+        assert.equal("BOTTOMLEFT", ns.db.frames.arrow.point)
+        assert.same({ "The guide window and the arrow are back at their default places." }, slash("/fb resetpos"))
+        assert.same({ "TOP", m.env.UIParent, "TOP", 0, -140 }, { a:GetPoint(1) })
+        assert.equal("TOPRIGHT", ns.db.frames.steps.point)
         assert.same({ "Debug output: on" }, slash("/fb debug"))
         assert.is_true(ns.IsDebug())
         slash("/fb debug")

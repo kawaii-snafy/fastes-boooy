@@ -28,13 +28,14 @@ ns.ADDON = ADDON or "FastesBoooy"
 --   0  core 0.1.x: RegisterRoute / AddSegment / AddRouteData
 --   1  core 0.2.0: + AddLibrarySegment / AddLibraryData / UseSegments / AddInsert (Core/Compose.lua)
 --      core 0.3.0: level sync, gray-quest skipping, unreachable-step rules, delayed automation (no route API change)
+--      core 0.3.1: audit fixes (skip undo, fp window, auto sync at login, bgDone), UI polish (no route API change)
 -- A module guards with `if (FastesBoooy.API_MINOR or 0) < 1 then ... return end` (an older core
 -- has no API_MINOR at all), see docs/ROUTE_FORMAT.md "Версия ядра".
 local public = { API_VERSION = 1, API_MINOR = 1 }
 ns.public = public
 FastesBoooy = public
 
-local DEFAULT_VERSION = "0.3.0"
+local DEFAULT_VERSION = "0.3.1"
 
 local function readVersion()
     if C_AddOns and C_AddOns.GetAddOnMetadata then
@@ -311,7 +312,6 @@ ns.DEFAULTS = {
             -- top-anchored (UI/StepFrame.lua keeps the top edge, so the buttons do not move with the height)
             steps = { point = "TOPRIGHT", relativePoint = "RIGHT", x = -80, y = 180 },
             arrow = { point = "TOP", relativePoint = "TOP", x = 0, y = -140 },
-            item = { point = "RIGHT", relativePoint = "RIGHT", x = -388, y = 120 }, -- left of the steps window
         },
         xpLog = {},        -- [questID] = xp reward observed in game (max seen)
         xpLogLevel = {},   -- [questID] = player level when xpLog[questID] was recorded

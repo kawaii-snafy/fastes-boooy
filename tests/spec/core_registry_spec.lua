@@ -48,7 +48,7 @@ describe("core registry", function()
         assert.equal(ns.public, pub)
         assert.equal(1, pub.API_VERSION)
         assert.equal(1, pub.API_MINOR) -- library segments / UseSegments / AddInsert (core 0.2.0)
-        assert.equal("0.3.0", pub.version)
+        assert.equal("0.3.1", pub.version)
         assert.equal("test-route", pub.GetActiveRoute().id)
         assert.equal("tr-accept-363", pub.GetCurrentStep().id)
         assert.same({ "FastesBoooy", "FastesBoooyCharDB", "FastesBoooyDB", "SLASH_FASTESBOOOY1", "SLASH_FASTESBOOOY2" },

@@ -30,8 +30,11 @@ local FRAME_SIZE = 50
 local NEAR_YARDS = 15
 local STALE_SECONDS = 1 -- re-query the target if WAYPOINT_UPDATED stopped coming
 
+local CLAMP_SIDE, CLAMP_BOTTOM = 65, 40 -- how far the label / the texts reach out of the frame
+
 local frame, tex, distText, labelText
 local lastTarget
+local bearing -- world bearing of the target (target.angle + facing), nil: no direction
 
 local function settings()
     return UI.Settings and UI.Settings() or {}
@@ -56,11 +59,15 @@ function Arrow:Update()
     lastTarget = target
     if settings().arrow == false or hiddenByUser()
         or type(target) ~= "table" or type(target.angle) ~= "number" then
+        bearing = nil
         frame:Hide()
         return
     end
 
     tex:SetRotation(target.angle)
+    -- world bearing of the target: OnUpdate turns the arrow with the player between waypoint ticks
+    local facing = ns.Compat.Facing()
+    bearing = facing and (target.angle + facing) or nil
 
     local d = tonumber(target.distance)
     if d then
@@ -116,6 +123,8 @@ function Arrow:Create()
     frame:SetSize(FRAME_SIZE, FRAME_SIZE)
     frame:SetFrameStrata("MEDIUM")
     UI.MakeMovable(frame, "arrow")
+    -- the distance and the label hang below / beside the 50x50 frame: keep them on screen too
+    frame:SetClampRectInsets(-CLAMP_SIDE, CLAMP_SIDE, 0, -CLAMP_BOTTOM)
 
     tex = frame:CreateTexture(nil, "ARTWORK")
     tex:SetAtlas(ARROW_ATLAS)
@@ -136,7 +145,12 @@ function Arrow:Create()
     frame.elapsed = 0
     frame:SetScript("OnUpdate", function(_, elapsed)
         frame.elapsed = (frame.elapsed or 0) + (elapsed or 0)
-        if frame.elapsed >= STALE_SECONDS then Arrow:Update() end
+        if frame.elapsed >= STALE_SECONDS then
+            Arrow:Update()
+        elseif bearing then
+            local facing = ns.Compat.Facing()
+            if facing then tex:SetRotation(bearing - facing) end
+        end
     end)
 
     frame:Hide()
