@@ -8,8 +8,8 @@
 #                     takes: a comma list, `*` wildcards)
 #   make lint         luacheck with the generated 'forever' std (.luacheckrc)
 #   make test         busted specs (tests/spec)
-#   make validate     route validator against tools/data/forever_db.lua (addons/FastesBoooy_*: route
-#                     modules, composed with their library dependencies, and library modules)
+#   make validate     route validator against tools/data/forever_db.lua (addons/FastesBoooy_Guides: every
+#                     route, the shared segments and inserts), gate VALIDATE_FLAGS (--strict --end-level)
 #   make simulate     run every route through the real engine on the WoW mock, JOBS simulations at a
 #                     time (the route list comes from tools/simulate_routes.lua --list-routes; a module
 #                     that does not load fails the target)
@@ -21,11 +21,11 @@
 #   make simulate-sync-full   the same for every route (nightly CI, .github/workflows/nightly.yml)
 #   make validate-fixtures / simulate-fixtures   the same on the known-good fixture routes
 #   make harness-fixtures  validator (--strict) + simulator harness of the fixture library from its start state
-#   make harness PROFILE=race=Scourge,class=PALADIN,faction=Horde [LIB=addons/FastesBoooy_Horde]
+#   make harness PROFILE=race=Scourge,class=PALADIN,faction=Horde [LIB=addons/FastesBoooy_Guides]
 #                [SEGMENTS=h-a,h-b] [STATE=start.json] [OUT=end.json]
-#                     validate, then simulate a part of a library module from a start state (OUT: end state)
+#                     validate, then simulate a part of the shared segments from a start state (OUT: end state)
 #   make report       write docs/VALIDATION.md (validator Markdown report; fails when no report was written)
-#   make routedata    regenerate Data.lua of every route / library module
+#   make routedata    regenerate Data.lua of every guide module (addons/FastesBoooy_Guides/Data.lua)
 #   make api BIR=... WOWUI=...          regenerate tools/data/forever_api.lua
 #   make db RESEARCH=... CONVERSION=... regenerate tools/data/forever_db.lua (objective counts:
 #                     tools/data/wowhead_requirements.json)
@@ -40,10 +40,10 @@ LUA = lua5.1
 LUACHECK = luacheck
 BUSTED = busted
 PYTHON = python3
-# The gate of `make validate` / `make route`. Phase F1 (the old modules; their -- WARN-OK comments are
-# not converted to the `ok` key yet): none. From F2a on: --strict --end-level; later the grind budget
-# and the baseline (docs/dev/PLAN.md A.6.3).
-VALIDATE_FLAGS =
+# The gate of `make validate` / `make route` (docs/dev/PLAN.md A.6.3): no unaccepted warning (every WARN
+# is fixed or acknowledged with the `ok` key of its step / segment) and the planned end level in the
+# normal and the worst-case run. Later phases add the grind budget (--max-grind-until) and the baseline.
+VALIDATE_FLAGS = --strict --end-level
 # Parallel simulations: one simulator process per line of arguments, JOBS at a time. A failing job
 # makes xargs (and the target) fail. Each job collects its output in a file of a temporary directory
 # and prints it when it ends, while it holds a lock (a directory: mkdir is atomic and needs no extra
@@ -60,14 +60,14 @@ RUN_JOB = out="$$JOBS_DIR/$$$$.out"; $(SIM) "$$@" > "$$out" 2>&1; rc=$$?; \
 	cat "$$out"; rm -f "$$out"; rmdir "$$JOBS_DIR/lock"; exit $$rc
 RUN_JOBS = ( dir=`mktemp -d` || exit 1; trap 'rm -rf "$$dir"; exit 130' HUP INT TERM; \
 	JOBS_DIR="$$dir" xargs -r -P $(JOBS) -L 1 sh -c '$(RUN_JOB)' sim; rc=$$?; rm -rf "$$dir"; exit $$rc )
-# make route / make check-fast: the route(s) to validate and simulate (what --route takes). The
-# wildcard matches horde-undead-paladin of the old modules and undead-paladin of FastesBoooy_Guides.
+# make route / make check-fast: the route(s) to validate and simulate (what --route takes; the
+# pattern selects undead-paladin).
 ROUTE = *undead-paladin
 # The fixtures use real quest ids: they must not move when a DB override file (tools/overrides/*.lua)
 # changes, so every fixture target runs on the plain snapshot.
 NO_OVERRIDES = --no-overrides
 # Known-good fixture routes: must validate with 0 errors and simulate cleanly, so the
-# validate / simulate stages check something even before the first route module exists.
+# validate / simulate stages also check the tools themselves on small routes with known results.
 # FastesBoooy_TestComposed = own segments + library segments of FastesBoooy_TestLib (UseSegments)
 # + class inserts (AddInsert); the library module itself is validated / regenerated, not simulated.
 # FastesBoooy_TestGuides = one module with shared segments per start zone, shared class / race inserts
@@ -79,14 +79,15 @@ FIXTURE_VALIDATE = tests/fixtures/validator/FastesBoooy_FxClean tests/fixtures/v
 	tests/fixtures/core/FastesBoooy_TestGuides
 FIXTURE_SIMULATE = tests/fixtures/core/FastesBoooy_TestRoute tests/fixtures/core/FastesBoooy_TestComposed \
 	tests/fixtures/core/FastesBoooy_TestGuides
-# make simulate-sync: the routes of the "player ahead of the route" runs. With FastesBoooy_Guides this
-# becomes one route per race with five different classes (docs/dev/PLAN.md A.7); every route:
-# make simulate-sync-full.
-SYNC_ROUTES = horde-undead-paladin horde-skyborne-druid
+# make simulate-sync: the routes of the "player ahead of the route" runs: the routes that exist now.
+# The final list is one route per race with five different classes (docs/dev/PLAN.md A.7: orc-warrior
+# troll-shaman tauren-hunter undead-paladin skyborne-druid); every route: make simulate-sync-full.
+SYNC_ROUTES = undead-paladin skyborne-druid
 # start levels of the runs (tools/simulate_routes.lua --ahead)
 SYNC_LEVELS = 10 23 35 48
 # mid-route jumps with a quest log (--ahead L --ahead-at SEG,...: the first listed segment the route has;
-# both routes have a 15-18 Barrens segment and the shared library segments): LEVEL/SEGMENTS
+# both routes have a legacy 15-18 Barrens segment, until h-15-barrens replaces them, and the shared
+# 22-60 segments): LEVEL/SEGMENTS
 SYNC_MID = 21/ud-04-barrens,sd-04-barrens 29/h-24-barrens-stonetalon
 # levels above the route's plan during normal play, levelSync "auto" (--level-plus N)
 SYNC_PLUS = 2 4
@@ -99,9 +100,11 @@ FIXTURE_HARNESS_LIB = tests/fixtures/validator/FastesBoooy_FxHarnessLib
 FIXTURE_HARNESS_STATE = tests/fixtures/validator/harness_state_6.json
 PROFILE_UD = race=Scourge,class=PALADIN,faction=Horde
 PROFILE_SD = race=Skyborne,class=DRUID,faction=Horde
-# make harness: library module, segments (empty: all), profile (required), start state, end state
-# (the tools treat an empty --segments / --state / --write-state value as "not given")
-LIB = addons/FastesBoooy_Horde
+# The guides module: every route, shared segment and shared insert.
+GUIDES = addons/FastesBoooy_Guides
+# make harness: module with shared segments, segments (empty: all), profile (required), start state,
+# end state (the tools treat an empty --segments / --state / --write-state value as "not given")
+LIB = $(GUIDES)
 SEGMENTS =
 PROFILE =
 STATE =
@@ -185,7 +188,7 @@ harness-fixtures:
 
 harness:
 	@if [ -z "$(PROFILE)" ]; then \
-		echo "usage: make harness PROFILE=race=Scourge,class=PALADIN,faction=Horde [LIB=addons/FastesBoooy_Horde]"; \
+		echo "usage: make harness PROFILE=race=Scourge,class=PALADIN,faction=Horde [LIB=$(GUIDES)]"; \
 		echo "       [SEGMENTS=h-a,h-b] [STATE=start.json] [OUT=end.json]   (tools/README.md, section Harness)"; \
 		exit 2; \
 	fi

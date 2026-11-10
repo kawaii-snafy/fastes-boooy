@@ -630,14 +630,57 @@ describe("settings", function()
     end)
 end)
 
+describe("the guides module", function()
+    local MODULES = { { "addons/FastesBoooy_Guides/FastesBoooy_Guides.toc", "FastesBoooy_Guides" } }
+
+    -- 0.4.0 renamed the two routes of 0.3 (three modules -> FastesBoooy_Guides). Their former ids are `aliases`
+    -- in Route.lua; without them a character silently loses the manual route choice, the high-water mark and
+    -- the level-sync floor, and no tool notices.
+    it("keeps the former route ids as aliases: progress saved by 0.3 is adopted", function()
+        local FLOOR = "h-27-ashenvale-needles-level-gate" -- a step of the shared path, in both routes
+        local function bootSaved(old)
+            return H.boot({ fixture = false, db = true, modules = MODULES, player = { level = 30 },
+                savedVariables = { FastesBoooyCharDB = {
+                    route = old, cursorHint = 1, cursorHintId = FLOOR, cursorHintRoute = old,
+                    syncFloor = { route = old, stepId = FLOOR, from = "h-27-ashenvale-needles",
+                        to = "h-27-ashenvale-needles", level = 30, hint = { 1, FLOOR, old } },
+                    syncDismissed = { route = old, segment = "h-27-ashenvale-needles", level = 30 },
+                } } })
+        end
+        -- the second case is a manual choice of a route for another race and class: without the alias the
+        -- automatic selection would give this Undead paladin "undead-paladin"
+        for _, case in ipairs({
+            { old = "horde-undead-paladin", id = "undead-paladin" },
+            { old = "horde-skyborne-druid", id = "skyborne-druid" },
+        }) do
+            local m, ns = bootSaved(case.old)
+            local R, e, cdb = ns.Registry, E(ns), m.env.FastesBoooyCharDB
+            assert.same({}, R.errors)
+            assert.equal("undead-paladin", (R:Get("horde-undead-paladin") or {}).id, "alias lost in Route.lua")
+            assert.equal("skyborne-druid", (R:Get("horde-skyborne-druid") or {}).id, "alias lost in Route.lua")
+            assert.is_nil(R.routes["horde-undead-paladin"])
+            assert.is_nil(R.routes["horde-skyborne-druid"])
+            assert.equal(case.id, e:GetRoute().id, case.old)
+            assert.equal(case.id, cdb.route, case.old)
+            assert.equal(case.id, cdb.cursorHintRoute, case.old)
+            assert.equal(case.id, cdb.syncFloor.route, case.old)
+            assert.equal(case.id, cdb.syncFloor.hint[3], case.old)
+            assert.equal(case.id, cdb.syncDismissed.route, case.old)
+            assert.equal(cdb.syncFloor, e:GetSyncFloor(), "the saved floor is the active route's again")
+            assert.is_true(e:FloorIndex() > 100, "the floor step is deep in the route")
+            m:AssertClean()
+        end
+    end)
+end)
+
 describe("performance", function()
     it("a refresh of a 1700-step route with the void pass stays cheap", function()
         local m, ns = H.new({ fixture = false, db = true, player = { level = 23 }, modules = {
-            { "addons/FastesBoooy_Horde/FastesBoooy_Horde.toc", "FastesBoooy_Horde" },
-            { "addons/FastesBoooy_UndeadPaladin/FastesBoooy_UndeadPaladin.toc", "FastesBoooy_UndeadPaladin" } } })
-        Mock.boot(m, { "FastesBoooy", "FastesBoooy_Horde", "FastesBoooy_UndeadPaladin" })
+            { "addons/FastesBoooy_Guides/FastesBoooy_Guides.toc", "FastesBoooy_Guides" } } })
+        Mock.boot(m, { "FastesBoooy", "FastesBoooy_Guides" })
         H.settle(m)
         local e = E(ns)
+        assert.equal("undead-paladin", e:GetRoute().id)
         assert.is_true(#e:GetSteps() > 1500)
         assert.equal("ud-01-deathknell", e:GetSyncSuggestion().from.id)
         e:ApplySync()
