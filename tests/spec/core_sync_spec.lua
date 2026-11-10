@@ -583,7 +583,7 @@ describe("route data questMeta", function()
     end
 
     it("gen_route_data writes level / reqLevel / preAll / preAny / items from the DB snapshot", function()
-        local code, out = run("lua5.1 tools/gen_route_data.lua --stdout " .. H.LIB_DIR)
+        local code, out = run("lua5.1 tools/gen_route_data.lua --no-overrides --stdout " .. H.LIB_DIR)
         assert.equal(0, code, out)
         local chunk = assert(loadstring(out))
         local captured

@@ -1,10 +1,20 @@
 #!/usr/bin/env lua5.1
 -- tools/simulate_routes.lua -- play every route through the REAL addon on the WoW mock.
 --
---   lua5.1 tools/simulate_routes.lua [--fixtures] [--route ID] [--verbose] [--locale ruRU]
---                                    [--db FILE | --no-db] [--no-reload] [module-dir ...]
---   lua5.1 tools/simulate_routes.lua --harness <library-dir> [--segments ID,...]
+--   lua5.1 tools/simulate_routes.lua [--fixtures] [--route ID[,ID...]] [--verbose] [--locale ruRU]
+--                                    [--db FILE | --no-db] [--no-overrides] [--no-reload]
+--                                    [--skip GLOB] [--keep GLOB] [module-dir ...]
+--   lua5.1 tools/simulate_routes.lua --harness <module-dir> [--segments ID,...]
 --                                    --profile race=,class=[,faction=] [--state FILE] [--write-state FILE]
+--
+-- --route takes a comma list with `*` wildcards ('orc-*,troll-mage') and is repeatable; every entry
+-- must match a route.
+-- --skip / --keep (repeatable, `*` wildcard, matched against the TOC path with forward slashes) leave
+-- TOC files of the module out, in the offline load AND in the mock client (a file is skipped when it
+-- matches a --skip and no --keep): one author's unfinished file does not stop the others. A glob that
+-- matches no TOC file of the modules of the run is a typo: exit status 2, nothing is simulated.
+-- The DB overrides of tools/overrides/*.lua are applied to the snapshot (tools/lib/fbdb.lua) unless
+-- --no-overrides is given.
 --
 -- Run from the repository root. For every route module (addons/FastesBoooy_*/ with a
 -- TOC; plus tests/fixtures/core/FastesBoooy_*/ with --fixtures; or the directories given)
@@ -95,12 +105,14 @@ local Mock = require("mocks.wow")
 local Loader = require("lib.route_loader")
 local FBDB = require("lib.fbdb")
 local Harness = require("lib.harness")
+local Glob = require("lib.glob")
 
 local format = string.format
 local floor, ceil, max = math.floor, math.ceil, math.max
 
 local CORE_TOC = "addons/FastesBoooy/FastesBoooy.toc"
 local DB_FILE = "tools/data/forever_db.lua"
+local OVERRIDES_DIR = "tools/overrides"
 local FLIGHT_TIME = 30
 local SETTLE = 0.5           -- seconds of mock time after every action (throttle 0.1 s, ticker 0.25 s)
 local MAX_BG_TRIES = 3
@@ -118,11 +130,18 @@ local DEFAULT_RACE = { Horde = "Scourge", Alliance = "Human" }
 local USAGE = [[
 usage: lua5.1 tools/simulate_routes.lua [options] [module-dir ...]
   --fixtures       also simulate tests/fixtures/core/FastesBoooy_*/ modules
-  --route ID       only this route id
+  --route ID[,ID...]  only these route ids; `*` is a wildcard ('orc-*,troll-mage'); repeatable
+                   (the lists add up); every entry must match a route
+  --skip GLOB      do not load the TOC files matching GLOB (repeatable; `*` wildcard, matched
+                   against the TOC path with forward slashes), offline and in the mock client
+  --keep GLOB      ...except the files matching GLOB (repeatable); a --skip / --keep glob
+                   that matches no TOC file is an error (exit 2)
   --verbose, -v    print every step and action
   --locale CODE    client locale (default enUS)
   --db FILE        Forever DB snapshot (default tools/data/forever_db.lua)
   --no-db          do not use the DB snapshot (generic quests)
+  --no-overrides   do not apply the DB overrides of tools/overrides/*.lua
+  --overrides DIR  read the DB overrides from DIR instead
   --no-reload      skip the /reload and cold-start checks
   --state FILE     start from a character state (JSON, see tools/README.md "Harness")
   --write-state FILE  write the game state at the end (needs exactly one simulation)
@@ -131,9 +150,10 @@ usage: lua5.1 tools/simulate_routes.lua [options] [module-dir ...]
   --ahead-at SEG[,SEG...]  with --ahead L: play normally to the middle of the first of these
                    segments the route has, then level L and the suggestions (a jump with quests in the log)
   --level-plus N   play the route N (1..10) levels above its plan, levelSync "auto"
-  --harness DIR    simulate a synthetic route that only uses library segments of the
-                   library module DIR, for one --profile (race and class required)
-  --segments ID,...   library segments of the harness route (default: all, TOC order)
+  --harness DIR    simulate a synthetic route that only uses shared segments of the module DIR
+                   (a library module, or a module that also registers routes), for one --profile
+                   (race and class required); the module's shared inserts apply to it
+  --segments ID,...   shared segments of the harness route (default: all, TOC order)
   --profile k=v,...   race=Scourge,class=PALADIN[,faction=Horde] (harness, or a filter
                    of the route profiles otherwise)
   -h, --help       this text]]
@@ -144,11 +164,27 @@ local function parseArgs(argv)
     while i <= #argv do
         local a = argv[i]
         if a == "--fixtures" then o.fixtures = true
-        elseif a == "--route" then i = i + 1; o.route = argv[i]
+        elseif a == "--route" then
+            -- repeatable: the lists add up (like --skip / --keep)
+            i = i + 1
+            if argv[i] == nil then return nil, "--route needs an id" end
+            o.route = o.route and (o.route .. "," .. argv[i]) or argv[i]
         elseif a == "--verbose" or a == "-v" then o.verbose = true
         elseif a == "--locale" then i = i + 1; o.locale = argv[i]
         elseif a == "--db" then i = i + 1; o.db = argv[i]
         elseif a == "--no-db" then o.db = false
+        elseif a == "--no-overrides" then o.noOverrides = true
+        elseif a == "--overrides" then
+            i = i + 1
+            if argv[i] == nil then return nil, "--overrides needs a directory" end
+            o.overrides = argv[i]
+        elseif a == "--skip" or a == "--keep" then
+            i = i + 1
+            local v = argv[i]
+            if v == nil or v == "" then return nil, a .. " needs a glob" end
+            local key = a == "--skip" and "skip" or "keep"
+            o[key] = o[key] or {}
+            o[key][#o[key] + 1] = (v:gsub("\\", "/"))
         elseif a == "--no-reload" then o.reload = false
         elseif a == "--ahead" then
             i = i + 1
@@ -188,7 +224,10 @@ local function parseArgs(argv)
         else o.dirs[#o.dirs + 1] = a end
         i = i + 1
     end
-    if o.route == nil and argv[#argv] == "--route" then return nil, "--route needs an id" end
+    if o.route then
+        if #Glob.Split(o.route) == 0 then return nil, "--route needs an id" end
+        o.routeList = Glob.NewList(o.route)
+    end
     if not o.locale then return nil, "--locale needs a code" end
     if o.aheadAt and not o.ahead then return nil, "--ahead-at needs --ahead L" end
     if o.levelPlus and o.ahead then return nil, "--level-plus and --ahead are exclusive" end
@@ -998,7 +1037,8 @@ local function bootMock(S, m)
         Mock.loadAddon(m, dep.toc, dep.name)
         boot[#boot + 1] = dep.name
     end
-    Mock.loadAddon(m, S.toc, name)
+    -- (the file filter of the offline load: the client loads the same files)
+    Mock.loadAddon(m, S.toc, name, { skip = S.module.skipSet })
     boot[#boot + 1] = name
     local h = S.harness
     if h then
@@ -1451,7 +1491,8 @@ local function mainHarness(opts, schema, db)
         io.stderr:write("simulate_routes: " .. perr .. "\n")
         return 2
     end
-    local hb = Harness.Build(opts.harness, { schema = schema, segments = opts.segments, profile = profile })
+    local hb = Harness.Build(opts.harness, { schema = schema, segments = opts.segments, profile = profile,
+        skipGlobs = opts.skip, keepGlobs = opts.keep })
     if hb.fatal then
         io.stderr:write("simulate_routes: harness: " .. hb.fatal .. "\n")
         return 2
@@ -1474,7 +1515,7 @@ local function mainHarness(opts, schema, db)
         print("simulate_routes: 1 simulation(s), 0 passed, 1 failed")
         return 1
     end
-    local module = { dir = hb.dir, deps = hb.mod.deps, name = hb.mod.name }
+    local module = { dir = hb.dir, deps = hb.mod.deps, name = hb.mod.name, skipSet = hb.mod.skipSet }
     local harness = { def = hb.def, segments = hb.segments }
     local ok, es = runOne(opts, module, Loader.FindToc(hb.dir), hb.route, profile, db, { harness = harness })
     print(format("simulate_routes: 1 simulation(s), %d passed, %d failed", ok and 1 or 0, ok and 0 or 1))
@@ -1517,15 +1558,36 @@ local function main(argv)
     end
 
     local db
+    local overrideErrors = 0
     if opts.db then
         if Loader.fileExists(opts.db) then
             db = FBDB.Load(opts.db)
+            if not opts.noOverrides then
+                -- corrections of single quests / NPCs (a broken file is ignored and reported; it fails
+                -- the run unless a file filter is active: one author's half-written file)
+                local rep = FBDB.ApplyOverrides(db, opts.overrides or OVERRIDES_DIR)
+                for _, e in ipairs(rep.errors) do
+                    print(format("simulate_routes: %s override-load %s: the override file is ignored in this run: %s",
+                        opts.skip and "note" or "ERROR", tostring(e.file), tostring(e.msg)))
+                end
+                if not opts.skip then overrideErrors = #rep.errors end
+            end
         else
             print("simulate_routes: " .. opts.db .. " not found: quests without DB data")
         end
     end
     local schema = Loader.LoadSchema(".")
-    if opts.harness then return mainHarness(opts, schema, db) end
+    -- a --skip / --keep glob that matches no TOC file is a typo: refuse the run
+    local function filtersMatch(moduleDirs)
+        local bad = Loader.UnmatchedFilters(moduleDirs, opts.skip, opts.keep)
+        for _, line in ipairs(bad) do io.stderr:write("simulate_routes: " .. line .. "\n") end
+        return #bad == 0
+    end
+    if opts.harness then
+        if not filtersMatch({ opts.harness }) then return 2 end
+        local code = mainHarness(opts, schema, db)
+        return (code == 0 and overrideErrors > 0) and 1 or code
+    end
 
     local dirs = {}
     if #opts.dirs > 0 then
@@ -1540,8 +1602,10 @@ local function main(argv)
         print("simulate_routes: no route modules to simulate")
         return 0
     end
+    if not filtersMatch(dirs) then return 2 end
 
     local total, failed = 0, 0
+    local loadFailed = false -- a module with load errors: its routes are unknown
     local results = {}
     for _, dir in ipairs(dirs) do
         local toc = Loader.FindToc(dir)
@@ -1550,12 +1614,13 @@ local function main(argv)
             failed, total = failed + 1, total + 1
             results[#results + 1] = false
         else
-            local mod = Loader.LoadModule(dir, { schema = schema })
+            local mod = Loader.LoadModule(dir, { schema = schema, skipGlobs = opts.skip, keepGlobs = opts.keep })
             if mod.isLibrary and #mod.errors == 0 then
                 print(format("skip %s: library module (its segments are simulated in the routes that use them; "
                     .. "a part of it: --harness)", mod.name))
             elseif #mod.errors > 0 then
                 total, failed = total + 1, failed + 1
+                loadFailed = true
                 results[#results + 1] = false
                 print(format("FAIL %s: %d load/schema error(s)", mod.name, #mod.errors))
                 for i, e in ipairs(mod.errors) do
@@ -1564,7 +1629,7 @@ local function main(argv)
                 end
             else
                 for _, route in ipairs(mod.routes) do
-                    if not opts.route or opts.route == route.id then
+                    if not opts.routeList or Glob.ListMatch(opts.routeList, route.id) then
                         for _, profile in ipairs(profiles(route)) do
                             if profileMatches(opts.profile, profile) then
                                 total = total + 1
@@ -1583,11 +1648,18 @@ local function main(argv)
         return (opts.route or opts.profile) and 1 or 0
     end
     print(format("simulate_routes: %d simulation(s), %d passed, %d failed", total, total - failed, failed))
+    -- (not after a module failed to load: its routes were never looked at, "matched no route" would
+    -- be a false second message next to the load error; the run has failed anyway)
+    local unmatched = opts.routeList and not loadFailed and Glob.Unmatched(opts.routeList) or {}
+    if #unmatched > 0 then
+        print("simulate_routes: --route " .. table.concat(unmatched, ",") .. " matched no route")
+        return 1
+    end
     if opts.writeState then
         local code = writeEndState(opts, results)
         if code ~= 0 then return code end
     end
-    return failed > 0 and 1 or 0
+    return (failed > 0 or overrideErrors > 0) and 1 or 0
 end
 
 os.exit(main(arg))

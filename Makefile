@@ -33,6 +33,9 @@ LUACHECK = luacheck
 BUSTED = busted
 PYTHON = python3
 VALIDATE_FLAGS =
+# The fixtures use real quest ids: they must not move when a DB override file (tools/overrides/*.lua)
+# changes, so every fixture target runs on the plain snapshot.
+NO_OVERRIDES = --no-overrides
 # Known-good fixture routes: must validate with 0 errors and simulate cleanly, so the
 # validate / simulate stages check something even before the first route module exists.
 # FastesBoooy_TestComposed = own segments + library segments of FastesBoooy_TestLib (UseSegments)
@@ -97,7 +100,7 @@ validate:
 	$(LUA) tools/validate_routes.lua $(VALIDATE_FLAGS)
 
 validate-fixtures:
-	$(LUA) tools/validate_routes.lua -q $(FIXTURE_VALIDATE)
+	$(LUA) tools/validate_routes.lua -q $(NO_OVERRIDES) $(FIXTURE_VALIDATE)
 
 simulate:
 	$(LUA) tools/simulate_routes.lua
@@ -118,16 +121,16 @@ simulate-sync:
 	done
 
 simulate-fixtures:
-	$(LUA) tools/simulate_routes.lua $(FIXTURE_SIMULATE)
+	$(LUA) tools/simulate_routes.lua $(NO_OVERRIDES) $(FIXTURE_SIMULATE)
 
 harness-fixtures:
-	$(LUA) tools/validate_routes.lua -q --strict --harness $(FIXTURE_HARNESS_LIB) --profile $(PROFILE_UD) \
+	$(LUA) tools/validate_routes.lua -q --strict $(NO_OVERRIDES) --harness $(FIXTURE_HARNESS_LIB) \
+		--profile $(PROFILE_UD) --state $(FIXTURE_HARNESS_STATE)
+	$(LUA) tools/validate_routes.lua -q --strict $(NO_OVERRIDES) --harness $(FIXTURE_HARNESS_LIB) \
+		--profile $(PROFILE_SD) --state $(FIXTURE_HARNESS_STATE)
+	$(LUA) tools/simulate_routes.lua $(NO_OVERRIDES) --harness $(FIXTURE_HARNESS_LIB) --profile $(PROFILE_UD) \
 		--state $(FIXTURE_HARNESS_STATE)
-	$(LUA) tools/validate_routes.lua -q --strict --harness $(FIXTURE_HARNESS_LIB) --profile $(PROFILE_SD) \
-		--state $(FIXTURE_HARNESS_STATE)
-	$(LUA) tools/simulate_routes.lua --harness $(FIXTURE_HARNESS_LIB) --profile $(PROFILE_UD) \
-		--state $(FIXTURE_HARNESS_STATE)
-	$(LUA) tools/simulate_routes.lua --harness $(FIXTURE_HARNESS_LIB) --profile $(PROFILE_SD) \
+	$(LUA) tools/simulate_routes.lua $(NO_OVERRIDES) --harness $(FIXTURE_HARNESS_LIB) --profile $(PROFILE_SD) \
 		--state $(FIXTURE_HARNESS_STATE)
 
 harness:
@@ -149,7 +152,7 @@ routedata:
 
 routedata-check:
 	$(LUA) tools/gen_route_data.lua --all --check
-	$(LUA) tools/gen_route_data.lua --check $(FIXTURE_ROUTEDATA)
+	$(LUA) tools/gen_route_data.lua --check $(NO_OVERRIDES) $(FIXTURE_ROUTEDATA)
 
 api:
 	@if [ -z "$(BIR)" ] || [ -z "$(WOWUI)" ]; then \

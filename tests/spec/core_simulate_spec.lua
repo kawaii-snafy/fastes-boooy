@@ -2,7 +2,7 @@
 -- that cannot be followed fails with a clear message and exit status 1.
 
 local function run(args)
-    local p = assert(io.popen("lua5.1 tools/simulate_routes.lua " .. args .. " 2>&1; echo \"EXIT=$?\""))
+    local p = assert(io.popen("lua5.1 tools/simulate_routes.lua --no-overrides " .. args .. " 2>&1; echo \"EXIT=$?\""))
     local out = p:read("*a")
     p:close()
     local code = tonumber(out:match("EXIT=(%d+)%s*$"))

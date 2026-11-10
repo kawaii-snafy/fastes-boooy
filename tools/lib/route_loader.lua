@@ -19,10 +19,16 @@
 --   local Loader = require("lib.route_loader")
 --   local Schema = Loader.LoadSchema(root)          -- Schema.Compose = Core/Compose.lua
 --   local mod = Loader.LoadModule(dir, { schema = Schema, skip = { ["Data.lua"] = true } })
+--   Loader.LoadModule(dir, { schema = Schema, skipGlobs = { "Classes/*" }, keepGlobs = { "Classes/Mage.lua" } })
+--                     -- the file filter of the command lines (--skip / --keep, tools/lib/glob.lua): a TOC
+--                     -- file is not loaded when it matches a skip glob and no keep glob
 --   Loader.LoadModule(dir, { schema = Schema, replace = { ["Segments/A.lua"] = "/other/file.lua" } })
 --                     -- the TOC entry Segments/A.lua is read from the other file
 --   mod.routes        -- array of normalized, composed routes registered by the module itself
---   mod.errors        -- array of { file = "Segments/01.lua", msg = "...", library = "<Dep>"|nil }
+--   mod.errors        -- array of { file = "Segments/01.lua", msg = "...", library = "<Dep>"|nil,
+--                        route = "<id of the route the error is about>"|nil (registration and
+--                        composition errors of one route), load = true|nil (the file itself did not
+--                        load or run to its end: what it registers is unknown) }
 --   mod.data[id]      -- merged AddRouteData tables per route id (+ library data under it)
 --   mod.segmentFile[id][segId] -- file that added the segment
 --   mod.toc           -- { files = {...}, meta = { Interface = "16001", ... } }
@@ -35,11 +41,20 @@
 --                          shared insert or of a library segment) is route.libCopies[t]: it exists when t was
 --                          composed into the route (and is then route.stepById[t.id])
 --   mod.aliases       -- [former route id] = route (RegisterRoute{ aliases = ... })
+--   mod.tocFiles      -- every file of the module's TOC (loaded or not), TOC order
+--   mod.loadedFiles   -- every file that was run, dependencies included ("<Dep>/Segments/01.lua"): the
+--                        file names messages and errors carry
+--   mod.skipped       -- TOC files left out by the file filter (skipGlobs / keepGlobs), TOC order
+--   mod.filtered      -- #mod.skipped > 0: a partial load (an anchor or a route may live in a skipped file)
+--   mod.skipSet       -- { [TOC path] = true }: every file that was not loaded (opts.skip and the filter);
+--                        the simulator gives it to Mock.loadAddon so that the client loads the same files
 --   mod.declaredLibrary -- the TOC says "## X-FastesBoooy-Module: library"
 --   mod.isLibrary     -- no route, and library segments / inserts / data registered or declared in the TOC
 --                        (a declared library may still be empty: placeholder segment files)
 -- A module without the TOC line "## X-FastesBoooy-Module: library" may register shared content AND
 -- routes (FastesBoooy_Guides); a declared library may not register routes.
+
+local Glob = require("lib.glob")
 
 local Loader = {}
 
@@ -166,6 +181,8 @@ end
 -- capture the registrations and compose the module's routes.
 -- @param dir module directory
 -- @param opts { schema = Schema (required), skip = { [relpath] = true } (module's own files),
+--               skipGlobs = { glob... }, keepGlobs = { glob... } (module's own files: the file filter,
+--               matched against the TOC path with forward slashes; see mod.skipped),
 --               replace = { [relpath] = "<path of another file>" } (module's own files: the TOC entry
 --               is read from that path; the file name reported stays the TOC path),
 --               files = {override list}, compose = Compose (default schema.Compose),
@@ -184,19 +201,25 @@ function Loader.LoadModule(dir, opts)
         dir = dir, name = basename(dir), routes = {}, routeById = {}, errors = {},
         data = {}, segmentFile = {}, files = {}, pending = {}, deps = {},
         lib = Compose.NewLibrary(), librarySegments = {}, librarySegmentFile = {}, libraryData = false,
-        libraryInserts = {}, aliases = {},
+        libraryInserts = {}, aliases = {}, skipped = {}, skipSet = {}, filtered = false,
+        loadedFiles = {}, tocFiles = {},
     }
     local lib = mod.lib
     local currentFile, currentModule = "?", mod.name
 
-    local function addError(msg, file)
+    -- info = { route = "<route id the error is about>", load = true (the file itself did not load:
+    -- what it would have registered is unknown) }; lib.validator uses both to decide which errors
+    -- count in a run with --route
+    local function addError(msg, file, info)
         local e = { file = file or currentFile, msg = msg }
         if currentModule ~= mod.name then e.library = currentModule end
+        if info then e.route, e.load = info.route, info.load end
         mod.errors[#mod.errors + 1] = e
     end
-    local function addErrors(list, prefix)
+    local function addErrors(list, prefix, routeId)
+        local info = type(routeId) == "string" and { route = routeId } or nil
         for _, e in ipairs(list or {}) do
-            addError(prefix and (prefix .. ": " .. e) or e)
+            addError(prefix and (prefix .. ": " .. e) or e, nil, info)
         end
     end
 
@@ -204,7 +227,7 @@ function Loader.LoadModule(dir, opts)
     local function addSegment(routeId, def)
         local route = mod.routeById[routeId]
         local seg, errs = Schema.AddSegment(Compose.OwnTarget(route), def)
-        addErrors(errs, "route " .. tostring(routeId))
+        addErrors(errs, "route " .. tostring(routeId), routeId)
         if seg then
             if route.own then route.dirty = true end
             seg.file = currentFile
@@ -221,12 +244,12 @@ function Loader.LoadModule(dir, opts)
     end
     local function useSegments(routeId, ids)
         local n, errs = Compose.AddUses(mod.routeById[routeId], ids, currentFile)
-        addErrors(errs, "route " .. tostring(routeId))
+        addErrors(errs, "route " .. tostring(routeId), routeId)
         return n > 0
     end
     local function addInsert(routeId, def)
         local ins, errs = Compose.AddInsert(mod.routeById[routeId], def, currentFile)
-        addErrors(errs, "route " .. tostring(routeId))
+        addErrors(errs, "route " .. tostring(routeId), routeId)
         if ins then
             for _, step in ipairs(ins.steps) do step.file = currentFile end
         end
@@ -240,7 +263,8 @@ function Loader.LoadModule(dir, opts)
             addError(("%s: invalid route id %s"):format(what, tostring(routeId)))
             return
         end
-        addError(("%s: route %s is not registered yet (RegisterRoute must come first)"):format(what, routeId))
+        addError(("%s: route %s is not registered yet (RegisterRoute must come first)"):format(what, routeId), nil,
+            { route = routeId })
         local q = mod.pending[routeId] or {}
         q[#q + 1] = { kind = kind, def = def, file = currentFile, module = currentModule }
         mod.pending[routeId] = q
@@ -248,15 +272,17 @@ function Loader.LoadModule(dir, opts)
 
     function api.RegisterRoute(def)
         local route, errs = Schema.NormalizeRoute(def)
-        addErrors(errs)
         local id = type(def) == "table" and def.id or nil
+        addErrors(errs, nil, id)
         if not route or type(id) ~= "string" or id == "" then return nil end
+        local about = { route = id }
         if mod.routeById[id] then
-            addError(("route %s: registered twice (second definition ignored)"):format(id))
+            addError(("route %s: registered twice (second definition ignored)"):format(id), nil, about)
             return nil
         end
         if mod.aliases[id] then
-            addError(("route %s: its id is an alias of route %s (alias ignored)"):format(id, tostring(mod.aliases[id].id)))
+            addError(("route %s: its id is an alias of route %s (alias ignored)"):format(id, tostring(mod.aliases[id].id)),
+                nil, about)
             mod.aliases[id] = nil
         end
         route.file = currentFile
@@ -266,10 +292,11 @@ function Loader.LoadModule(dir, opts)
         -- former ids, like Registry:RegisterRoute (a route id always wins over an alias)
         for _, alias in ipairs(route.aliases or {}) do
             if mod.routeById[alias] then
-                addError(("route %s: alias '%s' is the id of a registered route (alias ignored)"):format(id, alias))
+                addError(("route %s: alias '%s' is the id of a registered route (alias ignored)"):format(id, alias), nil,
+                    about)
             elseif mod.aliases[alias] then
                 addError(("route %s: alias '%s' is already used by route %s (alias ignored)"):format(id, alias,
-                    tostring(mod.aliases[alias].id)))
+                    tostring(mod.aliases[alias].id)), nil, about)
             else
                 mod.aliases[alias] = route
             end
@@ -296,7 +323,7 @@ function Loader.LoadModule(dir, opts)
         end
         if not mod.routeById[routeId] then
             addError(("AddSegment %s: route %s is not registered yet (RegisterRoute must come first)")
-                :format(tostring(type(def) == "table" and def.id), routeId))
+                :format(tostring(type(def) == "table" and def.id), routeId), nil, { route = routeId })
             local q = mod.pending[routeId] or {}
             q[#q + 1] = { kind = "segment", def = def, file = currentFile, module = currentModule }
             mod.pending[routeId] = q
@@ -307,7 +334,8 @@ function Loader.LoadModule(dir, opts)
 
     function api.AddRouteData(routeId, data)
         if type(data) ~= "table" then
-            addError(("AddRouteData %s: data must be a table"):format(tostring(routeId)))
+            addError(("AddRouteData %s: data must be a table"):format(tostring(routeId)), nil,
+                type(routeId) == "string" and { route = routeId } or nil)
             return false
         end
         if not mod.routeById[routeId] then
@@ -373,19 +401,21 @@ function Loader.LoadModule(dir, opts)
             if not (skip and skip[rel]) then
                 currentFile, currentModule = prefix .. rel, mname
                 if mname == mod.name then mod.files[#mod.files + 1] = rel end
+                mod.loadedFiles[#mod.loadedFiles + 1] = currentFile
                 local path = (replace and replace[rel]) or (mdir .. "/" .. rel)
+                -- { load = true }: the file did not run (to its end), what it registers is unknown
                 if not rel:match("%.lua$") then
-                    addError("only .lua files are supported in route modules (got " .. rel .. ")")
+                    addError("only .lua files are supported in route modules (got " .. rel .. ")", nil, { load = true })
                 else
                     local chunk, err = loadfile(path)
                     if not chunk then
-                        addError("load error: " .. tostring(err))
+                        addError("load error: " .. tostring(err), nil, { load = true })
                     else
                         local env = baseEnv()
                         env.FastesBoooy = api
                         setfenv(chunk, env)
                         local ok, rerr = pcall(chunk, mname, private)
-                        if not ok then addError("runtime error: " .. tostring(rerr)) end
+                        if not ok then addError("runtime error: " .. tostring(rerr), nil, { load = true }) end
                         local base = baseEnv()
                         for k in pairs(env) do
                             if k ~= "FastesBoooy" and base[k] == nil then
@@ -493,12 +523,25 @@ function Loader.LoadModule(dir, opts)
             addError("replace: " .. rel .. " is not a file of the TOC", mod.tocFile or rel)
         end
     end
-    runFiles(dir, mod.name, files, opts.skip, "", opts.replace)
+    -- files that are not loaded: opts.skip (exact TOC paths) and the file filter (globs)
+    for i, rel in ipairs(files) do mod.tocFiles[i] = rel end
+    local skip = mod.skipSet
+    for rel in pairs(opts.skip or {}) do skip[rel] = true end
+    if opts.skipGlobs and #opts.skipGlobs > 0 then
+        for _, rel in ipairs(files) do
+            if not skip[rel] and Glob.Skipped(rel, opts.skipGlobs, opts.keepGlobs) then
+                skip[rel] = true
+                mod.skipped[#mod.skipped + 1] = rel
+            end
+        end
+    end
+    mod.filtered = #mod.skipped > 0
+    runFiles(dir, mod.name, files, skip, "", opts.replace)
 
     for routeId, list in pairs(mod.pending) do
         for _, p in ipairs(list) do
             currentModule = p.module
-            addError(("%s for route %s was never registered"):format(p.kind, routeId), p.file)
+            addError(("%s for route %s was never registered"):format(p.kind, routeId), p.file, { route = routeId })
         end
     end
     currentModule = mod.name
@@ -520,7 +563,7 @@ function Loader.LoadModule(dir, opts)
                 if not seen[key] then
                     seen[key] = true
                     currentModule = srcModule
-                    addError(msg, file)
+                    addError(msg, file, { route = route.id })
                     currentModule = mod.name
                 end
             end
@@ -533,6 +576,33 @@ function Loader.LoadModule(dir, opts)
             .. "registers library segments / data", mod.tocFile)
     end
     return mod
+end
+
+--- The --skip / --keep globs of a run that match no TOC file of any of its modules. Such a glob is a
+-- typo (or a wrong case: the match is case-sensitive): the filter would leave out nothing, or the
+-- caller's own file. The tools refuse the run.
+-- @param dirs module directories; @param skip, keep lists of globs (nil: none)
+-- @return array of lines ("--skip 'Clases/*' matches no TOC file of <Module>, ..."); {} when all
+--         match, when there are no modules, or when a module has no readable TOC (the load says so)
+function Loader.UnmatchedFilters(dirs, skip, keep)
+    local out, lists, names = {}, {}, {}
+    if not (skip and #skip > 0) and not (keep and #keep > 0) then return out end
+    for _, dir in ipairs(dirs) do
+        dir = dir:gsub("[/\\]+$", "")
+        local tocPath = Loader.FindToc(dir)
+        local toc = tocPath and Loader.ParseToc(tocPath)
+        if not toc then return out end
+        lists[#lists + 1] = toc.files
+        names[#names + 1] = basename(dir)
+    end
+    if #lists == 0 then return out end
+    for _, opt in ipairs({ { "--skip", skip }, { "--keep", keep } }) do
+        for _, g in ipairs(Glob.UnmatchedIn(opt[2], lists)) do
+            out[#out + 1] = ("%s '%s' matches no TOC file of %s (the match is case-sensitive, `*` is the only "
+                .. "wildcard)"):format(opt[1], g, table.concat(names, ", "))
+        end
+    end
+    return out
 end
 
 --- List route module directories under `addonsDir` (FastesBoooy_* with a TOC), sorted.

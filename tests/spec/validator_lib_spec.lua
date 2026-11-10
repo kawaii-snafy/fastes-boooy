@@ -318,6 +318,32 @@ describe("validator profiles", function()
         assert.has_error(function() V.ParseArgs({ "--profile", "foo=bar" }) end)
         assert.has_error(function() V.ParseArgs({ "--nope" }) end)
     end)
+
+    it("parses the file filter, the gates and the report options", function()
+        local o = V.ParseArgs({ "--skip", "Classes/*", "--skip", "Races\\*", "--keep", "Classes/Mage.lua", "--own",
+            "Classes/Mage.lua", "--route", "orc-*,troll-mage", "--end-level", "--summary", "--levels", "--grind-until",
+            "h-18", "--max-grind-until", "h-18-stonetalon-ashenvale=120/200", "--baseline", "b.json", "--write-baseline",
+            "w.json", "--no-overrides", "--overrides", "dir" })
+        assert.are.same({ "Classes/*", "Races/*" }, o.skip)
+        assert.are.same({ "Classes/Mage.lua" }, o.keep)
+        assert.are.same({ "Classes/Mage.lua" }, o.own)
+        assert.are.equal("orc-*,troll-mage", o.route)
+        assert.is_true(o.endLevel and o.summary and o.levels and o.noOverrides)
+        assert.are.equal("h-18", o.grindUntil)
+        assert.are.same({ segment = "h-18-stonetalon-ashenvale", kills = 120, worst = 200 }, o.maxGrindUntil)
+        assert.are.equal("b.json", o.baseline)
+        assert.are.equal("w.json", o.writeBaseline)
+        assert.are.equal("dir", o.overrides)
+        -- nothing given: no filter, every file is own
+        o = V.ParseArgs({})
+        assert.is_nil(o.skip)
+        assert.is_nil(o.own)
+        assert.has_error(function() V.ParseArgs({ "--max-grind-until", "seg=5" }) end)
+        assert.has_error(function() V.ParseArgs({ "--max-grind-until", "seg" }) end)
+        assert.has_error(function() V.ParseArgs({ "--skip" }) end)
+        assert.has_error(function() V.ParseArgs({ "--own", "" }) end)
+        assert.has_error(function() V.ParseArgs({ "--route", "," }) end)
+    end)
 end)
 
 describe("json", function()

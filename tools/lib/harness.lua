@@ -1,16 +1,19 @@
 -- tools/lib/harness.lua -- start states and harness routes for the offline tools (Lua 5.1).
 --
--- Lets a PART of a library module (FastesBoooy.AddLibrarySegment) be validated
+-- Lets a PART of the shared segments of a module (FastesBoooy.AddLibrarySegment: a library module,
+-- or a module that also registers routes such as FastesBoooy_Guides) be validated
 -- (tools/validate_routes.lua) and simulated (tools/simulate_routes.lua) from an explicit
--- character state, so the segments of a library can be written and checked in parallel:
+-- character state, so the segments can be written and checked in parallel:
 --
 --   lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Horde --segments h-a,h-b \
 --          --profile race=Scourge,class=PALADIN,faction=Horde --state start.json --write-state end.json
 --
 -- Harness route: a synthetic route registered for exactly one profile
 --   { api = 1, id = "harness-<Library>", faction, races = { race }, classes = { class } }
--- that only uses the listed library segments (FastesBoooy.UseSegments, composed by the real
--- Core/Compose.lua) -- nothing else: no own segments, no class inserts.
+-- that only uses the listed shared segments (FastesBoooy.UseSegments, composed by the real
+-- Core/Compose.lua) -- no own segments, no per-route inserts. The module's SHARED inserts
+-- (FastesBoooy.AddLibraryInsert) apply to it like to every route that contains their anchor, and
+-- shared steps whose class / race / faction filter cannot match the profile are not composed.
 --
 -- Start state (JSON; the same format is written by --write-state, so runs can be chained):
 --   {
@@ -363,15 +366,20 @@ function Harness.RouteDef(libName, profile, segments)
     }
 end
 
---- Load a library module and compose the harness route (real Core/Schema.lua + Core/Compose.lua).
--- @param libDir library module directory (e.g. addons/FastesBoooy_Horde)
+--- Load a module with shared segments and compose the harness route (real Core/Schema.lua +
+-- Core/Compose.lua). The module may be a library module or a mixed module that also registers routes
+-- (FastesBoooy_Guides): the harness route uses the module's shared part. The module's shared inserts
+-- (AddLibraryInsert) whose anchors are in the harness route apply to it like to every route, and
+-- shared steps that cannot match the harness profile are not composed (Compose.Build).
+-- @param libDir module directory (e.g. addons/FastesBoooy_Guides)
 -- @param opts { schema = Schema (required), profile = { race, class, faction } (Harness.Profile),
---               segments = { ids } | nil (nil: every library segment of the module, TOC order) }
+--               segments = { ids } | nil (nil: every shared segment of the module, TOC order),
+--               skipGlobs / keepGlobs = the file filter (Loader.LoadModule) }
 -- @return hb = { dir, name, mod (Loader.LoadModule result), def (RegisterRoute definition),
 --                route (composed, nil when nothing to run), segments (ids used),
---                available (ids the library registers), errors = { { file, msg } } (unknown
+--                available (ids the module registers), errors = { { file, msg } } (unknown
 --                segments, composition), empty = true when the module registers no segment and none
---                was asked for, fatal = "message" when the directory is no library module }
+--                was asked for, fatal = "message" when the directory has nothing for a harness }
 function Harness.Build(libDir, opts)
     local Schema = assert(opts.schema, "Harness.Build: opts.schema required")
     local Compose = Schema.Compose
@@ -381,11 +389,11 @@ function Harness.Build(libDir, opts)
         hb.fatal = format("%s: no TOC file found (expected %s/%s.toc)", libDir, libDir, hb.name)
         return hb
     end
-    local mod = Loader.LoadModule(libDir, { schema = Schema })
+    local mod = Loader.LoadModule(libDir, { schema = Schema, skipGlobs = opts.skipGlobs, keepGlobs = opts.keepGlobs })
     hb.mod = mod
-    if #mod.routes > 0 then
-        hb.fatal = format("%s registers route(s) (%s): --harness takes a library module (AddLibrarySegment only)",
-            mod.name, mod.routes[1].id)
+    if #mod.routes > 0 and #mod.librarySegments == 0 then
+        hb.fatal = format("%s registers route(s) (%s) but no shared segments: --harness needs a module with shared "
+            .. "segments (AddLibrarySegment)", mod.name, mod.routes[1].id)
         return hb
     end
     for _, seg in ipairs(mod.librarySegments) do hb.available[#hb.available + 1] = seg.id end

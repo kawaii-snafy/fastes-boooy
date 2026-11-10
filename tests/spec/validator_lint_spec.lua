@@ -134,4 +134,33 @@ FastesBoooy.AddLibraryInsert = nil
         assert.matches("W143.-AddLibraryInsrt", out)
         assert.matches("W122.-AddLibraryInsert", out)
     end)
+
+    it("DB override files (tools/overrides/*.lua): one return, no globals at all", function()
+        local code, out = luacheck([[
+return {
+    quests = {
+        [861] = { exclusive = { remove = { 844 } }, source = "in game 2026-11-10", verified = false },
+        [92461] = { xp = 85, source = "in game 2026-11-10", verified = true },
+    },
+    npcs = { [3153] = { sub = "Warrior Trainer", source = "in game 2026-11-10", verified = true } },
+}
+]], "tools/overrides/shared.lua")
+        assert.are.equal(0, code, out)
+        -- the file is loaded in an empty environment: not even the Lua base, no FastesBoooy, no global of its own
+        local bad
+        bad, out = luacheck([[
+local ids = { 1, 2 }
+for _, id in ipairs(ids) do Count = (Count or 0) + id end
+return { quests = { [tonumber("363")] = { xp = math.floor(85.5), source = tostring(FastesBoooy) } } }
+]], "tools/overrides/warrior.lua")
+        assert.are.equal(1, bad)
+        assert.matches("W113.-ipairs", out)
+        assert.matches("W111.-Count", out)
+        assert.matches("W113.-tonumber", out)
+        assert.matches("W113.-math", out)
+        assert.matches("W113.-FastesBoooy", out)
+        -- the other tools keep plain Lua 5.1
+        code, out = luacheck("local t = {}\nfor _, v in ipairs(t) do print(tostring(v)) end\n", "tools/lib/probe.lua")
+        assert.are.equal(0, code, out)
+    end)
 end)

@@ -13,6 +13,14 @@
 --
 -- Every message has a severity (ERROR / WARN / INFO) and a stable `code`
 -- (see tools/README.md for the list); `--ignore code,code` suppresses codes.
+-- Next to the text a message carries stable fields where they apply: `quest` (the quest of the
+-- action), `npc` / `object`, `kills`, `level` (the simulated level in the text), `file`, and
+-- `shared = true` on a shared step / segment (a library segment step or a shared-insert step).
+--
+-- Acknowledged warnings: a WARN whose code is listed in `ok` of its step (of its segment for a
+-- message about the segment) is ACCEPTED: m.accepted = true, counted in result.acceptedWarn instead of
+-- counts.WARN, printed only with -v, not counted by --strict. `ok = { ["level-grind"] = N }` accepts
+-- only while the gate needs at most N kills (V.OkAccepts).
 --
 -- Library segments (FastesBoooy.UseSegments, Core/Compose.lua): a route module is loaded
 -- with its FastesBoooy_* dependencies and validated as the composed route. Messages about
@@ -21,6 +29,20 @@
 -- profiles are dropped). A library module is not a route: its own load / schema errors
 -- are reported once per run (in its own entry when it is part of the run, else with the
 -- first route module that depends on it).
+--
+-- Mixed modules (routes AND shared content in one addon, FastesBoooy_Guides): the module gets one
+-- more entry in front of its routes, "(shared <Module>)" (result.shared = module name), with the
+-- checks on its shared TEMPLATES (tools/lib/module_checks.lua: a template step with a mistyped race
+-- or an insert with a wrong anchor is composed into no route and would be invisible otherwise).
+-- Messages that must not change the exit status are NOTES (moduleResult.notes): template checks of
+-- files that are not the caller's own on a partial load (--skip / --keep with --own), with --route
+-- the errors that belong to a route outside the selection (never a file that did not load: see
+-- V.ValidateModule), a broken override file on a partial load.
+--
+-- Whole-run checks (V.Main): WARN ok-unused (V.CheckOkUnused, full runs only), the DB override layer
+-- (tools/lib/fbdb.lua DB.ApplyOverrides; V.OverrideChecks: ERROR override-load / override-foreign-quest
+-- in the entry "(overrides)"), own / foreign warnings (--own, V.MarkForeign), the numeric criteria
+-- (V.ApplyCriteria: ERROR end-level / grind-budget / grind-baseline).
 --
 -- Start states and harness runs (tools/lib/harness.lua): opts.startState starts the simulation
 -- from a character state instead of a fresh level-1 character (level / XP, quests turned in,
@@ -32,6 +54,8 @@ local DB = require("lib.fbdb")
 local Loader = require("lib.route_loader")
 local json = require("lib.json")
 local Harness = require("lib.harness")
+local Glob = require("lib.glob")
+local ModuleChecks = require("lib.module_checks")
 
 local V = {}
 
@@ -114,6 +138,54 @@ local function round2(v)
 end
 
 ---------------------------------------------------------------------------
+-- acknowledged warnings (step / segment key `ok`, Schema.NormalizeOk: { [code] = true | ceiling })
+---------------------------------------------------------------------------
+
+-- codes that can only be acknowledged with a ceiling (ERROR ok-needs-ceiling otherwise): a shared
+-- gate acknowledged once must not pass any number of kills for every route that contains it
+local NEEDS_CEILING = { ["level-grind"] = true }
+V.NEEDS_CEILING = NEEDS_CEILING
+
+--- Does an `ok` table accept message m? Only a WARN can be accepted. A ceiling applies to a message
+-- with a kill count (m.kills, level-grind): accepted while m.kills <= ceiling.
+-- @return accepted, ceiling (the number, when the code has one)
+function V.OkAccepts(okT, m)
+    local v = okT and okT[m.code]
+    if v == nil or m.severity ~= "WARN" then return false end
+    if type(v) == "number" then
+        if m.kills and m.kills > v then return false, v end
+        return true, v
+    end
+    if NEEDS_CEILING[m.code] then return false end
+    return true
+end
+
+-- apply the `ok` of the message's step / segment to a new message
+local function acknowledge(okT, m)
+    local accepted, ceiling = V.OkAccepts(okT, m)
+    if accepted then
+        m.accepted = true
+        m.okCeiling = ceiling
+    elseif ceiling then
+        m.okCeiling = ceiling
+        m.msg = m.msg .. format(" (above the acknowledged ceiling of %s kills: the `ok` of this step no longer "
+            .. "applies)", tostring(ceiling))
+    end
+    return m
+end
+V.Acknowledge = acknowledge
+
+-- count a message in a run / result (an accepted WARN is counted apart, in holder.acceptedWarn)
+local function countMessage(holder, m, d)
+    if m.accepted then
+        holder.acceptedWarn = (holder.acceptedWarn or 0) + d
+    else
+        holder.counts[m.severity] = holder.counts[m.severity] + d
+    end
+end
+V.CountMessage = countMessage
+
+---------------------------------------------------------------------------
 -- profiles
 ---------------------------------------------------------------------------
 
@@ -163,7 +235,7 @@ function V.NewRun(db, schema, route, profile, opts)
         hardTol = opts.hardTolerance or V.DEFAULTS.hardTolerance,
         tolYd = opts.toleranceYards or V.DEFAULTS.toleranceYards,
         hardTolYd = opts.hardToleranceYards or V.DEFAULTS.hardToleranceYards,
-        messages = {}, counts = { ERROR = 0, WARN = 0, INFO = 0 }, suppressed = 0,
+        messages = {}, counts = { ERROR = 0, WARN = 0, INFO = 0 }, suppressed = 0, acceptedWarn = 0,
         st = { level = 1, xp = 0 },
         opt = { level = 1, xp = 0 }, -- optimistic simulation (see V.DEFAULTS.unknownXpOptimism)
         active = {}, activeCount = 0, maxLog = 0,
@@ -178,6 +250,8 @@ function V.NewRun(db, schema, route, profile, opts)
         -- worst case (opts.worstCase, V.RunProfile): optional steps are not done
         worst = opts.worstCase and true or false,
         optQuest = {}, optTurnin = {}, optSkipped = 0, optAccepts = 0,
+        optFp = {}, optHearth = {}, -- fp / sethearth of skipped optional steps: [place] = step
+        levelBefore = {}, -- [step] = simulated level value before the step (--levels)
     }, Run)
     r.letter = profile.faction == "Horde" and "H" or (profile.faction == "Alliance" and "A" or nil)
     r.facts = { race = profile.race, class = profile.class, faction = profile.faction }
@@ -303,6 +377,12 @@ function Run:EndState()
 end
 
 function Run:add(sev, code, step, msg, ...)
+    return self:addx(sev, code, step, nil, msg, ...)
+end
+
+--- Run:add with stable fields: `fields` ({ npc = id, kills = n, level = 12.3, quest = id, ... }) is
+-- copied into the message before its step's `ok` is applied (a ceiling reads m.kills).
+function Run:addx(sev, code, step, fields, msg, ...)
     -- shadow runs (V.RunProfile) keep only the codes they report into the main run
     if self.opts.keepCodes and not self.opts.keepCodes[code] then return end
     if self.opts.ignore and self.opts.ignore[code] then
@@ -312,21 +392,33 @@ function Run:add(sev, code, step, msg, ...)
     local m = {
         severity = sev, code = code, msg = select("#", ...) > 0 and format(msg, ...) or msg,
     }
+    local okT
     if step then
         m.segment = step.segment
         m.step = step.segIndex
         m.stepId = step.id
         m.file = step.file
         if type(step.library) == "string" then m.library = step.library end
+        okT = step.ok
     elseif self.seg then
         m.segment = self.seg.id
         m.file = self.seg.file
         if type(self.seg.library) == "string" then m.library = self.seg.library end
+        okT = self.seg.ok
     end
+    if m.library then m.shared = true end
+    if self.curQuest then m.quest = self.curQuest end -- the quest of the action being processed
+    for k, v in pairs(fields or {}) do m[k] = v end
+    if okT and sev == "WARN" then acknowledge(okT, m) end
     self.messages[#self.messages + 1] = m
-    self.counts[sev] = self.counts[sev] + 1
+    countMessage(self, m, 1)
     self.msgOrd[m] = self.ordinal
     return m
+end
+
+--- The simulated level as a message field (two decimals).
+function Run:levelField()
+    return round2(DB.LevelValue(self.db, self.st))
 end
 
 -- "363 \"Rude Awakening\""
@@ -574,12 +666,13 @@ function Run:distanceSeverity(map, d, isYards, slackUnits)
     return nil, text
 end
 
-function Run:checkDistance(step, ent, at, label)
+-- @param fields the stable field of the entity: { npc = id } / { object = id }
+function Run:checkDistance(step, ent, at, label, fields)
     local d, isYards, nx, ny = self:nearestSpawn(ent.spawns, at)
     if not d then
         local zone = self.db.zones[at.map]
         if ent.instance and #ent.instance > 0 and zone and zone.dungeon then
-            self:add("INFO", "at-instance", step, "%s is inside an instance; position on uiMap %d not checkable",
+            self:addx("INFO", "at-instance", step, fields, "%s is inside an instance; position on uiMap %d not checkable",
                 label, at.map)
             return
         end
@@ -587,14 +680,14 @@ function Run:checkDistance(step, ent, at, label)
         for _, m in ipairs(DB.SpawnMaps(ent.spawns)) do
             maps[#maps + 1] = format("%d %s", m, DB.ZoneName(self.db, m))
         end
-        self:add("ERROR", "at-no-spawn", step, "%s has no spawn on uiMap %d (%s); spawns on: %s", label, at.map,
+        self:addx("ERROR", "at-no-spawn", step, fields, "%s has no spawn on uiMap %d (%s); spawns on: %s", label, at.map,
             DB.ZoneName(self.db, at.map), #maps > 0 and table.concat(maps, "; ") or "none known")
         return
     end
     local slack = ent.spawnsGrid and ent.spawnsGrid * math.sqrt(2) or nil
     local sev, text = self:distanceSeverity(at.map, d, isYards, slack)
     if sev then
-        self:add(sev, "at-far", step, "%s is %s from at {%d, %.1f, %.1f} (nearest spawn %.2f, %.2f%s)",
+        self:addx(sev, "at-far", step, fields, "%s is %s from at {%d, %.1f, %.1f} (nearest spawn %.2f, %.2f%s)",
             label, text, at.map, at.x, at.y, nx, ny, slack and "; spawn list thinned in the snapshot" or "")
     end
 end
@@ -614,13 +707,13 @@ function Run:checkEntities(step)
         if not n then
             local b = DB.NpcBrief(db, id)
             if b then
-                self:add("WARN", "npc-out-of-scope", step, "NPC %s exists but is outside the DB snapshot scope "
+                self:addx("WARN", "npc-out-of-scope", step, { npc = id }, "NPC %s exists but is outside the DB snapshot scope "
                     .. "(zone area %s); position/flags not checked", self:nn(id), tostring(b.zone))
             else
-                self:add("ERROR", "npc-unknown", step, "NPC %d does not exist in the Forever DB", id)
+                self:addx("ERROR", "npc-unknown", step, { npc = id }, "NPC %d does not exist in the Forever DB", id)
             end
         elseif mapOk then
-            self:checkDistance(step, n, at, "NPC " .. self:nn(id))
+            self:checkDistance(step, n, at, "NPC " .. self:nn(id), { npc = id })
         end
     end
     for _, id in ipairs(step.object or {}) do
@@ -628,13 +721,13 @@ function Run:checkEntities(step)
         if not o then
             local b = DB.ObjectBrief(db, id)
             if b then
-                self:add("WARN", "object-out-of-scope", step, "object %s exists but is outside the DB snapshot scope; "
+                self:addx("WARN", "object-out-of-scope", step, { object = id }, "object %s exists but is outside the DB snapshot scope; "
                     .. "position not checked", self:on(id))
             else
-                self:add("ERROR", "object-unknown", step, "object %d does not exist in the Forever DB", id)
+                self:addx("ERROR", "object-unknown", step, { object = id }, "object %d does not exist in the Forever DB", id)
             end
         elseif mapOk then
-            self:checkDistance(step, o, at, "object " .. self:on(id))
+            self:checkDistance(step, o, at, "object " .. self:on(id), { object = id })
         end
     end
     -- accept / turnin without npc/object: 'at' should be near a quest giver/ender
@@ -657,14 +750,14 @@ function Run:checkEntities(step)
                     end
                     local who = a.type == "accept" and "quest giver" or "quest ender"
                     if not best then
-                        self:add("WARN", "at-far-from-giver", step, "%s %s: no %s spawns on uiMap %d", a.type,
+                        self:addx("WARN", "at-far-from-giver", step, { quest = a.quest }, "%s %s: no %s spawns on uiMap %d", a.type,
                             self:qn(a.quest), who, at.map)
                     else
                         local sev, text = self:distanceSeverity(at.map, best, bestYd)
                         if sev then
                             -- no npc/object on the step: the giver is a guess, never more than a WARN
-                            self:add("WARN", "at-far-from-giver", step, "%s %s: nearest %s is %s from at",
-                                a.type, self:qn(a.quest), who, text)
+                            self:addx("WARN", "at-far-from-giver", step, { quest = a.quest },
+                                "%s %s: nearest %s is %s from at", a.type, self:qn(a.quest), who, text)
                         end
                     end
                 end
@@ -696,7 +789,7 @@ function Run:giveQuestXp(id, q, step)
         base = DB.EstimateQuestXp(self.db, q.level)
         estimated = true
         self.xp.unknownXpQuests = self.xp.unknownXpQuests + 1
-        self:add("WARN", "xp-unknown", step, "turnin %s: quest XP unknown in the DB (Forever-new quest?); estimated "
+        self:add("INFO", "xp-unknown", step, "turnin %s: quest XP unknown in the DB (Forever-new quest?); estimated "
             .. "%d (median of level-%d quests). Record the real value in game with /fb xp", self:qn(id), base,
             q.level or 0)
     end
@@ -837,6 +930,25 @@ function H.turnin(self, a, step)
     self:giveQuestXp(id, q, step)
 end
 
+--- WARN db-override-unverified: a step passes a check only because of a DB override (tools/overrides)
+-- that is not verified in game yet.
+function Run:overrideWarn(step, ov, check, what)
+    return self:addx("WARN", "db-override-unverified", step, { override = ov.file }, "%s: the %s check passes only "
+        .. "because of the unverified DB override in tools/overrides/%s (source: %s): confirm it in game and set "
+        .. "verified = true, or acknowledge it (ok = \"db-override-unverified\" with a -- CONFIRM: comment)", what, check,
+        ov.file, tostring(ov.source))
+end
+
+-- side / race / class availability of a quest with these masks: nil when available, else the code
+function Run:availabilityProblem(races, classes)
+    if self.letter and not DB.Side(self.db, races):find(self.letter, 1, true) then return "quest-side" end
+    if self.raceMask and races and races ~= 0 and not DB.HasBit(races, self.raceMask) then return "quest-race" end
+    if self.classMask and classes and classes ~= 0 and not DB.HasBit(classes, self.classMask) then
+        return "quest-class"
+    end
+    return nil
+end
+
 function Run:checkAvailability(id, q, step)
     local db = self.db
     if self.letter then
@@ -855,6 +967,15 @@ function Run:checkAvailability(id, q, step)
     if self.classMask and q.classes and q.classes ~= 0 and not DB.HasBit(q.classes, self.classMask) then
         self:add("ERROR", "quest-class", step, "accept %s: not available to class %s (requiredClasses: %s)",
             self:qn(id), self.profile.class, self:classNames(q.classes))
+    end
+    -- available only because of an unverified override of the race / class mask?
+    local ov = db._overrides and db._overrides.quests[id]
+    if ov and not ov.verified and (ov.fields.races or ov.fields.classes)
+        and not self:availabilityProblem(q.races, q.classes) then
+        local before = self:availabilityProblem(ov.orig.races, ov.orig.classes)
+        if before then
+            self:overrideWarn(step, ov, before == "quest-class" and "class" or "race", "accept " .. self:qn(id))
+        end
     end
 end
 
@@ -897,17 +1018,18 @@ function H.accept(self, a, step)
                 hint = format(" (the simulation includes %d estimated quest XP values; if the real XP is higher, add "
                     .. "a 'level' step here - it completes instantly in game when reached)", self.xp.unknownXpQuests)
             end
-            self:add("ERROR", "level-too-low", step, "accept %s: requires level %d, simulated level is %s%s", self:qn(id),
-                q.reqLevel, self:levelStr(), hint)
+            self:addx("ERROR", "level-too-low", step, { level = self:levelField() },
+                "accept %s: requires level %d, simulated level is %s%s", self:qn(id), q.reqLevel, self:levelStr(), hint)
         else
-            self:add("WARN", "level-too-low-estimated", step, "accept %s: requires level %d, simulated level is %s "
-                .. "(level %d is reachable only if the estimated XP is too low: unknown quest XP / assumed kill counts; "
-                .. "consider a 'level' step)", self:qn(id), q.reqLevel, self:levelStr(), self:optLevel())
+            self:addx("WARN", "level-too-low-estimated", step, { level = self:levelField() },
+                "accept %s: requires level %d, simulated level is %s (level %d is reachable only if the estimated XP "
+                .. "is too low: unknown quest XP / assumed kill counts; consider a 'level' step)", self:qn(id),
+                q.reqLevel, self:levelStr(), self:optLevel())
         end
     end
     if full and q.maxLevel and q.maxLevel > 0 and self.st.level > q.maxLevel then
-        self:add("ERROR", "level-too-high", step, "accept %s: maximum level %d, simulated level is %s", self:qn(id),
-            q.maxLevel, self:levelStr())
+        self:addx("ERROR", "level-too-high", step, { level = self:levelField() },
+            "accept %s: maximum level %d, simulated level is %s", self:qn(id), q.maxLevel, self:levelStr())
     end
     if self.active[id] then
         self:add("ERROR", "accept-duplicate", step, "accept %s: already in the quest log (accepted at %s)", self:qn(id),
@@ -925,6 +1047,7 @@ function H.accept(self, a, step)
         for _, p in ipairs(q.preGroup or {}) do
             if not self.turnedIn[p] then missing[#missing + 1] = p end
         end
+        local prereqOk = #missing == 0
         if #missing > 0 then
             self:add("ERROR", "accept-prereq", step, "accept %s: requires ALL of these quests turned in first, missing: %s",
                 self:qn(id), self:names(missing, Run.qn))
@@ -935,8 +1058,33 @@ function H.accept(self, a, step)
                 if self.turnedIn[p] then ok = true break end
             end
             if not ok then
+                prereqOk = false
                 self:add("ERROR", "accept-prereq", step, "accept %s: requires ONE of these quests turned in first: %s",
                     self:qn(id), self:names(q.preSingle, Run.qn))
+            end
+        end
+        -- DB overrides (tools/overrides): does the step pass only because of an unverified one?
+        local ovs = self.db._overrides
+        local ov = ovs and ovs.quests[id]
+        if ov and not ov.verified and prereqOk and (ov.fields.preGroup or ov.fields.preSingle) then
+            local before = true
+            for _, p in ipairs(ov.orig.preGroup or {}) do
+                if not self.turnedIn[p] then before = false end
+            end
+            if #(ov.orig.preSingle or {}) > 0 then
+                local one = false
+                for _, p in ipairs(ov.orig.preSingle) do
+                    if self.turnedIn[p] then one = true end
+                end
+                if not one then before = false end
+            end
+            if not before then self:overrideWarn(step, ov, "prerequisite", "accept " .. self:qn(id)) end
+        end
+        for _, x in ipairs(sortedKeys(ovs and ovs.exclRemoved[id])) do
+            local xov = ovs.exclRemoved[id][x]
+            if not xov.verified and (self.active[x] or self.turnedIn[x]) then
+                self:overrideWarn(step, xov, "exclusivity", format("accept %s (exclusive with %s in the snapshot)",
+                    self:qn(id), self:qn(x)))
             end
         end
         -- exclusive groups are symmetric in game but often listed on one side only in the DB
@@ -1142,7 +1290,8 @@ function H.complete(self, a, step)
             table.concat(nonKill, "; "))
     end
     if killsTotal > 0 then
-        self:add("INFO", "complete-kill-xp", step, "complete %s: ~%d kills, +%d kill XP (estimate%s); level now %s",
+        self:addx("INFO", "complete-kill-xp", step, { kills = killsTotal, level = self:levelField() },
+            "complete %s: ~%d kills, +%d kill XP (estimate%s); level now %s",
             self:qn(id), killsTotal, xpTotal, guessed and ", objective counts partly assumed" or "", self:levelStr())
     end
 end
@@ -1170,7 +1319,7 @@ function H.level(self, a, step)
     self.gateSteps[#self.gates] = step
     self.gateByStep[step] = gate
     if cur >= target then return end
-    local before = self:levelStr()
+    local before, beforeValue = self:levelStr(), self:levelField()
     local kills, gained = 0, 0
     while cur < target and kills < 100000 do
         local x = DB.MobXp(db, self.st.level, self.st.level, 0)
@@ -1189,7 +1338,7 @@ function H.level(self, a, step)
         s.grindKills = (s.grindKills or 0) + kills
     end
     local warnAt = self.opts.grindWarnKills or V.DEFAULTS.grindWarnKills
-    self:add(kills > warnAt and "WARN" or "INFO", "level-grind", step,
+    self:addx(kills > warnAt and "WARN" or "INFO", "level-grind", step, { kills = kills, level = beforeValue },
         "level %d%s: simulated level %s is short by %d XP; ~%d same-level kills needed (estimate)", a.level,
         (a.frac or 0) > 0 and format(" +%d%%", floor(a.frac * 100 + 0.5)) or "", before, gained, kills)
 end
@@ -1200,8 +1349,8 @@ function Run:serviceNpcs(step, what)
         local n = self.db.npcs[id]
         if n then
             if not self:friendly(n) then
-                self:add("ERROR", "npc-hostile", step, "%s NPC %s is not friendly to the %s (faction '%s')", what,
-                    self:nn(id), self.profile.faction or "?", n.faction or "")
+                self:addx("ERROR", "npc-hostile", step, { npc = id }, "%s NPC %s is not friendly to the %s (faction '%s')",
+                    what, self:nn(id), self.profile.faction or "?", n.faction or "")
             end
             out[#out + 1] = { id = id, npc = n }
         end
@@ -1209,34 +1358,67 @@ function Run:serviceNpcs(step, what)
     return out
 end
 
+-- Trainers that are not class trainers but are a legitimate `train` stop: sub-name fragment, the
+-- class that may use it (true: any class) and what it is. Demon trainers are vendors (`vendor`).
+local SERVICE_TRAINERS = {
+    { "weapon master", true, "weapon master" },
+    { "riding", true, "riding trainer" },
+    { "pet trainer", "HUNTER", "pet trainer" },
+    { "portal trainer", "MAGE", "portal trainer" },
+}
+
+--- The verdict of a `train` step at an NPC with this sub name and these flags for a class token
+-- (nil: a route without classes): "ok" (class trainer), "service" + kind (weapon master / riding /
+-- pet trainer of a HUNTER / portal trainer of a MAGE: accepted, INFO train-service), "warn" (a trainer,
+-- but of no class: profession...), "error" (not a trainer of the class).
+function V.TrainVerdict(classToken, subName, flags)
+    local sub = (subName or ""):lower()
+    flags = flags or {}
+    local cls = classToken and CLASS_NAMES[classToken]
+    if not cls then return flags.trainer and "ok" or "error" end
+    local c = cls:lower()
+    if sub:find(c .. " trainer", 1, true) or (flags.trainer and sub:find(c, 1, true)) then return "ok" end
+    if flags.trainer then
+        for _, k in ipairs(SERVICE_TRAINERS) do
+            if sub:find(k[1], 1, true) and (k[2] == true or k[2] == classToken) then return "service", k[3] end
+        end
+    end
+    local otherClass = false
+    for _, name in pairs(CLASS_NAMES) do
+        if sub:find(name:lower(), 1, true) then otherClass = true end
+    end
+    if flags.trainer and sub:find("trainer", 1, true) and not otherClass then return "warn" end
+    return "error"
+end
+
 function H.train(self, _, step)
     if not step.npc then
         self:add("WARN", "train-no-npc", step, "train step without npc (trainer cannot be checked)")
         return
     end
-    local cls = self.profile.class and CLASS_NAMES[self.profile.class]
+    local token = self.profile.class
+    local cls = token and CLASS_NAMES[token]
     for _, e in ipairs(self:serviceNpcs(step, "trainer")) do
         local n = e.npc
-        local sub = (n.sub or ""):lower()
-        local flags = n.flags or {}
-        if cls then
-            local c = cls:lower()
-            local ok = sub:find(c .. " trainer", 1, true) or (flags.trainer and sub:find(c, 1, true))
-            if not ok then
-                local otherClass = false
-                for _, name in pairs(CLASS_NAMES) do
-                    if sub:find(name:lower(), 1, true) then otherClass = true end
-                end
-                if flags.trainer and sub:find("trainer", 1, true) and not otherClass then
-                    self:add("WARN", "train-not-class-trainer", step, "train: NPC %s is a trainer (\"%s\") but not a "
-                        .. "%s trainer (profession/riding trainer?)", self:nn(e.id), n.sub or "", cls)
-                else
-                    self:add("ERROR", "train-wrong-trainer", step, "train: NPC %s (\"%s\") is not a %s trainer",
-                        self:nn(e.id), n.sub or "", cls)
-                end
-            end
-        elseif not flags.trainer then
-            self:add("ERROR", "train-wrong-trainer", step, "train: NPC %s is not a trainer", self:nn(e.id))
+        local verdict, kind = V.TrainVerdict(cls and token or nil, n.sub, n.flags)
+        local fields = { npc = e.id }
+        if verdict == "service" then
+            self:addx("INFO", "train-service", step, fields, "train: NPC %s (\"%s\") is a %s, not a %s trainer: accepted "
+                .. "(what it teaches is not checked)", self:nn(e.id), n.sub or "", kind, cls)
+        elseif verdict == "warn" then
+            self:addx("WARN", "train-not-class-trainer", step, fields, "train: NPC %s is a trainer (\"%s\") but not a "
+                .. "%s trainer (profession/riding trainer?)", self:nn(e.id), n.sub or "", cls)
+        elseif verdict == "error" and cls then
+            self:addx("ERROR", "train-wrong-trainer", step, fields, "train: NPC %s (\"%s\") is not a %s trainer",
+                self:nn(e.id), n.sub or "", cls)
+        elseif verdict == "error" then
+            self:addx("ERROR", "train-wrong-trainer", step, fields, "train: NPC %s is not a trainer", self:nn(e.id))
+        end
+        -- accepted only because of an unverified DB override of the NPC's sub name?
+        local ov = self.db._overrides and self.db._overrides.npcs[e.id]
+        if ov and not ov.verified and (verdict == "ok" or verdict == "service") then
+            local before = V.TrainVerdict(cls and token or nil, ov.orig.sub, n.flags)
+            if before ~= "ok" and before ~= "service" then self:overrideWarn(step, ov, "train", "NPC " .. self:nn(e.id)) end
         end
     end
 end
@@ -1245,6 +1427,11 @@ local function flightCheck(self, a, step)
     if a.type == "fp" then
         self.flightPaths[a.place] = true
     elseif not self.flightPaths[a.place] then
+        if self.worst and self.optFp[a.place] and not step.bg then
+            self:add("ERROR", "optional-dependency", step, "required step depends on an optional step: fly %s needs "
+                .. "the flight point, but it is learned only at optional step %s (worst case: optional steps not "
+                .. "done; make the fp step required or this step optional)", a.place, self:stepRef(self.optFp[a.place]))
+        end
         self:add("WARN", "fly-unknown-fp", step, "fly %s: flight point %s was not learned before (no earlier fp "
             .. "step%s): a flight there is not offered", a.place, a.place,
             self.opts.startState and ", not in the start state's flightPaths" or "")
@@ -1257,8 +1444,8 @@ local function flightCheck(self, a, step)
     end
     for _, e in ipairs(self:serviceNpcs(step, "flight master")) do
         if not (e.npc.flags and e.npc.flags.flightmaster) then
-            self:add("ERROR", "not-flightmaster", step, "%s %s: NPC %s is not a flight master", a.type, a.place,
-                self:nn(e.id))
+            self:addx("ERROR", "not-flightmaster", step, { npc = e.id }, "%s %s: NPC %s is not a flight master", a.type,
+                a.place, self:nn(e.id))
         end
     end
 end
@@ -1271,14 +1458,22 @@ function H.sethearth(self, a, step)
     end
     for _, e in ipairs(self:serviceNpcs(step, "innkeeper")) do
         if not (e.npc.flags and e.npc.flags.innkeeper) then
-            self:add("ERROR", "not-innkeeper", step, "sethearth %s: NPC %s is not an innkeeper", a.place, self:nn(e.id))
+            self:addx("ERROR", "not-innkeeper", step, { npc = e.id }, "sethearth %s: NPC %s is not an innkeeper", a.place,
+                self:nn(e.id))
         end
     end
     self.hearth = a.place
     self.hearthAt = step.at
+    self.optHearth = {} -- a required bind: earlier optional binds no longer matter
 end
 
 function H.hearth(self, a, step)
+    if self.worst and self.hearth ~= a.place and self.optHearth[a.place] and not step.bg then
+        self:add("ERROR", "optional-dependency", step, "required step depends on an optional step: hearth %s needs "
+            .. "the hearthstone bound there, but only optional step %s binds it (worst case: optional steps not "
+            .. "done; the hearthstone is bound to %s then; make the sethearth step required or this step optional)",
+            a.place, self:stepRef(self.optHearth[a.place]), tostring(self.hearth or "the default bind point"))
+    end
     if not self.hearth then
         self:add("INFO", "hearth-unbound", step, "hearth %s: no earlier sethearth step (default bind point assumed)",
             a.place)
@@ -1292,7 +1487,7 @@ function H.vendor(self, _, step)
     for _, e in ipairs(self:serviceNpcs(step, "vendor")) do
         local f = e.npc.flags or {}
         if not (f.vendor or f.repair) then
-            self:add("WARN", "not-vendor", step, "vendor: NPC %s is not a vendor", self:nn(e.id))
+            self:addx("WARN", "not-vendor", step, { npc = e.id }, "vendor: NPC %s is not a vendor", self:nn(e.id))
         end
     end
 end
@@ -1318,8 +1513,8 @@ function Run:endSegment(seg)
     if seg.levels then
         local planned = seg.levels[2]
         if math.abs(lv - planned) > 1 then
-            self:add("WARN", "segment-level", nil, "segment %s ends at simulated level %.2f; planned end level %d",
-                tostring(seg.id), lv, planned)
+            self:addx("WARN", "segment-level", nil, { level = round2(lv) },
+                "segment %s ends at simulated level %.2f; planned end level %d", tostring(seg.id), lv, planned)
         end
     end
     self.seg = nil
@@ -1371,6 +1566,10 @@ function Run:skipOptional(step)
             self.optAccepts = self.optAccepts + 1
         elseif a.type == "turnin" and not self.turnedIn[q] and not self.optTurnin[q] then
             self.optTurnin[q] = step
+        elseif a.type == "fp" and not self.flightPaths[a.place] and not self.optFp[a.place] then
+            self.optFp[a.place] = step -- the flight point is learned only here so far
+        elseif a.type == "sethearth" then
+            self.optHearth[a.place] = step -- the hearthstone is bound there only here so far
         end
     end
 end
@@ -1438,6 +1637,7 @@ end
 
 function Run:processStep(step)
     self.ordinal = self.ordinal + 1
+    self.levelBefore[step] = DB.LevelValue(self.db, self.st)
     -- --until: the state BEFORE this step / the first step of this segment (also when filtered out)
     local u = self.opts.untilId
     if u and not self.untilState and (step.id == u or step.segment == u) then
@@ -1463,8 +1663,10 @@ function Run:processStep(step)
     if not self.opts.shadow then self:checkEntities(step) end
     for _, a in ipairs(V.OrderedActions(step)) do
         local h = H[a.type]
+        self.curQuest = a.quest
         if h and not (self.worst and self:worstSkip(a, step)) then h(self, a, step) end
     end
+    self.curQuest = nil
     if step.at then self.lastAt = step.at end
 end
 
@@ -1695,17 +1897,17 @@ function Run:execute()
     for _, id in ipairs(sortedKeys(self.active)) do
         if route.harness then
             -- a part of a library: quests carried into the next segments are expected (end state "log")
-            self:add("INFO", "quest-carried", self.active[id].step, "quest %s is carried out of the harness run "
+            self:addx("INFO", "quest-carried", self.active[id].step, { quest = id }, "quest %s is carried out of the harness run "
                 .. "(still in the quest log: --write-state keeps it in \"log\")", self:qn(id))
         else
-            self:add("WARN", "quest-carried", self.active[id].step, "quest %s is still in the quest log at the end of "
+            self:addx("WARN", "quest-carried", self.active[id].step, { quest = id }, "quest %s is still in the quest log at the end of "
                 .. "the route (never turned in or abandoned)", self:qn(id))
         end
     end
     local lv = DB.LevelValue(self.db, self.st)
     if route.levels and math.abs(lv - route.levels[2]) > 1 then
-        self:add("WARN", "route-level", nil, "route ends at simulated level %.2f; planned end level %d", lv,
-            route.levels[2])
+        self:addx("WARN", "route-level", nil, { level = round2(lv) },
+            "route ends at simulated level %.2f; planned end level %d", lv, route.levels[2])
     end
     return self:result()
 end
@@ -1722,6 +1924,7 @@ function Run:result()
         messages = self.messages,
         counts = self.counts,
         suppressed = self.suppressed,
+        acceptedWarn = self.acceptedWarn,
         segments = self.segments,
         summary = {
             endLevel = round2(DB.LevelValue(self.db, self.st)),
@@ -1731,6 +1934,8 @@ function Run:result()
             xpQuest = self.xp.quest, xpQuestEstimated = self.xp.questEstimated,
             xpKill = self.xp.kill, xpGrind = self.xp.grind, grindKills = self.xp.grindKills,
             unknownXpQuests = self.xp.unknownXpQuests, accepts = self.xp.accepts, turnins = self.xp.turnins,
+            -- share of the quest XP that is an estimate (quests whose XP is unknown in the DB), percent
+            xpQuestEstimatedPct = self.xp.quest > 0 and round2(100 * self.xp.questEstimated / self.xp.quest) or 0,
             maxQuestLog = self.maxLog, carried = carried, steps = #self.route.steps,
             incidentalPct = self.opts.incidentalPct or V.DEFAULTS.incidentalPct, xpIncidental = self.xp.incidental,
             gates = self.gates,
@@ -1770,11 +1975,20 @@ local function mergeShadowMessages(main, shadow)
     end
     for k = j, #extra do out[#out + 1] = extra[k] end
     for _, m in ipairs(extra) do
-        main.counts[m.severity] = main.counts[m.severity] + 1
+        countMessage(main, m, 1)
         main.msgOrd[m] = shadow.msgOrd[m]
     end
     main.messages = out
 end
+
+-- "explicit id": not positional (Schema.AddSegment autoId) and not the default "<anchor>+<n>" of a
+-- per-route insert step
+local function hasExplicitId(step)
+    if step.id == nil or step.autoId then return false end
+    if step.inserted and not step.explicitId then return false end
+    return true
+end
+V.HasExplicitId = hasExplicitId
 
 --- Validate one route x profile: the main run (opts as given; its messages, levels and end state are
 -- the report) and the shadow runs of the grind report, which only simulate:
@@ -1811,8 +2025,24 @@ function V.RunProfile(db, schema, route, profile, opts)
     end
     local worst = get(mainPct, true)
     if worst ~= main then mergeShadowMessages(main, worst) end
-    res.messages, res.suppressed = main.messages, main.suppressed
+    res.messages, res.suppressed, res.acceptedWarn = main.messages, main.suppressed, main.acceptedWarn
     local function lv(r) return round2(DB.LevelValue(db, r.st)) end
+    -- unrounded end levels (--end-level compares them with the plan)
+    res.endLevelExact = { normal = DB.LevelValue(db, main.st), worst = DB.LevelValue(db, worst.st) }
+    if opts.levels then
+        -- --levels: the level before every step with an explicit id, in the normal and the worst case
+        local list = {}
+        for _, step in ipairs(route.steps) do
+            if hasExplicitId(step) then
+                list[#list + 1] = {
+                    id = step.id, segment = step.segment, level = main.levelBefore[step],
+                    levelWorst = worst.levelBefore[step], anchor = step.inserted and step.anchor or nil,
+                    file = step.file, actions = stepActions(step),
+                }
+            end
+        end
+        res.stepLevels = list
+    end
     local sm = res.summary
     sm.grindKillsWorst, sm.xpGrindWorst, sm.endLevelWorst = worst.xp.grindKills, worst.xp.grind, lv(worst)
     sm.optionalSkipped, sm.optionalAccepts = worst.optSkipped, worst.optAccepts
@@ -1854,19 +2084,40 @@ end
 ---------------------------------------------------------------------------
 
 --- Route-level checks (once per route, not per profile): race tokens of the route and of
--- the step filters must be UnitRace() raceFiles known to the DB ("Scourge", not "Undead"),
--- and every filtered step should match at least one of the route's profiles.
+-- the step filters must be UnitRace() raceFiles known to the DB ("Scourge", not "Undead");
+-- every filtered step of the route itself (own steps, per-route inserts) should match at least one
+-- of the route's profiles; `ok` may list level-grind only with a ceiling.
+-- Shared steps: step-no-profile is never reported for them (a shared step that cannot match the
+-- route is not composed into it; the templates are checked by lib.module_checks: shared-step-unused),
+-- and the steps of opts.moduleChecked (the module whose templates lib.module_checks covers) are left
+-- out altogether.
+-- @param opts { moduleChecked = "<module name>" | nil }
 -- @return array of messages { severity, code, msg, segment, step, stepId, file }
-function V.RouteChecks(db, route, profiles)
+function V.RouteChecks(db, route, profiles, opts)
+    opts = opts or {}
     local out = {}
     local known = db.enums and db.enums.raceFileToBit or {}
     local function add(sev, code, step, msg, ...)
         local m = { severity = sev, code = code, msg = format(msg, ...) }
         if step then
             m.segment, m.step, m.stepId, m.file = step.segment, step.segIndex, step.id, step.file
-            if type(step.library) == "string" then m.library = step.library end
+            if type(step.library) == "string" then m.library, m.shared = step.library, true end
+            if sev == "WARN" and step.ok then acknowledge(step.ok, m) end
         end
         out[#out + 1] = m
+        return m
+    end
+    local CEILING = "ok lists level-grind without a ceiling: write ok = { [\"level-grind\"] = N } (accepted only "
+        .. "while the gate needs at most N kills)"
+    -- a segment's `ok` (it only ever accepts segment-level): a plain level-grind there is the same mistake
+    for _, seg in ipairs(route.segments or {}) do
+        local lib = type(seg.library) == "string" and seg.library or nil
+        if seg.ok and seg.ok["level-grind"] == true and not (opts.moduleChecked and lib == opts.moduleChecked) then
+            local m = add("ERROR", "ok-needs-ceiling", nil, "segment '%s': %s; a level gate is acknowledged on its step",
+                tostring(seg.id), CEILING)
+            m.segment, m.file = seg.id, seg.file
+            if lib then m.library, m.shared = lib, true end
+        end
     end
     local names = sortedKeys(known)
     local function hint(tok)
@@ -1879,30 +2130,36 @@ function V.RouteChecks(db, route, profiles)
         end
     end
     for _, step in ipairs(route.steps or {}) do
-        local f = step.filters
-        local bad = false
-        for _, tok in ipairs(sortedKeys(f and f.race)) do
-            if known[tok] == nil then
-                bad = true
-                add("ERROR", "unknown-race-token", step, "step race filter: unknown raceFile '%s'%s", tostring(tok),
-                    hint(tok))
-            end
-        end
-        if f and not bad and not route.harness then -- a harness route has a single profile on purpose
-            local any = false
-            for _, p in ipairs(profiles) do
-                if (not f.class or not p.class or f.class[p.class])
-                    and (not f.race or not p.race or f.race[p.race])
-                    and (not f.faction or not p.faction or f.faction == p.faction) then
-                    any = true
-                    break
+        if not (opts.moduleChecked and step.library == opts.moduleChecked) then
+            local f = step.filters
+            local bad = false
+            for _, tok in ipairs(sortedKeys(f and f.race)) do
+                if known[tok] == nil then
+                    bad = true
+                    add("ERROR", "unknown-race-token", step, "step race filter: unknown raceFile '%s'%s", tostring(tok),
+                        hint(tok))
                 end
             end
-            if not any then
-                local labels = {}
-                for i, p in ipairs(profiles) do labels[i] = profileLabel(p) end
-                add("WARN", "step-no-profile", step, "step matches none of the route's profiles (%s): it is never shown",
-                    table.concat(labels, "; "))
+            if step.ok and step.ok["level-grind"] == true then
+                add("ERROR", "ok-needs-ceiling", step, "%s", CEILING)
+            end
+            -- (a harness route has a single profile on purpose)
+            if f and not bad and not route.harness and not step.library then
+                local any = false
+                for _, p in ipairs(profiles) do
+                    if (not f.class or not p.class or f.class[p.class])
+                        and (not f.race or not p.race or f.race[p.race])
+                        and (not f.faction or not p.faction or f.faction == p.faction) then
+                        any = true
+                        break
+                    end
+                end
+                if not any then
+                    local labels = {}
+                    for i, p in ipairs(profiles) do labels[i] = profileLabel(p) end
+                    add("WARN", "step-no-profile", step, "step matches none of the route's profiles (%s): it is never "
+                        .. "shown", table.concat(labels, "; "))
+                end
             end
         end
     end
@@ -1918,7 +2175,7 @@ local function dedupeLibraryMessages(results)
         for _, m in ipairs(res.messages) do
             local key = m.library and table.concat({ m.severity, m.code, tostring(m.stepId or m.segment), m.msg }, "\0")
             if key and seen[key] and i > 1 then
-                res.counts[m.severity] = res.counts[m.severity] - 1
+                countMessage(res, m, -1)
                 res.libraryRepeats = (res.libraryRepeats or 0) + 1
             else
                 if key then seen[key] = true end
@@ -1931,17 +2188,187 @@ end
 
 local function emptyResult(label, modName, plabel)
     return { route = label, module = modName, profileLabel = plabel or "-", messages = {},
-             counts = { ERROR = 0, WARN = 0, INFO = 0 }, suppressed = 0, segments = {}, summary = {} }
+             counts = { ERROR = 0, WARN = 0, INFO = 0 }, suppressed = 0, acceptedWarn = 0, segments = {}, summary = {} }
+end
+
+-- put messages in front of a result's list and count them (opts.ignore suppresses codes)
+local function prependMessages(res, list, ignore)
+    local extra = {}
+    for _, m in ipairs(list) do
+        if ignore and ignore[m.code] then
+            res.suppressed = (res.suppressed or 0) + 1
+        else
+            extra[#extra + 1] = m
+            countMessage(res, m, 1)
+        end
+    end
+    for _, m in ipairs(res.messages) do extra[#extra + 1] = m end
+    res.messages = extra
+end
+
+---------------------------------------------------------------------------
+-- numeric criteria (--end-level, --grind-until, --max-grind-until, --baseline)
+---------------------------------------------------------------------------
+
+-- grind kills (normal, worst case) from the route start up to the end of a segment; nil when the
+-- route does not contain the segment
+local function grindUntil(res, segId)
+    local n, w = 0, 0
+    for _, s in ipairs(res.segments or {}) do
+        n, w = n + (s.grindKills or 0), w + (s.grindKillsWorst or 0)
+        if s.id == segId then return n, w end
+    end
+    return nil
+end
+
+--- Apply the numeric criteria of the run to one result of V.RunProfile (ERRORs are added at the end
+-- of its messages; summary.grindUntil is set):
+--   opts.endLevel            ERROR end-level: the normal or the worst-case run ends below the planned end
+--                            level (route.levels[2]; a harness route: levels[2] of its last segment)
+--   opts.grindUntil = SEG    summary.grindUntil = { segment, kills, killsWorst } (kills up to the end of SEG)
+--   opts.maxGrindUntil = { segment, kills, worst }   ERROR grind-budget above either budget
+--   opts.baseline = { races = { [raceFile] = { grindKills, grindKillsWorst } } }   ERROR grind-baseline
+--                            when the route needs more total grind kills than its race's entry
+function V.ApplyCriteria(res, route, opts)
+    local sm = res.summary or {}
+    if not sm.endLevel then return res end
+    local function add(code, fields, msg, ...)
+        if opts.ignore and opts.ignore[code] then
+            res.suppressed = (res.suppressed or 0) + 1
+            return
+        end
+        local m = { severity = "ERROR", code = code, msg = format(msg, ...) }
+        for k, v in pairs(fields or {}) do m[k] = v end
+        res.messages[#res.messages + 1] = m
+        countMessage(res, m, 1)
+    end
+    if opts.endLevel then
+        local planned = route.levels and route.levels[2]
+        if route.harness then
+            local last = route.segments[#route.segments]
+            planned = last and last.levels and last.levels[2]
+        end
+        local exact = res.endLevelExact or { normal = sm.endLevel, worst = sm.endLevelWorst or sm.endLevel }
+        if planned and (exact.normal < planned or exact.worst < planned) then
+            add("end-level", { level = sm.endLevel }, "the %s ends at simulated level %.2f (worst case %.2f); the planned "
+                .. "end level is %d (--end-level: both runs must reach it)", route.harness and "harness run" or "route",
+                exact.normal, exact.worst, planned)
+        end
+    end
+    local budget = opts.maxGrindUntil
+    local untilSeg = opts.grindUntil or (budget and budget.segment)
+    if untilSeg then
+        local n, w = grindUntil(res, untilSeg)
+        if n then sm.grindUntil = json.object({ segment = untilSeg, kills = n, killsWorst = w }) end
+    end
+    if budget then
+        local n, w = grindUntil(res, budget.segment)
+        if not n then
+            if not route.harness then
+                add("grind-budget", nil, "--max-grind-until: the route has no segment '%s'", budget.segment)
+            end
+        elseif n > budget.kills or w > budget.worst then
+            add("grind-budget", { kills = n }, "grind kills up to the end of %s: %d (worst case %d); the budget is %d "
+                .. "(worst case %d)", budget.segment, n, w, budget.kills, budget.worst)
+        end
+    end
+    if opts.baseline then
+        local race = tostring(res.profile and res.profile.race or "any-race")
+        local e = (opts.baseline.races or {})[race]
+        if type(e) ~= "table" or type(e.grindKills) ~= "number" or type(e.grindKillsWorst) ~= "number" then
+            add("grind-baseline", nil, "--baseline: no entry for race %s in %s", race, tostring(opts.baseline.file))
+        elseif (sm.grindKills or 0) > e.grindKills or (sm.grindKillsWorst or 0) > e.grindKillsWorst then
+            add("grind-baseline", { kills = sm.grindKills }, "the route needs %d grind kills (worst case %d); the baseline "
+                .. "of race %s is %d (worst case %d): a route may not need more kills than the base route of its race",
+                sm.grindKills or 0, sm.grindKillsWorst or 0, race, e.grindKills, e.grindKillsWorst)
+        end
+    end
+    return res
+end
+
+--- The baseline of a run (--write-baseline): per raceFile the maximum over its validated routes of the
+-- total grind kills (normal / worst case) and of the kills up to --grind-until.
+function V.Baseline(all, opts)
+    opts = opts or {}
+    local races = {}
+    local count = 0
+    for _, mres in ipairs(all) do
+        for _, r in ipairs(mres.results) do
+            local sm = r.summary or {}
+            if r.endState and sm.endLevel then
+                count = count + 1
+                local race = tostring(r.profile and r.profile.race or "any-race")
+                local e = races[race]
+                if not e then
+                    e = { grindKills = 0, grindKillsWorst = 0, routes = {} }
+                    races[race] = e
+                end
+                e.grindKills = math.max(e.grindKills, sm.grindKills or 0)
+                e.grindKillsWorst = math.max(e.grindKillsWorst, sm.grindKillsWorst or 0)
+                if sm.grindUntil then
+                    e.grindKillsUntil = math.max(e.grindKillsUntil or 0, sm.grindUntil.kills)
+                    e.grindKillsUntilWorst = math.max(e.grindKillsUntilWorst or 0, sm.grindUntil.killsWorst)
+                end
+                e.routes[#e.routes + 1] = tostring(r.route)
+            end
+        end
+    end
+    for _, e in pairs(races) do table.sort(e.routes) end
+    return {
+        meta = json.object({ source = "tools/validate_routes.lua --write-baseline", routes = count,
+                             grindUntil = opts.grindUntil }),
+        races = json.object(races),
+    }
+end
+
+--- Read a baseline file (--baseline). @return table | nil, error
+function V.ReadBaseline(path)
+    local text = Loader.readFile(path)
+    if not text then return nil, "cannot read " .. tostring(path) end
+    local ok, data = pcall(json.decode, text)
+    if not ok or type(data) ~= "table" or type(data.races) ~= "table" then
+        return nil, tostring(path) .. ": not a baseline file (expected { \"races\": { \"<raceFile>\": { "
+            .. "\"grindKills\": N, \"grindKillsWorst\": W } } })" .. (ok and "" or (": " .. tostring(data)))
+    end
+    data.file = path
+    return data
+end
+
+---------------------------------------------------------------------------
+-- one module
+---------------------------------------------------------------------------
+
+-- files that contributed to a route: its registration, its segments and its composed steps
+local function routeFiles(route, set)
+    if route.file then set[route.file] = true end
+    for _, seg in ipairs(route.segments or {}) do
+        if seg.file then set[seg.file] = true end
+    end
+    for _, step in ipairs(route.steps or {}) do
+        if step.file then set[step.file] = true end
+    end
+    return set
 end
 
 --- Validate every route of a module directory.
--- @param opts { db, schema, route = id filter, profile = override, tolerance, hardTolerance, ignore = set,
---               module = already loaded module (Loader.LoadModule), libraryReported = { [libName] = true }
---               (libraries whose own load / schema errors are reported elsewhere in this run) }
+-- @param opts { db, schema, route = id / comma list with `*` wildcards, routeList = Glob.NewList (shared
+--               by the modules of a run; default: built from opts.route), profile = override, tolerance,
+--               hardTolerance, ignore = set, module = already loaded module (Loader.LoadModule),
+--               libraryReported = { [libName] = true } (libraries whose own load / schema errors are
+--               reported elsewhere in this run), isOwn = function(file) (--own; nil: every file is own),
+--               ownGiven = true when --own was given, skipGlobs / keepGlobs (the file filter, when the
+--               module is loaded here), endLevel / grindUntil / maxGrindUntil / baseline (V.ApplyCriteria),
+--               levels = true (result.stepLevels) }
+-- @return { module, dir, loadErrors, results = { ... }, matched, notes = { messages that do not count },
+--           mod = the loaded module, routes = { { route = <route>, results = { ... } } } }
+-- A module that registers routes AND shared content of its own gets one more entry in front of its
+-- routes: "(shared <Module>)" with the messages of the template checks (lib.module_checks).
 function V.ValidateModule(dir, opts)
-    local mod = opts.module or Loader.LoadModule(dir, { schema = opts.schema })
-    local out = { module = mod.name, dir = dir, loadErrors = mod.errors, results = {} }
+    local mod = opts.module or Loader.LoadModule(dir, { schema = opts.schema, skipGlobs = opts.skipGlobs,
+        keepGlobs = opts.keepGlobs })
+    local out = { module = mod.name, dir = dir, loadErrors = mod.errors, results = {}, notes = {}, mod = mod, routes = {} }
     out.matched = 0
+    local moduleChecked
     if mod.isLibrary then
         -- a library module: no route of its own; its steps are validated in the routes that use them
         out.library = true
@@ -1951,10 +2378,32 @@ function V.ValidateModule(dir, opts)
             format("library: %d segment(s), %d step(s)", #mod.librarySegments, n))
         res.library = mod.name
         out.results[1] = res
+    elseif #mod.routes > 0 and (#mod.librarySegments > 0 or #mod.libraryInserts > 0) then
+        -- a mixed module: the checks on its templates, once, whatever --route selects
+        local n = 0
+        for _, seg in ipairs(mod.librarySegments) do n = n + #seg.steps end
+        for _, ins in ipairs(mod.libraryInserts) do n = n + #ins.steps end
+        local res = emptyResult("(shared " .. mod.name .. ")", mod.name,
+            format("shared: %d segment(s), %d insert(s), %d step(s)", #mod.librarySegments, #mod.libraryInserts, n))
+        res.shared = mod.name
+        out.results[1] = res
+        local msgs, notes = ModuleChecks.Run(opts.db, opts.schema, mod, { isOwn = opts.isOwn, acknowledge = acknowledge })
+        prependMessages(res, msgs, opts.ignore)
+        for _, m in ipairs(notes) do
+            m.note = "partial load (--skip / --keep): the file is not own, the anchor or the route may live in a "
+                .. "skipped file"
+            out.notes[#out.notes + 1] = m
+        end
+        moduleChecked = mod.name
     end
+    local list = opts.routeList or (opts.route and Glob.NewList(opts.route)) or nil
+    -- files that contributed to the selected routes / to the routes --route leaves out
+    local contributed, elsewhere = {}, {}
     for _, route in ipairs(mod.routes) do
-        if not opts.route or opts.route == route.id then
+        if list and not Glob.Any(list.patterns, route.id) then routeFiles(route, elsewhere) end
+        if not list or Glob.ListMatch(list, route.id) then
             out.matched = out.matched + 1
+            routeFiles(route, contributed)
             local profiles = V.Profiles(route, opts.profile)
             local first
             local routeResults = {}
@@ -1964,27 +2413,47 @@ function V.ValidateModule(dir, opts)
                 out.results[#out.results + 1] = res
                 routeResults[#routeResults + 1] = res
             end
+            out.routes[#out.routes + 1] = { route = route, results = routeResults }
             dedupeLibraryMessages(routeResults)
             -- route-level messages are reported once per route (first profile)
             if first then
-                local extra = {}
-                for _, m in ipairs(V.RouteChecks(opts.db, route, profiles)) do
-                    if opts.ignore and opts.ignore[m.code] then
-                        first.suppressed = (first.suppressed or 0) + 1
-                    else
-                        extra[#extra + 1] = m
-                        first.counts[m.severity] = first.counts[m.severity] + 1
-                    end
-                end
-                for _, m in ipairs(first.messages) do extra[#extra + 1] = m end
-                first.messages = extra
+                prependMessages(first, V.RouteChecks(opts.db, route, profiles, { moduleChecked = moduleChecked }), opts.ignore)
             end
+            for _, res in ipairs(routeResults) do V.ApplyCriteria(res, route, opts) end
         end
+    end
+    -- With --route an error that provably belongs to a route outside the selection is a note and does
+    -- not fail the run. Everything else counts, as in a full run:
+    --   * a file that did not load or run to its end (e.load): what it would have given the selected
+    --     routes is unknown (another author's broken file is left out with --skip, never by --route);
+    --   * an error about one route (e.route: its registration, its composition) counts when that route
+    --     is selected, whatever file reports it;
+    --   * any other error (a schema error of a shared segment / insert, a stray global) counts unless
+    --     the file loaded and its content went only to routes outside the selection. A file that gave
+    --     nothing to any route counts: its content may be exactly what the selected routes miss;
+    --   * the caller's own files (--own) always count.
+    local function noteReason(e)
+        if not list or e.load then return nil end
+        if opts.ownGiven and opts.isOwn and opts.isOwn(e.file) then return nil end
+        if e.route then
+            if Glob.Any(list.patterns, e.route) then return nil end
+            return format("--route: an error of route %s, which is not selected", tostring(e.route))
+        end
+        if elsewhere[e.file] and not contributed[e.file] then
+            return "--route: the file loaded, and its content goes only to routes that are not selected"
+        end
+        return nil
     end
     local loadErrors = {}
     for _, e in ipairs(mod.errors) do
         if not (e.library and opts.libraryReported and opts.libraryReported[e.library]) then
-            loadErrors[#loadErrors + 1] = e
+            local reason = noteReason(e)
+            if reason then
+                out.notes[#out.notes + 1] = { severity = "ERROR", code = "schema", file = e.file, msg = e.msg,
+                    library = e.library, note = reason }
+            else
+                loadErrors[#loadErrors + 1] = e
+            end
         end
     end
     if #loadErrors > 0 then
@@ -2011,22 +2480,15 @@ end
 -- @return a module result like V.ValidateModule (module = library module name, harness = true)
 function V.ValidateHarness(hb, opts)
     local mod = hb.mod
-    local out = { module = mod.name, dir = hb.dir, loadErrors = mod.errors, results = {}, matched = 1, harness = true }
+    local out = { module = mod.name, dir = hb.dir, loadErrors = mod.errors, results = {}, matched = 1, harness = true,
+                  notes = {}, mod = mod, routes = {} }
     local res
     if hb.route then
         local profile = V.Profiles(hb.route)[1]
         res = V.RunProfile(opts.db, opts.schema, hb.route, profile, opts)
-        local extra = {}
-        for _, m in ipairs(V.RouteChecks(opts.db, hb.route, { profile })) do
-            if opts.ignore and opts.ignore[m.code] then
-                res.suppressed = (res.suppressed or 0) + 1
-            else
-                extra[#extra + 1] = m
-                res.counts[m.severity] = res.counts[m.severity] + 1
-            end
-        end
-        for _, m in ipairs(res.messages) do extra[#extra + 1] = m end
-        res.messages = extra
+        prependMessages(res, V.RouteChecks(opts.db, hb.route, { profile }), opts.ignore)
+        V.ApplyCriteria(res, hb.route, opts)
+        out.routes[1] = { route = hb.route, results = { res } }
     else
         res = emptyResult(hb.def and hb.def.id or Harness.RouteId(mod.name), mod.name,
             opts.profile and profileLabel(opts.profile) or "-")
@@ -2055,6 +2517,8 @@ local function locStr(m)
     end
     if m.stepId and m.segment and m.stepId ~= format("%s:%d", tostring(m.segment), m.step or 0) then
         parts[#parts + 1] = "id=" .. m.stepId
+    elseif m.stepId and not m.segment then
+        parts[#parts + 1] = "id=" .. m.stepId -- a template step of a shared insert (no segment before composition)
     end
     if m.file then parts[#parts + 1] = "(" .. m.file .. ")" end
     if #parts == 0 then parts[1] = "route" end
@@ -2115,6 +2579,23 @@ function V.GrindLines(r)
     return out
 end
 
+-- "3 error(s), 2 warning(s), 1 accepted, 5 info" (the accepted part only when there is one)
+local function countsText(r)
+    local acc = r.acceptedWarn or 0
+    return format("%d error(s), %d warning(s)%s, %d info", r.counts.ERROR, r.counts.WARN,
+        acc > 0 and format(", %d accepted", acc) or "", r.counts.INFO)
+end
+V.CountsText = countsText
+
+--- The note lines of a module result (messages that do not count: partial loads, --route).
+function V.NoteLines(mres)
+    local out = {}
+    for _, m in ipairs(mres.notes or {}) do
+        out[#out + 1] = format("  note  %s [%s] %s -- not counted: %s", locStr(m), m.code, m.msg, tostring(m.note or ""))
+    end
+    return out
+end
+
 --- Human-readable report lines.
 function V.FormatText(all, opts)
     opts = opts or {}
@@ -2125,11 +2606,19 @@ function V.FormatText(all, opts)
             if r.library then
                 w(format("== library module %s [%s]: its steps are checked in the routes that use them",
                     tostring(mres.module), r.profileLabel))
+            elseif r.shared then
+                w(format("== shared content of module %s [%s]: checks on the templates (shared segments and "
+                    .. "inserts), once for all routes", tostring(mres.module), r.profileLabel))
+            elseif r.overrides then
+                w(format("== DB overrides %s", tostring(mres.dir)))
             else
                 w(format("== route %s [%s] module %s", tostring(r.route), r.profileLabel, tostring(mres.module)))
             end
             for _, m in ipairs(r.messages) do
-                if m.severity ~= "INFO" or opts.verbose then
+                if m.accepted then
+                    -- acknowledged with `ok` on its step / segment: shown only with -v
+                    if opts.verbose then w(format("  %-5s %s [%s] %s", "ok", locStr(m), m.code, m.msg)) end
+                elseif m.severity ~= "INFO" or opts.verbose then
                     w(format("  %-5s %s [%s] %s", m.severity, locStr(m), m.code, m.msg))
                 end
             end
@@ -2144,16 +2633,26 @@ function V.FormatText(all, opts)
             end
             local sm = r.summary or {}
             if sm.endLevel then
-                w(format("  end level %.2f (optimistic %.2f, planned %s); quest XP %d (%d estimated, %d quests with "
-                    .. "unknown XP), kill XP %d (estimate), grind XP %d (~%d kills); max quest log %d; carried %d",
+                w(format("  end level %.2f (optimistic %.2f, planned %s); quest XP %d; %d quests with estimated XP "
+                    .. "(%.1f%% of quest XP); kill XP %d (estimate), grind XP %d (~%d kills); max quest log %d; carried %d",
                     sm.endLevel, sm.endLevelOptimistic or sm.endLevel,
                     sm.plannedLevels and tostring(sm.plannedLevels[2]) or "-", sm.xpQuest,
-                    sm.xpQuestEstimated, sm.unknownXpQuests, sm.xpKill, sm.xpGrind, sm.grindKills, sm.maxQuestLog,
-                    #(sm.carried or {})))
+                    sm.unknownXpQuests, sm.xpQuestEstimatedPct or 0, sm.xpKill, sm.xpGrind, sm.grindKills,
+                    sm.maxQuestLog, #(sm.carried or {})))
             end
             for _, line in ipairs(V.GrindLines(r)) do w(line) end
-            w(format("  result: %d error(s), %d warning(s), %d info%s", r.counts.ERROR, r.counts.WARN, r.counts.INFO,
+            if sm.grindUntil then
+                w(format("  grind kills up to the end of %s: %d (worst case %d)", tostring(sm.grindUntil.segment),
+                    sm.grindUntil.kills, sm.grindUntil.killsWorst))
+            end
+            w(format("  result: %s%s", countsText(r),
                 (r.suppressed or 0) > 0 and format(", %d suppressed", r.suppressed) or ""))
+            w("")
+        end
+        local notes = V.NoteLines(mres)
+        if #notes > 0 then
+            w(format("== notes for module %s (they do not change the exit status)", tostring(mres.module)))
+            for _, line in ipairs(notes) do w(line) end
             w("")
         end
     end
@@ -2250,13 +2749,15 @@ function V.FormatMarkdown(all, db)
     w("")
     w("Перегенерировать: `make report` (или `lua5.1 tools/validate_routes.lua --markdown docs/VALIDATION.md`).")
     w("")
-    local te, tw, ti = 0, 0, 0
+    local te, tw, ti, ta = 0, 0, 0, 0
     for _, mres in ipairs(all) do
         for _, r in ipairs(mres.results) do
             te, tw, ti = te + r.counts.ERROR, tw + r.counts.WARN, ti + r.counts.INFO
+            ta = ta + (r.acceptedWarn or 0)
         end
     end
-    w(format("**Итого: %d ERROR, %d WARN, %d INFO.**", te, tw, ti))
+    w(format("**Итого: %d ERROR, %d WARN, %d INFO%s.**", te, tw, ti,
+        ta > 0 and format("; принято предупреждений (`ok`): %d", ta) or ""))
     w("")
     if #all == 0 then
         w("_Модули маршрутов не найдены._")
@@ -2270,6 +2771,16 @@ function V.FormatMarkdown(all, db)
                     .. "(`UseSegments`), сообщения о них помечены `[library %s]`. Результат: **%d ERROR, %d WARN, "
                     .. "%d INFO**.", mdEscape(r.profileLabel), mdEscape(mres.module), r.counts.ERROR, r.counts.WARN,
                     r.counts.INFO))
+            elseif r.shared then
+                w(format("## Общая часть модуля %s", mdEscape(mres.module)))
+                w("")
+                w(format("Проверки шаблонов (%s): общие сегменты и общие вставки (`AddLibraryInsert`) проверяются "
+                    .. "один раз для всех маршрутов. Результат: **%d ERROR, %d WARN, %d INFO**.",
+                    mdEscape(r.profileLabel), r.counts.ERROR, r.counts.WARN, r.counts.INFO))
+            elseif r.overrides then
+                w("## Поправки к БД (`tools/overrides`)")
+                w("")
+                w(format("Результат: **%d ERROR, %d WARN, %d INFO**.", r.counts.ERROR, r.counts.WARN, r.counts.INFO))
             else
                 w(format("## %s — %s", mdEscape(r.route), mdEscape(textOf(r.title))))
                 w("")
@@ -2281,11 +2792,12 @@ function V.FormatMarkdown(all, db)
             if sm.endLevel then
                 w(format("Симуляция: конец маршрута на уровне **%.2f** (оптимистично %.2f; план %s); опыт квестов %d "
                     .. "(из них оценено %d; "
-                    .. "квестов с неизвестным опытом: %d), за убийства по целям %d, гринд %d (~%d убийств); "
-                    .. "максимум квестов в журнале %d из %d; принято %d, сдано %d, не сдано к концу %d.",
+                    .. "квестов с оценённым опытом: %d, %.1f %% опыта квестов), за убийства по целям %d, гринд %d "
+                    .. "(~%d убийств); максимум квестов в журнале %d из %d; принято %d, сдано %d, не сдано к концу %d.",
                     sm.endLevel, sm.endLevelOptimistic or sm.endLevel,
                     sm.plannedLevels and tostring(sm.plannedLevels[2]) or "—", sm.xpQuest,
-                    sm.xpQuestEstimated, sm.unknownXpQuests, sm.xpKill, sm.xpGrind, sm.grindKills, sm.maxQuestLog,
+                    sm.xpQuestEstimated, sm.unknownXpQuests, sm.xpQuestEstimatedPct or 0, sm.xpKill, sm.xpGrind,
+                    sm.grindKills, sm.maxQuestLog,
                     db.questLogSize or 40, sm.accepts, sm.turnins, #(sm.carried or {})))
                 w("")
                 for _, line in ipairs(V.GrindMarkdown(r)) do w(line) end
@@ -2303,7 +2815,7 @@ function V.FormatMarkdown(all, db)
             end
             local shown = 0
             for _, m in ipairs(r.messages) do
-                if m.severity ~= "INFO" then
+                if m.severity ~= "INFO" and not m.accepted then
                     if shown == 0 then
                         w("| уровень | где | код | сообщение |")
                         w("|---|---|---|---|")
@@ -2314,6 +2826,16 @@ function V.FormatMarkdown(all, db)
             end
             if shown == 0 then w("Ошибок и предупреждений нет.") end
             w("")
+            if (r.acceptedWarn or 0) > 0 then
+                w(format("<details><summary>Принятые предупреждения, `ok` (%d)</summary>", r.acceptedWarn))
+                w("")
+                for _, m in ipairs(r.messages) do
+                    if m.accepted then w(format("- %s `%s` %s", mdEscape(locStr(m)), m.code, mdEscape(m.msg))) end
+                end
+                w("")
+                w("</details>")
+                w("")
+            end
             if r.counts.INFO > 0 then
                 w(format("<details><summary>INFO (%d)</summary>", r.counts.INFO))
                 w("")
@@ -2340,21 +2862,29 @@ end
 
 --- JSON-friendly report table.
 function V.ReportTable(all, db)
-    local routes = {}
-    local totals = { ERROR = 0, WARN = 0, INFO = 0 }
+    local routes, notes = {}, {}
+    local totals = { ERROR = 0, WARN = 0, INFO = 0, accepted = 0 }
     for _, mres in ipairs(all) do
         for _, r in ipairs(mres.results) do
             routes[#routes + 1] = {
                 route = r.route, module = mres.module, dir = mres.dir, profile = json.object(r.profile or {}),
                 counts = r.counts, suppressed = r.suppressed, summary = json.object(r.summary or {}),
                 segments = r.segments, messages = r.messages,
+                accepted = r.acceptedWarn or 0, -- WARNs acknowledged with `ok` (messages with accepted = true)
+                foreign = r.foreign, -- with --own: unaccepted WARNs on files that are not own
                 library = r.library, libraryRepeats = r.libraryRepeats, -- library module entry / repeats dropped
+                shared = r.shared, -- the entry of a module's template checks
             }
             for k, v in pairs(r.counts) do totals[k] = totals[k] + v end
+            totals.accepted = totals.accepted + (r.acceptedWarn or 0)
+        end
+        for _, m in ipairs(mres.notes or {}) do
+            notes[#notes + 1] = { module = mres.module, code = m.code, file = m.file, stepId = m.stepId, msg = m.msg,
+                                  note = m.note }
         end
     end
     return { db = { build = db.meta and db.meta.build, generated = db.meta and db.meta.generated },
-             totals = totals, routes = routes }
+             totals = totals, routes = routes, notes = notes }
 end
 
 local USAGE = [[
@@ -2363,48 +2893,88 @@ usage: lua5.1 tools/validate_routes.lua [options] [module-dir ...]
 Validates FastesBoooy route modules against the Forever DB snapshot.
 Without module dirs, every addons/FastesBoooy_*/ module (with a TOC) is checked.
 
-options:
-  --route ID            validate only this route id
-  --profile k=v,...     override the player profile: race=Scourge,class=PALADIN,faction=Horde
-  --strict              warnings also fail (exit 1)
+selection:
+  --route ID[,ID...]    validate only these routes; `*` is a wildcard ('orc-*,troll-*', '*-warrior').
+                        Repeatable (the lists add up). Every entry must match a route. This is how to
+                        pick a race / class. Errors that belong to a route outside the selection are
+                        notes; a file that does not load always counts (leave it out with --skip).
+  --profile k=v,...     OVERRIDE the player profile of every selected route (not a filter; use
+                        --route to select): race=Scourge,class=PALADIN,faction=Horde
+  --skip GLOB           do not load the TOC files matching GLOB (repeatable; `*` wildcard, matched
+                        against the TOC path with forward slashes, e.g. 'Classes/*')
+  --keep GLOB           ...except the files matching GLOB (repeatable): a file is skipped when it
+                        matches a --skip and no --keep
+  --own GLOB            the files the caller is responsible for (repeatable, same matching; default:
+                        every loaded file). With --strict only warnings on own files fail the run, the
+                        others are listed as "foreign warnings"; on a partial load (--skip) the template
+                        checks of files that are not own are notes. Errors always count, in any file.
+                        A --skip / --keep / --own glob that matches no file is an error (exit 2).
+gates:
+  --strict              unaccepted warnings also fail (exit 1). A WARN is accepted when its code is
+                        listed in `ok` of its step (of its segment for segment-level):
+                        ok = "code" | { "code", ... } | { ["level-grind"] = N } (a kill ceiling)
+  --end-level           ERROR end-level when the normal or the worst-case run ends below the planned
+                        end level of the route (harness: of its last segment)
+  --grind-until SEG     count the grind kills from the route start to the end of segment SEG
+                        (--summary, --write-baseline); SEG must be a segment of a validated route
+  --max-grind-until SEG=N/W   ERROR grind-budget when those kills exceed N (normal) or W (worst case)
+  --baseline FILE       ERROR grind-baseline when a route needs more total grind kills (normal or
+                        worst case) than the entry of its race in FILE
+  --write-baseline FILE write per raceFile the maximum over the validated routes of that race of the
+                        total grind kills (normal / worst case) and of the --grind-until pair (JSON)
+output:
+  --summary             after the normal output, one TSV line per route: route, profile, errors,
+                        warnings (unaccepted, own), accepted, foreign, end level, worst-case end level,
+                        grind kills, worst-case grind kills, grind kills up to --grind-until, the same
+                        in the worst case ("-" without --grind-until)
+  --levels              with exactly one route x profile: after the normal output, one TSV line per
+                        step with an explicit id: id, segment, level before the step, the same in the
+                        worst case, anchor of the insert or "-", file, actions
   --json FILE           write the full report (incl. INFO) as JSON
   --markdown FILE       write a Markdown report (docs/VALIDATION.md)
+  -v, --verbose         also print INFO messages and accepted warnings
+  -q, --quiet           print only the per-route result lines
+data:
   --db FILE             DB snapshot (default tools/data/forever_db.lua)
+  --no-overrides        do not apply the DB overrides of tools/overrides/*.lua
+  --overrides DIR       read the DB overrides from DIR instead
   --addons DIR          where to discover modules (default addons)
+checks:
   --tolerance-yards N   'at' distance WARN threshold in yards (default 40)
   --hard-tolerance-yards N  'at' distance ERROR threshold in yards (default 120)
   --tolerance N         WARN threshold in map units, for maps without known world size (default 3.0)
   --hard-tolerance N    ERROR threshold in map units, for maps without known world size (default 8.0)
-  --ignore CODE,...     suppress message codes (e.g. xp-unknown)
+  --ignore CODE,...     suppress message codes (e.g. quest-carried)
   --xp-optimism N       optimistic factor for estimated quest XP (default 2.0): a level
                         requirement is an ERROR only if even the optimistic level is too low
   --incidental-pct P    incidental kills while travelling: every turn-in also gives P% of its
                         quest XP as kill XP (default 0 = off). The grind report always shows
                         the band 0% / 15%, each also for the worst case (optional steps not done)
+states and harness:
   --state FILE          start the simulation from a character state (JSON, see tools/README.md):
                         level / xpFrac, done, log / complete, hearth, at, flightPaths
   --write-state FILE    write the character state at the END of the run (same format; needs
-                        exactly one route x profile: use --route and --profile)
+                        exactly one route x profile: use --route)
   --until ID            with --write-state: write the state BEFORE step ID / the first step of
                         segment ID instead (e.g. --until h-22-hillsbrad = the end of a route's own
                         1-22 part, the start state of the first library segment)
-  --harness DIR         validate a part of a library module: a synthetic route of the --profile
-                        (race and class required) that only uses the --segments of DIR
-  --segments ID,...     library segments of the harness route, in this order (default: every
-                        segment of the library module, TOC order)
-  -v, --verbose         also print INFO messages
-  -q, --quiet           print only the per-route result lines
+  --harness DIR         validate a part of the shared segments of module DIR (a library module or a
+                        module that also registers routes): a synthetic route of the --profile (race
+                        and class required) that only uses the --segments of DIR; the module's shared
+                        inserts apply to it, steps of other races / classes are not composed
+  --segments ID,...     shared segments of the harness route, in this order (default: every
+                        shared segment of the module, TOC order)
   -h, --help            this help
 
 harness example (Undead Paladin, from the end of the 1-22 route):
-  lua5.1 tools/validate_routes.lua --route horde-undead-paladin --profile race=Scourge,class=PALADIN,faction=Horde \
-      --write-state state_ud_22.json --until h-22-hillsbrad
+  lua5.1 tools/validate_routes.lua --route horde-undead-paladin --write-state state_ud_22.json --until h-22-hillsbrad
   lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Horde --segments h-22-hillsbrad \
       --profile race=Scourge,class=PALADIN,faction=Horde --state state_ud_22.json --write-state out.json
 
-exit status: 0 ok (also: a harness on a library without segments - nothing to do), 1 errors
-(or warnings with --strict), 2 usage/load failure, --route matching no route or a
---write-state run that is not exactly one route x profile]]
+exit status: 0 ok (also: a harness on a module without shared segments yet - nothing to do), 1 errors
+(or unaccepted warnings with --strict), 2 usage/load failure, a --route entry matching no route, a
+--skip / --keep / --own glob matching no file, a --grind-until segment no validated route has, or a
+--write-state / --levels run that is not exactly one route x profile]]
 
 function V.ParseArgs(argv)
     local o = { dirs = {}, ignore = {} }
@@ -2415,10 +2985,19 @@ function V.ParseArgs(argv)
         if v == nil then error("missing value for " .. tostring(argv[i - 1]), 0) end
         return v
     end
+    local function glob(key, opt)
+        local v = val()
+        if v == "" then error("empty value for " .. opt, 0) end
+        o[key] = o[key] or {}
+        o[key][#o[key] + 1] = (v:gsub("\\", "/"))
+    end
     while i <= #argv do
         local a = argv[i]
         if a == "-h" or a == "--help" then o.help = true
-        elseif a == "--route" then o.route = val()
+        elseif a == "--route" then
+            -- repeatable: the lists add up (like --skip / --keep / --own)
+            local v = val()
+            o.route = o.route and (o.route .. "," .. v) or v
         elseif a == "--profile" then
             o.profile = Harness.ParseProfile(val())
         -- an empty --state / --write-state / --segments value = not given (make harness passes them all)
@@ -2430,6 +3009,22 @@ function V.ParseArgs(argv)
             o.segments = Harness.ParseList(val())
             if #o.segments == 0 then o.segments = nil end
         elseif a == "--strict" then o.strict = true
+        elseif a == "--skip" then glob("skip", a)
+        elseif a == "--keep" then glob("keep", a)
+        elseif a == "--own" then glob("own", a)
+        elseif a == "--end-level" then o.endLevel = true
+        elseif a == "--summary" then o.summary = true
+        elseif a == "--levels" then o.levels = true
+        elseif a == "--grind-until" then o.grindUntil = val()
+        elseif a == "--max-grind-until" then
+            local v = val()
+            local seg, n, w = v:match("^([^=]+)=(%d+)/(%d+)$")
+            if not seg then error("bad --max-grind-until (SEGMENT=N/W: kills in the normal / the worst case)", 0) end
+            o.maxGrindUntil = { segment = seg, kills = tonumber(n), worst = tonumber(w) }
+        elseif a == "--baseline" then o.baseline = val()
+        elseif a == "--write-baseline" then o.writeBaseline = val()
+        elseif a == "--no-overrides" then o.noOverrides = true
+        elseif a == "--overrides" then o.overrides = val()
         elseif a == "--json" then o.json = val()
         elseif a == "--markdown" then o.markdown = val()
         elseif a == "--db" then o.db = val()
@@ -2453,6 +3048,7 @@ function V.ParseArgs(argv)
         else o.dirs[#o.dirs + 1] = a end
         i = i + 1
     end
+    if o.route and #Glob.Split(o.route) == 0 then error("--route needs a route id", 0) end
     return o
 end
 
@@ -2474,6 +3070,275 @@ local function runResults(all)
     return out
 end
 
+---------------------------------------------------------------------------
+-- checks on the whole run: DB overrides, ok-unused, own / foreign warnings
+---------------------------------------------------------------------------
+
+--- The "(overrides)" entry of a run: ERROR override-load for every override file that was ignored
+-- (a note instead when a file filter is active: one agent's half-written file never stops another
+-- agent) and ERROR override-foreign-quest when the override file of one owner names a quest that a
+-- loaded step outside its owner files uses (DB.OverrideOwns; such a value belongs to shared.lua).
+-- @param report DB.ApplyOverrides result; @param filtered true when --skip is given
+-- @return a module result { module = "(overrides)", results = { res }, notes = {...} } or nil when
+--         there is nothing to say
+function V.OverrideChecks(db, all, report, filtered)
+    local res = emptyResult("(overrides)", "(overrides)", tostring(report and report.dir or "-"))
+    res.overrides = true
+    local out = { module = "(overrides)", dir = report and report.dir, results = { res }, notes = {}, matched = 0 }
+    for _, e in ipairs(report and report.errors or {}) do
+        local m = { severity = "ERROR", code = "override-load", file = e.file,
+                    msg = "the override file is ignored in this run: " .. tostring(e.msg) }
+        if filtered then
+            m.note = "a file filter (--skip) is active"
+            out.notes[#out.notes + 1] = m
+        else
+            res.messages[#res.messages + 1] = m
+            countMessage(res, m, 1)
+        end
+    end
+    local ov = db._overrides
+    if ov and next(ov.quests) ~= nil then
+        local foreign, seen = {}, {} -- [quest] = { first = step, n = count }
+        local function visit(step)
+            for _, a in ipairs(step.actions or {}) do
+                local rec = a.quest and ov.quests[a.quest]
+                if rec and rec.owner ~= "shared" and not DB.OverrideOwns(rec.owner, step.file) then
+                    local key = tostring(a.quest) .. "\0" .. tostring(step.file) .. "\0" .. tostring(step.id)
+                    if not seen[key] then
+                        seen[key] = true
+                        local f = foreign[a.quest] or { first = step, n = 0 }
+                        foreign[a.quest] = f
+                        f.n = f.n + 1
+                    end
+                end
+            end
+        end
+        for _, mres in ipairs(all) do
+            local mod = mres.mod
+            if mod then
+                for _, seg in ipairs(mod.lib and mod.lib.order or {}) do
+                    for _, step in ipairs(seg.steps) do visit(step) end
+                end
+                for _, ins in ipairs(mod.lib and mod.lib.inserts or {}) do
+                    for _, step in ipairs(ins.steps) do visit(step) end
+                end
+                for _, route in ipairs(mod.routes) do
+                    for _, step in ipairs(route.steps or {}) do
+                        if not step.library then visit(step) end
+                    end
+                end
+            end
+        end
+        for _, q in ipairs(sortedKeys(foreign)) do
+            local f, rec = foreign[q], ov.quests[q]
+            local b = DB.QuestBrief(db, q)
+            local m = { severity = "ERROR", code = "override-foreign-quest", quest = q,
+                file = tostring(report and report.dir or "tools/overrides") .. "/" .. rec.file,
+                msg = format("%s overrides quest %d \"%s\", but %d loaded step(s) outside its owner files use the quest "
+                    .. "(first: step '%s' in %s): a value for a quest of another file belongs to shared.lua (report it "
+                    .. "in the hand-over)", rec.file, q, b and b.name or "?", f.n, tostring(f.first.id),
+                    tostring(f.first.file)) }
+            res.messages[#res.messages + 1] = m
+            countMessage(res, m, 1)
+        end
+    end
+    if #res.messages == 0 and #out.notes == 0 then return nil end
+    return out
+end
+
+--- WARN ok-unused: a code listed in `ok` of a step / segment that was reported at that step in none of
+-- the validated routes that contain it (a stale acknowledgement). Only meaningful on a full run (the
+-- caller decides). The message goes to the entry of the module that owns a shared step (else to the
+-- first route that contains the step).
+-- @param all module results of V.ValidateModule; @param ignore set of ignored codes
+function V.CheckOkUnused(all, ignore)
+    local fired = {}
+    local function key(modName, routeId, library, id)
+        return (library and ("L\0" .. tostring(library)) or ("R\0" .. tostring(modName) .. "\0" .. tostring(routeId)))
+            .. "\0" .. tostring(id)
+    end
+    local entry = {} -- [library module name] = its "(shared X)" / "(library X)" result
+    for _, mres in ipairs(all) do
+        for _, r in ipairs(mres.results) do
+            if r.shared or r.library then entry[r.shared or r.library] = entry[r.shared or r.library] or r end
+            for _, m in ipairs(r.messages) do
+                local id = m.stepId or (m.segment and ("segment " .. tostring(m.segment)))
+                if id then
+                    local k = key(mres.module, r.route, m.library, id)
+                    fired[k] = fired[k] or {}
+                    fired[k][m.code] = true
+                end
+            end
+        end
+    end
+    local unused, order = {}, {}
+    local function check(mres, rr, okT, library, id, where)
+        local k = key(mres.module, rr.route.id, library, id)
+        for _, code in ipairs(sortedKeys(okT)) do
+            local plain = okT[code] == true and NEEDS_CEILING[code]
+            if not plain and not (ignore and ignore[code]) and not (fired[k] and fired[k][code]) then
+                local uk = k .. "\0" .. code
+                local u = unused[uk]
+                if not u then
+                    u = { code = code, where = where, library = library, result = rr.results[1], routes = 0 }
+                    unused[uk] = u
+                    order[#order + 1] = u
+                end
+                u.routes = u.routes + 1
+            end
+        end
+    end
+    for _, mres in ipairs(all) do
+        for _, rr in ipairs(mres.routes or {}) do
+            for _, seg in ipairs(rr.route.segments or {}) do
+                local lib = type(seg.library) == "string" and seg.library or nil
+                if seg.ok then check(mres, rr, seg.ok, lib, "segment " .. tostring(seg.id), { segment = seg }) end
+                for _, step in ipairs(seg.steps) do
+                    if step.ok then
+                        check(mres, rr, step.ok, type(step.library) == "string" and step.library or nil, step.id,
+                            { step = step })
+                    end
+                end
+            end
+        end
+    end
+    local n = 0
+    for _, u in ipairs(order) do
+        local m = { severity = "WARN", code = "ok-unused" }
+        local what
+        if u.where.step then
+            local step = u.where.step
+            m.segment, m.step, m.stepId, m.file = step.segment, step.segIndex, step.id, step.file
+            what = "this step"
+        else
+            m.segment, m.file = u.where.segment.id, u.where.segment.file
+            what = "this segment"
+        end
+        if u.library then m.library, m.shared = u.library, true end
+        m.msg = format("ok lists '%s', but none of the %d validated route(s) containing %s reports it there: remove "
+            .. "the acknowledgement", u.code, u.routes, what)
+        local target = (u.library and entry[u.library]) or u.result
+        if target then
+            target.messages[#target.messages + 1] = m
+            countMessage(target, m, 1)
+            n = n + 1
+        end
+    end
+    return n
+end
+
+--- --own: mark the unaccepted WARNs whose file is not own (m.foreign = true, r.foreign = count).
+-- A message without a file belongs to the file that registered the route (Route.lua).
+-- @return the number of foreign warnings
+function V.MarkForeign(all, isOwn)
+    local total = 0
+    for _, mres in ipairs(all) do
+        for _, r in ipairs(mres.results) do
+            r.foreign = 0
+            for _, m in ipairs(r.messages) do
+                if m.severity == "WARN" and not m.accepted and isOwn and not isOwn(m.file or r.file or "") then
+                    m.foreign = true
+                    r.foreign = r.foreign + 1
+                end
+            end
+            total = total + r.foreign
+        end
+    end
+    return total
+end
+
+--- The block "foreign warnings: N (report them in the hand-over)": one line per place and code.
+function V.ForeignLines(all)
+    local lines, seen, order, total = {}, {}, {}, 0
+    for _, mres in ipairs(all) do
+        for _, r in ipairs(mres.results) do
+            for _, m in ipairs(r.messages) do
+                if m.foreign then
+                    total = total + 1
+                    -- a message of the route itself (no step, no segment: route-level) is one line per
+                    -- route, named; a place in a file is one line for all the routes that pass it
+                    local loc = locStr(m)
+                    if not m.segment and not m.stepId then
+                        local file = m.file or r.file
+                        loc = format("route %s%s", tostring(r.route), file and (" (" .. file .. ")") or "")
+                    end
+                    local k = loc .. "\0" .. m.code
+                    if not seen[k] then
+                        seen[k] = { m = m, n = 0, loc = loc }
+                        order[#order + 1] = seen[k]
+                    end
+                    seen[k].n = seen[k].n + 1
+                end
+            end
+        end
+    end
+    if total == 0 then return lines end
+    lines[1] = format("foreign warnings: %d (report them in the hand-over)", total)
+    for _, e in ipairs(order) do
+        lines[#lines + 1] = format("  WARN  %s [%s] %s%s", e.loc, e.m.code, e.m.msg,
+            e.n > 1 and format(" (%d route(s) / profile(s))", e.n) or "")
+    end
+    return lines
+end
+
+--- --summary: one TSV line per run result (route, profile, errors, warnings, accepted, foreign, end
+-- level, worst-case end level, grind kills, worst-case grind kills, grind kills up to --grind-until,
+-- the same in the worst case).
+function V.SummaryLines(all)
+    local lines = {}
+    for _, r in ipairs(runResults(all)) do
+        local sm = r.summary or {}
+        local gu = sm.grindUntil
+        lines[#lines + 1] = table.concat({
+            tostring(r.route), r.profileLabel, tostring(r.counts.ERROR), tostring(r.counts.WARN - (r.foreign or 0)),
+            tostring(r.acceptedWarn or 0), tostring(r.foreign or 0), format("%.2f", sm.endLevel or 0),
+            format("%.2f", sm.endLevelWorst or sm.endLevel or 0), tostring(sm.grindKills or 0),
+            tostring(sm.grindKillsWorst or 0), gu and tostring(gu.kills) or "-", gu and tostring(gu.killsWorst) or "-",
+        }, "\t")
+    end
+    return lines
+end
+
+--- --levels: one TSV line per step with an explicit id of a result (V.RunProfile with opts.levels).
+function V.LevelLines(r)
+    local lines = {}
+    for _, e in ipairs(r.stepLevels or {}) do
+        lines[#lines + 1] = table.concat({
+            tostring(e.id), tostring(e.segment), format("%.2f", e.level or 0),
+            format("%.2f", e.levelWorst or e.level or 0), e.anchor and tostring(e.anchor) or "-",
+            tostring(e.file or "-"), e.actions or "",
+        }, "\t")
+    end
+    return lines
+end
+
+--- The --skip / --keep / --own globs of a run that match no file (a typo or a wrong case would
+-- otherwise pass without a word: the file filter leaves out nothing or the wrong files, and with an
+-- --own that matches nothing every warning is foreign, so --strict passes on anything).
+-- --skip / --keep are matched against the TOC files of the modules, --own against the files that
+-- were loaded (dependencies included: the file names messages carry).
+-- @param mods loaded modules (Loader.LoadModule); @param o { skip, keep, own } (lists of globs)
+-- @return array of lines ("--own 'Classes/Warior.lua' matches no loaded file ..."), {} when all match
+function V.UnmatchedFileGlobs(mods, o)
+    local dirs, loaded, skipped, names = {}, {}, {}, {}
+    for _, mod in ipairs(mods) do
+        if not mod.toc then return {} end -- no TOC: the load error says so, there is nothing to match
+        dirs[#dirs + 1] = mod.dir
+        names[#names + 1] = tostring(mod.name)
+        loaded[#loaded + 1] = mod.loadedFiles
+        skipped[#skipped + 1] = mod.skipped
+    end
+    if #mods == 0 then return {} end
+    local out = Loader.UnmatchedFilters(dirs, o.skip, o.keep)
+    for _, g in ipairs(Glob.UnmatchedIn(o.own, loaded)) do
+        local onlySkipped = #Glob.UnmatchedIn({ g }, skipped) == 0
+        out[#out + 1] = format("--own '%s' matches no loaded file of %s%s: every warning would be foreign", g,
+            table.concat(names, ", "), onlySkipped and " (it only matches files that --skip leaves out: add --keep)"
+            or " (the match is case-sensitive, `*` is the only wildcard)")
+    end
+    return out
+end
+
 --- CLI entry. @param argv array of arguments; @param root repository root
 -- @return exit code
 function V.Main(argv, root)
@@ -2485,7 +3350,7 @@ function V.Main(argv, root)
     end
     if o.help then print(USAGE) return 0 end
     if o.harness and (#o.dirs > 0 or o.route) then
-        io.stderr:write("validate_routes: --harness takes no module directories and no --route (the library module "
+        io.stderr:write("validate_routes: --harness takes no module directories and no --route (the module "
             .. "is its value, the route is synthetic)\n")
         return 2
     end
@@ -2515,27 +3380,56 @@ function V.Main(argv, root)
             return 2
         end
     end
+    local baseline
+    if o.baseline then
+        local berr
+        baseline, berr = V.ReadBaseline(o.baseline)
+        if not baseline then
+            io.stderr:write("validate_routes: --baseline: " .. tostring(berr) .. "\n")
+            return 2
+        end
+    end
     local okDb, db = pcall(DB.Load, o.db or (root .. "/tools/data/forever_db.lua"))
     if not okDb then io.stderr:write("validate_routes: " .. tostring(db) .. "\n") return 2 end
+    -- DB overrides (corrections of single quests / NPCs; never for specs: DB.Load applies none)
+    local overrides
+    if not o.noOverrides then overrides = DB.ApplyOverrides(db, o.overrides or DB.OverridesDir(root)) end
     local okS, schema = pcall(Loader.LoadSchema, root)
     if not okS then io.stderr:write("validate_routes: " .. tostring(schema) .. "\n") return 2 end
+    local routeList = o.route and Glob.NewList(o.route) or nil
+    local isOwn
+    if o.own then
+        isOwn = function(file) return Glob.Any(o.own, tostring(file or "")) end
+    end
     local function runOpts(extra)
         local opts = {
-            db = db, schema = schema, route = o.route, profile = o.profile, tolerance = o.tolerance,
+            db = db, schema = schema, route = o.route, routeList = routeList, profile = o.profile,
+            tolerance = o.tolerance,
             hardTolerance = o.hardTolerance, toleranceYards = o.toleranceYards,
             hardToleranceYards = o.hardToleranceYards, ignore = o.ignore, unknownXpOptimism = o.unknownXpOptimism,
             startState = startState, incidentalPct = o.incidentalPct, untilId = o.untilId,
+            isOwn = isOwn, ownGiven = o.own ~= nil, endLevel = o.endLevel, grindUntil = o.grindUntil,
+            maxGrindUntil = o.maxGrindUntil, baseline = baseline, levels = o.levels,
         }
         for k, v in pairs(extra or {}) do opts[k] = v end
         return opts
     end
     local all, dirs = {}, o.dirs
+    -- a --skip / --keep / --own glob that matches nothing is a typo: the caller's file would be left
+    -- out, or every warning would be foreign and --strict would pass on anything
+    local function globsMatch(mods)
+        local bad = V.UnmatchedFileGlobs(mods, o)
+        for _, line in ipairs(bad) do io.stderr:write("validate_routes: " .. line .. "\n") end
+        return #bad == 0
+    end
     if o.harness then
-        local hb = Harness.Build(o.harness, { schema = schema, segments = o.segments, profile = harnessProfile })
+        local hb = Harness.Build(o.harness, { schema = schema, segments = o.segments, profile = harnessProfile,
+            skipGlobs = o.skip, keepGlobs = o.keep })
         if hb.fatal then
             io.stderr:write("validate_routes: harness: " .. hb.fatal .. "\n")
             return 2
         end
+        if not globsMatch({ hb.mod }) then return 2 end
         if hb.empty then
             print(("validate_routes: harness: library module %s registers no library segments yet (its segment "
                 .. "files are placeholders); nothing to validate"):format(hb.mod.name))
@@ -2550,43 +3444,82 @@ function V.Main(argv, root)
         -- errors once (in their entry); route modules depending on them do not repeat them
         local loaded, libraryReported = {}, {}
         for i, dir in ipairs(dirs) do
-            loaded[i] = Loader.LoadModule(dir, { schema = schema })
+            loaded[i] = Loader.LoadModule(dir, { schema = schema, skipGlobs = o.skip, keepGlobs = o.keep })
             if loaded[i].isLibrary and not o.route then libraryReported[loaded[i].name] = true end
         end
+        if not globsMatch(loaded) then return 2 end
         for i, dir in ipairs(dirs) do
             if not (o.route and loaded[i].isLibrary) then
                 all[#all + 1] = V.ValidateModule(dir, runOpts({ module = loaded[i], libraryReported = libraryReported }))
             end
         end
     end
-    local te, tw = 0, 0
+    -- checks on the whole run
+    local fullRun = not (o.harness or o.route or o.skip or o.profile or startState)
+    if fullRun then V.CheckOkUnused(all, o.ignore) end
+    if overrides then
+        local entry = V.OverrideChecks(db, all, overrides, o.skip ~= nil)
+        if entry then all[#all + 1] = entry end
+    end
+    local foreign = V.MarkForeign(all, isOwn)
+    local te, tw, ta = 0, 0, 0
     for _, mres in ipairs(all) do
         for _, r in ipairs(mres.results) do
-            te, tw = te + r.counts.ERROR, tw + r.counts.WARN
+            te, tw, ta = te + r.counts.ERROR, tw + r.counts.WARN, ta + (r.acceptedWarn or 0)
         end
     end
     if o.quiet then
         for _, mres in ipairs(all) do
             for _, r in ipairs(mres.results) do
-                print(format("%s [%s]: %d error(s), %d warning(s), %d info", tostring(r.route), r.profileLabel,
-                    r.counts.ERROR, r.counts.WARN, r.counts.INFO))
+                print(format("%s [%s]: %s%s", tostring(r.route), r.profileLabel, countsText(r),
+                    (r.foreign or 0) > 0 and format(" (%d of the warnings foreign)", r.foreign) or ""))
             end
+            for _, line in ipairs(V.NoteLines(mres)) do print(line) end
         end
     else
         for _, line in ipairs(V.FormatText(all, { verbose = o.verbose })) do print(line) end
     end
+    for _, line in ipairs(V.ForeignLines(all)) do print(line) end
     if #dirs == 0 then print("no route modules found") end
-    print(format("validate_routes: %d module(s), %d error(s), %d warning(s)%s%s", #dirs, te, tw,
+    if overrides and (#overrides.files > 0 or #overrides.errors > 0) then
+        local names, nq, nn = {}, 0, 0
+        for i, f in ipairs(overrides.files) do
+            names[i] = f.file
+            nq, nn = nq + f.quests, nn + f.npcs
+        end
+        print(format("validate_routes: DB overrides from %s: %d file(s)%s, %d quest(s), %d npc(s)%s",
+            tostring(overrides.dir), #overrides.files, #names > 0 and (" (" .. table.concat(names, ", ") .. ")") or "",
+            nq, nn, #overrides.errors > 0 and format("; %d file(s) ignored", #overrides.errors) or ""))
+    end
+    print(format("validate_routes: %d module(s), %d error(s), %d warning(s)%s%s%s%s", #dirs, te, tw,
+        ta > 0 and format(", %d accepted", ta) or "",
+        foreign > 0 and format(" (%d of them foreign)", foreign) or "",
         o.strict and " (strict)" or "", startState and (" (start state " .. o.state .. ")") or ""))
     if o.json then writeFile(o.json, json.encode(V.ReportTable(all, db), "  ") .. "\n") end
     if o.markdown then writeFile(o.markdown, table.concat(V.FormatMarkdown(all, db), "\n") .. "\n") end
-    if o.route then
-        local matched = 0
-        for _, mres in ipairs(all) do matched = matched + (mres.matched or 0) end
-        if matched == 0 then
-            io.stderr:write("validate_routes: --route " .. o.route .. " matched no route\n")
+    if routeList then
+        local unmatched = Glob.Unmatched(routeList)
+        if #unmatched > 0 then
+            io.stderr:write("validate_routes: --route " .. table.concat(unmatched, ",") .. " matched no route\n")
             return 2
         end
+    end
+    if o.grindUntil then
+        -- a segment id no validated route contains (a typo, a renamed segment): the columns and the
+        -- baseline pair would silently be missing
+        local runs, found = runResults(all), false
+        for _, r in ipairs(runs) do
+            if r.summary and r.summary.grindUntil then found = true break end
+        end
+        if #runs > 0 and not found then
+            io.stderr:write(format("validate_routes: --grind-until %s: none of the %d validated route(s) has a segment "
+                .. "with this id\n", o.grindUntil, #runs))
+            return 2
+        end
+    end
+    if o.writeBaseline then
+        writeFile(o.writeBaseline, json.encode(V.Baseline(all, { grindUntil = o.grindUntil
+            or (o.maxGrindUntil and o.maxGrindUntil.segment) }), "  ") .. "\n")
     end
     if o.writeState then
         local runs = runResults(all)
@@ -2612,7 +3545,19 @@ function V.Main(argv, root)
             tostring(runs[1].route), runs[1].profileLabel, o.writeState, es.level,
             es.xpFrac, #es.done, #es.log, #es.complete, tostring(es.hearth or "-")))
     end
-    if te > 0 or (o.strict and tw > 0) then return 1 end
+    if o.levels then
+        local runs = runResults(all)
+        if #runs ~= 1 then
+            io.stderr:write(format("validate_routes: --levels needs exactly one route x profile, this run has %d "
+                .. "(select one with --route ID)\n", #runs))
+            return 2
+        end
+        for _, line in ipairs(V.LevelLines(runs[1])) do print(line) end
+    end
+    if o.summary then
+        for _, line in ipairs(V.SummaryLines(all)) do print(line) end
+    end
+    if te > 0 or (o.strict and tw - foreign > 0) then return 1 end
     return 0
 end
 

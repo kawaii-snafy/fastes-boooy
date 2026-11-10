@@ -173,6 +173,12 @@ files["tools/**/*.lua"] = {
     std = "lua51",
 }
 
+-- DB override files (tools/overrides/<name>.lua, read by tools/lib/fbdb.lua DB.ApplyOverrides): one
+-- `return { quests = {...}, npcs = {...} }`, loaded in an EMPTY environment -- no globals at all.
+files["tools/overrides/*.lua"] = {
+    std = "none",
+}
+
 -- Specs, the WoW API mock and the test helpers run under busted; the mock installs
 -- WoW globals. (Only these paths get the relaxed rules: route-module fixtures below must
 -- not inherit them -- luacheck merges every matching `files` block.)

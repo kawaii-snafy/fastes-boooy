@@ -1,8 +1,15 @@
 #!/usr/bin/env lua5.1
 -- tools/gen_route_data.lua -- (re)generate <module>/Data.lua for route modules.
 --
---   lua5.1 tools/gen_route_data.lua [--db FILE] [--check] [--stdout] <module-dir> [...]
+--   lua5.1 tools/gen_route_data.lua [--db FILE] [--no-overrides] [--check] [--stdout] <module-dir> [...]
 --   lua5.1 tools/gen_route_data.lua --all            (every addons/FastesBoooy_*/ module)
+--   lua5.1 tools/gen_route_data.lua --stdout --skip 'Classes/*' --keep Classes/Mage.lua <module-dir>
+--                                    (a partial load, only to look at: never written, never --check;
+--                                    a glob that matches no TOC file is refused, exit status 2)
+--
+-- The DB overrides of tools/overrides/*.lua (tools/lib/fbdb.lua DB.ApplyOverrides: corrected
+-- prerequisites end up in questMeta) are applied unless --no-overrides is given; an override file
+-- that does not load fails the run (a note with --skip).
 --
 -- Loads the module's Route.lua + Segments (TOC order, Data.lua skipped; its FastesBoooy_*
 -- dependencies first, like the client) in the validator's sandbox, collects every quest /
@@ -331,7 +338,13 @@ usage: lua5.1 tools/gen_route_data.lua [--db FILE] [--check] [--stdout] (--all |
   --all       every addons/FastesBoooy_*/ module (route and library modules)
   --check     do not write; exit 1 if any Data.lua is out of date
   --stdout    print the generated text instead of writing it
-  --db FILE   DB snapshot (default tools/data/forever_db.lua)]]
+  --skip GLOB with --stdout only: do not load the TOC files matching GLOB (repeatable; `*` wildcard,
+              matched against the TOC path with forward slashes)
+  --keep GLOB ...except the files matching GLOB (repeatable); a --skip / --keep glob that matches
+              no TOC file is an error (exit 2)
+  --db FILE   DB snapshot (default tools/data/forever_db.lua)
+  --no-overrides   do not apply the DB overrides of tools/overrides/*.lua
+  --overrides DIR  read the DB overrides from DIR instead]]
 
 function M.Main(argv)
     local dirs, opts = {}, {}
@@ -339,6 +352,17 @@ function M.Main(argv)
     while i <= #argv do
         local a = argv[i]
         if a == "--db" then i = i + 1 opts.db = argv[i]
+        elseif a == "--no-overrides" then opts.noOverrides = true
+        elseif a == "--overrides" then i = i + 1 opts.overrides = argv[i]
+        elseif a == "--skip" or a == "--keep" then
+            i = i + 1
+            local key = a == "--skip" and "skip" or "keep"
+            if argv[i] == nil or argv[i] == "" then
+                io.stderr:write(a .. " needs a glob\n" .. USAGE .. "\n")
+                return 2
+            end
+            opts[key] = opts[key] or {}
+            opts[key][#opts[key] + 1] = (argv[i]:gsub("\\", "/"))
         elseif a == "--check" then opts.check = true
         elseif a == "--stdout" then opts.stdout = true
         elseif a == "--all" then opts.all = true
@@ -346,6 +370,11 @@ function M.Main(argv)
         elseif a:sub(1, 1) == "-" then io.stderr:write("unknown option " .. a .. "\n" .. USAGE .. "\n") return 2
         else dirs[#dirs + 1] = a end
         i = i + 1
+    end
+    if (opts.skip or opts.keep) and not opts.stdout then
+        -- a partial load would write an incomplete Data.lua
+        io.stderr:write("gen_route_data: --skip / --keep are only allowed with --stdout\n")
+        return 2
     end
     if opts.all then
         for _, d in ipairs(Loader.DiscoverModules(root .. "/addons")) do dirs[#dirs + 1] = d end
@@ -355,10 +384,25 @@ function M.Main(argv)
         io.stderr:write(USAGE .. "\n")
         return 2
     end
+    -- a --skip / --keep glob that matches no TOC file is a typo: refuse the run
+    local unmatched = Loader.UnmatchedFilters(dirs, opts.skip, opts.keep)
+    for _, line in ipairs(unmatched) do io.stderr:write("gen_route_data: " .. line .. "\n") end
+    if #unmatched > 0 then return 2 end
     local okDb, db = pcall(DB.Load, opts.db or (root .. "/tools/data/forever_db.lua"))
     if not okDb then io.stderr:write("gen_route_data: " .. tostring(db) .. "\n") return 2 end
     local schema = Loader.LoadSchema(root)
     local status = 0
+    if not opts.noOverrides then
+        local rep = DB.ApplyOverrides(db, opts.overrides or DB.OverridesDir(root))
+        for _, e in ipairs(rep.errors) do
+            io.stderr:write(string.format("gen_route_data: %s override-load %s: the override file is ignored in this "
+                .. "run: %s\n", opts.skip and "note" or "ERROR", tostring(e.file), tostring(e.msg)))
+        end
+        if #rep.errors > 0 and not opts.skip then
+            io.stderr:write("gen_route_data: nothing generated (fix the override file or pass --no-overrides)\n")
+            return 1
+        end
+    end
     for _, dir in ipairs(dirs) do
         dir = dir:gsub("[/\\]+$", "")
         local tocPath = Loader.FindToc(dir)
@@ -367,7 +411,7 @@ function M.Main(argv)
         for _, f in ipairs(toc and toc.files or {}) do
             if f:match("^Data%.lua$") or f:match("/Data%.lua$") then skip[f] = true end
         end
-        local mod = Loader.LoadModule(dir, { schema = schema, skip = skip })
+        local mod = Loader.LoadModule(dir, { schema = schema, skip = skip, skipGlobs = opts.skip, keepGlobs = opts.keep })
         for _, e in ipairs(mod.errors) do
             io.stderr:write(string.format("gen_route_data: %s/%s: %s\n", mod.name, tostring(e.file), e.msg))
         end
