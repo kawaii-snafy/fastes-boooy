@@ -1,6 +1,6 @@
 -- FastesBoooy_Guides / Segments / Shared / 37_Desolace_Dustwallow.lua
 --
--- Library segment "h-37-desolace-dustwallow": levels 37-41, class-neutral (Undead Paladin and Skyborne Druid, Horde).
+-- Segment "h-37-desolace-dustwallow": levels 37-41, all races and classes.
 -- Booty Bay -> fly Grom'gol -> zeppelin to Orgrimmar (1431 / 1432) -> fly Sun Rock Retreat -> on foot through the
 -- Charred Vale into Desolace -> Ghost Walker Post and its loops (Kodo Graveyard, Thunder Axe Fortress, Kolkar,
 -- Sargeron, Valley of Spears, Shadowprey Village, Sar'theris Strand / Ethel Rethor / Ranzajar Isle, Mannoroc Coven,
@@ -18,7 +18,7 @@
 -- Objective counts in the notes are the Forever ones (Wowhead Forever tooltips); the DB snapshot still has the
 -- smaller TBC counts for 1168 / 1169 / 1177 / 1206 / 1322, so the validator underestimates their kill XP.
 --
--- Hub plan (Forever DB; every quest is open to Scourge and Skyborne Horde characters of any class):
+-- Hub plan (Forever DB; no quest of the segment is limited to a race or class):
 --   Org 1 : 1431 (Craven Drok) > 1432 (Keldran); fly Sun Rock Retreat.
 --   GWP 1 : Kormek's Hut 5501 on the way in (optional caravan escort 5821 if the caravan stands there); 1432 > 1433 +
 --           1434 (Takata), 1433 > 1435 (Maurin), 5386 (Nataka),
@@ -72,7 +72,7 @@
 --     gate (before Craven Drok), h-40-shadowprey-end = the last Desolace quest step (5581 at Taiga in Shadowprey),
 --     h-41-brackenwall-end = the last step (1172 at Draz'Zilb in Brackenwall); h-40-brackenwall-arrive = Shady Rest,
 --     as in the plan.
--- XP (validator, Classic quest XP + objective kills with the DB counts; Undead paladin from 36.06): required quests
+-- XP (validator, Classic quest XP + objective kills with the DB counts; a route that enters at 36.06): required quests
 --   ~102 k (+ ~9 k optional), objective kills ~44 k. The segment now starts at 36.06 (h-34 grinds less), so the two
 --   Desolace gates take that deficit too, at a higher level: h38-level-maraudine (now required, 37 + 50%, Valley of
 --   Spears centaurs 36-40, ~340 same-level kills) and h39-level-mannoroc (39 + 78%, Mannoroc Coven demons 37-40,

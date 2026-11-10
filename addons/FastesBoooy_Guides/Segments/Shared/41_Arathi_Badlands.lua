@@ -1,6 +1,6 @@
 -- FastesBoooy_Guides / Segments / Shared / 41_Arathi_Badlands.lua
 --
--- Library segment "h-41-arathi-badlands": levels 41-44, class-neutral (Undead Paladin and Skyborne Druid, Horde).
+-- Segment "h-41-arathi-badlands": levels 41-44, all races and classes.
 -- Brackenwall Village -> hearth Orgrimmar -> zeppelin to Tirisfal -> Undercity (232 > 238 > 243, 495) -> fly Tarren
 -- Mill -> Alterac Mountains (Baron Vardus 566, Lord Aliden Perenolde 507 > 508) -> Tarren Mill -> fly Hammerfall ->
 -- the Arathi binding stones (651) -> Faldir's Cove (663, 662, 664, 665 > 666 > 668 > 669) -> Thandol Span -> Wetlands
@@ -21,7 +21,7 @@
 -- bounds).
 -- ruRU names in the notes: Wowhead Forever ruRU tooltips (nether.wowhead.com/forever/ru/tooltip/...).
 --
--- Hub plan (Forever DB; every quest is open to Scourge and Skyborne Horde characters of any class):
+-- Hub plan (Forever DB; no quest of the segment is limited to a race or class):
 --   UC   : 232 (Zinge) > Luca 238 > Zinge 243 (carried to Gadgetzan, h-46); 495 (Sharlindra); optional Scarlet
 --          Monastery block (1048, Varimathras); fly Tarren Mill.
 --   TM   : 495 > optional 518 (Melisara), optional 507 (Krusk, needs 506 from h-31), 566 (WANTED poster); Alterac:
@@ -71,7 +71,7 @@
 --     through the canyon (the way h-50 takes into the Searing Gorge); 4450 Ledger from Tanaris is not taken (items in
 --     three zones, turn-in in Gadgetzan).
 --   * No hearth use in the Badlands: the hearthstone is bound to Kargath and left off cooldown for h-44.
--- XP (validator, Classic quest XP + objective kills with the DB counts; Undead paladin from 40.85): required quests
+-- XP (validator, Classic quest XP + objective kills with the DB counts; a route that enters at 40.85): required quests
 --   ~56 k (was ~38 k; + ~11 k optional), objective kills ~31 k. The level gate in the south-west (Dustbelcher ogres
 --   40-43 and Greater Rock Elementals 42-44, the best non-elite camp for 42-44 near Kargath) covers the rest: 43 + 80%
 --   (~855 same-level kills normal, ~970 worst case; was ~965 from 41.00), set so the required turn-ins after it
@@ -134,7 +134,7 @@ FastesBoooy.AddLibrarySegment({
         { turnin = 1048, npc = 2425, optional = true, at = { 1458, 56.25, 92.20 },
           note = { ru = "Обратно к Вариматрасу.", en = "Back to Varimathras." } },
         { id = "h-41-undercity-flight-master", fly = "Tarren Mill", npc = 2389, at = { 1424, 60.14, 18.62 },
-          note = { ru = "Майкл Гарретт: летите на Мельницу Таррен (Предгорья Хилсбрада).",
+          note = { ru = "Майкл Гаррет: летите на Мельницу Таррен (Предгорья Хилсбрада).",
                    en = "Michael Garrett: fly to Tarren Mill (Hillsbrad Foothills)." } },
 
         ------------------------------------------------------------------

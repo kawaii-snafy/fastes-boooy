@@ -1,9 +1,19 @@
 -- FastesBoooy_Guides / Classes / Paladin.lua
 --
--- Paladin class steps on the shared 22-60 path (Segments/Shared, docs/routes/horde-22-60.md), as shared inserts
--- with class scope. Every insert is anchored to a shared step with an explicit id; the inserted steps belong to
--- the anchor's segment. Plan: research paladin60.md / plan60.json classInserts.PALADIN, moved to the
--- levels the validator reaches on the densified library (docs/routes/horde-undead-paladin.md section 3).
+-- Paladin class steps on the shared path (Segments/Shared), as shared inserts with class scope (step ids
+-- "pal-..."). Every insert is anchored to a shared step with an explicit id; the inserted steps belong to the
+-- anchor's segment. Plan: research paladin60.md / plan60.json classInserts.PALADIN, moved to the levels the
+-- validator reaches. (The class steps of Tirisfal 1-12 are still inside the Tirisfal segments; phase F2c moves
+-- them here.)
+--
+-- Training on 12-22 (CONFIRM, docs/dev/PLAN.md E.3: the paladin trainers in the Undercity and in Thunder Bluff are
+-- in the DB but not on the web; the fallback is Shari Stilwell in Brill):
+--   14        Garen Largo (Undercity, War Quarter), after h13-uc-end (the gate h13-lvl-14 guarantees the level)
+--   18        Alodan the Hopeful (Thunder Bluff, Pools of Vision: Zamah's cave), after h18-tb-zamah (gate
+--             h18-lvl-18)
+--   20        Alodan, after h18-tb-2 (from Elder Rise over the central mesa to Spirit Rise; gate h18-lvl-20)
+--   22        Alodan, after h-22-tb-start (Zamah hands out 1065 right after the turn-in of 1064: a training step
+--             between the two would be fast-forwarded by the automation)
 --
 -- Training (no paladin trainer in Orgrimmar or any questing hub 22-60; Garen Largo in the Undercity War Quarter,
 -- Alodan the Hopeful in the Thunder Bluff Pools of Vision, Shari Stilwell in Brill). Visits at the impactful levels
@@ -40,9 +50,6 @@
 --   unlocks part 2 (95036 > 95111 > 95125 > 95126 > 95140, Wolfsbane), which needs the Deadmines (Whitestone Oak
 --   Lumber, 1.6% drop), an Enchanted Silver Ingot (reportedly Shadowfang Keep), the Kor Gem from the naga at the
 --   Blackfathom Deeps entrance (95042) and the elite Old Fire-Eye: not routed (route doc section 5).
--- Bridge from the 1-22 route: it ends in Thunder Bluff with 1065 in the log (the library's h-22-tb-start accepts 1065
---   for Skyborne only) and knows the Orgrimmar flight point (ud04-org-fp, mandatory since the 22-60 extension), so
---   h-22-tb-fly-org flies Thunder Bluff -> Orgrimmar directly.
 --
 -- Automation notes: the trainers, Velma, Zachariah and Hanashi give no route quests, so no training / vendor step
 -- here sits before an accept at the same NPC (the automation could otherwise take the quest early and the engine
@@ -50,6 +57,86 @@
 -- turn-in) and is followed by quest steps that cannot be done before it.
 
 if not FastesBoooy.AddLibraryInsert then return end
+
+------------------------------------------------------------------------------------------------------------------
+-- 14: Undercity (Garen Largo)
+------------------------------------------------------------------------------------------------------------------
+FastesBoooy.AddLibraryInsert({
+    after = "h13-uc-end",
+    class = "PALADIN",
+    steps = {
+        -- CONFIRM: the paladin trainer Garen Largo in the Undercity (in the DB, not on the web)
+        { id = "pal-train-14", train = true, npc = 260093, at = { 1458, 47.5, 15.0 },
+          spells = { { ru = "Свет небес (ранг 3)", en = "Holy Light (Rank 3)" } },
+          note = { ru = "Гарен Ларго в Квартале Воинов (следующий тренер - только в Громовом Утёсе на 18-м). Не выучили ранги 12-го в "
+                       .. "Брилле - возьмите их здесь же. Нет его на месте - Шари Стилвелл в Брилле, по пути к башне дирижаблей.",
+                   en = "Garen Largo in the War Quarter (the next trainer is Thunder Bluff at 18). Missed the level-12 ranks in "
+                       .. "Brill: train them here too. Not there: Shari Stilwell in Brill, on the way to the zeppelin tower." } },
+    },
+})
+
+------------------------------------------------------------------------------------------------------------------
+-- 18: Thunder Bluff (Alodan, in Zamah's cave)
+------------------------------------------------------------------------------------------------------------------
+FastesBoooy.AddLibraryInsert({
+    after = "h18-tb-zamah",
+    class = "PALADIN",
+    steps = {
+        -- CONFIRM: the paladin trainer Alodan the Hopeful in Thunder Bluff (in the DB, not on the web)
+        { id = "pal-train-18", train = true, npc = 246344, at = { 1456, 25.81, 19.03 },
+          spells = { { ru = "Печать праведности (ранг 3)", en = "Seal of Righteousness (Rank 3)" } },
+          note = { ru = "Тренер паладинов Алодан Жизнерадостный бродит по этой же пещере: Печать праведности 3 - главный ранг урона. "
+                       .. "Пропустили Свет небес 3 на 14-м - возьмите здесь. Освящение и Благословение королей будут на 20-м. Нет его "
+                       .. "на месте - ранги подождут Брилла (Шари Стилвелл) на 22-м.",
+                   en = "Alodan the Hopeful wanders in the same cave: Seal of Righteousness R3, the main damage rank. Missed Holy "
+                       .. "Light R3 at 14: train it here. Consecration and Blessing of Kings come at 20. Not there: the ranks wait "
+                       .. "for Brill (Shari Stilwell) at 22." } },
+    },
+})
+
+------------------------------------------------------------------------------------------------------------------
+-- 20: Thunder Bluff (Alodan), from Elder Rise
+------------------------------------------------------------------------------------------------------------------
+FastesBoooy.AddLibraryInsert({
+    after = "h18-tb-2",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-20-pools", go = true, radius = 15, at = { 1456, 28.5, 29.0 },
+          note = { ru = "С Вершины Старейшин через центральную вершину на Вершину Духов: Пруды Видений под ней.",
+                   en = "From Elder Rise across the central mesa to Spirit Rise: the Pools of Vision below it." } },
+        -- CONFIRM: Alodan the Hopeful (see pal-train-18)
+        { id = "pal-train-20", train = true, npc = 246344, at = { 1456, 25.81, 19.03 },
+          spells = { { ru = "Освящение", en = "Consecration" },
+                     { ru = "Священный удар (ранг 3)", en = "Holy Strike (Rank 3)" },
+                     { ru = "Благословение королей", en = "Blessing of Kings" },
+                     { ru = "Аура благочестия (ранг 3)", en = "Devotion Aura (Rank 3)" },
+                     { ru = "Печать праведности (ранг 3)", en = "Seal of Righteousness (Rank 3)" } },
+          note = { ru = "Тренер паладинов Алодан Жизнерадостный: обучение 20-го уровня (и Печать праведности 3, если не выучили на "
+                       .. "18-м). Талант - Стремление к справедливости. Нет его на месте - ранги подождут Брилла (Шари Стилвелл) на "
+                       .. "22-м.",
+                   en = "Alodan the Hopeful: level-20 training (plus Seal of Righteousness R3 if you missed it at 18). Talent: "
+                       .. "Pursuit of Justice. Not there: the ranks wait for Brill (Shari Stilwell) at 22." } },
+    },
+})
+
+------------------------------------------------------------------------------------------------------------------
+-- 22: Thunder Bluff (Alodan), after Zamah's two quest steps
+------------------------------------------------------------------------------------------------------------------
+FastesBoooy.AddLibraryInsert({
+    after = "h-22-tb-start",
+    class = "PALADIN",
+    steps = {
+        -- CONFIRM: Alodan the Hopeful (see pal-train-18)
+        { id = "pal-train-22", train = true, npc = 246344, at = { 1456, 25.81, 19.03 },
+          spells = { { ru = "Благословение могущества (ранг 3)", en = "Blessing of Might (Rank 3)" },
+                     { ru = "Свет небес (ранг 4)", en = "Holy Light (Rank 4)" } },
+          note = { ru = "Тренер паладинов Алодан Жизнерадостный в этой же пещере: обучение 22-го уровня. Талант 22 - Печать "
+                       .. "повиновения. Нет его на месте - Шари Стилвелл в Брилле: маршрут проходит башню дирижаблей Тирисфаля чуть "
+                       .. "позже.",
+                   en = "Alodan the Hopeful in the same cave: level-22 training. Talent at 22: Seal of Command. Not there: Shari "
+                       .. "Stilwell in Brill - the route passes the Tirisfal zeppelin tower a little later." } },
+    },
+})
 
 ------------------------------------------------------------------------------------------------------------------
 -- 22-24: optional class chain, part 1 (Bandarion Keep -> the Sepulcher -> Fenris Isle -> the Sepulcher)

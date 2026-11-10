@@ -1,15 +1,35 @@
 -- FastesBoooy_Guides / Classes / Druid.lua
--- Druid class steps on the shared 22-60 path (Segments/Shared), as shared inserts with class scope:
--- the Moonglade -> Thunder Bluff bridge, class training 24-60 (Travel Form at 30, Dire Bear Form at 40), the
--- optional Zephras Isle riding trip at 40 and the Torwa Pathfinder chain in Un'Goro (9063 -> 9052 -> 9051).
--- Sources: research druid60.md / druid60.json (trainers, spells by level, training plan, talents, mount, class
--- quests), plan60.json bridges + classInserts.DRUID, docs/routes/horde-22-60.md section 10 (anchor levels);
--- NPCs / objects / quests: tools/data/forever_db.lua; ruRU names: Wowhead Forever ru tooltips.
+-- Druid class steps on the shared path, as shared inserts with class scope (step ids "dru-..."): the Thunder Bluff
+-- visit of the Skyborne at 13, the Moonglade visits of 14-22, the Cat Form chain at 20, class training 24-60
+-- (Travel Form at 30, Dire Bear Form at 40) and the Torwa Pathfinder chain in Un'Goro (9063 -> 9052 -> 9051).
+-- (The class steps of Zephras Isle 1-13 are still inside the Zephras segments; phase F2c moves them here.)
+-- Sources: research druid60.md / druid60.json (trainers, spells by level, training plan, talents, class quests),
+-- plan60.json classInserts.DRUID; NPCs / objects / quests: tools/data/forever_db.lua; ruRU names: Wowhead Forever
+-- ru tooltips.
 --
--- Where the visits go (validator level at the insert, normal / worst case = no optional step done):
---   bridge  before h-22-tb-start          22.14        Bunthen Plainswind (druid-only flight) Moonglade -> Thunder
---                                                      Bluff: the 1-22 route ends at Loganaar; the hearthstone
---                                                      (Thunder Bluff) is kept for the end of h-22.
+-- Race scope (docs/dev/PLAN.md D.2, F2b step 2): the training inserts and the Torwa chain are
+--   unscoped: the Tauren druid harness run (tests/spec/guides_layout_spec.lua) passes with them.
+--   Always Skyborne-only: 94911 / 94913 (Thunder Bluff, Moonglade) and the Cat Form chain 98340 > 98341 > 98404 >
+--   98738 > 98362 (its middle is Skyborne-only in the DB; the Tauren druid needs other quests: phase C).
+--
+-- Where the visits go on 12-22 (the druid trains in Moonglade: Teleport: Moonglade right before a shared hearth
+-- step costs nothing):
+--   13      after  sd03-spirit            Skyborne: over the rope bridge to Elder Rise, Turak (optional training,
+--                                         94911 > 94913), back to the central mesa.
+--   14      before h13-hearth-org         from the Undercity: Dendrite (94913, Skyborne), Loganaar (the gate
+--                                         h13-lvl-14 guarantees 14 at the end of the Undercity visit).
+--   16      before h15-hearth-xroads      from the harpies: Loganaar (Swipe).
+--   18      before h18-hearth-taurajo     from the Stagnant Oasis: Loganaar.
+--   20      after  h18-tb-2               Skyborne: Turak 98340, Teleport: Moonglade, the chain in Nighthaven and
+--                                         the Stormrage Barrow Dens, hearth to Thunder Bluff (bound there one step
+--                                         earlier; the shared path uses it again more than an hour later, from
+--                                         Zoram'gar), Cat Form at Turak. Then training 20 at Turak for both races.
+--   22      before h18-hearth-tb          from Zoram'gar: Loganaar.
+-- The hearth of the Cat Form chain is the one class use of the hearthstone that is not right in front of a shared
+-- hearth step (docs/dev/PLAN.md C.3 rule 3): the stone is bound to Thunder Bluff by the shared step before it, and
+-- Bunthen Plainswind (druid-only flight Nighthaven -> Thunder Bluff) is the fallback named in the note.
+--
+-- Where the visits go on 22-60 (validator level at the insert, normal / worst case = no optional step done):
 --   24      after  h-24-tb-arrive         24.95/24.05  Turak (Elder Rise); next library step is Tah (other NPC).
 --   26+28   before h-28-thunder-bluff     28.76/28.22  Turak, on the way back from Skywatcher Plateau (the plan's
 --                                                      anchor h-28-tb-arrive is only 27.97 in the worst case).
@@ -20,14 +40,12 @@
 --                                                      binds it there and keeps it for this visit).
 --   34+36   before h38-hearth-shadowprey  37.69/37.70  Moonglade right before the library's own hearth (no extra
 --                                                      hearth use: Teleport, train, then the library hearth).
---   38+40   after  h-40-org-arrive        40.06/40.01  fly Thunder Bluff, Turak: DIRE BEAR FORM (not 40 yet: the 38
---                                                      set only, no riding trip); optional riding trip (Skywatcher
---                                                      Plateau skycutter -> Zephras Isle, Genn Fairweather,
---                                                      Apprentice Riding 100 g) and back to Tal (no ship back:
---                                                      Teleport: Moonglade + Bunthen -> Tal; the hearthstone is on
---                                                      cooldown since h40-hearth-shadowprey); then Tal -> Camp
---                                                      Taurajo (own fly step: the library's next step names Doras,
---                                                      it completes on the same landing).
+--   38+40   after  h-40-org-arrive        40.06/40.01  dru-40-fly-tb, dru-40-train (Turak: DIRE BEAR FORM; not
+--                                                      40 yet: the 38 set only), dru-40-fly-taurajo (own fly step:
+--                                                      the shared next step names Doras, it completes on the same
+--                                                      landing). These three ids are a contract with the race files
+--                                                      (docs/dev/PLAN.md C.7): the riding steps of a Skyborne or
+--                                                      Tauren druid are inserted after dru-40-train.
 --   42+44   before h44-hearth-gromgol     44.52/44.51  Moonglade before the library hearth (instead of the plan's
 --                                                      Kargath hearth at 44.02: that would put the h44-hearth-gromgol
 --                                                      hearth half a level later on cooldown).
@@ -50,8 +68,8 @@
 -- Automation: no inserted transient step (train, fly, go, hearth) is followed by an accept at the same NPC within
 -- 6 steps (the 9063 accept comes before the level 52 training, not after it); the Torwa steps are stateful.
 -- Hearthstone: only the level 32 visit uses it beyond the library (Tarren Mill, bound at h-31-tarrenmill-arrive,
--- otherwise unused); every other Moonglade visit sits right before a library hearth step, and the bridge and the
--- level 40 trip use flights / the skycutter (its fallback is Teleport: Moonglade + Bunthen, never the hearthstone).
+-- otherwise unused); every other Moonglade visit of 22-60 sits right before a shared hearth step, and the
+-- level 40 trip uses flights.
 
 if not FastesBoooy.AddLibraryInsert then return end
 
@@ -59,24 +77,229 @@ local TURAK = { 1456, 76.48, 27.22 }
 local LOGANAAR = { 1450, 52.53, 40.57 }
 
 ------------------------------------------------------------------------------
--- Bridge: Moonglade (end of the 1-22 route) -> Thunder Bluff (start of h-22)
+-- 13, Skyborne: Thunder Bluff, Elder Rise (Turak): optional training, 94911 > 94913
 ------------------------------------------------------------------------------
 FastesBoooy.AddLibraryInsert({
-    before = "h-22-tb-start",
+    after = "sd03-spirit",
     class = "DRUID",
-    race = "Skyborne", -- the anchor is a Skyborne-only step (an insert is never wider than its anchor)
+    race = "Skyborne",
     steps = {
-        { id = "sd-bridge-fly-tb", fly = "Thunder Bluff", npc = 2995, at = { 1456, 47.00, 49.83 },
+        { id = "dru-zep-tb-bridge", go = true, at = { 1456, 55.36, 35.55 }, radius = 15,
           note = {
-              ru = "Лунная поляна: Бунтен Ветер Равнин (44.3, 45.9; летает только с друидами) - полёт в Громовой "
-                  .. "Утёс. Камень возвращения (Громовой Утёс) не тратьте: он нужен в конце Хилсбрада (Мельница Таррен "
-                  .. "-> Громовой Утёс). Оргриммар на карте полётов с 13-го уровня: дальше летите от Тала прямо туда "
-                  .. "(шаги пути через Перекрёсток и Заставу Дальнего Дозора, если гайд их покажет, пропустите).",
-              en = "Moonglade: Bunthen Plainswind (44.3, 45.9; flies druids only) - fly to Thunder Bluff. Keep the "
-                  .. "hearthstone (Thunder Bluff): it is used at the end of Hillsbrad (Tarren Mill -> Thunder Bluff). "
-                  .. "Orgrimmar has been on your flight map since 13: fly from Tal straight there later (skip the "
-                  .. "Crossroads / Far Watch Post run steps if the guide shows them).",
+              ru = "Вниз по тропе через 54,27 и 50,34 на центральную возвышенность, к "
+                  .. "подвесному мосту на её северо-восточном краю.",
+              en = "Down the path via 54,27 and 50,34 onto the central mesa, to the rope bridge at its north-east "
+                  .. "edge.",
           } },
+        { id = "dru-zep-tb-elder-rise", go = true, at = { 1456, 68.47, 28.24 }, radius = 15,
+          note = {
+              ru = "По мосту на восток, на Вершину Старейшин.",
+              en = "Cross the bridge east to Elder Rise.",
+          } },
+        { id = "dru-zep-tb-train", train = true, optional = true, npc = 3033, at = { 1456, 76.48, 27.22 },
+          spells = {
+              { ru = "Телепортация: Лунная поляна (если нет)", en = "Teleport: Moonglade (if missing)" },
+              { ru = "Восстановление, Исступление (если нет)", en = "Regrowth, Enrage (if missing)" },
+          },
+          note = { ru = "Turak Runetotem. Нет «Телепортации: Лунная поляна» (нужна на 14-м) - заговорите с ним с зажатым Shift и "
+                       .. "сначала откройте обучение. Всё есть - пропустите.",
+                   en = "Turak Runetotem. No Teleport: Moonglade yet (needed at 14) - talk to him holding Shift and open the training "
+                       .. "first. Everything known - skip." } },
+        { id = "dru-zep-child", turnin = 94911, accept = 94913, npc = 3033, at = { 1456, 76.48, 27.22 },
+          note = { ru = "Классовое задание: сдайте и возьмите «Лунную поляну» (сдадите на 14-м, из Подгорода). Нет «Телепортации: "
+                       .. "Лунная поляна» - выучите у него же.",
+                   en = "Druid class quest: turn in and take Moonglade (handed in at 14, from the Undercity). No Teleport: Moonglade "
+                       .. "yet - learn it from him." } },
+        { id = "dru-zep-tb-back", go = true, at = { 1456, 55.36, 35.55 }, radius = 15,
+          note = {
+              ru = "Обратно по мосту на центральную возвышенность.",
+              en = "Back over the bridge to the central mesa.",
+          } },
+    },
+})
+
+------------------------------------------------------------------------------
+-- 14: Teleport: Moonglade from the Undercity, right before the shared hearth to Orgrimmar
+------------------------------------------------------------------------------
+FastesBoooy.AddLibraryInsert({
+    before = "h13-hearth-org",
+    class = "DRUID",
+    race = "Skyborne",
+    steps = {
+        { id = "dru-moonglade-94913", turnin = 94913, npc = 11802, at = { 1450, 56.21, 30.64 },
+          note = {
+              ru = "Из Подгорода - «Телепортация: Лунная поляна» (это и есть цель задания). "
+                  .. "Dendrite Starblaze на севере Ночной Гавани.",
+              en = "From the Undercity cast Teleport: Moonglade (that is the quest objective). Dendrite Starblaze "
+                  .. "in the north of Nighthaven.",
+          } },
+    },
+})
+-- h13-hearth-org exists only in the routes of the four races that are bound in Orgrimmar (never an Undead druid).
+FastesBoooy.AddLibraryInsert({
+    before = "h13-hearth-org",
+    class = "DRUID",
+    race = { "Skyborne", "Tauren" },
+    steps = {
+        { id = "dru-train-14", train = true, npc = 12042, at = { 1450, 52.53, 40.57 },
+          spells = {
+              { ru = "Оглушить", en = "Bash" },
+              { ru = "Гнев (ранг 3)", en = "Wrath (Rank 3)" },
+              { ru = "Шипы (ранг 2)", en = "Thorns (Rank 2)" },
+              { ru = "Целительное прикосновение (ранг 3)", en = "Healing Touch (Rank 3)" },
+          },
+          note = { ru = "Лунная поляна (из Подгорода - «Телепортация: Лунная поляна»; следующий шаг - камень). Loganaar: обучение "
+                       .. "14-го уровня (главное - «Оглушить»).",
+                   en = "Moonglade (from the Undercity cast Teleport: Moonglade; the next step is the hearthstone). Loganaar: level "
+                       .. "14 training (Bash matters most)." } },
+    },
+})
+
+------------------------------------------------------------------------------
+-- 16: Teleport: Moonglade from the Witchwing harpies, right before the shared hearth to the Crossroads
+------------------------------------------------------------------------------
+FastesBoooy.AddLibraryInsert({
+    before = "h15-hearth-xroads",
+    class = "DRUID",
+    steps = {
+        { id = "dru-train-16", train = true, npc = 12042, at = { 1450, 52.53, 40.57 },
+          spells = {
+              { ru = "Размах", en = "Swipe" },
+              { ru = "Лунный огонь (ранг 3)", en = "Moonfire (Rank 3)" },
+              { ru = "Омоложение (ранг 3)", en = "Rejuvenation (Rank 3)" },
+              { ru = "Заклинания 14-го уровня, если нет", en = "Level 14 spells if missing" },
+          },
+          note = { ru = "Следующий шаг - камень. «Телепортация: Лунная поляна» прямо от гарпий, Loganaar: обучение 16-го уровня "
+                       .. "(главное - «Размах»). Таланты: Звериный инстинкт (Feral Instinct).",
+                   en = "The next step is the hearthstone. Cast Teleport: Moonglade right at the harpies, Loganaar: level 16 training "
+                       .. "(Swipe matters most). Talents: Feral Instinct." } },
+    },
+})
+
+------------------------------------------------------------------------------
+-- 18: Teleport: Moonglade from the Stagnant Oasis, right before the shared hearth to Camp Taurajo
+------------------------------------------------------------------------------
+FastesBoooy.AddLibraryInsert({
+    before = "h18-hearth-taurajo",
+    class = "DRUID",
+    steps = {
+        { id = "dru-train-18", train = true, npc = 12042, at = { 1450, 52.53, 40.57 },
+          spells = {
+              { ru = "Трепка (ранг 2)", en = "Maul (Rank 2)" },
+              { ru = "Волшебный огонь", en = "Faerie Fire" },
+              { ru = "Гнев деревьев (ранг 2)", en = "Entangling Roots (Rank 2)" },
+              { ru = "Хватка природы (ранг 2)", en = "Nature's Grasp (Rank 2)" },
+              { ru = "Восстановление (ранг 2)", en = "Regrowth (Rank 2)" },
+              { ru = "Спячка", en = "Hibernate" },
+          },
+          note = { ru = "Следующий шаг - камень. «Телепортация: Лунная поляна» прямо у оазиса, Loganaar: обучение 18-го уровня "
+                       .. "(главное - «Трепка» и «Волшебный огонь»). Таланты: Кошачья стремительность (Feline Swiftness).",
+                   en = "The next step is the hearthstone. Cast Teleport: Moonglade right at the oasis, Loganaar: level 18 training "
+                       .. "(Maul and Faerie Fire matter most). Talents: Feline Swiftness." } },
+    },
+})
+
+------------------------------------------------------------------------------
+-- 20, Skyborne: the Cat Form chain 98340 > 98341 > 98404 > 98738 > 98362 (Thunder Bluff 2)
+------------------------------------------------------------------------------
+FastesBoooy.AddLibraryInsert({
+    after = "h18-tb-2",
+    class = "DRUID",
+    race = "Skyborne",
+    steps = {
+        { id = "dru-cat-start", accept = 98340, npc = 3033, at = { 1456, 76.48, 27.22 },
+          note = { ru = "Turak Runetotem на этой же вершине: «Великий дух кошки». Учиться пока не нужно - после облика кошки. "
+                       .. "Предложит ещё и «Урок» (A Lesson to Learn, водный облик; по базе только для тауренов) - возьмите вручную: "
+                       .. "сдача у Dendrite, «Испытание озера» там же (~1000 опыта).",
+                   en = "Turak Runetotem on the same rise: The Great Cat Spirit. No training yet - after Cat Form. If he also offers "
+                       .. "A Lesson to Learn (Aquatic Form; Tauren-only in the DB), take it by hand: it ends at Dendrite and Trial of "
+                       .. "the Lake is in Moonglade too (~1000 XP)." } },
+        { id = "dru-cat-dendrite", turnin = 98340, accept = 98341, npc = 11802, at = { 1450, 56.21, 30.64 },
+          note = {
+              ru = "«Телепортация: Лунная поляна». Dendrite Starblaze на севере Ночной Гавани.",
+              en = "Cast Teleport: Moonglade. Dendrite Starblaze in the north of Nighthaven.",
+          } },
+        { id = "dru-cat-avatar", turnin = 98341, accept = 98404, npc = 272054, at = { 1450, 43.92, 73.44 },
+          note = {
+              ru = "На юг: Аватар Саэйлинан (дух кошки) у южного края поляны.",
+              en = "South: the Avatar of Saeyleenan (the cat spirit) at the south end of the glade.",
+          } },
+        { id = "dru-cat-dens", go = true, at = { 1450, 72.15, 62.18 }, radius = 15,
+          note = {
+              ru = "На восток ко входу в Курганы Стражей Бури (Stormrage Barrow Dens).",
+              en = "East to the entrance of the Stormrage Barrow Dens.",
+          } },
+        { id = "dru-cat-relics", complete = 98404, object = { 672821, 673094, 673093 }, at = { 1450, 74.0, 66.2 },
+          note = {
+              ru = "Вглубь пещеры и через мост: три реликвии у статуй кошек - Клык (72.4, 66.0), Безмолвная "
+                  .. "тень (шар у статуи, 74.4, 65.4) и Коготь (ниша, 75.2, 67.2).",
+              en = "Deep into the cave and over the bridge: three relics at the cat statues - the Fang (72.4, 66.0), "
+                  .. "the Silent Shadow (the orb next to a statue, 74.4, 65.4) and the Claw (an alcove, 75.2, 67.2).",
+          } },
+        { id = "dru-cat-avatar-2", turnin = 98404, accept = 98738, npc = 272054, at = { 1450, 43.92, 73.44 },
+          note = {
+              ru = "Обратно к Аватару.",
+              en = "Back to the Avatar.",
+          } },
+        { id = "dru-cat-dendrite-2", turnin = 98738, accept = 98362, npc = 11802, at = { 1450, 56.21, 30.64 },
+          note = {
+              ru = "Снова «Телепортация: Лунная поляна» - быстрее, чем пешком. Dendrite.",
+              en = "Cast Teleport: Moonglade again - faster than walking. Dendrite.",
+          } },
+        { id = "dru-cat-hearth-tb", hearth = "Thunder Bluff", at = { 1456, 45.81, 64.71 },
+          note = { ru = "Камень возвращения в Громовой Утёс (привязан шагом раньше; общий путь использует его снова только из "
+                       .. "Зорам'гара). Камень не готов - Bunthen Plainswind (44.3, 45.9) летит в Громовой Утёс.",
+                   en = "Hearth to Thunder Bluff (bound one step earlier; the shared path uses it again only from Zoram'gar). "
+                       .. "Hearthstone not ready - Bunthen Plainswind (44.3, 45.9) flies to Thunder Bluff." } },
+        { id = "dru-cat-form", turnin = 98362, npc = 3033, at = { 1456, 76.48, 27.22 },
+          note = {
+              ru = "Через мост на Вершину Старейшин: Turak. Награда - облик кошки, «Цапнуть», «Разорвать» "
+                  .. "и «Крадущийся зверь».",
+              en = "Over the bridge to Elder Rise: Turak. The reward is Cat Form plus Claw, Rip and Prowl.",
+          } },
+    },
+})
+-- Registered after the chain: for a Skyborne the training follows the Cat Form turn-in at the same NPC.
+FastesBoooy.AddLibraryInsert({
+    after = "h18-tb-2",
+    class = "DRUID",
+    steps = {
+        { id = "dru-train-20", train = true, npc = 3033, at = { 1456, 76.48, 27.22 },
+          spells = {
+              { ru = "Полоснуть", en = "Shred" },
+              { ru = "Знамение ясности", en = "Omen of Clarity" },
+              { ru = "Звёздный огонь", en = "Starfire" },
+              { ru = "Деморализующий рёв (ранг 2)", en = "Demoralizing Roar (Rank 2)" },
+              { ru = "Целительное прикосновение (ранг 4)", en = "Healing Touch (Rank 4)" },
+              { ru = "Знак дикой природы (ранг 3)", en = "Mark of the Wild (Rank 3)" },
+              { ru = "Возрождение", en = "Rebirth" },
+          },
+          note = { ru = "Turak Runetotem на Вершине Старейшин: обучение 20-го уровня. «Цапнуть», «Разорвать» и «Крадущегося зверя» "
+                       .. "даёт облик кошки (задание); у тренера главное - «Полоснуть» и «Знамение ясности». Таланты: Звериная атака "
+                       .. "(Feral Charge). Дальше бегайте в облике кошки.",
+                   en = "Turak Runetotem on Elder Rise: level 20 training. Claw, Rip and Prowl come with Cat Form (the quest); at the "
+                       .. "trainer Shred and Omen of Clarity matter most. Talents: Feral Charge. Travel in Cat Form from now on." } },
+    },
+})
+
+------------------------------------------------------------------------------
+-- 22: Teleport: Moonglade from Zoram'gar, right before the shared hearth to Thunder Bluff
+------------------------------------------------------------------------------
+FastesBoooy.AddLibraryInsert({
+    before = "h18-hearth-tb",
+    class = "DRUID",
+    steps = {
+        { id = "dru-train-22", train = true, npc = 12042, at = { 1450, 52.53, 40.57 },
+          spells = {
+              { ru = "Гнев (ранг 4)", en = "Wrath (Rank 4)" },
+              { ru = "Лунный огонь (ранг 4)", en = "Moonfire (Rank 4)" },
+              { ru = "Омоложение (ранг 4)", en = "Rejuvenation (Rank 4)" },
+              { ru = "Умиротворение животного", en = "Soothe Animal" },
+          },
+          note = { ru = "Следующий шаг - камень. «Телепортация: Лунная поляна» прямо из Зорам'гара, Loganaar: обучение 22-го уровня. "
+                       .. "Таланты: Дикая ярость (Savage Fury).",
+                   en = "The next step is the hearthstone. Cast Teleport: Moonglade right at Zoram'gar, Loganaar: level 22 training. "
+                       .. "Talents: Savage Fury." } },
     },
 })
 
@@ -211,20 +434,20 @@ FastesBoooy.AddLibraryInsert({
 })
 
 ------------------------------------------------------------------------------
--- 38 + 40: fly Thunder Bluff (Turak): Dire Bear Form; optional riding trip to Zephras Isle
+-- 38 + 40: fly Thunder Bluff (Turak): Dire Bear Form (contract ids of docs/dev/PLAN.md C.7)
 ------------------------------------------------------------------------------
 FastesBoooy.AddLibraryInsert({
     after = "h-40-org-arrive",
     class = "DRUID",
     steps = {
-        { id = "dru-fly-tb-40", fly = "Thunder Bluff", npc = 2995, at = { 1456, 47.00, 49.83 },
+        { id = "dru-40-fly-tb", fly = "Thunder Bluff", npc = 2995, at = { 1456, 47.00, 49.83 },
           note = {
-              ru = "Дорас на башне в Долине Силы: летите в Громовой Утёс (обучение 40-го и поездка за верховой "
-                  .. "ездой). В Лагерь Таурахо полетите уже оттуда.",
-              en = "Doras on the tower in the Valley of Strength: fly to Thunder Bluff (level 40 training and the "
-                  .. "riding trip). You fly on to Camp Taurajo from there.",
+              ru = "Дорас на башне в Долине Силы: летите в Громовой Утёс (обучение 40-го). В Лагерь Таурахо "
+                  .. "полетите уже оттуда.",
+              en = "Doras on the tower in the Valley of Strength: fly to Thunder Bluff (level 40 training). You fly on "
+                  .. "to Camp Taurajo from there.",
           } },
-        { id = "dru-train-40", train = true, npc = 3033, at = TURAK,
+        { id = "dru-40-train", train = true, npc = 3033, at = TURAK,
           spells = {
               { ru = "Облик лютого медведя", en = "Dire Bear Form" },
               { ru = "Свирепый укус (3)", en = "Ferocious Bite (Rank 3)" },
@@ -235,70 +458,15 @@ FastesBoooy.AddLibraryInsert({
           note = {
               ru = "Через мосты на Вершину Старейшин: Тюрак - обучение 38-го и 40-го уровней: ОБЛИК ЛЮТОГО МЕДВЕДЯ, "
                   .. "«Свирепый укус» 3, «Когти» 3, «Полоснуть» 3. Ещё нет 40-го - выучите 38-й («Когти» 3, "
-                  .. "«Полоснуть» 3) и не начинайте поездку за ездой (ей тоже нужен 40-й): облик лютого медведя и "
-                  .. "остальное - на следующем визите к Логанаару, езда - позже из Громового Утёса. Таланты 38-40: "
-                  .. "Rend and Tear 5/5, Переходящая сила (Shifting Power).",
+                  .. "«Полоснуть» 3): облик лютого медведя и остальное - на следующем визите к Логанаару. Таланты "
+                  .. "38-40: Rend and Tear 5/5, Переходящая сила (Shifting Power).",
               en = "Over the bridges to Elder Rise: Turak - level 38 and 40 training: DIRE BEAR FORM, Ferocious Bite 3, "
-                  .. "Claw 3, Shred 3. Not 40 yet: learn the 38 set (Claw 3, Shred 3) and do not start the riding trip "
-                  .. "(it needs 40 too): Dire Bear Form and the rest at the next Loganaar visit, riding later from "
-                  .. "Thunder Bluff. Talents 38-40: Rend and Tear 5/5, Shifting Power.",
-          } },
-        { id = "dru-riding-path", go = true, optional = true, radius = 25, at = { 1412, 40.30, 17.60 },
-          note = {
-              ru = "По желанию, на 40-м и со 100 з.: верховая езда на острове Зефрас (~15-20 мин; ездовое животное "
-                  .. "даёт +60% против +40% у походного облика). На лифте вниз, на север вдоль утёса к горной тропе и "
-                  .. "по ней на Небесное плато. Нет денег или 40-го - пропустите этот и 4 следующих шага, к Талу "
-                  .. "(поездку можно сделать позже из Громового Утёса).",
-              en = "Optional, at 40 with 100 g: riding on Zephras Isle (~15-20 min; a mount is +60% against +40% for "
-                  .. "Travel Form). Take the lift down, run north along the bluff to the mountain path and up to "
-                  .. "Skywatcher Plateau. No gold or not 40: skip this and the next 4 steps, on to Tal (you can make "
-                  .. "the trip later from Thunder Bluff).",
-          } },
-        { id = "dru-riding-skycutter", go = true, optional = true, radius = 40, npc = 259119,
-          at = { 1412, 33.40, 22.55 },
-          note = {
-              ru = "Небесное плато, причал Ваятелей ветра (Алаана Штормовой Полет): небесный корабль до острова "
-                  .. "Зефрас (Небесные доки Валанаара; по веб-гайдам корабль стоит чуть ниже плато, 34.3, 25.8). "
-                  .. "Корабля на Зефрас нет - пропустите 2 следующих шага и возвращайтесь к Талу (езда - позже).",
-              en = "Skywatcher Plateau, the Windshaper dock (Alaana Stormwalker): the skycutter to Zephras Isle "
-                  .. "(Valanaar Skydocks; web guides put the boat just below the plateau, 34.3, 25.8). No skycutter "
-                  .. "to Zephras: skip the next 2 steps and go back to Tal (riding later).",
-          } },
-        -- Genn Fairweather is the Skyborne riding trainer, not a druid trainer.
-        { id = "dru-riding", train = true, optional = true, npc = 265756,
-          at = { 2521, 53.83, 81.33 },
-          spells = {
-              { ru = "Верховая езда (ученик)", en = "Apprentice Riding" },
-          },
-          note = {
-              ru = "С причала на запад к конюшням у Валанаара: Генн Чистое Небо - «Верховая езда (ученик)» (100 з.; "
-                  .. "навык включает езду на галстрайдерах). В Forever ездовое животное выдаётся вместе с навыком; не "
-                  .. "выдали - купите галстрайдера у него же.",
-              en = "From the dock west to the stables by Valanaar: Genn Fairweather - Apprentice Riding (100 g; the "
-                  .. "skill includes Galestrider Riding). Forever grants a mount with the skill; if it does not, buy a "
-                  .. "Galestrider from him.",
-          } },
-        { id = "dru-riding-back", go = true, optional = true, radius = 15, npc = 275270, at = { 2521, 57.92, 80.78 },
-          note = {
-              ru = "Обратно к Небесным докам (начальник порта Ваятелей ветра): небесный корабль до Мулгора. Корабль "
-                  .. "не ходит - пропустите этот шаг: «Телепортация: Лунная поляна», Бунтен Ветер Равнин (44.3, 45.9) "
-                  .. "- полёт в Громовой Утёс, к Талу (следующий шаг). Камень не используйте: он на откате после "
-                  .. "Деревни Ночных Охотников и привязан к Оргриммару для следующего сегмента.",
-              en = "Back to the Valanaar Skydocks (Windshapers Dockmaster): the skycutter to Mulgore. Ship not "
-                  .. "running: skip this step, cast Teleport: Moonglade, and Bunthen Plainswind (44.3, 45.9) flies you "
-                  .. "to Thunder Bluff, to Tal (the next step). Do not hearth: it is on cooldown since Shadowprey and "
-                  .. "stays bound to Orgrimmar for the next segment.",
-          } },
-        { id = "dru-riding-tb", go = true, optional = true, radius = 15, npc = 2995, at = { 1456, 47.00, 49.83 },
-          note = {
-              ru = "С плато спланируйте «Шагом по воздуху» с восточного края (или спуститесь горной тропой), верхом к "
-                  .. "лифту Громового Утёса и наверх к Талу.",
-              en = "From the plateau glide down the east edge with Walk on Air (or take the mountain path), ride to the "
-                  .. "Thunder Bluff lift and up to Tal.",
+                  .. "Claw 3, Shred 3. Not 40 yet: learn the 38 set (Claw 3, Shred 3): Dire Bear Form and the rest at "
+                  .. "the next Loganaar visit. Talents 38-40: Rend and Tear 5/5, Shifting Power.",
           } },
         -- The next library step (h-38-orgrimmar-flight-master) is the same flight, written for Orgrimmar ("Doras"):
         -- this step says it from Tal, and the library step completes on the same landing (fly = arrival at `at`).
-        { id = "dru-fly-taurajo-40", fly = "Camp Taurajo", npc = 10378, at = { 1413, 44.45, 59.15 },
+        { id = "dru-40-fly-taurajo", fly = "Camp Taurajo", npc = 10378, at = { 1413, 44.45, 59.15 },
           note = {
               ru = "Тал на центральной вершине Громового Утёса (не Дорас: вы не в Оргриммаре): летите в Лагерь "
                   .. "Таурахо.",

@@ -86,9 +86,8 @@ SYNC_ROUTES = undead-paladin skyborne-druid
 # start levels of the runs (tools/simulate_routes.lua --ahead)
 SYNC_LEVELS = 10 23 35 48
 # mid-route jumps with a quest log (--ahead L --ahead-at SEG,...: the first listed segment the route has;
-# both routes have a legacy 15-18 Barrens segment, until h-15-barrens replaces them, and the shared
-# 22-60 segments): LEVEL/SEGMENTS
-SYNC_MID = 21/ud-04-barrens,sd-04-barrens 29/h-24-barrens-stonetalon
+# every route has the shared segments from h-13-silverpine on): LEVEL/SEGMENTS
+SYNC_MID = 21/h-15-barrens 29/h-24-barrens-stonetalon
 # levels above the route's plan during normal play, levelSync "auto" (--level-plus N)
 SYNC_PLUS = 2 4
 FIXTURE_ROUTEDATA = tests/fixtures/validator/FastesBoooy_FxClean tests/fixtures/core/FastesBoooy_TestLib \

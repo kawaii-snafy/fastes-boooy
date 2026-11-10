@@ -1,6 +1,6 @@
 -- FastesBoooy_Guides / Segments / Shared / 24_Barrens_Stonetalon.lua
 --
--- Library segment "h-24-barrens-stonetalon": levels 24-27, class-neutral (Undead Paladin and Skyborne Druid, Horde).
+-- Segment "h-24-barrens-stonetalon": levels 24-27, all races and classes.
 -- Thunder Bluff (hearth from Tarren Mill) -> fly The Crossroads -> fly Camp Taurajo -> Bael Modan / Razorfen Kraul
 -- loop -> fly Ratchet (Isha Awak, Northwatch Hold, Gilthares) -> run back to The Crossroads via Thorn Hill -> fly Sun
 -- Rock Retreat -> Windshear Crag -> Mirkfallon Lake -> Stonetalon Peak -> Charred Vale (twice) -> Sun Rock Retreat.
@@ -8,10 +8,10 @@
 -- Coordinates: Forever uiMap 1456 (Thunder Bluff) / 1413 (The Barrens) / 1442 (Stonetalon Mountains), map percent,
 -- from tools/data/forever_db.lua (NPC / object spawns; centroids of the objective mob/object spawns for complete
 -- steps). Sulhasa 14242 (Forever-new giver of 98093): DB supplement from the Wowhead Forever tooltip (zone 17,
--- 47.9,77.6); the Sun Rock east ramp is the 1-22 route's point (ud05), the west entrance and the Windshear Crag
--- road are route facts.
+-- 47.9,77.6); the Sun Rock east ramp is the point of h-18-stonetalon-ashenvale (h18-go-sunrock), the west entrance
+-- and the Windshear Crag road are route facts.
 --
--- Hub plan (Forever DB; every quest is available to Scourge and Skyborne Horde characters of any class):
+-- Hub plan (Forever DB; no quest of the segment is limited to a race or class):
 --   TB  : 742 (Windstrider, kept for Splintertree), 1067 > 1086 (Zamah), 97538 (Tah Winterhoof, Forever-new).
 --   XR1 : 868 (Korran), 97003 (Gur'ak, Forever-new; Chol'aruk is an elite 20, killed at ~26), optional 862 (Grub,
 --         needs Cooking 15); fly Camp Taurajo.
@@ -23,7 +23,7 @@
 --   RA  : optional 92706 (WANTED poster, Bruuz elite 20 in the bay), 891 (Brightsun); Mahren 874 > 873, Isha Awak,
 --         873; Northwatch Hold 891; escort 898 (Gilthares) back to Ratchet; 891 + 898; 92706 (Gazlowe).
 --   XR2 : run north-west via Thorn Hill (Chol'aruk); 862, 97003, 868, 906; fly Sun Rock.
---   SR1 : 1087 (Braelyn), 6301 (Tammra; not for Skyborne: the druid route did it), 6282 + 86576 (Maggran,
+--   SR1 : 1087 (Braelyn), 6301 (Tammra), 6282 + 86576 (Maggran,
 --         Forever-new), 6393 (Tsunaman).
 --   WC  : 1096 (Ziz); optional 6284 (poster on the Webwinder Path, Besseleth elite 21 in Sishir Canyon); Windshear
 --         Crag 1086 (copter pad) + 1096 (Gerenzo); 1096 (Ziz).
@@ -255,10 +255,8 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-26-sunrock-arrive", accept = 1087, npc = 4198, at = { 1442, 45.94, 60.42 },
           note = { ru = "Брайлин Огненная Длань: «Наследие Кенария» (пик Каменного Когтя на севере).",
                    en = "Braelyn Firehand: Cenarius' Legacy (Stonetalon Peak in the north)." } },
-        -- The three 6301 steps are race-filtered: the Skyborne druid turns 6301 in on its 1-22 route, so they
-        -- are not composed into skyborne-druid (by design, see the segment header).
+        -- 6301 Cycle of Rebirth is done here by every race (h-18 leaves it out).
         { id = "h-25-sun-rock-retreat", accept = 6301, npc = 11864, at = { 1442, 47.46, 58.38 },
-          race = { "Orc", "Scourge", "Tauren", "Troll" },
           note = { ru = "Таммра Поле Ветров: «Цикл возрождения» (семена Геи у озера на севере).",
                    en = "Tammra Windfield: Cycle of Rebirth (Gaea Seeds by the lake to the north)." } },
         { accept = 6282, npc = 11860, at = { 1442, 47.20, 61.16 },
@@ -304,8 +302,7 @@ FastesBoooy.AddLibrarySegment({
         { go = true, radius = 30, at = { 1442, 49.96, 61.04 },
           note = { ru = "На запад к подножию Приюта и дальше на север по дороге к озеру.",
                    en = "West to the foot of Sun Rock, then north along the road to the lake." } },
-        { complete = 6301, at = { 1442, 48.77, 40.66 }, -- druid: 6301 done on 1-22
-          race = { "Orc", "Scourge", "Tauren", "Troll" },
+        { id = "h25-rebirth-seeds", complete = 6301, at = { 1442, 48.77, 40.66 },
           note = { ru = "Озеро: 10 семян Геи на берегу и на мелководье.",
                    en = "The lake: 10 Gaea Seeds on the shore and in the shallows." } },
         { complete = 97538, bg = true, at = { 1442, 48.09, 40.45 },
@@ -353,8 +350,7 @@ FastesBoooy.AddLibrarySegment({
                        .. "следующий сегмент); сдадите здесь же.",
                    en = "Braelyn: Ordanus - Keeper Ordanus sits on top of Raynewood Retreat in Ashenvale (on the way, next "
                        .. "segment); you hand it in back here." } },
-        { turnin = 6301, npc = 11864, at = { 1442, 47.46, 58.38 }, -- druid: 6301 done on 1-22
-          race = { "Orc", "Scourge", "Tauren", "Troll" },
+        { id = "h25-rebirth-turnin", turnin = 6301, npc = 11864, at = { 1442, 47.46, 58.38 },
           note = { ru = "Таммра.", en = "Tammra." } },
         { accept = 6381, npc = 11864, at = { 1442, 47.46, 58.38 },
           note = { ru = "Таммра: «Новая жизнь» — зачарованные семена Геи для долины гарпий.",

@@ -4,13 +4,13 @@
 -- (quests, flight path) -> hearth Grom'gol -> Stranglethorn north (Nesingwary, Bloodscalp trolls, Lake Nazferiti)
 -- -> Grom'gol -> Mosh'Ogg outpost / Shadowmaw cats -> Vile Reef -> Bloodscalp inner village -> Nesingwary ->
 -- hearth Grom'gol -> fly Booty Bay, levels 34-37.
--- Class-neutral: every quest is open to Undead and Skyborne (Horde) characters of any class; no training here
+-- Class-neutral: no quest of the segment is limited to a race or class; no training here
 -- (the paladin's level-34 training is the class insert after h-34-uc-arrive).
 -- Coordinates: Forever uiMap 1458 (Undercity) / 1420 (Tirisfal Glades) / 1434 (Stranglethorn Vale), map percent,
 -- from tools/data/forever_db.lua: NPC / object spawns for npc / object steps, centroids of the objective mob
 -- spawns of the chosen area for complete steps (h34 tools: research scratch cen.lua). Road points Grom'gol ->
 -- Booty Bay are spawns of NPCs standing / patrolling on the road (Se'Jib 7871, Verifonix 14492) and the spirit
--- healer 6491 outside the Booty Bay tunnel; the Undercity lift exit is the one of ud03 (UD route).
+-- healer 6491 outside the Booty Bay tunnel; the Undercity lift exit is the one of h-13-silverpine (h13-uc-lift).
 -- ruRU names in the notes: Wowhead Forever ruRU tooltips (nether.wowhead.com/forever/ru/tooltip/...).
 --
 -- Plan: research plan60.md section 4.5 / plan60.json segments[5]. Hubs and quests:
@@ -66,7 +66,7 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Урда (Павший Молот): летите в Подгород (через Мельницу Таррен).",
                    en = "Urda (Hammerfall): fly to Undercity (via Tarren Mill)." } },
         { id = "h-34-uc-arrive", turnin = 1164, npc = 4486, at = { 1458, 63.83, 49.45 },
-          note = { ru = "Генви Кэллоу рядом с Майклом Гарреттом (полёты): «Ограбить воров».",
+          note = { ru = "Генви Кэллоу рядом с Майклом Гарретом (полёты): «Ограбить воров».",
                    en = "Genavie Callow next to Michael Garrett (flights): To Steal From Thieves." } },
         { id = "h34-faranell", turnin = 513, npc = 2055, at = { 1458, 48.82, 69.28 },
           note = { ru = "Мастер аптекарь Фаранелл в зале аптекарей (юго-запад). Продолжение «Эликсир агонии» (515) "

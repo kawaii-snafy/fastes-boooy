@@ -1,7 +1,7 @@
 -- FastesBoooy_Guides / Segments / Shared / 56_Felwood_Winterspring_Plaguelands.lua
 --
--- Library segment "h-56-felwood-winterspring-plaguelands": levels 56-60, class-neutral (Undead Paladin and Skyborne
--- Druid, Horde). Cenarion Hold -> hearth Gadgetzan -> fly Orgrimmar (4300, hearth) -> fly Splintertree Post -> north
+-- Segment "h-56-felwood-winterspring-plaguelands": levels 56-60, all races and classes.
+-- Cenarion Hold -> hearth Gadgetzan -> fly Orgrimmar (4300, hearth) -> fly Splintertree Post -> north
 -- into Felwood (Emerald Sanctuary, Bloodvenom Post, Jaedenar / Shadow Hold, Ruins of Constellas, Shatter Scar Vale)
 -- -> Timbermaw Hold (Nafien) -> Winterspring (Salfa, Donova Snowden, Deadwood Cauldron and Toxic Horrors back in
 -- Felwood, Everlook, Winterfall Village, Ice Thistle Hills, Darkwhisper Gorge) -> back through Timbermaw Hold to
@@ -20,7 +20,7 @@
 -- Теснина Зловещего Шепота, Бастион, поле Джанис, Слезы Далсона, Призрачная ферма, пустошь Гаррона, Андорал,
 -- Дольный Очаг, Часовня Последней Надежды, Перекресток Корина, Крипта, Сторожка Кель'Литиен).
 --
--- Hub plan (Forever DB; every quest is open to Scourge and Skyborne Horde characters of any class):
+-- Hub plan (Forever DB; no quest of the segment is limited to a race or class):
 --   ORG : 4300 (Jes'rimon), hearth Orgrimmar (used from Bloodvenom Post at the end of Kalimdor).
 --   FEL : Grazle 8460; ES 5155 + 5156; Maybess 4102; Bloodvenom fp, 4505, 4521, 6162; Shadow Hold key 5202 > 5203
 --         (escort); Jaedenar 5155; Constellas 4505 > 4506 (kitten); Shatter Scar 5156; ES 5155 > 5157, 5156, 5203 >
@@ -390,7 +390,7 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Из главных ворот на восток к башне дирижаблей: Фрезза — дирижабль в Подгород.",
                    en = "Out through the main gate, east to the zeppelin tower: Frezza - the zeppelin to Undercity." } },
         { go = true, radius = 40, npc = 9566, at = { 1420, 60.74, 58.87 },
-          note = { ru = "Прибытие в Тирисфальские леса (Запота), вниз в Подгород.",
+          note = { ru = "Прибытие в Тирисфальские леса (Запетта), вниз в Подгород.",
                    en = "Arrival in Tirisfal Glades (Zapetta), down into Undercity." } },
         { id = "h-58-uc-arrive", sethearth = "Undercity", npc = 6741, at = { 1458, 67.74, 37.89 },
           note = { ru = "Хозяин таверны Норман: привяжите камень (вернётесь им из Западных Чумных "

@@ -1,6 +1,6 @@
 -- FastesBoooy_Guides / Segments / Shared / 27_Ashenvale_Needles.lua
 --
--- Library segment "h-27-ashenvale-needles": levels 27-31, class-neutral (Undead Paladin and Skyborne Druid, Horde).
+-- Segment "h-27-ashenvale-needles": levels 27-31, all races and classes.
 -- Sun Rock Retreat -> hearth Thunder Bluff -> fly The Crossroads -> north via Mor'shan Rampart into Ashenvale (Torek,
 -- Silverwing Outpost, Splintertree Post, Felmusk, Raynewood Retreat, Mystral Lake, the Ashenvale Hunt) -> fly Sun
 -- Rock (Ordanus) -> hearth Thunder Bluff -> Skywatcher Plateau (Mulgore, Forever-new Gloomrise chain) -> fly
@@ -16,7 +16,7 @@
 -- Freewind Supplies (object 670338, 16 spawns 25.9-28.0 / 47.2-56.2) is a DB supplement from the Wowhead Forever
 -- tooltip; the Gravelsnout kobold camp by Dorn (51.8-54.4, 43-48.6) is the Wowhead Forever NPC tooltip map of 4113.
 --
--- Hub plan (Forever DB; every quest is available to Scourge and Skyborne Horde characters of any class):
+-- Hub plan (Forever DB; no quest of the segment is limited to a race or class):
 --   TB1 : hearth from Sun Rock; 1086 (Zamah); 97538 (Tah Winterhoof, Forever-new); 1195 (Zangen); optional 6561
 --         (Bashana, from the optional Blackfathom Deeps run of h-24); fly The Crossroads.
 --   AV1 : Mor'shan Rampart -> Torek 6544 (assault on Silverwing Outpost with Torek's raiders); Kuray'bin 6503
@@ -515,7 +515,8 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Стервятники (32-34) кружат южнее трассы; падальщики (30-32) — на севере.",
                    en = "Salt Flats Vultures (32-34) circle south of the raceway; Scavengers (30-32) are in the north." } },
         { id = "h-27-ashenvale-needles-level-gate", complete = 1175, level = { 30, 0.67 },
-          ok = { ["level-grind"] = 110 }, -- end-of-segment gate: 109 / 84 kills in the normal run (druid / paladin)
+          ok = { ["level-grind"] = 130 }, -- end-of-segment gate: 122 kills in the normal run of a base profile
+          -- (no class quests; paladin 84, druid 82)
           at = { 1441, 77.76, 87.73 },
           note = { ru = "Юг: 6 созерцателей (34-35), доберите кристаллошкурых. Затем бейте мобов севера (черепахи, "
                        .. "скорпиды, василиски 30-32 — плотно, лучший опыт рядом) до 30-го + 67%: сдачи на трассе и в "

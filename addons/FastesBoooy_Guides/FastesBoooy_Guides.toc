@@ -16,12 +16,6 @@ Segments\Durotar\02_Durotar.lua
 Segments\Mulgore\01_CampNarache.lua
 Segments\Mulgore\02_Mulgore.lua
 Segments\Mulgore\03_BarrensCrossing.lua
-Segments\Legacy\ud_03_Silverpine.lua
-Segments\Legacy\ud_04_Barrens.lua
-Segments\Legacy\ud_05_Barrens_Stonetalon_Ashenvale.lua
-Segments\Legacy\sd_03_Mulgore_Silverpine.lua
-Segments\Legacy\sd_04_Barrens.lua
-Segments\Legacy\sd_05_Barrens_Stonetalon_Ashenvale.lua
 Segments\Shared\12_Orgrimmar_Tirisfal.lua
 Segments\Shared\13_Silverpine.lua
 Segments\Shared\15_Barrens.lua

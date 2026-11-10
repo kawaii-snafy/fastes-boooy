@@ -1,7 +1,7 @@
 -- FastesBoooy_Guides / Segments / Shared / 50_Hinterlands_Searing_Steppes.lua
 --
--- Library segment "h-50-hinterlands-searing-steppes": levels 50-53, class-neutral (Undead Paladin and Skyborne
--- Druid, Horde). Camp Mojache -> fly Orgrimmar (turn-ins) -> zeppelin -> Undercity -> fly Tarren Mill -> ride into
+-- Segment "h-50-hinterlands-searing-steppes": levels 50-53, all races and classes.
+-- Camp Mojache -> fly Orgrimmar (turn-ins) -> zeppelin -> Undercity -> fly Tarren Mill -> ride into
 -- the Hinterlands (Quel'Danil Lodge, Skulk Rock) -> Revantusk Village (two loops: north coast + wilds + west, then
 -- Jintha'Alor) -> fly Kargath -> Searing Gorge (Thorium Point, Kalaran Windblade, the Cauldron) -> Blackrock Mountain
 -- -> Burning Steppes (Flame Crest, Dreadmaul Rock) -> hearth Kargath -> fly Stonard (Fallen Hero chain) -> Blasted
@@ -18,7 +18,7 @@
 -- from the game state anyway); for the elite 7861 / 7862 (~100 elite kills at the text counts) the note says to
 -- abandon them if the counter shows 20 (the engine skips their steps; the mixed turn-in step waits for the rest).
 --
--- Hub plan (Forever DB; every quest is open to Scourge and Skyborne Horde characters of any class):
+-- Hub plan (Forever DB; no quest of the segment is limited to a race or class):
 --   ORG : 3002 (Uthel'nay); 3121 (Neeru); 32 + 7732 (Zilzibin); 4300 (Jes'rimon); 649 > 650 (Droffers); 2976 > 3504.
 --   UC  : 2995 (Oran), 81949 (Owen Thadd), 864 (Zinge), 3568 (Cuely). Fly Tarren Mill, ride into the Hinterlands.
 --   HW  : Gilveradin 650 > 77; Highvale papers (2995); Rin'ji 2742 (escort out of the lodge); Skulk Rock crates (77).
@@ -123,13 +123,14 @@ FastesBoooy.AddLibrarySegment({
         -- Undercity -> Tarren Mill (level 50)
         ------------------------------------------------------------------
         { go = true, radius = 40, npc = 9566, at = { 1420, 60.74, 58.87 },
-          note = { ru = "Прибытие к башне в Тирисфальских лесах (Запота), дальше в Подгород.",
+          note = { ru = "Прибытие к башне в Тирисфальских лесах (Запетта), дальше в Подгород.",
                    en = "Arrival at the Tirisfal Glades tower (Zapetta), then into Undercity." } },
         { id = "h-50-uc-arrive", accept = 2995, npc = 7825, at = { 1458, 73.06, 32.85 },
           note = { ru = "Квартал Магов, Оран Змеиные Кольца: «Линии связи» (бумаги Высокодолья во Внутренних землях).",
                    en = "Magic Quarter, Oran Snakewrithe: Lines of Communication (Highvale papers in the "
                        .. "Hinterlands)." } },
-        { accept = 81949, complete = 81949, turnin = 81949, npc = 211022, at = { 1458, 73.40, 33.00 },
+        { id = "h50-owen-thadd", accept = 81949, complete = 81949, turnin = 81949, npc = 211022,
+          at = { 1458, 73.40, 33.00 },
           note = { ru = "Рядом, Оуэн Тэдд: книга «Легенды о волнопевах» из Танариса - возьмите задание (книга в сумках) "
                        .. "и сразу сдайте.",
                    en = "Next to him, Owen Thadd: the book Legends of the Tidesages from Tanaris - take the quest (the "
@@ -141,7 +142,7 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Химик Карабос: «Разносчик порчи» (приливные пруды Азшары, следующий сегмент).",
                    en = "Chemist Cuely: Seeping Corruption (Azshara tide pools, next segment)." } },
         { id = "h50-fly-tarrenmill", fly = "Tarren Mill", npc = 2389, at = { 1424, 60.14, 18.62 },
-          note = { ru = "Летите на Мельницу Таррен (Майкл Гарретт в центре города).",
+          note = { ru = "Летите на Мельницу Таррен (Майкл Гаррет в центре города).",
                    en = "Fly to Tarren Mill (Michael Garrett in the city centre)." } },
 
         ------------------------------------------------------------------

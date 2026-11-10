@@ -1,6 +1,6 @@
 -- FastesBoooy_Guides / Segments / Shared / 31_Hillsbrad_Arathi.lua
 --
--- Library segment "h-31-hillsbrad-arathi": levels 31-34, class-neutral (Undead Paladin and Skyborne Druid, Horde).
+-- Segment "h-31-hillsbrad-arathi": levels 31-34, all races and classes.
 -- Thunder Bluff -> fly Camp Taurajo (1153) -> fly Orgrimmar -> zeppelin -> Undercity (1164) -> fly Tarren Mill (hearth
 -- bound there) -> two
 -- Hillsbrad / Alterac loops (Syndicate camp, Growless Cave, Dalaran camp, Hillsbrad town hall; Alterac yeti cave,
@@ -19,7 +19,7 @@
 -- point 49.0,38.0 (Starving Mountain Lions, as in h-22).
 -- ruRU names in the notes: Wowhead Forever ruRU tooltips (nether.wowhead.com/forever/ru/tooltip/...).
 --
--- Hub plan (Forever DB; every quest is open to Scourge and Skyborne Horde characters of any class):
+-- Hub plan (Forever DB; no quest of the segment is limited to a race or class):
 --   TB/UC: fly Camp Taurajo: 1153 (Tatternack, from h-27; Taurajo is a short hop off the Thunder Bluff -> Orgrimmar
 --          flight); fly Orgrimmar, zeppelin to Tirisfal, optional 1013 (Bel'dugur: The Book of Ur from the optional
 --          Shadowfang Keep run of h-22, quest level 26 = full XP at 31), 1164 (Genavie Callow, next to the Undercity

@@ -23,15 +23,6 @@ local SILVERPINE_ON = {
 }
 local VISIT = "h-12-orgrimmar-tirisfal" -- Orgrimmar + the trip to Tirisfal; every race but the Undead
 
--- LEGACY CHAINS (phase F2a of docs/dev/PLAN.md; phase F2b deletes this table and the branch that reads it).
--- Until h-12 .. h-18 are written, the Undead and the Skyborne walk 13-22 on their old own segments
--- (Segments/Legacy): they stand in for VISIT and the first LEGACY_REPLACES entries of SILVERPINE_ON.
-local LEGACY = {
-    Scourge = { "ud-03-silverpine", "ud-04-barrens", "ud-05-stonetalon-ashenvale" },
-    Skyborne = { "sd-03-mulgore-silverpine", "sd-04-barrens", "sd-05-stonetalon-ashenvale" },
-}
-local LEGACY_REPLACES = 3 -- h-13-silverpine, h-15-barrens, h-18-stonetalon-ashenvale
-
 local CLASSES = {
     WARRIOR = { slug = "warrior", ru = "воин", en = "Warrior" },
     HUNTER = { slug = "hunter", ru = "охотник", en = "Hunter" },
@@ -77,19 +68,13 @@ local PATH = {
         .. "Un'Goro, Silithus, Felwood, Winterspring and the Plaguelands.",
 }
 
--- the segment chain of a race: its start segments, then the shared path
+-- the segment chain of a race: its start segments, then the shared path (the Undead join it at
+-- h-13-silverpine on foot, every other race at h-12-orgrimmar-tirisfal)
 local function chain(r, start)
     local list = {}
     for j = 1, #start do list[#list + 1] = start[j] end
-    local from = 1
-    local legacy = LEGACY[r.race]
-    if legacy then
-        for j = 1, #legacy do list[#list + 1] = legacy[j] end
-        from = LEGACY_REPLACES + 1
-    elseif r.visit then
-        list[#list + 1] = VISIT
-    end
-    for j = from, #SILVERPINE_ON do list[#list + 1] = SILVERPINE_ON[j] end
+    if r.visit then list[#list + 1] = VISIT end
+    for j = 1, #SILVERPINE_ON do list[#list + 1] = SILVERPINE_ON[j] end
     return list
 end
 

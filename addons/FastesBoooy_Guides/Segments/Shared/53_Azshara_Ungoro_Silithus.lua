@@ -1,7 +1,7 @@
 -- FastesBoooy_Guides / Segments / Shared / 53_Azshara_Ungoro_Silithus.lua
 --
--- Library segment "h-53-azshara-ungoro-silithus": levels 53-56, class-neutral (Undead Paladin and Skyborne Druid,
--- Horde). Kargath (hearth from the Blasted Lands; Stonard after the optional 1445) -> fly Undercity (Oran) ->
+-- Segment "h-53-azshara-ungoro-silithus": levels 53-56, all races and classes.
+-- Kargath (hearth from the Blasted Lands; Stonard after the optional 1445) -> fly Undercity (Oran) ->
 -- zeppelin -> Orgrimmar (hearth) -> fly Splintertree Post -> ride east
 -- into Azshara (Loh'atu, Valormok, Kim'jael, the blood elf camp, Ruins of Eldarath, Xylem) -> hearth Orgrimmar
 -- (turn-ins) -> fly Gadgetzan (hearth) -> ramp down into Un'Goro Crater (Torwa) -> Marshal's Refuge (three loops)
@@ -16,7 +16,7 @@
 -- ruRU names in the notes: Wowhead Forever ruRU tooltips (nether.wowhead.com/forever/ru/tooltip/...); places from
 -- ruRU quest texts (Укрытие Маршалла, крепость Кенария, Вулкан Огненного Венца, Прибамбасск, Покой Доблестных).
 --
--- Hub plan (Forever DB; every quest is open to Scourge and Skyborne Horde characters of any class):
+-- Hub plan (Forever DB; no quest of the segment is limited to a race or class):
 --   UC  : Oran 2995 + 2782 > 8273 > 8273 (carried complete from h-50); Owen Thadd: books 81954 / 81955 / 81953 / 81947 /
 --         81956 (the book items looted in h-50: accept + complete + turn in at once). Zeppelin to Orgrimmar.
 --   ORG : 81 (Dran Droffers), 4494 (Zilzibin), hearth Orgrimmar, fly Splintertree Post.
@@ -103,7 +103,7 @@ FastesBoooy.AddLibrarySegment({
                        .. "Mountain, the Swamp of Sorrows and the Blasted Lands - take the quests (the books are in your "
                        .. "bags) and turn them in at once. A book missing: turn in the rest and press Forward." } },
         { id = "h53-zeppelin-org", go = true, radius = 15, npc = 9566, at = { 1420, 60.74, 58.87 },
-          note = { ru = "Из Подгорода к башне дирижаблей (Запота): дирижабль в Оргриммар.",
+          note = { ru = "Из Подгорода к башне дирижаблей (Запетта): дирижабль в Оргриммар.",
                    en = "Out of Undercity to the zeppelin tower (Zapetta): zeppelin to Orgrimmar." } },
         { go = true, radius = 40, npc = 9564, at = { 1411, 50.82, 13.54 },
           note = { ru = "Прибытие в Дуротар (Фрезза), дальше в Оргриммар.",

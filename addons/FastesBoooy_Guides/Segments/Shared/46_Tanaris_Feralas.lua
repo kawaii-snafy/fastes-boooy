@@ -1,6 +1,6 @@
 -- FastesBoooy_Guides / Segments / Shared / 46_Tanaris_Feralas.lua
 --
--- Library segment "h-46-tanaris-feralas": levels 46-50, class-neutral (Undead Paladin and Skyborne Druid, Horde).
+-- Segment "h-46-tanaris-feralas": levels 46-50, all races and classes.
 -- Booty Bay -> boat -> Ratchet -> fly Freewind Post -> Shimmering Flats -> Gadgetzan (Tanaris: Sandsorrow Watch,
 -- Wastewander camps, Steamwheedle Port, Lost Rigger Cove, then one big loop Waterspring Field -> Gahz'ridian ->
 -- Dunemaul -> Thistleshrub Valley -> Noxious Lair, hearth, Hazzali hive) -> fly Freewind Post -> ride west into
@@ -14,7 +14,7 @@
 -- Feralas entry 88.9,41.2 is the road north of Thalanaar.
 -- ruRU names in the notes: Wowhead Forever ruRU tooltips (nether.wowhead.com/forever/ru/tooltip/...).
 --
--- Hub plan (Forever DB; every quest is open to Scourge and Skyborne Horde characters of any class):
+-- Hub plan (Forever DB; no quest of the segment is limited to a race or class):
 --   G1  : fp, hearth; 5863 (Andi Lynn); 243 > 379 + 1690 (Bilgewhizzle); 1707 (Luglunket); 2605 (Noggenfogger);
 --         2781 + 2875 (Wanted Poster); 3362 (Tran'rek); 992 (Fizzledowser).
 --   W   : Sandsorrow Watch water hole (992) > Fizzledowser 992 > 82.

@@ -1,6 +1,6 @@
 -- FastesBoooy_Guides / Segments / Shared / 44_Swamp_Stranglethorn.lua
 --
--- Library segment "h-44-swamp-stranglethorn": levels 44-46, class-neutral (Undead Paladin and Skyborne Druid, Horde).
+-- Segment "h-44-swamp-stranglethorn": levels 44-46, all races and classes.
 -- Kargath -> fly Undercity -> zeppelin to Grom'gol (hearth, 572 / 584 / 598) -> Bloodscalp chiefs (584) -> Nesingwary
 -- (196, 193) -> north through Duskwood and Deadwind Pass -> Swamp of Sorrows: Stonard (flight point, 1420, 1424, 698,
 -- 1430) -> Pool of Tears -> east coast -> Tok'Kar (698 > 699) -> north-east coast (699, 1430) -> Galen's escort (1393)
@@ -21,7 +21,7 @@
 -- 861 patrol spawn 14.8,52.2).
 -- ruRU names in the notes: Wowhead Forever ruRU tooltips (nether.wowhead.com/forever/ru/tooltip/...).
 --
--- Hub plan (Forever DB; every quest is open to Scourge and Skyborne Horde characters of any class):
+-- Hub plan (Forever DB; no quest of the segment is limited to a race or class):
 --   GG 0 : sethearth Grom'gol; 572 (Mok'thardin), 584 (Nimboya), 598 (Kin'weelay); Bloodscalp chiefs (584) and
 --          Nesingwary 196 + 193 on the way north (the camp is on the road to Duskwood).
 --   SW 1 : Stonard: fp, 1420 (Helgrum), 1424 (Fel'zerul), 698 + 1430 (Dar); crocolisks (698), Pool of Tears (1424),
