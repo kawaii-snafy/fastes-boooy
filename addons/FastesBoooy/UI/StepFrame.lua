@@ -13,7 +13,7 @@
 -- nothing in the button row is anchored to a content region.
 --
 -- Also defines the small shared UI toolkit (ns.UI) used by UI/Arrow.lua,
--- UI/ItemButton.lua and UI/Options.lua: locale proxy, settings setter (fires
+-- UI/Options.lua: locale proxy, settings setter (fires
 -- SETTINGS_CHANGED), frame position save/restore, guide visibility / combat state,
 -- engine actions shared with the slash commands (UI.Forward, UI.ApplySync...).
 --
@@ -191,9 +191,8 @@ function UI.MakeMovable(frame, key, topAnchored)
     frame:SetScript("OnHide", stopDrag)
 end
 
---- Put the guide window, the arrow and the item button back to their default positions
--- (the "hidden" flag of the guide is kept). Listeners of SETTINGS_CHANGED re-apply the positions;
--- the item button does it after combat.
+--- Put the guide window and the arrow back to their default positions (the "hidden" flag of
+-- the guide is kept). Listeners of SETTINGS_CHANGED re-apply the positions.
 function UI.ResetPositions()
     local frames = ns.db and ns.db.frames
     local defaults = ns.DEFAULTS and ns.DEFAULTS.db and ns.DEFAULTS.db.frames

@@ -851,7 +851,6 @@ COMMANDS.unlock = function()
     Options:Refresh()
     out(L.UI_UNLOCKED)
 end
--- the item button is only shown on some steps: a misplaced one cannot be found and dragged back
 COMMANDS.resetpos = function()
     if UI.ResetPositions() then out(L.UI_POS_RESET) end
 end

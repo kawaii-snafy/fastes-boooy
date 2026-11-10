@@ -48,10 +48,6 @@ L.UI_SYNC_UNDO_TT = "Go back to where you were: the jumped-over steps count as n
 -- arrow ----------------------------------------------------------------------
 L.UI_YARDS_FMT = "%d yd"
 
--- item button -------------------------------------------------------------------
-L.UI_TT_ITEM_USE = "Click to use (macro: /click FastesBoooyItemButton)."
-L.UI_TT_ITEM_DRAG = "Right-drag to move. Lock the frames in the settings."
-
 -- settings panel ---------------------------------------------------------------
 L.UI_OPT_SUBTITLE = "Leveling guide for World of Warcraft: Forever."
 L.UI_OPT_SECTION_AUTOMATION = "Automation"
@@ -85,7 +81,7 @@ L.UI_OPT_blizzWaypoint_TT = "Also place the native map pin and on-screen navigat
 L.UI_OPT_locked = "Lock frames"
 L.UI_OPT_locked_TT = "Prevent the guide window and the arrow from being dragged."
 L.UI_OPT_hideInCombat = "Hide in combat"
-L.UI_OPT_hideInCombat_TT = "Hide the guide window and the arrow while you are in combat. The item button stays."
+L.UI_OPT_hideInCombat_TT = "Hide the guide window and the arrow while you are in combat."
 L.UI_OPT_debug = "Debug output"
 L.UI_OPT_debug_TT = "Print diagnostic messages to the chat."
 
@@ -119,7 +115,7 @@ L.UI_OPT_RESET_TT = "Forget manual marks and skipped steps of this character and
     .. "the route evaluation over. Quest progress is read from the game again."
 L.UI_OPT_TOGGLE_FRAME = "Show / hide guide"
 L.UI_OPT_RESET_POS = "Reset positions"
-L.UI_OPT_RESET_POS_TT = "Put the guide window, the arrow and the item button back to their default places."
+L.UI_OPT_RESET_POS_TT = "Put the guide window and the arrow back to their default places."
 L.UI_OPT_EXPORT_XP = "Export XP log"
 L.UI_OPT_EXPORT_XP_TT = "Quest XP rewards recorded on turn-in, for re-tuning the routes."
 L.UI_OPT_NO_ROUTES = "No routes installed. Enable a route module (FastesBoooy_...) in the AddOns list."
@@ -145,7 +141,7 @@ L.UI_XP_EXPORT_HINT = "Ctrl+A, Ctrl+C to copy. Esc to close."
 L.UI_HELP_HEADER = "Commands:"
 L.UI_HELP_show = "/fb show | hide - show or hide the guide"
 L.UI_HELP_lock = "/fb lock | unlock - lock or unlock the frames"
-L.UI_HELP_resetpos = "/fb resetpos - put the guide window, the arrow and the item button back to their default places"
+L.UI_HELP_resetpos = "/fb resetpos - put the guide window and the arrow back to their default places"
 L.UI_HELP_next = "/fb back | forward - like the Back / Forward buttons; /fb next | skip - mark the step "
     .. "done / skipped"
 L.UI_HELP_sync = "/fb sync [undo] - jump to the part of the route that fits your level (undo: go back)"
@@ -161,7 +157,7 @@ L.UI_UNKNOWN_CMD_FMT = "Unknown command '%s'. Type /fb help."
 L.UI_SHOWN = "Guide shown."
 L.UI_HIDDEN = "Guide hidden. Type /fb show to bring it back."
 L.UI_LOCKED = "Frames locked."
-L.UI_POS_RESET = "The guide window, the arrow and the item button are back at their default places."
+L.UI_POS_RESET = "The guide window and the arrow are back at their default places."
 L.UI_UNLOCKED = "Frames unlocked: drag them to move."
 L.UI_ROUTES_HEADER = "Installed routes:"
 L.UI_ROUTES_NONE = "No routes installed."
