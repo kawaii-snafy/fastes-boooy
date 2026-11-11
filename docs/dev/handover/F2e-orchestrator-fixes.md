@@ -247,3 +247,21 @@ each; with 28 routes it would have been 12 min). The case now passes `--route 't
 4. **Decisions left to P2 by earlier hand-overs, unchanged**: the two Zephras trainer-hub gates, `h13-lvl-14` for
    the Undead, `ok = "segment-level"` on `h-22-hillsbrad` (review with all five races), `SYNC_ROUTES` final list.
 5. Nothing blocks P1.
+
+## Verification round 1
+
+| Finding | Verdict | Change |
+|---|---|---|
+| `Registry:AddRouteData` checks the data shape before it queues; the flush in `RegisterRoute` called `self:AddRouteData` again, so a bad reward entry of data registered before its route was reported twice in the game (once in the tools) | **real** (reproduced: the error list held the `rewards.PALADIN[380]` line twice) | `addons/FastesBoooy/Core/Registry.lua`: the flush merges queued data directly (`ns.Compose.MergeData(route.data, p.def)`, as the tools' loader does with its internal `addData`); `changed(id)` after the loop already announces the route. New case in `tests/spec/core_registry_spec.lua` ("reports a bad reward entry of queued route data once"): the exact error list before `RegisterRoute` (shape error + "not registered yet"), no new error after it, the queued data is merged as given. Mutation check on a scratch copy (flush back to `self:AddRouteData`): the case fails ("the flush of the queue reports nothing new"). Item 8 above says "once". |
+| `docs/ARCHITECTURE.md`: the gray-chain sentence said "не `optional` за границей перемотки" and left out non-`bg` | **real** (the code, `Engine.lua` `wanted`: `sj.optional and not sj.bg and j < limit`, i.e. before the limit) | Now "не `optional` не-`bg` шаг до границы перемотки", as in the "accept не взят" paragraph. The comment of `wanted` in `Engine.lua` and item 1 of this hand-over said "behind the forward limit" (the English idiom used elsewhere in the engine for "already passed"); both now say "an `optional` non-bg step before the forward limit" so nobody reads them the other way. Comment-only in the engine. |
+| PLAN.md review-log entry ET-10 still says "18 / 19 after F1b" | **real** | ET-10 gets "(as executed: 18 / 18, the nineteenth is INFO `train-service`; D.1 row F1b)"; the review log otherwise stays as history. The table "Other open issues" above names both places. |
+
+Acceptance, re-run on the final tree (4 CPUs):
+
+| Command | Result |
+|---|---|
+| `luacheck --config .luacheckrc addons tools tests` | 0 warnings / 0 errors in 175 files |
+| `make check` | exit 0, 241 s wall: busted **719** successes / 0 / 0 (71 s; +1 registry case); `make validate` 0 ERROR, 0 WARN, 188 accepted (strict); fixtures 7 modules 0 errors; `make simulate` all 11 routes passed; `make simulate-sync` all runs passed; fixture simulations 5 / 5; harness fixture runs pass |
+| `make routedata-check` | exit 0 |
+| `make report`, then `git diff docs/VALIDATION.md` | written; no diff |
+| `make simulate-sync-full` | exit 0, 88 of 88 runs `OK` (11 routes x 8), 428 s wall; `--ahead 48`: nine base routes "cold start: finished", `undead-paladin` 1753/1754, `skyborne-druid` 1784/1784 (as before). Warnings: only the three known ones (11 x `h-53-...:41`, 20 x `sd02-hearth`, 10 x `sky-1061`) |
