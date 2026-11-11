@@ -65,10 +65,12 @@ local M = {}
 -- using it; Forever-new places whose ruRU name is unknown stay out (the client's
 -- C_Map.GetAreaInfo name is used in game anyway).
 M.PLACE_NAMES_RU = {
+    ["Bloodhoof Village"] = "Деревня Кровавого Копыта",
     ["Brill"] = "Брилл",
     ["Camp Taurajo"] = "Лагерь Таурахо",
     ["Orgrimmar"] = "Оргриммар",                 -- quest 2380 "В Оргриммар!"
     ["Ratchet"] = "Кабестан",                    -- quest 2382 "Реникс из Кабестана"
+    ["Razor Hill"] = "Колючий Холм",
     ["Sun Rock Retreat"] = "Приют Солнечного Камня",
     ["The Crossroads"] = "Перекресток",          -- quest 854 "Путешествие в Перекресток"
     ["The Sepulcher"] = "Гробница",

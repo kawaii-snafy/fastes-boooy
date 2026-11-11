@@ -396,14 +396,14 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         -- Camp Mojache, second visit (level 48)
         ------------------------------------------------------------------
-        { turnin = 2987, npc = 8021, at = { 1444, 75.70, 44.31 },
+        { id = "h47-mojache-2987", turnin = 2987, npc = 8021, at = { 1444, 75.70, 44.31 },
           note = { ru = "Орвин.", en = "Orwin." } },
-        { turnin = { 2975, 2978 }, accept = { 2980, 2979 }, npc = 7777, at = { 1444, 75.80, 43.58 },
+        { id = "h47-mojache-2975", turnin = { 2975, 2978 }, accept = { 2980, 2979 }, npc = 7777, at = { 1444, 75.80, 43.58 },
           note = { ru = "Рока Орхан: вторые «Огры Фераласа» и «Тёмный обряд».",
                    en = "Rok Orhan: The Ogres of Feralas (part 2) and Dark Ceremony." } },
-        { turnin = 2973, accept = 2974, npc = 4544, at = { 1444, 75.94, 42.74 },
+        { id = "h47-mojache-2973", turnin = 2973, accept = 2974, npc = 4544, at = { 1444, 75.94, 42.74 },
           note = { ru = "Криг: «Зловещее открытие».", en = "Krueg: A Grim Discovery." } },
-        { turnin = 2862, accept = 2863, npc = 7875, at = { 1444, 74.91, 42.46 },
+        { id = "h47-mojache-2862", turnin = 2862, accept = 2863, npc = 7875, at = { 1444, 74.91, 42.46 },
           note = { ru = "Хадокен: «Истребление вожаков» — таймер 1 ч.",
                    en = "Hadoken: Alpha Strike - 1 h timer." } },
 
@@ -416,9 +416,9 @@ FastesBoooy.AddLibrarySegment({
         { complete = 2863, at = { 1444, 69.74, 54.54 },
           note = { ru = "На юг к лагерям Древолапов: 5 вожаков стаи (43-44).",
                    en = "South to the Woodpaw camps: 5 Woodpaw Alphas (43-44)." } },
-        { turnin = 2863, accept = 2902, npc = 7875, at = { 1444, 74.91, 42.46 },
+        { id = "h47-mojache-2863", turnin = 2863, accept = 2902, npc = 7875, at = { 1444, 74.91, 42.46 },
           note = { ru = "Хадокен: «Разведка планов Древолапов».", en = "Hadoken: Woodpaw Investigation." } },
-        { turnin = 2974, accept = 2976, npc = 4544, at = { 1444, 75.94, 42.74 },
+        { id = "h47-mojache-2974", turnin = 2974, accept = 2976, npc = 4544, at = { 1444, 75.94, 42.74 },
           note = { ru = "Криг: второе «Зловещее открытие» (Оргриммар, следующий сегмент).",
                    en = "Krueg: A Grim Discovery, part 2 (Orgrimmar, next segment)." } },
 
@@ -428,7 +428,7 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-47-woodpaw-battle-map", turnin = 2902, accept = 2903, object = 142195, at = { 1444, 71.63, 55.92 },
           note = { ru = "Тактическая карта Древолапов в южном лагере: «Планы битвы».",
                    en = "Woodpaw Battle Map in the southern camp: The Battle Plans." } },
-        { turnin = 2903, accept = { 7730, 7731 }, npc = 7875, at = { 1444, 74.91, 42.46 },
+        { id = "h47-mojache-2903", turnin = 2903, accept = { 7730, 7731 }, npc = 7875, at = { 1444, 74.91, 42.46 },
           note = { ru = "Хадокен: «Вторжение улья Цуккаш» и «Жалохвост».",
                    en = "Hadoken: Zukk'ash Infestation and Stinglasher." } },
         { complete = { 7730, 7731 }, at = { 1444, 75.44, 63.15 },
@@ -464,12 +464,12 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         -- Camp Mojache, fifth visit (level 49)
         ------------------------------------------------------------------
-        { turnin = { 7730, 7731 }, accept = 7732, npc = 7875, at = { 1444, 74.91, 42.46 },
+        { id = "h47-mojache-7730", turnin = { 7730, 7731 }, accept = 7732, npc = 7875, at = { 1444, 74.91, 42.46 },
           note = { ru = "Обратно в лагерь, Хадокен: «Донесение об улье Цуккаш» (Оргриммар).",
                    en = "Back to camp, Hadoken: Zukk'ash Report (Orgrimmar)." } },
-        { turnin = 2822, accept = 7734, npc = 7854, at = { 1444, 74.43, 42.91 },
+        { id = "h47-mojache-2822", turnin = 2822, accept = 7734, npc = 7854, at = { 1444, 74.43, 42.91 },
           note = { ru = "Джангор: «Борьба за качество».", en = "Jangdor: Improved Quality." } },
-        { turnin = { 2980, 2979 }, accept = 3002, npc = 7777, at = { 1444, 75.80, 43.58 },
+        { id = "h47-mojache-2980", turnin = { 2980, 2979 }, accept = 3002, npc = 7777, at = { 1444, 75.80, 43.58 },
           note = { ru = "Рока Орхан: «Сфера Гордунни» (Оргриммар).", en = "Rok Orhan: The Gordunni Orb (Orgrimmar)." } },
         { accept = 3063, npc = 7776, at = { 1444, 76.18, 43.83 },
           note = { ru = "Тало Терновое Копыто: «Месть стае Студеных Ключей».",
@@ -517,9 +517,9 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         -- Camp Mojache, last visit (level 50)
         ------------------------------------------------------------------
-        { turnin = 7734, npc = 7854, at = { 1444, 74.43, 42.91 },
+        { id = "h49-mojache-7734", turnin = 7734, npc = 7854, at = { 1444, 74.43, 42.91 },
           note = { ru = "Джангор.", en = "Jangdor." } },
-        { turnin = 3062, npc = 7776, optional = true, at = { 1444, 76.18, 43.83 },
+        { id = "h49-mojache-3062", turnin = 3062, npc = 7776, optional = true, at = { 1444, 76.18, 43.83 },
           note = { ru = "По желанию: «Тёмное сердце».", en = "Optional: Dark Heart." } },
         { accept = 3121, npc = 8115, at = { 1444, 74.42, 43.36 },
           note = { ru = "Рядом, знахарь Узер'и: «Странная просьба» (сушеная голова — Нииру Огненному Клинку в Оргриммаре, "

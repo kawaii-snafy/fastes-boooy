@@ -10,15 +10,15 @@
 
 Перегенерировать: `make report` (или `lua5.1 tools/validate_routes.lua --markdown docs/VALIDATION.md`).
 
-**Итого: 0 ERROR, 8 WARN, 12428 INFO; принято предупреждений (`ok`): 473.**
+**Итого: 0 ERROR, 0 WARN, 12430 INFO; принято предупреждений (`ok`): 481.**
 
-Прогонов (маршрут × профиль): 28. ERROR и WARN без повторов: 2 из 8 (сообщений о шагах общих сегментов: 8, строк в разделе «Общие шаги»: 2).
+Прогонов (маршрут × профиль): 28. ERROR и WARN без повторов: 0 из 0 (сообщений о шагах общих сегментов: 0, строк в разделе «Общие шаги»: 0).
 
 ## Модули и общие проверки
 
 ### Общая часть модуля FastesBoooy_Guides
 
-Проверки шаблонов (shared: 26 segment(s), 79 insert(s), 2230 step(s)): общие сегменты и общие вставки (`AddLibraryInsert`) проверяются один раз для всех маршрутов. Результат: **0 ERROR, 0 WARN, 0 INFO**.
+Проверки шаблонов (shared: 26 segment(s), 85 insert(s), 2260 step(s)): общие сегменты и общие вставки (`AddLibraryInsert`) проверяются один раз для всех маршрутов. Результат: **0 ERROR, 0 WARN, 0 INFO**.
 
 Ошибок и предупреждений нет.
 
@@ -28,23 +28,23 @@
 
 | маршрут | профиль | ERROR | WARN | принято | конец | худший конец | гринд | худший гринд | гринд +15 % | худший +15 % | оценён опыт | журнал | шагов | необязательных |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `orc-hunter` | Orc HUNTER Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4990 | 6226 | 3981 | 5301 | 63 (4.6 %) | 23 | 1666 | 149 |
-| `orc-mage` | Orc MAGE Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4990 | 6226 | 3981 | 5301 | 63 (4.6 %) | 23 | 1666 | 149 |
-| `orc-rogue` | Orc ROGUE Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4990 | 6226 | 3981 | 5301 | 63 (4.6 %) | 23 | 1666 | 149 |
-| `orc-shaman` | Orc SHAMAN Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4990 | 6226 | 3981 | 5301 | 63 (4.6 %) | 23 | 1666 | 149 |
-| `orc-warlock` | Orc WARLOCK Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4991 | 6227 | 3981 | 5302 | 63 (4.6 %) | 23 | 1667 | 149 |
-| `orc-warrior` | Orc WARRIOR Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4990 | 6226 | 3981 | 5301 | 63 (4.6 %) | 23 | 1666 | 149 |
-| `troll-hunter` | Troll HUNTER Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4990 | 6226 | 3981 | 5301 | 63 (4.6 %) | 23 | 1666 | 149 |
-| `troll-mage` | Troll MAGE Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4990 | 6226 | 3981 | 5301 | 63 (4.6 %) | 23 | 1666 | 149 |
-| `troll-priest` | Troll PRIEST Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4990 | 6226 | 3981 | 5301 | 63 (4.6 %) | 23 | 1666 | 149 |
-| `troll-rogue` | Troll ROGUE Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4990 | 6226 | 3981 | 5301 | 63 (4.6 %) | 23 | 1666 | 149 |
-| `troll-shaman` | Troll SHAMAN Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4990 | 6226 | 3981 | 5301 | 63 (4.6 %) | 23 | 1666 | 149 |
-| `troll-warlock` | Troll WARLOCK Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4991 | 6227 | 3981 | 5302 | 63 (4.6 %) | 23 | 1667 | 149 |
-| `troll-warrior` | Troll WARRIOR Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4990 | 6226 | 3981 | 5301 | 63 (4.6 %) | 23 | 1666 | 149 |
-| `tauren-druid` | Tauren DRUID Horde | 0 | 2 | 16 | 60.00 | 60.00 | 4922 | 6155 | 3922 | 5236 | 62 (4.5 %) | 23 | 1703 | 151 |
-| `tauren-hunter` | Tauren HUNTER Horde | 0 | 2 | 16 | 60.00 | 60.00 | 4965 | 6197 | 3970 | 5283 | 62 (4.5 %) | 23 | 1675 | 149 |
-| `tauren-shaman` | Tauren SHAMAN Horde | 0 | 2 | 16 | 60.00 | 60.00 | 4965 | 6197 | 3970 | 5283 | 62 (4.5 %) | 23 | 1675 | 149 |
-| `tauren-warrior` | Tauren WARRIOR Horde | 0 | 2 | 16 | 60.00 | 60.00 | 4965 | 6197 | 3970 | 5283 | 62 (4.5 %) | 23 | 1675 | 149 |
+| `orc-hunter` | Orc HUNTER Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4979 | 6226 | 3974 | 5301 | 63 (4.6 %) | 23 | 1675 | 158 |
+| `orc-mage` | Orc MAGE Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4979 | 6226 | 3974 | 5301 | 63 (4.6 %) | 23 | 1675 | 158 |
+| `orc-rogue` | Orc ROGUE Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4979 | 6226 | 3974 | 5301 | 63 (4.6 %) | 23 | 1675 | 158 |
+| `orc-shaman` | Orc SHAMAN Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4979 | 6226 | 3974 | 5301 | 63 (4.6 %) | 23 | 1675 | 158 |
+| `orc-warlock` | Orc WARLOCK Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4980 | 6227 | 3975 | 5302 | 63 (4.6 %) | 23 | 1674 | 156 |
+| `orc-warrior` | Orc WARRIOR Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4979 | 6226 | 3974 | 5301 | 63 (4.6 %) | 23 | 1675 | 158 |
+| `troll-hunter` | Troll HUNTER Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4979 | 6226 | 3974 | 5301 | 63 (4.6 %) | 23 | 1677 | 160 |
+| `troll-mage` | Troll MAGE Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4979 | 6226 | 3974 | 5301 | 63 (4.6 %) | 23 | 1677 | 160 |
+| `troll-priest` | Troll PRIEST Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4979 | 6226 | 3974 | 5301 | 63 (4.6 %) | 23 | 1677 | 160 |
+| `troll-rogue` | Troll ROGUE Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4979 | 6226 | 3974 | 5301 | 63 (4.6 %) | 23 | 1677 | 160 |
+| `troll-shaman` | Troll SHAMAN Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4979 | 6226 | 3974 | 5301 | 63 (4.6 %) | 23 | 1677 | 160 |
+| `troll-warlock` | Troll WARLOCK Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4980 | 6227 | 3975 | 5302 | 63 (4.6 %) | 23 | 1674 | 156 |
+| `troll-warrior` | Troll WARRIOR Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4979 | 6226 | 3974 | 5301 | 63 (4.6 %) | 23 | 1677 | 160 |
+| `tauren-druid` | Tauren DRUID Horde | 0 | 0 | 18 | 60.00 | 60.00 | 4922 | 6155 | 3922 | 5236 | 62 (4.5 %) | 23 | 1705 | 155 |
+| `tauren-hunter` | Tauren HUNTER Horde | 0 | 0 | 18 | 60.00 | 60.00 | 4965 | 6197 | 3970 | 5283 | 62 (4.5 %) | 23 | 1679 | 155 |
+| `tauren-shaman` | Tauren SHAMAN Horde | 0 | 0 | 18 | 60.00 | 60.00 | 4965 | 6197 | 3970 | 5283 | 62 (4.5 %) | 23 | 1679 | 155 |
+| `tauren-warrior` | Tauren WARRIOR Horde | 0 | 0 | 18 | 60.00 | 60.00 | 4965 | 6197 | 3970 | 5283 | 62 (4.5 %) | 23 | 1679 | 155 |
 | `undead-mage` | Scourge MAGE Horde | 0 | 0 | 16 | 60.00 | 60.00 | 4982 | 6217 | 3973 | 5294 | 63 (4.5 %) | 23 | 1696 | 158 |
 | `undead-paladin` | Scourge PALADIN Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4902 | 6173 | 3914 | 5260 | 82 (5.2 %) | 23 | 1754 | 172 |
 | `undead-priest` | Scourge PRIEST Horde | 0 | 0 | 16 | 60.00 | 60.00 | 4982 | 6217 | 3973 | 5294 | 63 (4.5 %) | 23 | 1696 | 158 |
@@ -84,8 +84,8 @@
 | `sd-02-zephras` 9-13 Zephras Isle: Valanaar, the Windfield orchard, Shadowwind Forest | 9–13 | все 5 `skyborne-*` | 9.93–9.95 | 13.24–13.32 | 0 | 0 |
 | `sd-03-thunder-bluff` 13 Thunder Bluff, the flight to Orgrimmar | 13–13 | все 5 `skyborne-*` | 13.24–13.32 | 13.24–13.35 | 0 | 0 |
 | `h-13-silverpine` 13-15 Silverpine Forest | 13–15 | все 28 | 12.10–14.17 | 14.13–15.55 | 0–19 | 0–20 |
-| `h-15-barrens` 15-18 The Barrens | 15–18 | все 28 | 14.13–15.55 | 17.94–18.75 | 0 | 0 |
-| `h-18-stonetalon-ashenvale` 18-22 Barrens, Stonetalon, Ashenvale | 18–22 | все 28 | 17.94–18.75 | 22.04–22.44 | 0–47 | 24–145 |
+| `h-15-barrens` 15-18 The Barrens | 15–18 | все 28 | 14.13–15.55 | 18.03–18.75 | 0 | 0 |
+| `h-18-stonetalon-ashenvale` 18-22 Barrens, Stonetalon, Ashenvale | 18–22 | все 28 | 18.03–18.75 | 22.04–22.44 | 0–36 | 24–145 |
 | `h-22-hillsbrad` 22-24 Hillsbrad Foothills (Tarren Mill) | 22–24 | все 28 | 22.04–22.44 | 24.82–25.12 | 0 | 51–52 |
 | `h-24-barrens-stonetalon` 24-27 Ratchet, Southern Barrens, Stonetalon | 24–27 | все 28 | 24.82–25.12 | 27.30–27.52 | 0 | 220–221 |
 | `h-27-ashenvale-needles` 27-31 Ashenvale, Skywatcher Plateau, Thousand Needles | 27–31 | все 28 | 27.30–27.52 | 31.01 | 82–122 | 313 |
@@ -103,16 +103,13 @@
 
 ERROR и WARN на шагах общих сегментов — по одной строке на (уровень, код, шаг или сегмент, квест) со списком маршрутов. Числа, которые зависят от прогона (симулированный уровень, недобор опыта, число убийств), показаны диапазоном по маршрутам.
 
-| уровень | где | код | маршруты | сообщение |
-|---|---|---|---|---|
-| WARN | h-15-barrens#7 id=h15-xr-arrive (Segments/Shared/15_Barrens.lua) | `db-override-unverified` | все 4 `tauren-*` | accept 844 "Plainstrider Menace" (exclusive with 854 "Journey to the Crossroads" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/shared.lua (source: Classic: Journey to the Crossroads (Thunder Bluff) is a breadcrumb, 844 stays available): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment) |
-| WARN | h-15-barrens#7 id=h15-xr-arrive (Segments/Shared/15_Barrens.lua) | `db-override-unverified` | все 4 `tauren-*` | accept 844 "Plainstrider Menace" (exclusive with 861 "The Hunter's Way" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/shared.lua (source: the DB chain 861 -> 860 (breadcrumbFor 844) -> 844; Classic quest chain The Hunter's Way): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment) |
+Ошибок и предупреждений на общих шагах нет.
 
-<details><summary>Принятые предупреждения на общих шагах, `ok` (20)</summary>
+<details><summary>Принятые предупреждения на общих шагах, `ok` (22)</summary>
 
 | где | код | маршруты | сообщение |
 |---|---|---|---|
-| h-18-stonetalon-ashenvale#92 id=h18-lvl-22 (Segments/Shared/18_Stonetalon_Ashenvale.lua) | `level-grind` | все 6 `orc-*`, все 7 `troll-*` | level 21 +85%: simulated level 21.62 is short by 6000 XP; ~40 same-level kills needed (estimate) |
+| h-18-stonetalon-ashenvale#92 id=h18-lvl-22 (Segments/Shared/18_Stonetalon_Ashenvale.lua) | `level-grind` | все 6 `orc-*`, все 7 `troll-*` | level 21 +85%: simulated level 21.64 is short by 5400 XP; ~36 same-level kills needed (estimate) |
 | h-22-hillsbrad#19 id=h22-sfk-vincent (Segments/Shared/22_Hillsbrad.lua) | `at-far-from-giver` | все 28 | turnin 1098 "Deathstalkers in Shadowfang": no quest ender spawns on uiMap 1421 |
 | h-24-barrens-stonetalon#84 (Segments/Shared/24_Barrens_Stonetalon.lua) | `at-far-from-giver` | все 28 | accept 6561 "Blackfathom Villainy": no quest giver spawns on uiMap 1440 |
 | h-27-ashenvale-needles#55 (Segments/Shared/27_Ashenvale_Needles.lua) | `at-far-from-giver` | все 28 | accept 1144 "Willix the Importer": no quest giver spawns on uiMap 1413 |
@@ -129,6 +126,8 @@ ERROR и WARN на шагах общих сегментов — по одной 
 | h-53-azshara-ungoro-silithus#114 id=h55-silithus-field-grind (Segments/Shared/53_Azshara_Ungoro_Silithus.lua) | `level-grind` | все 28 | level 54 +74%: simulated level 54.09–54.16 is short by 100485–114030 XP; ~319–362 same-level kills needed (estimate) |
 | h-56-felwood-winterspring-plaguelands#72 id=h57-winterspring-grind (Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua) | `level-grind` | все 28 | level 57: simulated level 55.99 is short by 189770–189775 XP; ~584 same-level kills needed (estimate) |
 | h-56-felwood-winterspring-plaguelands#206 id=h-56-felwood-winterspring-plaguelands-level-gate (Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua) | `level-grind` | все 28 | level 59 +98%: simulated level 58.81 is short by 244225 XP; ~720 same-level kills needed (estimate) |
+| h-15-barrens#7 id=h15-xr-arrive (Segments/Shared/15_Barrens.lua) | `db-override-unverified` | все 4 `tauren-*` | accept 844 "Plainstrider Menace" (exclusive with 854 "Journey to the Crossroads" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/shared.lua (source: Classic: Journey to the Crossroads (Thunder Bluff) is a breadcrumb, 844 stays available): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment) |
+| h-15-barrens#7 id=h15-xr-arrive (Segments/Shared/15_Barrens.lua) | `db-override-unverified` | все 4 `tauren-*` | accept 844 "Plainstrider Menace" (exclusive with 861 "The Hunter's Way" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/shared.lua (source: the DB chain 861 -> 860 (breadcrumbFor 844) -> 844; Classic quest chain The Hunter's Way): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment) |
 | h-22-hillsbrad (Segments/Shared/22_Hillsbrad.lua) | `segment-level` | `undead-paladin`, `skyborne-druid` | segment h-22-hillsbrad ends at simulated level 25.10–25.12; planned end level 24 |
 | sd-03-thunder-bluff#4 id=sd03-fly-org (Segments/Zephras/03_ThunderBluff.lua) | `fly-unknown-fp` | все 5 `skyborne-*` | fly Orgrimmar: flight point Orgrimmar was not learned before (no earlier fp step): a flight there is not offered |
 | h-12-orgrimmar-tirisfal (Segments/Shared/12_Orgrimmar_Tirisfal.lua) | `segment-level` | все 5 `skyborne-*` | segment h-12-orgrimmar-tirisfal ends at simulated level 14.09–14.17; planned end level 13 |
@@ -160,10 +159,10 @@ ERROR и WARN на шагах общих сегментов — по одной 
 | 12 | h-13-silverpine#6 id=h13-lvl-12 | все 28 | 0 | 0 | 0 | — |
 | 12 | ud-02-tirisfal#96 id=ud02-lvl-12 | все 6 `undead-*` | 0 | 1 | 6 | — |
 | 13 +92% | h-13-silverpine#40 id=h13-lvl-14 | все 28 | 0 | 19 | 20 | — |
-| 18 | h-18-stonetalon-ashenvale#3 id=h18-lvl-18 | все 28 | 0 | 7 | 45 | — |
+| 18 | h-18-stonetalon-ashenvale#3 id=h18-lvl-18 | все 28 | 0 | 0 | 45 | — |
 | 19 +88% | h-18-stonetalon-ashenvale#46 id=h18-lvl-20 | все 28 | 0 | 0 | 0 | — |
 | 21 | h-18-stonetalon-ashenvale#86 id=h18-lvl-21 | все 28 | 0 | 0 | 0 | — |
-| 21 +85% | h-18-stonetalon-ashenvale#92 id=h18-lvl-22 | все 28 | 0 | 40 | 100 | 45 |
+| 21 +85% | h-18-stonetalon-ashenvale#92 id=h18-lvl-22 | все 28 | 0 | 36 | 100 | 40 |
 | 23 +85% | h-22-hillsbrad#54 id=h-22-hillsbrad-level-gate | все 28 | 0 | 0 | 52 | — |
 | 26 +84% | h-24-barrens-stonetalon#90 id=h-24-barrens-stonetalon-level-gate | все 28 | 0 | 0 | 221 | — |
 | 29 | h-27-ashenvale-needles#117 | все 28 | 0 | 0 | 0 | — |
@@ -192,9 +191,9 @@ ERROR и WARN на шагах общих сегментов — по одной 
 
 Модуль `FastesBoooy_Guides`, профиль: Orc HUNTER Horde. Результат: **0 ERROR, 0 WARN, 427 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
-Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1897170 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814925, гринд 1372815 (~4990 убийств); максимум квестов в журнале 23 из 40; принято 692, сдано 692, не сдано к концу 0.
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899060 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814520, гринд 1371305 (~4979 убийств); максимум квестов в журнале 23 из 40; принято 696, сдано 696, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4990 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3981 (худший случай ~5301).
+Гринд до порогов уровня (шаги `level`): ~4979 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 158 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3974 (худший случай ~5301).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -202,8 +201,8 @@ ERROR и WARN на шагах общих сегментов — по одной 
 | `dur-02-durotar` | 5–11 | 5.36 → 11.10 | 18365 | 11153 | 8 (8) | 6 |
 | `h-12-orgrimmar-tirisfal` | 12–13 | 11.10 → 12.40 | 9005 | 2992 | 0 (0) | 4 |
 | `h-13-silverpine` | 13–15 | 12.40 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
-| `h-15-barrens` | 15–18 | 14.13 → 17.94 | 43630 | 14687 | 0 (0) | 13 |
-| `h-18-stonetalon-ashenvale` | 18–22 | 17.94 → 22.05 | 51790 | 32679 | 47 (145) | 0 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.05 | 51790 | 32585 | 36 (145) | 0 |
 | `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
 | `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21616 | 0 (220) | 9 |
 | `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34004 | 122 (313) | 6 |
@@ -219,15 +218,15 @@ ERROR и WARN на шагах общих сегментов — по одной 
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 63.
+INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 1, `xp-unknown` 63.
 
 ### orc-mage — Orc Mage 1-60
 
 Модуль `FastesBoooy_Guides`, профиль: Orc MAGE Horde. Результат: **0 ERROR, 0 WARN, 427 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
-Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1897170 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814925, гринд 1372815 (~4990 убийств); максимум квестов в журнале 23 из 40; принято 692, сдано 692, не сдано к концу 0.
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899060 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814520, гринд 1371305 (~4979 убийств); максимум квестов в журнале 23 из 40; принято 696, сдано 696, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4990 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3981 (худший случай ~5301).
+Гринд до порогов уровня (шаги `level`): ~4979 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 158 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3974 (худший случай ~5301).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -235,8 +234,8 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 | `dur-02-durotar` | 5–11 | 5.36 → 11.10 | 18365 | 11153 | 8 (8) | 6 |
 | `h-12-orgrimmar-tirisfal` | 12–13 | 11.10 → 12.40 | 9005 | 2992 | 0 (0) | 4 |
 | `h-13-silverpine` | 13–15 | 12.40 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
-| `h-15-barrens` | 15–18 | 14.13 → 17.94 | 43630 | 14687 | 0 (0) | 13 |
-| `h-18-stonetalon-ashenvale` | 18–22 | 17.94 → 22.05 | 51790 | 32679 | 47 (145) | 0 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.05 | 51790 | 32585 | 36 (145) | 0 |
 | `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
 | `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21616 | 0 (220) | 9 |
 | `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34004 | 122 (313) | 6 |
@@ -252,15 +251,15 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 63.
+INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 1, `xp-unknown` 63.
 
 ### orc-rogue — Orc Rogue 1-60
 
 Модуль `FastesBoooy_Guides`, профиль: Orc ROGUE Horde. Результат: **0 ERROR, 0 WARN, 427 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
-Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1897170 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814925, гринд 1372815 (~4990 убийств); максимум квестов в журнале 23 из 40; принято 692, сдано 692, не сдано к концу 0.
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899060 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814520, гринд 1371305 (~4979 убийств); максимум квестов в журнале 23 из 40; принято 696, сдано 696, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4990 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3981 (худший случай ~5301).
+Гринд до порогов уровня (шаги `level`): ~4979 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 158 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3974 (худший случай ~5301).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -268,8 +267,8 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 | `dur-02-durotar` | 5–11 | 5.36 → 11.10 | 18365 | 11153 | 8 (8) | 6 |
 | `h-12-orgrimmar-tirisfal` | 12–13 | 11.10 → 12.40 | 9005 | 2992 | 0 (0) | 4 |
 | `h-13-silverpine` | 13–15 | 12.40 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
-| `h-15-barrens` | 15–18 | 14.13 → 17.94 | 43630 | 14687 | 0 (0) | 13 |
-| `h-18-stonetalon-ashenvale` | 18–22 | 17.94 → 22.05 | 51790 | 32679 | 47 (145) | 0 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.05 | 51790 | 32585 | 36 (145) | 0 |
 | `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
 | `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21616 | 0 (220) | 9 |
 | `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34004 | 122 (313) | 6 |
@@ -285,15 +284,15 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 63.
+INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 1, `xp-unknown` 63.
 
 ### orc-shaman — Orc Shaman 1-60
 
 Модуль `FastesBoooy_Guides`, профиль: Orc SHAMAN Horde. Результат: **0 ERROR, 0 WARN, 427 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
-Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1897170 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814925, гринд 1372815 (~4990 убийств); максимум квестов в журнале 23 из 40; принято 692, сдано 692, не сдано к концу 0.
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899060 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814520, гринд 1371305 (~4979 убийств); максимум квестов в журнале 23 из 40; принято 696, сдано 696, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4990 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3981 (худший случай ~5301).
+Гринд до порогов уровня (шаги `level`): ~4979 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 158 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3974 (худший случай ~5301).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -301,8 +300,8 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 | `dur-02-durotar` | 5–11 | 5.36 → 11.10 | 18365 | 11153 | 8 (8) | 6 |
 | `h-12-orgrimmar-tirisfal` | 12–13 | 11.10 → 12.40 | 9005 | 2992 | 0 (0) | 4 |
 | `h-13-silverpine` | 13–15 | 12.40 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
-| `h-15-barrens` | 15–18 | 14.13 → 17.94 | 43630 | 14687 | 0 (0) | 13 |
-| `h-18-stonetalon-ashenvale` | 18–22 | 17.94 → 22.05 | 51790 | 32679 | 47 (145) | 0 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.05 | 51790 | 32585 | 36 (145) | 0 |
 | `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
 | `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21616 | 0 (220) | 9 |
 | `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34004 | 122 (313) | 6 |
@@ -318,15 +317,15 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 63.
+INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 1, `xp-unknown` 63.
 
 ### orc-warlock — Orc Warlock 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Orc WARLOCK Horde. Результат: **0 ERROR, 0 WARN, 427 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
+Модуль `FastesBoooy_Guides`, профиль: Orc WARLOCK Horde. Результат: **0 ERROR, 0 WARN, 426 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
-Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1897110 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814882, гринд 1372880 (~4991 убийств); максимум квестов в журнале 23 из 40; принято 693, сдано 693, не сдано к концу 0.
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899000 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814497, гринд 1371370 (~4980 убийств); максимум квестов в журнале 23 из 40; принято 697, сдано 697, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4991 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6227. С попутными убийствами в пути на 15 % опыта квестов: ~3981 (худший случай ~5302).
+Гринд до порогов уровня (шаги `level`): ~4980 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 156 — и их квесты): ~6227. С попутными убийствами в пути на 15 % опыта квестов: ~3975 (худший случай ~5302).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -334,11 +333,11 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 | `dur-02-durotar` | 5–11 | 5.29 → 11.09 | 18365 | 11220 | 9 (9) | 6 |
 | `h-12-orgrimmar-tirisfal` | 12–13 | 11.09 → 12.40 | 9005 | 2992 | 0 (0) | 4 |
 | `h-13-silverpine` | 13–15 | 12.40 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
-| `h-15-barrens` | 15–18 | 14.13 → 17.94 | 43630 | 14700 | 0 (0) | 13 |
-| `h-18-stonetalon-ashenvale` | 18–22 | 17.94 → 22.05 | 51790 | 32679 | 47 (145) | 0 |
-| `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
-| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21616 | 0 (220) | 9 |
-| `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34004 | 122 (313) | 6 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.04 | 51790 | 32585 | 36 (145) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21632 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34021 | 122 (313) | 6 |
 | `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (327) | 4 |
 | `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
 | `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 1 |
@@ -351,15 +350,15 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 63.
+INFO (426): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `xp-unknown` 63.
 
 ### orc-warrior — Orc Warrior 1-60
 
 Модуль `FastesBoooy_Guides`, профиль: Orc WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 427 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
-Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1897170 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814925, гринд 1372815 (~4990 убийств); максимум квестов в журнале 23 из 40; принято 692, сдано 692, не сдано к концу 0.
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899060 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814520, гринд 1371305 (~4979 убийств); максимум квестов в журнале 23 из 40; принято 696, сдано 696, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4990 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3981 (худший случай ~5301).
+Гринд до порогов уровня (шаги `level`): ~4979 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 158 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3974 (худший случай ~5301).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -367,8 +366,8 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 | `dur-02-durotar` | 5–11 | 5.36 → 11.10 | 18365 | 11153 | 8 (8) | 6 |
 | `h-12-orgrimmar-tirisfal` | 12–13 | 11.10 → 12.40 | 9005 | 2992 | 0 (0) | 4 |
 | `h-13-silverpine` | 13–15 | 12.40 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
-| `h-15-barrens` | 15–18 | 14.13 → 17.94 | 43630 | 14687 | 0 (0) | 13 |
-| `h-18-stonetalon-ashenvale` | 18–22 | 17.94 → 22.05 | 51790 | 32679 | 47 (145) | 0 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.05 | 51790 | 32585 | 36 (145) | 0 |
 | `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
 | `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21616 | 0 (220) | 9 |
 | `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34004 | 122 (313) | 6 |
@@ -384,15 +383,15 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 63.
+INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 1, `xp-unknown` 63.
 
 ### troll-hunter — Troll Hunter 1-60
 
 Модуль `FastesBoooy_Guides`, профиль: Troll HUNTER Horde. Результат: **0 ERROR, 0 WARN, 427 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
-Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1897170 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814925, гринд 1372815 (~4990 убийств); максимум квестов в журнале 23 из 40; принято 692, сдано 692, не сдано к концу 0.
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899060 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814520, гринд 1371305 (~4979 убийств); максимум квестов в журнале 23 из 40; принято 696, сдано 696, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4990 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3981 (худший случай ~5301).
+Гринд до порогов уровня (шаги `level`): ~4979 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 160 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3974 (худший случай ~5301).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -400,8 +399,8 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 | `dur-02-durotar` | 5–11 | 5.36 → 11.10 | 18365 | 11153 | 8 (8) | 6 |
 | `h-12-orgrimmar-tirisfal` | 12–13 | 11.10 → 12.40 | 9005 | 2992 | 0 (0) | 4 |
 | `h-13-silverpine` | 13–15 | 12.40 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
-| `h-15-barrens` | 15–18 | 14.13 → 17.94 | 43630 | 14687 | 0 (0) | 13 |
-| `h-18-stonetalon-ashenvale` | 18–22 | 17.94 → 22.05 | 51790 | 32679 | 47 (145) | 0 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.05 | 51790 | 32585 | 36 (145) | 0 |
 | `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
 | `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21616 | 0 (220) | 9 |
 | `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34004 | 122 (313) | 6 |
@@ -417,15 +416,15 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 63.
+INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 1, `xp-unknown` 63.
 
 ### troll-mage — Troll Mage 1-60
 
 Модуль `FastesBoooy_Guides`, профиль: Troll MAGE Horde. Результат: **0 ERROR, 0 WARN, 427 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
-Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1897170 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814925, гринд 1372815 (~4990 убийств); максимум квестов в журнале 23 из 40; принято 692, сдано 692, не сдано к концу 0.
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899060 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814520, гринд 1371305 (~4979 убийств); максимум квестов в журнале 23 из 40; принято 696, сдано 696, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4990 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3981 (худший случай ~5301).
+Гринд до порогов уровня (шаги `level`): ~4979 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 160 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3974 (худший случай ~5301).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -433,8 +432,8 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 | `dur-02-durotar` | 5–11 | 5.36 → 11.10 | 18365 | 11153 | 8 (8) | 6 |
 | `h-12-orgrimmar-tirisfal` | 12–13 | 11.10 → 12.40 | 9005 | 2992 | 0 (0) | 4 |
 | `h-13-silverpine` | 13–15 | 12.40 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
-| `h-15-barrens` | 15–18 | 14.13 → 17.94 | 43630 | 14687 | 0 (0) | 13 |
-| `h-18-stonetalon-ashenvale` | 18–22 | 17.94 → 22.05 | 51790 | 32679 | 47 (145) | 0 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.05 | 51790 | 32585 | 36 (145) | 0 |
 | `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
 | `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21616 | 0 (220) | 9 |
 | `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34004 | 122 (313) | 6 |
@@ -450,15 +449,15 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 63.
+INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 1, `xp-unknown` 63.
 
 ### troll-priest — Troll Priest 1-60
 
 Модуль `FastesBoooy_Guides`, профиль: Troll PRIEST Horde. Результат: **0 ERROR, 0 WARN, 427 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
-Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1897170 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814925, гринд 1372815 (~4990 убийств); максимум квестов в журнале 23 из 40; принято 692, сдано 692, не сдано к концу 0.
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899060 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814520, гринд 1371305 (~4979 убийств); максимум квестов в журнале 23 из 40; принято 696, сдано 696, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4990 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3981 (худший случай ~5301).
+Гринд до порогов уровня (шаги `level`): ~4979 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 160 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3974 (худший случай ~5301).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -466,8 +465,8 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 | `dur-02-durotar` | 5–11 | 5.36 → 11.10 | 18365 | 11153 | 8 (8) | 6 |
 | `h-12-orgrimmar-tirisfal` | 12–13 | 11.10 → 12.40 | 9005 | 2992 | 0 (0) | 4 |
 | `h-13-silverpine` | 13–15 | 12.40 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
-| `h-15-barrens` | 15–18 | 14.13 → 17.94 | 43630 | 14687 | 0 (0) | 13 |
-| `h-18-stonetalon-ashenvale` | 18–22 | 17.94 → 22.05 | 51790 | 32679 | 47 (145) | 0 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.05 | 51790 | 32585 | 36 (145) | 0 |
 | `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
 | `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21616 | 0 (220) | 9 |
 | `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34004 | 122 (313) | 6 |
@@ -483,15 +482,15 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 63.
+INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 1, `xp-unknown` 63.
 
 ### troll-rogue — Troll Rogue 1-60
 
 Модуль `FastesBoooy_Guides`, профиль: Troll ROGUE Horde. Результат: **0 ERROR, 0 WARN, 427 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
-Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1897170 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814925, гринд 1372815 (~4990 убийств); максимум квестов в журнале 23 из 40; принято 692, сдано 692, не сдано к концу 0.
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899060 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814520, гринд 1371305 (~4979 убийств); максимум квестов в журнале 23 из 40; принято 696, сдано 696, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4990 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3981 (худший случай ~5301).
+Гринд до порогов уровня (шаги `level`): ~4979 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 160 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3974 (худший случай ~5301).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -499,8 +498,8 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 | `dur-02-durotar` | 5–11 | 5.36 → 11.10 | 18365 | 11153 | 8 (8) | 6 |
 | `h-12-orgrimmar-tirisfal` | 12–13 | 11.10 → 12.40 | 9005 | 2992 | 0 (0) | 4 |
 | `h-13-silverpine` | 13–15 | 12.40 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
-| `h-15-barrens` | 15–18 | 14.13 → 17.94 | 43630 | 14687 | 0 (0) | 13 |
-| `h-18-stonetalon-ashenvale` | 18–22 | 17.94 → 22.05 | 51790 | 32679 | 47 (145) | 0 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.05 | 51790 | 32585 | 36 (145) | 0 |
 | `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
 | `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21616 | 0 (220) | 9 |
 | `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34004 | 122 (313) | 6 |
@@ -516,15 +515,15 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 63.
+INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 1, `xp-unknown` 63.
 
 ### troll-shaman — Troll Shaman 1-60
 
 Модуль `FastesBoooy_Guides`, профиль: Troll SHAMAN Horde. Результат: **0 ERROR, 0 WARN, 427 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
-Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1897170 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814925, гринд 1372815 (~4990 убийств); максимум квестов в журнале 23 из 40; принято 692, сдано 692, не сдано к концу 0.
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899060 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814520, гринд 1371305 (~4979 убийств); максимум квестов в журнале 23 из 40; принято 696, сдано 696, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4990 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3981 (худший случай ~5301).
+Гринд до порогов уровня (шаги `level`): ~4979 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 160 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3974 (худший случай ~5301).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -532,8 +531,8 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 | `dur-02-durotar` | 5–11 | 5.36 → 11.10 | 18365 | 11153 | 8 (8) | 6 |
 | `h-12-orgrimmar-tirisfal` | 12–13 | 11.10 → 12.40 | 9005 | 2992 | 0 (0) | 4 |
 | `h-13-silverpine` | 13–15 | 12.40 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
-| `h-15-barrens` | 15–18 | 14.13 → 17.94 | 43630 | 14687 | 0 (0) | 13 |
-| `h-18-stonetalon-ashenvale` | 18–22 | 17.94 → 22.05 | 51790 | 32679 | 47 (145) | 0 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.05 | 51790 | 32585 | 36 (145) | 0 |
 | `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
 | `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21616 | 0 (220) | 9 |
 | `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34004 | 122 (313) | 6 |
@@ -549,15 +548,15 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 63.
+INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 1, `xp-unknown` 63.
 
 ### troll-warlock — Troll Warlock 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Troll WARLOCK Horde. Результат: **0 ERROR, 0 WARN, 427 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
+Модуль `FastesBoooy_Guides`, профиль: Troll WARLOCK Horde. Результат: **0 ERROR, 0 WARN, 426 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
-Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1897110 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814882, гринд 1372880 (~4991 убийств); максимум квестов в журнале 23 из 40; принято 693, сдано 693, не сдано к концу 0.
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899000 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814497, гринд 1371370 (~4980 убийств); максимум квестов в журнале 23 из 40; принято 697, сдано 697, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4991 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6227. С попутными убийствами в пути на 15 % опыта квестов: ~3981 (худший случай ~5302).
+Гринд до порогов уровня (шаги `level`): ~4980 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 156 — и их квесты): ~6227. С попутными убийствами в пути на 15 % опыта квестов: ~3975 (худший случай ~5302).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -565,11 +564,11 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 | `dur-02-durotar` | 5–11 | 5.29 → 11.09 | 18365 | 11220 | 9 (9) | 6 |
 | `h-12-orgrimmar-tirisfal` | 12–13 | 11.09 → 12.40 | 9005 | 2992 | 0 (0) | 4 |
 | `h-13-silverpine` | 13–15 | 12.40 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
-| `h-15-barrens` | 15–18 | 14.13 → 17.94 | 43630 | 14700 | 0 (0) | 13 |
-| `h-18-stonetalon-ashenvale` | 18–22 | 17.94 → 22.05 | 51790 | 32679 | 47 (145) | 0 |
-| `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
-| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21616 | 0 (220) | 9 |
-| `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34004 | 122 (313) | 6 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.04 | 51790 | 32585 | 36 (145) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21632 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34021 | 122 (313) | 6 |
 | `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (327) | 4 |
 | `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
 | `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 1 |
@@ -582,15 +581,15 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 63.
+INFO (426): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `xp-unknown` 63.
 
 ### troll-warrior — Troll Warrior 1-60
 
 Модуль `FastesBoooy_Guides`, профиль: Troll WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 427 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
-Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1897170 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814925, гринд 1372815 (~4990 убийств); максимум квестов в журнале 23 из 40; принято 692, сдано 692, не сдано к концу 0.
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899060 (из них оценено 86545; квестов с оценённым опытом: 63, 4.6 % опыта квестов), за убийства по целям 814520, гринд 1371305 (~4979 убийств); максимум квестов в журнале 23 из 40; принято 696, сдано 696, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4990 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3981 (худший случай ~5301).
+Гринд до порогов уровня (шаги `level`): ~4979 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 160 — и их квесты): ~6226. С попутными убийствами в пути на 15 % опыта квестов: ~3974 (худший случай ~5301).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -598,8 +597,8 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 | `dur-02-durotar` | 5–11 | 5.36 → 11.10 | 18365 | 11153 | 8 (8) | 6 |
 | `h-12-orgrimmar-tirisfal` | 12–13 | 11.10 → 12.40 | 9005 | 2992 | 0 (0) | 4 |
 | `h-13-silverpine` | 13–15 | 12.40 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
-| `h-15-barrens` | 15–18 | 14.13 → 17.94 | 43630 | 14687 | 0 (0) | 13 |
-| `h-18-stonetalon-ashenvale` | 18–22 | 17.94 → 22.05 | 51790 | 32679 | 47 (145) | 0 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.05 | 51790 | 32585 | 36 (145) | 0 |
 | `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
 | `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21616 | 0 (220) | 9 |
 | `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34004 | 122 (313) | 6 |
@@ -615,15 +614,15 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 63.
+INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 1, `xp-unknown` 63.
 
 ### tauren-druid — Tauren Druid 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Tauren DRUID Horde. Результат: **0 ERROR, 2 WARN, 429 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 2 WARN, принято 16.
+Модуль `FastesBoooy_Guides`, профиль: Tauren DRUID Horde. Результат: **0 ERROR, 0 WARN, 430 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1911010 (из них оценено 85385; квестов с оценённым опытом: 62, 4.5 % опыта квестов), за убийства по целям 817944, гринд 1356030 (~4922 убийств); максимум квестов в журнале 23 из 40; принято 705, сдано 705, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4922 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 151 — и их квесты): ~6155. С попутными убийствами в пути на 15 % опыта квестов: ~3922 (худший случай ~5236).
+Гринд до порогов уровня (шаги `level`): ~4922 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 155 — и их квесты): ~6155. С попутными убийствами в пути на 15 % опыта квестов: ~3922 (худший случай ~5236).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -649,15 +648,15 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (429): `complete-kill-xp` 343, `complete-no-kill` 18, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 62.
+INFO (430): `complete-kill-xp` 343, `complete-no-kill` 18, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `train-service` 1, `xp-unknown` 62.
 
 ### tauren-hunter — Tauren Hunter 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Tauren HUNTER Horde. Результат: **0 ERROR, 2 WARN, 427 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 2 WARN, принято 16.
+Модуль `FastesBoooy_Guides`, профиль: Tauren HUNTER Horde. Результат: **0 ERROR, 0 WARN, 428 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1900310 (из них оценено 85385; квестов с оценённым опытом: 62, 4.5 % опыта квестов), за убийства по целям 814980, гринд 1369570 (~4965 убийств); максимум квестов в журнале 23 из 40; принято 702, сдано 702, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4965 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6197. С попутными убийствами в пути на 15 % опыта квестов: ~3970 (худший случай ~5283).
+Гринд до порогов уровня (шаги `level`): ~4965 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 155 — и их квесты): ~6197. С попутными убийствами в пути на 15 % опыта квестов: ~3970 (худший случай ~5283).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -683,15 +682,15 @@ INFO (429): `complete-kill-xp` 343, `complete-no-kill` 18, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 17, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 62.
+INFO (428): `complete-kill-xp` 342, `complete-no-kill` 17, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `train-service` 1, `xp-unknown` 62.
 
 ### tauren-shaman — Tauren Shaman 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Tauren SHAMAN Horde. Результат: **0 ERROR, 2 WARN, 427 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 2 WARN, принято 16.
+Модуль `FastesBoooy_Guides`, профиль: Tauren SHAMAN Horde. Результат: **0 ERROR, 0 WARN, 428 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1900310 (из них оценено 85385; квестов с оценённым опытом: 62, 4.5 % опыта квестов), за убийства по целям 814980, гринд 1369570 (~4965 убийств); максимум квестов в журнале 23 из 40; принято 702, сдано 702, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4965 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6197. С попутными убийствами в пути на 15 % опыта квестов: ~3970 (худший случай ~5283).
+Гринд до порогов уровня (шаги `level`): ~4965 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 155 — и их квесты): ~6197. С попутными убийствами в пути на 15 % опыта квестов: ~3970 (худший случай ~5283).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -717,15 +716,15 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 17, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 17, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 62.
+INFO (428): `complete-kill-xp` 342, `complete-no-kill` 17, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `train-service` 1, `xp-unknown` 62.
 
 ### tauren-warrior — Tauren Warrior 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Tauren WARRIOR Horde. Результат: **0 ERROR, 2 WARN, 427 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 2 WARN, принято 16.
+Модуль `FastesBoooy_Guides`, профиль: Tauren WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 428 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1900310 (из них оценено 85385; квестов с оценённым опытом: 62, 4.5 % опыта квестов), за убийства по целям 814980, гринд 1369570 (~4965 убийств); максимум квестов в журнале 23 из 40; принято 702, сдано 702, не сдано к концу 0.
 
-Гринд до порогов уровня (шаги `level`): ~4965 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 149 — и их квесты): ~6197. С попутными убийствами в пути на 15 % опыта квестов: ~3970 (худший случай ~5283).
+Гринд до порогов уровня (шаги `level`): ~4965 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 155 — и их квесты): ~6197. С попутными убийствами в пути на 15 % опыта квестов: ~3970 (худший случай ~5283).
 
 | сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
 |---|---|---|---:|---:|---:|---:|
@@ -751,7 +750,7 @@ INFO (427): `complete-kill-xp` 342, `complete-no-kill` 17, `complete-no-objectiv
 
 Собственных ошибок и предупреждений нет.
 
-INFO (427): `complete-kill-xp` 342, `complete-no-kill` 17, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `xp-unknown` 62.
+INFO (428): `complete-kill-xp` 342, `complete-no-kill` 17, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `train-service` 1, `xp-unknown` 62.
 
 ### undead-mage — Undead Mage 1-60
 
@@ -1125,9 +1124,9 @@ INFO (500): `complete-kill-xp` 351, `complete-no-kill` 28, `complete-no-objectiv
 | `complete-no-kill` | 527 | 28 | 16–29 |
 | `complete-no-objectives` | 63 | 28 | 2–4 |
 | `hearth-unbound` | 5 | 5 | 1 |
-| `level-grind` | 84 | 28 | 1–5 |
+| `level-grind` | 71 | 28 | 1–5 |
 | `quest-profession` | 28 | 28 | 1 |
-| `train-service` | 9 | 9 | 1 |
+| `train-service` | 24 | 24 | 1 |
 | `xp-unknown` | 2049 | 28 | 62–125 |
 
 ## Что подтверждается только в игре
@@ -1147,5 +1146,10 @@ INFO (500): `complete-kill-xp` 351, `complete-no-kill` 28, `complete-no-objectiv
 
 ### Принятые непроверенные поправки к БД
 
-Шагов, которые проходят проверку только благодаря непроверенной поправке к БД (`tools/overrides`, `verified = false`) и приняты ключом `ok = "db-override-unverified"`, нет.
+Шаги, которые проходят проверку только благодаря поправке к БД с `verified = false` (`tools/overrides`) и приняты ключом `ok` (2). Каждую нужно подтвердить в клиенте Forever (комментарий `-- CONFIRM:` на шаге) и после этого поставить поправке `verified = true`:
+
+| где | маршруты | сообщение |
+|---|---|---|
+| h-15-barrens#7 id=h15-xr-arrive (Segments/Shared/15_Barrens.lua) | все 4 `tauren-*` | accept 844 "Plainstrider Menace" (exclusive with 854 "Journey to the Crossroads" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/shared.lua (source: Classic: Journey to the Crossroads (Thunder Bluff) is a breadcrumb, 844 stays available): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment) |
+| h-15-barrens#7 id=h15-xr-arrive (Segments/Shared/15_Barrens.lua) | все 4 `tauren-*` | accept 844 "Plainstrider Menace" (exclusive with 861 "The Hunter's Way" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/shared.lua (source: the DB chain 861 -> 860 (breadcrumbFor 844) -> 844; Classic quest chain The Hunter's Way): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment) |
 

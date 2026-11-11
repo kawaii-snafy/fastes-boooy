@@ -35,9 +35,9 @@
 --             878.
 --   XR5     : fly; 4921 + 95774, 877 > 880, 905 > 3261, 3281; Regthar 851 > 852; 848 > 853 (timed, accepted
 --             last).
--- Race-filtered steps: h15-org-gate, h15-org-fp (Scourge). h15-fp-xroads and h15-fp-taurajo are unfiltered here;
---   phase P2 gives them a filter that excludes the races whose bridge segment already learns the point
---   (docs/dev/PLAN.md B.5).
+-- Race-filtered steps: h15-org-gate, h15-org-fp (Scourge); h15-fp-xroads and h15-fp-taurajo (every race but the
+--   Tauren: the walk variant of mul-03-barrens-crossing learns both points, docs/dev/PLAN.md B.5, E.1). An insert
+--   on one of these two needs the same race scope.
 -- Additions by other files: Races/Scourge.lua (city quests after h15-org-fp), Races/Skyborne.lua (98024 at Thork),
 --   Segments/Durotar (postponed turn-ins after h15-razor-hill), Races/Orc.lua, Troll.lua, Tauren.lua (flight
 --   chains after h15-sethearth-xroads), class files (h15-org; h15-far-watch; the druid before h15-hearth-xroads).
@@ -108,10 +108,11 @@ FastesBoooy.AddLibrarySegment({
         -- The Crossroads, first visit (level 15)
         ------------------------------------------------------------------
         -- CONFIRM (docs/dev/PLAN.md E.21): the DB lists 844 as exclusive with the Tauren breadcrumbs 861 and 854;
-        -- tools/overrides/shared.lua removes that (unverified). Phase P2 acknowledges the resulting WARN
-        -- db-override-unverified here once a Tauren route exists (an `ok` no validated route uses is ok-unused):
-        -- tests/spec/guides_layout_spec.lua demands the key with the first Tauren route and refuses it before.
+        -- tools/overrides/shared.lua removes that (unverified). The `ok` acknowledges the resulting WARN
+        -- db-override-unverified of the Tauren routes (tests/spec/guides_layout_spec.lua demands it while a Tauren
+        -- route exists). If 844 is refused after 854 in the game, the Tauren skip 854 (230 XP; Segments/Mulgore).
         { id = "h15-xr-arrive", turnin = 842, accept = 844, npc = 3338, at = { 1413, 52.23, 31.01 },
+          ok = "db-override-unverified", -- the Tauren: 844 after their breadcrumbs 861 / 854 (E.21, -- CONFIRM above)
           note = { ru = "Дорога на юго-запад к Перекрёстку идёт мимо лагерей Иглогривых — не задерживайтесь. "
                        .. "Сергра Тёмный Шип у южного края Перекрёстка.",
                    en = "The road south-west to the Crossroads passes the Razormane camps: do not stop. Sergra "
@@ -126,7 +127,10 @@ FastesBoooy.AddLibrarySegment({
                    en = "Apothecary Helbrim. Reward for 1358: Long Draping Cape." } },
         { id = "h15-gazrog", accept = 869, npc = 3464, at = { 1413, 51.93, 30.32 },
           note = { ru = "Газрог у таверны.", en = "Gazrog by the inn." } },
-        { id = "h15-fp-xroads", fp = "The Crossroads", npc = 3615, at = { 1413, 51.50, 30.34 },
+        -- Race filter (docs/dev/PLAN.md B.5, E.1): the Tauren learned this point in mul-03-barrens-crossing (the walk
+        -- variant of the Mulgore bridge is in force).
+        { id = "h15-fp-xroads", race = { "Orc", "Scourge", "Skyborne", "Troll" }, fp = "The Crossroads", npc = 3615,
+          at = { 1413, 51.50, 30.34 },
           note = { ru = "Деврак на башне: откройте карту полётов.",
                    en = "Devrak on the tower: open the flight map." } },
         { id = "h15-sethearth-xroads", sethearth = "The Crossroads", npc = 3934, at = { 1413, 51.99, 29.89 },
@@ -478,7 +482,9 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Избитый труп в траве: поговорите с ним. Грозорылы (18-19) западнее — обходите.",
                    en = "The Beaten Corpse in the grass: talk to it. Stormsnouts (18-19) to the west: go "
                        .. "around." } },
-        { id = "h15-fp-taurajo", fp = "Camp Taurajo", npc = 10378, at = { 1413, 44.45, 59.15 },
+        -- Race filter (B.5, E.1): the Tauren learned this point at mul03-taurajo.
+        { id = "h15-fp-taurajo", race = { "Orc", "Scourge", "Skyborne", "Troll" }, fp = "Camp Taurajo", npc = 10378,
+          at = { 1413, 44.45, 59.15 },
           note = { ru = "Лагерь Таурахо: Омуса Громовой Рог — откройте карту полётов.",
                    en = "Camp Taurajo: Omusa Thunderhorn - open the flight map." } },
         { id = "h15-sethearth-taurajo", sethearth = "Camp Taurajo", npc = 7714, at = { 1413, 45.58, 59.04 },

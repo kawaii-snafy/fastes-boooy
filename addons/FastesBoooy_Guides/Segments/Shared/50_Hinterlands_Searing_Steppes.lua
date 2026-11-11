@@ -93,11 +93,11 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-50-org-arrive", turnin = 3002, npc = 7311, at = { 1454, 39.16, 86.27 },
           note = { ru = "Аллея Духов, Утель'най: «Сфера Гордунни».",
                    en = "Valley of Spirits, Uthel'nay: The Gordunni Orb." } },
-        { turnin = 3121, npc = 3216, at = { 1454, 49.47, 50.59 },
+        { id = "h49-org-3121", turnin = 3121, npc = 3216, at = { 1454, 49.47, 50.59 },
           note = { ru = "Расселина Теней, Нииру Огненный Клинок: голова от Узер'и. «Возвращение к знахарю Узер'и» не "
                        .. "берите.",
                    en = "Cleft of Shadow, Neeru Fireblade: the head from Uzer'i. Skip Return to Witch Doctor Uzer'i." } },
-        { turnin = { 32, 7732 }, npc = 7010, at = { 1454, 56.26, 46.68 },
+        { id = "h49-org-7732", turnin = { 32, 7732 }, npc = 7010, at = { 1454, 56.26, 46.68 },
           note = { ru = "Зилзибин Барабанный Бой: сдайте «Восхождение силитидов» и «Донесение об улье Цуккаш». "
                        .. "«Нашествие силитидов» (50+) он даст при следующем визите в Оргриммар.",
                    en = "Zilzibin Drumlore: turn in Rise of the Silithid and Zukk'ash Report. March of the Silithid "
@@ -107,10 +107,10 @@ FastesBoooy.AddLibrarySegment({
                    en = "Jes'rimon: Bone-Bladed Weapons (ravasaur claws in Un'Goro, next segment)." } },
         { accept = 649, npc = 6986, at = { 1454, 59.49, 36.57 },
           note = { ru = "Дран Дрофферс: «За медовухой».", en = "Dran Droffers: Ripple Recovery." } },
-        { turnin = 649, accept = 650, npc = 6987, at = { 1454, 59.65, 36.94 },
+        { id = "h49-org-649", turnin = 649, accept = 650, npc = 6987, at = { 1454, 59.65, 36.94 },
           note = { ru = "Мальтон Дрофферс рядом: вторая часть — к Гилверадину во Внутренние земли.",
                    en = "Malton Droffers next to him: part 2 goes to Gilveradin in the Hinterlands." } },
-        { turnin = 2976, accept = 3504, npc = 4485, at = { 1454, 75.23, 34.24 },
+        { id = "h49-org-2976", turnin = 2976, accept = 3504, npc = 4485, at = { 1454, 75.23, 34.24 },
           note = { ru = "Аллея Чести, Белгром Каменная Булава: «Зловещее открытие», возьмите «Предательница» "
                        .. "(Азшара, следующий сегмент).",
                    en = "Valley of Honor, Belgrom Rockmaul: A Grim Discovery; take Betrayed (Azshara, next "
@@ -122,7 +122,7 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         -- Undercity -> Tarren Mill (level 50)
         ------------------------------------------------------------------
-        { go = true, radius = 40, npc = 9566, at = { 1420, 60.74, 58.87 },
+        { id = "h49-tirisfal-arrive", go = true, radius = 40, npc = 9566, at = { 1420, 60.74, 58.87 },
           note = { ru = "Прибытие к башне в Тирисфальских лесах (Запетта), дальше в Подгород.",
                    en = "Arrival at the Tirisfal Glades tower (Zapetta), then into Undercity." } },
         { id = "h-50-uc-arrive", accept = 2995, npc = 7825, at = { 1458, 73.06, 32.85 },
@@ -135,7 +135,7 @@ FastesBoooy.AddLibrarySegment({
                        .. "и сразу сдайте.",
                    en = "Next to him, Owen Thadd: the book Legends of the Tidesages from Tanaris - take the quest (the "
                        .. "book is in your bags) and turn it in at once." } },
-        { turnin = 864, npc = 5204, at = { 1458, 50.14, 67.97 },
+        { id = "h49-uc-864", turnin = 864, npc = 5204, at = { 1458, 50.14, 67.97 },
           note = { ru = "Чумной квартал, аптекарь Зинг: «Возвращение к аптекарю Зинг».",
                    en = "Apothecarium, Apothecary Zinge: Return to Apothecary Zinge." } },
         { accept = 3568, npc = 8390, at = { 1458, 48.71, 71.39 },
@@ -553,13 +553,13 @@ FastesBoooy.AddLibrarySegment({
         { id = "h-51-stonard", turnin = 2621, accept = 2622, npc = 7623, at = { 1435, 47.79, 54.94 },
           note = { ru = "Каменор, командир разведотряда Руаг: «Пропавшие приказы».",
                    en = "Stonard, Dispatch Commander Ruag: The Missing Orders." } },
-        { turnin = 1444, npc = 1443, at = { 1435, 47.93, 54.78 },
+        { id = "h51-stonard-1444", turnin = 1444, npc = 1443, at = { 1435, 47.93, 54.78 },
           note = { ru = "Фел'зерул рядом: «Возвращение к Фел'зерулу».",
                    en = "Fel'Zerul next to him: Return to Fel'Zerul." } },
         { accept = 1445, npc = 1443, optional = true, at = { 1435, 47.93, 54.78 },
           note = { ru = "По желанию, если собрали группу в Затонувший храм: Фел'зерул — «Храм Атал'Хаккара».",
                    en = "Optional, if you have a group for the Sunken Temple: Fel'Zerul - The Temple of Atal'Hakkar." } },
-        { turnin = 2622, accept = 2623, npc = 7643, at = { 1435, 44.97, 57.37 },
+        { id = "h51-stonard-2622", turnin = 2622, accept = 2623, npc = 7643, at = { 1435, 44.97, 57.37 },
           note = { ru = "Бенгор: «Болотный говорун».", en = "Bengor: The Swamp Talker." } },
         { collect = { [220345] = 1 }, object = 441247, at = { 1435, 70.00, 51.00 },
           note = { ru = "На восток к Озеру Слез (70.0,51.0): книга «Кровавое чародейство» — заберите её (контейнер; "
@@ -630,7 +630,7 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "На север к магам крови: Дразиал.", en = "North to the Bloodmages: Drazial." } },
         { id = "h-53-blastedlands-end", turnin = { 2601, 2603 }, npc = 7506, at = { 1419, 50.64, 14.30 },
           note = { ru = "Линора.", en = "Lynnore." } },
-        { turnin = 1445, npc = 1443, optional = true, at = { 1435, 47.93, 54.78 },
+        { id = "h52-stonard-1445", turnin = 1445, npc = 1443, optional = true, at = { 1435, 47.93, 54.78 },
           note = { ru = "По желанию (были в Затонувшем храме, 1445 в журнале): на север в Каменор, Фел'зерул — фетиши "
                        .. "Хаккара; затем летите от Брейка в Подгород, камень ниже не нужен. Нет 1445 - «Вперёд».",
                    en = "Optional (you ran the Sunken Temple, 1445 is in the log): north to Stonard, Fel'Zerul - the "

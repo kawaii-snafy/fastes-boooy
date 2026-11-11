@@ -483,7 +483,7 @@ FastesBoooy.AddLibrarySegment({
         -- Hand-over gate to h-22-hillsbrad and trainer-hub gate of Thunder Bluff 3: the quests alone fall short of 22;
         -- the furbolgs (23-24) are the best XP on the path.
         { id = "h18-lvl-22", level = { 21, 0.85 }, at = { 1440, 36.5, 36.0 },
-          ok = { ["level-grind"] = 45 }, -- the limit of a trainer-hub gate (PLAN.md B.8); base profiles: 38-40 kills
+          ok = { ["level-grind"] = 40 }, -- the largest normal run of the 28 base routes, 40 kills (Orc, Troll), PLAN.md D.4 step 4
           note = { ru = "Доберите уровень до 21-го + 85% на фурболгах деревни (23-24 - больше всего опыта): сдача 216 и 6462 в "
                        .. "Зорам'гаре добавит ещё ~15% - это 22-й уровень и новые ранги у тренеров в Громовом Утёсе. Убивали всё по "
                        .. "пути - шаг уже выполнен.",

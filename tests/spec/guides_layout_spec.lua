@@ -17,15 +17,14 @@
 --     segment titles; in step notes only where it names something of the game world;
 --   * the level gates of 12-22 point at mobs of the player's level and stand where those mobs are; the races that
 --     walk into Thunder Bluff pass the flight master once; the Russian notes of 12-22 use Russian names;
---   * the proofs for the races whose start zone is not written yet (D.2, F2b step 6): the shared path from
---     h-12-orgrimmar-tirisfal to level 60 from synthetic hand-over states, in the validator harness;
+--   * the Tauren accept 844 only through the unverified DB override (E.21), on the real route;
 --   * the base profiles (the validator on the module with --skip 'Classes/*', not the harness): no route has an
 --     ERROR and the template checks report nothing; no insert outside Classes/ is anchored on a step of a class file.
 --
 -- A parallel agent runs the spec on its own files (D.0 rule 9):
 --   GUIDES_SKIP / GUIDES_KEEP  comma lists of globs (the logic of --skip / --keep): files that are not loaded
 --   GUIDES_OWN                 globs: the per-file assertions run only for matching files
--- With any of them the assertions about the whole module (route list, Route.lua, harness proofs, base profiles)
+-- With any of them the assertions about the whole module (route list, Route.lua, the 844 pin, base profiles)
 -- are skipped.
 
 local Loader = require("lib.route_loader")
@@ -34,7 +33,6 @@ local DB = require("lib.fbdb")
 
 local GUIDES = "addons/FastesBoooy_Guides"
 local FIXTURE_ZONES = "tests/fixtures/guides/FastesBoooy_StartZones"
-local STATES = "tests/fixtures/validator"
 
 local SKIP = Glob.Split(os.getenv("GUIDES_SKIP"))
 local KEEP = Glob.Split(os.getenv("GUIDES_KEEP"))
@@ -145,9 +143,17 @@ local FILTERED = {
     ["h13-durotar"] = { "Scourge" },
     ["h13-fly-uc"] = NOT_UNDEAD, ["h13-hearth-org"] = NOT_UNDEAD,
     ["h15-org-gate"] = { "Scourge" }, ["h15-org-fp"] = { "Scourge" },
+    -- the Tauren learn both points in mul-03-barrens-crossing (walk variant, docs/dev/PLAN.md B.5, E.1)
+    ["h15-fp-xroads"] = { "Orc", "Scourge", "Skyborne", "Troll" }, ["h15-fp-taurajo"] = { "Orc", "Scourge", "Skyborne", "Troll" },
     ["h18-fly-tb-1"] = { "Skyborne", "Tauren" },
     ["h18-go-mulgore"] = { "Orc", "Scourge", "Troll" }, ["h18-go-tb-lift"] = { "Orc", "Scourge", "Troll" },
     ["h18-fp-tb"] = { "Orc", "Scourge", "Troll" },
+}
+
+-- Class-filtered base steps of a start zone (R4: the game branches by class there): the anchors among them.
+local CLASS_FILTERED = {
+    ["dur01-familiars"] = { "HUNTER", "MAGE", "PRIEST", "ROGUE", "SHAMAN", "WARRIOR" },
+    ["dur01-warlock-1485"] = { "WARLOCK" },
 }
 
 -- The anchors class and race files may rely on (C.2; B.7 for 22-60), by segment. Those listed in FILTERED are
@@ -175,6 +181,25 @@ local ANCHORS = {
         "sd02-endaria", "sd02-fendaal-2", "sd02-lotheluum-2",
     },
     ["sd-03-thunder-bluff"] = { "sd03-spirit", "sd03-fp-tb", "sd03-fly-org" },
+    -- Durotar (docs/dev/handover/p1-durotar.md, section 4; frozen in P2)
+    ["dur-01-valley-of-trials"] = {
+        "dur01-teeth", "dur01-familiars", "dur01-warlock-1485", "dur01-den-4", "dur01-leave", "dur01-lvl-5",
+    },
+    ["dur-02-durotar"] = {
+        "dur02-senjin-1", "dur02-rh-1", "dur02-rh-2", "dur02-senjin-3", "dur02-lvl-10", "dur02-rh-3",
+        "dur02-thunder-ridge", "dur02-end",
+    },
+    -- Mulgore (docs/dev/handover/p1-mulgore.md, section 3; frozen in P2)
+    ["mul-01-camp-narache"] = { "mul01-hunt", "mul01-lvl-4", "mul01-ravine", "mul01-leave" },
+    ["mul-02-mulgore"] = {
+        "mul02-lvl-6", "mul02-inn", "mul02-bh-1", "mul02-yaw", "mul02-bh-2", "mul02-bh-3", "mul02-lvl-10", "mul02-bh-4",
+        "mul02-bh-5", "mul02-bh-6", "mul02-fp-tb", "mul02-tb", "mul02-end",
+    },
+    ["mul-03-barrens-crossing"] = {
+        "mul03-taurajo", "mul03-fp-xroads", "mul03-fly-tb", "mul03-cairne", "mul03-ahanu", "mul03-melor",
+        "mul03-hamuul", "mul03-tal", "mul03-fly-xroads", "mul03-jahan-2", "mul03-xroads", "mul03-far-watch",
+        "mul03-org-gate",
+    },
     ["h-12-orgrimmar-tirisfal"] = {
         "h12-fp-org", "h12-sethearth-org", "h12-borstan", "h12-wisdom", "h12-org-end", "h12-zeppelin", "h12-brill",
         "h12-fp-uc", "h12-end",
@@ -210,6 +235,7 @@ local ANCHORS = {
 -- to the same rule by POSITIONAL_ALLOWED: only the eleven segments below may still hold positional ids.
 local EXPLICIT_IDS = {
     "ud-01-deathknell", "ud-02-tirisfal", "sd-01-zephras", "sd-02-zephras", "sd-03-thunder-bluff",
+    "dur-01-valley-of-trials", "dur-02-durotar", "mul-01-camp-narache", "mul-02-mulgore", "mul-03-barrens-crossing",
     "h-12-orgrimmar-tirisfal", "h-13-silverpine", "h-15-barrens", "h-18-stonetalon-ashenvale", "h-22-hillsbrad",
 }
 local POSITIONAL_ALLOWED = {}
@@ -221,6 +247,8 @@ local GATES = { "h13-lvl-12", "h13-lvl-14", "h18-lvl-18", "h18-lvl-20", "h18-lvl
 local START_GATES = {
     "ud01-xp-4", "ud02-lvl-6", "ud02-level-10", "ud02-lvl-12",
     "sd01-level-2", "sd01-level-3", "sd01-level-4", "sd02-level-10",
+    "dur01-lvl-5", "dur02-lvl-6", "dur02-lvl-9", "dur02-lvl-10",
+    "mul01-lvl-4", "mul02-lvl-6", "mul02-lvl-10",
 }
 
 -- The start zones that are class-neutral (rewritten in F2c): no step of their segments carries a class or race
@@ -462,10 +490,10 @@ describe("addons/FastesBoooy_Guides", function()
                 -- a zone announces itself when all classes of its races can walk it
                 assert.is_nil(a.only, zone .. ": the announcement still restricts the classes with `only`")
             end
-            assert.is_truthy(ann.Tirisfal, "Tirisfal has not announced itself")
-            assert.is_truthy(ann.Zephras, "Zephras has not announced itself")
+            -- since P2 every start zone is written: the 28 routes of A.4
+            assert.same({ "Durotar", "Mulgore", "Tirisfal", "Zephras" }, sortedKeys(ann))
             local expected = expectedRoutes(ann)
-            assert.is_true(#expected > 0)
+            assert.equal(28, #expected)
             assertRoutes(mod, expected)
         end)
 
@@ -604,6 +632,10 @@ describe("addons/FastesBoooy_Guides", function()
                         assert.is_truthy(step.filters, id .. " is a race-filtered alternative")
                         assert.same(FILTERED[id], sortedKeys(step.filters.race), id)
                         assert.is_nil(step.filters.class, id)
+                    elseif CLASS_FILTERED[id] then
+                        assert.is_truthy(step.filters, id .. " is a class-filtered base step")
+                        assert.same(CLASS_FILTERED[id], sortedKeys(step.filters.class), id)
+                        assert.is_nil(step.filters.race, id)
                     else
                         assert.is_nil(step.filters, id .. " must be unfiltered: class and race files anchor on it")
                     end
@@ -845,8 +877,11 @@ describe("addons/FastesBoooy_Guides", function()
             assert.same({ "dru-40-fly-tb", "dru-40-train" }, dru)
             assert.same({ "dru-40-fly-taurajo" }, druNext)
         end
-        if own("Races/Skyborne.lua") and not skipped["Races/Skyborne.lua"] then
-            assert.is_truthy(riding["Races/Skyborne.lua"], "the Skyborne druid riding insert after " .. ARRIVE)
+        for _, race in ipairs({ "Skyborne", "Tauren" }) do
+            local file = "Races/" .. race .. ".lua"
+            if own(file) and not skipped[file] then
+                assert.is_truthy(riding[file], "the " .. race .. " druid riding insert after " .. ARRIVE)
+            end
         end
         -- the composed order, in every druid route of a race with such an insert
         if not PARTIAL then
@@ -1113,108 +1148,29 @@ describe("addons/FastesBoooy_Guides", function()
 end)
 
 ---------------------------------------------------------------------------------------------------------------
--- Proofs for the races whose start zone does not exist yet (docs/dev/PLAN.md D.2, F2b step 6): the shared path
--- from the hand-over of the start zone to level 60, from synthetic hand-over states with the real history of
--- B.2, under the gate of every phase (--strict --end-level) and the grind budget of the base profiles (B.8).
+-- The Tauren and the accept of 844 (docs/dev/PLAN.md E.21). The snapshot lists 844 as exclusive with the Tauren
+-- breadcrumbs 861 and 854; tools/overrides/shared.lua removes that (unverified), and h15-xr-arrive acknowledges the
+-- resulting WARN. Pinned on the real route: with the override the base Tauren route is clean, without it the
+-- validator refuses the accept.
+-- History: until phase P2 this block held harness proofs of the shared path from synthetic hand-over states of
+-- Durotar and Mulgore (tests/fixtures/validator/guides_state_*.json, F2b step 6). The real start zones replaced
+-- them (P1); P2 retired them so that a class file of phase C cannot fail a proof in a file its agent may not edit.
 ---------------------------------------------------------------------------------------------------------------
 
 if not PARTIAL then
-    describe("the shared path from the hand-over states of Durotar and Mulgore (validator harness)", function()
-        local SEGMENTS = table.concat({ VISIT, unpack(SILVERPINE_ON) }, ",")
-        -- The real override layer on purpose (tools/overrides/shared.lua is part of what is proven here), named
-        -- explicitly: no spec may read that directory by default (validator_overrides_spec.lua).
-        local BASE = ("lua5.1 tools/validate_routes.lua --overrides tools/overrides --harness %s --segments %s "
-            .. "--strict --end-level --max-grind-until h-18-stonetalon-ashenvale=120/200 --summary "
-            .. "--grind-until h-18-stonetalon-ashenvale"):format(GUIDES, SEGMENTS)
+    describe("the Tauren accept 844 after their breadcrumbs 861 and 854", function()
+        -- The real override layer on purpose, named explicitly: no spec may read tools/overrides by default
+        -- (validator_overrides_spec.lua).
+        local CMD = "lua5.1 tools/validate_routes.lua --strict --end-level --route tauren-warrior " -- overrides: explicit
+            .. "--skip 'Classes/*' "
 
-        -- one TSV line of --summary: route, profile, errors, warnings, accepted, foreign, end level, worst end
-        -- level, grind kills, worst, grind kills up to --grind-until, worst
-        local function summary(out)
-            local line = ("\n" .. out):match("\n(harness%-[^\n\t]*\t[^\n]*)")
-            assert.is_truthy(line, out)
-            local f = {}
-            for field in (line .. "\t"):gmatch("([^\t]*)\t") do f[#f + 1] = field end
-            return { errors = tonumber(f[3]), warnings = tonumber(f[4]), endLevel = f[7], worstEndLevel = f[8],
-                     kills = tonumber(f[11]), worst = tonumber(f[12]) }
-        end
-
-        local function proof(profile, state, extra)
-            local code, out = run(("%s --profile %s --state %s/%s %s"):format(BASE, profile, STATES, state, extra or ""))
-            return code, out, summary(out)
-        end
-
-        local function assertPasses(code, out, s)
+        it("only through the unverified DB override", function()
+            local code, out = run(CMD .. "--overrides tools/overrides " .. GUIDES)
             assert.equal(0, code, out)
-            assert.equal(0, s.errors, out)
-            assert.equal(0, s.warnings, out)
-            assert.equal("60.00", s.endLevel, out)
-            assert.equal("60.00", s.worstEndLevel, out)
-            assert.is_true(s.kills <= 120 and s.worst <= 200, out)
-        end
-
-        for _, case in ipairs({
-            { "Orc WARRIOR", "race=Orc,class=WARRIOR,faction=Horde" },
-            { "Troll PRIEST", "race=Troll,class=PRIEST,faction=Horde" },
-        }) do
-            it(case[1] .. " from the Durotar hand-over (level 11.2 at Rhinag)", function()
-                assertPasses(proof(case[2], "guides_state_orc_11.json"))
-            end)
-        end
-
-        -- The Tauren reach the shared accept of 844 with its two breadcrumbs 861 and 854 turned in: the snapshot
-        -- calls that exclusive, tools/overrides/shared.lua removes it (unverified). Until a Tauren route exists
-        -- the step cannot acknowledge the resulting WARN (an `ok` no validated route uses is ok-unused), so the
-        -- proofs name it with --ignore; the last case pins that this WARN, and nothing else, is what is ignored.
-        -- Once the step carries the key (the case "acknowledges the unverified override ..." above demands it with
-        -- the first Tauren route) the proofs run with the literal command of the plan, without --ignore.
-        local acknowledged = false
-        do
-            local real = Loader.LoadModule(GUIDES, { schema = Schema })
-            for _, seg in ipairs(real.librarySegments) do
-                for _, step in ipairs(seg.steps) do
-                    if step.id == OVERRIDE_STEP then acknowledged = acknowledges(step, OVERRIDE_CODE) end
-                end
-            end
-        end
-        local IGNORE = acknowledged and "" or ("--ignore " .. OVERRIDE_CODE)
-        for _, case in ipairs({
-            { "Tauren WARRIOR, base profile, walk variant of mul-03", "race=Tauren,class=WARRIOR,faction=Horde",
-              "guides_state_tauren_11.json", "--skip 'Classes/*'" },
-            { "Tauren DRUID with the class files, walk variant", "race=Tauren,class=DRUID,faction=Horde",
-              "guides_state_tauren_11.json", "" },
-            { "Tauren WARRIOR, base profile, flight variant (only Thunder Bluff known)",
-              "race=Tauren,class=WARRIOR,faction=Horde", "guides_state_tauren_11_fly.json", "--skip 'Classes/*'" },
-        }) do
-            it(case[1] .. " from the Mulgore hand-over (level 11.8)", function()
-                assertPasses(proof(case[2], case[3], case[4] .. " " .. IGNORE))
-            end)
-        end
-
-        it("the Tauren accept 844 after 861 and 854 only through the unverified DB override", function()
-            local profile, state = "race=Tauren,class=WARRIOR,faction=Horde", "guides_state_tauren_11.json"
-            local code, out, s = proof(profile, state, "--skip 'Classes/*'")
-            assert.equal(0, s.errors, out)
-            if acknowledged then
-                -- the step acknowledges both: the literal command of the plan passes
-                assert.equal(0, code, out)
-                assert.equal(0, s.warnings, out)
-            else
-                assert.equal(1, code, out)
-                assert.equal(2, s.warnings, "one WARN per breadcrumb (861, 854) and no other:\n" .. out)
-                local n = 0
-                for line in out:gmatch("[^\n]+") do
-                    if line:find("^%s*WARN") then
-                        n = n + 1
-                        assert.is_truthy(line:find("id=" .. OVERRIDE_STEP, 1, true), line)
-                        assert.is_truthy(line:find("[" .. OVERRIDE_CODE .. "]", 1, true), line)
-                    end
-                end
-                assert.equal(2, n, out)
-            end
-            -- without the override the validator refuses the accept
-            code, out, s = proof(profile, state, "--skip 'Classes/*' --no-overrides")
+            assert.is_nil(out:find("[accept-exclusive]", 1, true), out)
+            -- without the override the validator refuses the accept on h15-xr-arrive
+            code, out = run(CMD .. "--no-overrides " .. GUIDES)
             assert.equal(1, code, out)
-            assert.is_true(s.errors >= 1, out)
             assert.is_truthy(out:find("[accept-exclusive]", 1, true), out)
             assert.is_truthy(out:find("id=h15-xr-arrive", 1, true), out)
         end)

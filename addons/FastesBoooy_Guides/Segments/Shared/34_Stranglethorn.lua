@@ -203,9 +203,9 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         -- Grom'gol, Mosh'Ogg outpost, Shadowmaw cats (35-36)
         ------------------------------------------------------------------
-        { turnin = 568, accept = 569, npc = 2464, at = { 1434, 32.17, 28.90 },
+        { id = "h34-gromgol-568", turnin = 568, accept = 569, npc = 2464, at = { 1434, 32.17, 28.90 },
           note = { ru = "Командир Агро'гош.", en = "Commander Aggro'gosh." } },
-        { turnin = 581, accept = 582, npc = 2497, at = { 1434, 32.16, 27.72 },
+        { id = "h34-gromgol-581", turnin = 581, accept = 582, npc = 2497, at = { 1434, 32.16, 27.72 },
           note = { ru = "Нимбойя.", en = "Nimboya." } },
         { complete = 569, at = { 1434, 37.10, 30.77 },
           note = { ru = "Восточнее лагеря, у заставы огров: 10 громил и 5 знахарей из клана Мош'Огг. Редкий Ролох "
@@ -217,9 +217,9 @@ FastesBoooy.AddLibrarySegment({
                        .. "тигрицы Тернистой долины (появляются на тех же местах).",
                    en = "South: 10 Shadowmaw Panthers (stealthed), 8 claws from them and the Pristine Tigress Fang "
                        .. "from a Stranglethorn Tigress (they share the spots)." } },
-        { turnin = 569, npc = 2464, at = { 1434, 32.17, 28.90 },
+        { id = "h34-gromgol-569", turnin = 569, npc = 2464, at = { 1434, 32.17, 28.90 },
           note = { ru = "Командир Агро'гош.", en = "Commander Aggro'gosh." } },
-        { turnin = 570, npc = 2465, at = { 1434, 32.12, 29.24 },
+        { id = "h34-gromgol-570", turnin = 570, npc = 2465, at = { 1434, 32.12, 29.24 },
           note = { ru = "Следующие чары Мок'тардина (572, 41) - позже.",
                    en = "Mok'thardin's next enchantment (572, 41) is for later." } },
 
@@ -263,17 +263,17 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         -- Grom'gol turn-ins, fly to Booty Bay
         ------------------------------------------------------------------
-        { turnin = 582, npc = 2497, at = { 1434, 32.16, 27.72 },
+        { id = "h35-gromgol-582", turnin = 582, npc = 2497, at = { 1434, 32.16, 27.72 },
           note = { ru = "Головы вождей (584, 41) - позже.", en = "The chiefs' heads (584, 41) are for later." } },
         { id = "h36-gromgol-end", turnin = { 596, 629 }, npc = 2519, at = { 1434, 32.27, 27.71 },
           note = { ru = "Кин'вилай.", en = "Kin'weelay." } },
         { id = "h34-fly-bootybay", fly = "Booty Bay", npc = 2858, at = { 1434, 26.87, 77.10 },
           note = { ru = "Тиста: летите в Пиратскую Бухту.", en = "Thysta: fly to Booty Bay." } },
-        { turnin = 201, npc = 773, at = { 1434, 26.95, 77.21 },
+        { id = "h35-bootybay-201", turnin = 201, npc = 773, at = { 1434, 26.95, 77.21 },
           note = { ru = "Кразек на верхнем этаже таверны.", en = "Krazek on the inn's top floor." } },
-        { turnin = { 189, 213 }, npc = 737, at = { 1434, 27.00, 77.13 },
+        { id = "h35-bootybay-189", turnin = { 189, 213 }, npc = 737, at = { 1434, 27.00, 77.13 },
           note = { ru = "Кебок. Следующее (209, 42) - позже.", en = "Kebok. The follow-up (209, 42) is for later." } },
-        { turnin = 605, npc = 2498, at = { 1434, 27.12, 77.21 },
+        { id = "h35-bootybay-605", turnin = 605, npc = 2498, at = { 1434, 27.12, 77.21 },
           note = { ru = "Шиззи Пуззырикс внизу. Продолжение (600, 41) - позже.",
                    en = "Crank Fizzlebub downstairs. The follow-up (600, 41) is for later." } },
         { id = "h-37-bootybay-end", turnin = 575, npc = 2495, at = { 1434, 28.29, 77.59 },

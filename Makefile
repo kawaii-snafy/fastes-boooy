@@ -9,8 +9,8 @@
 #   make lint         luacheck with the generated 'forever' std (.luacheckrc)
 #   make test         busted specs (tests/spec)
 #   make validate     route validator against tools/data/forever_db.lua (addons/FastesBoooy_Guides: every
-#                     route, the shared segments and inserts), gate VALIDATE_FLAGS (--strict --end-level
-#                     and the grind budget of levels 1-22)
+#                     route, the shared segments and inserts), gate VALIDATE_FLAGS (--strict --end-level,
+#                     the grind budget of levels 1-22 and the baseline of the base profiles)
 #   make simulate     run every route through the real engine on the WoW mock, JOBS simulations at a
 #                     time (the route list comes from tools/simulate_routes.lua --list-routes; a module
 #                     that does not load fails the target)
@@ -45,8 +45,10 @@ PYTHON = python3
 # is fixed or acknowledged with the `ok` key of its step / segment), the planned end level in the
 # normal and the worst-case run, and the grind budget of levels 1-22 (B.8): from level 1 to the end of
 # h-18-stonetalon-ashenvale no route needs more than 120 grind kills, 200 in the worst case (optional
-# steps skipped). A later phase adds the baseline (--baseline: no class route above the base of its race).
-VALIDATE_FLAGS = --strict --end-level --max-grind-until h-18-stonetalon-ashenvale=120/200
+# steps skipped); and the baseline frozen in phase P2 (--baseline: no route needs more grind kills in total,
+# normal or worst case, than the base profile of its race, docs/dev/handover/baseline.json).
+VALIDATE_FLAGS = --strict --end-level --max-grind-until h-18-stonetalon-ashenvale=120/200 \
+	--baseline docs/dev/handover/baseline.json
 # Parallel simulations: one simulator process per line of arguments, JOBS at a time. A failing job
 # makes xargs (and the target) fail. Each job collects its output in a file of a temporary directory
 # and prints it when it ends, while it holds a lock (a directory: mkdir is atomic and needs no extra
@@ -82,10 +84,9 @@ FIXTURE_VALIDATE = tests/fixtures/validator/FastesBoooy_FxClean tests/fixtures/v
 	tests/fixtures/core/FastesBoooy_TestGuides
 FIXTURE_SIMULATE = tests/fixtures/core/FastesBoooy_TestRoute tests/fixtures/core/FastesBoooy_TestComposed \
 	tests/fixtures/core/FastesBoooy_TestGuides
-# make simulate-sync: the routes of the "player ahead of the route" runs: the routes that exist now.
-# The final list is one route per race with five different classes (docs/dev/PLAN.md A.7: orc-warrior
-# troll-shaman tauren-hunter undead-paladin skyborne-druid); every route: make simulate-sync-full.
-SYNC_ROUTES = undead-paladin skyborne-druid
+# make simulate-sync: the routes of the "player ahead of the route" runs: one route per race with five
+# different classes (docs/dev/PLAN.md A.7); every route: make simulate-sync-full.
+SYNC_ROUTES = orc-warrior troll-shaman tauren-hunter undead-paladin skyborne-druid
 # start levels of the runs (tools/simulate_routes.lua --ahead)
 SYNC_LEVELS = 10 23 35 48
 # mid-route jumps with a quest log (--ahead L --ahead-at SEG,...: the first listed segment the route has;

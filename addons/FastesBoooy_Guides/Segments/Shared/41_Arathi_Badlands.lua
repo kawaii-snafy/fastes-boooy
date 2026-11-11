@@ -108,10 +108,10 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Квартал аптекарей: аптекарь Зинг - «Посылка для аптекаря Зинг» (заказ Алессандро Луке).",
                    en = "The Apothecarium: Apothecary Zinge - Errand for Apothecary Zinge (the order goes to "
                        .. "Alessandro Luca)." } },
-        { turnin = 232, accept = 238, npc = 7683, at = { 1458, 58.61, 54.68 },
+        { id = "h41-uc-232", turnin = 232, accept = 238, npc = 7683, at = { 1458, 58.61, 54.68 },
           note = { ru = "Алессандро Лука (лавка «Синяя луна»): отдайте заказ, возьмите набор для полевых исследований.",
                    en = "Alessandro Luca (Blue Moon Odds and Ends): hand over the order, take the Field Testing Kit." } },
-        { turnin = 238, accept = 243, npc = 5204, at = { 1458, 50.14, 67.97 },
+        { id = "h41-uc-238", turnin = 238, accept = 243, npc = 5204, at = { 1458, 50.14, 67.97 },
           note = { ru = "Обратно к Зинг: «Поход в пустыню» - в Прибамбасск (Танарис), позже.",
                    en = "Back to Zinge: Into the Field - to Gadgetzan (Tanaris), later." } },
         { id = "h41-sharlindra", accept = 495, npc = 2227, at = { 1458, 57.63, 93.80 },
@@ -131,7 +131,7 @@ FastesBoooy.AddLibrarySegment({
                        .. "(Оружейная), командир Могрейн и инквизитор Вайтмейн (Собор).",
                    en = "Scarlet Monastery (Tirisfal 82.6, 33.8): Houndmaster Loksey (Library), Herod (Armory), "
                        .. "Commander Mograine and High Inquisitor Whitemane (Cathedral)." } },
-        { turnin = 1048, npc = 2425, optional = true, at = { 1458, 56.25, 92.20 },
+        { id = "h41-uc-1048", turnin = 1048, npc = 2425, optional = true, at = { 1458, 56.25, 92.20 },
           note = { ru = "Обратно к Вариматрасу.", en = "Back to Varimathras." } },
         { id = "h-41-undercity-flight-master", fly = "Tarren Mill", npc = 2389, at = { 1424, 60.14, 18.62 },
           note = { ru = "Майкл Гаррет: летите на Мельницу Таррен (Предгорья Хилсбрада).",
