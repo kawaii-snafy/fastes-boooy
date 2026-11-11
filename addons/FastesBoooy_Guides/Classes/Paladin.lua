@@ -30,20 +30,27 @@
 --     ud02-shadowvale (Shadowvale), after ud02-hilda-2 (turn-ins), after ud02-lvl-12 (94427, optional).
 --   Undercity, after ud02-fp-uc: Tanis Alderwood 94427 > 94434 (optional: 10 Linen Cloth), Lady Sylvanas 95803
 --     (the Royal Quarter walk exists only for it: 460 XP estimated, and the chain ends there).
---   Skipped: the rest of the Lesson in Divinity chain 94435+ (crosses Tirisfal twice for Redemption).
+--   Skipped: the rest of the Lesson in Divinity chain 94435+ (Redemption). It runs Undercity > Bandarion Keep (west
+--   edge) > Deathguard Falgan (Tirisfal 86.7, 47.7, east edge) > a Scarlet drop > the keep again: about 2 x 2,900 yd
+--   on foot at level 12, ~25 min, for 5 quests of estimated XP and a resurrection spell that does nothing for solo
+--   leveling speed. PLAN.md C.4 lists Redemption as a key ability; skipped on the user's rule "only the class quests
+--   worth it for leveling speed" (deviation, docs/dev/handover/c-paladin.md). Hilda the Breaker (246389, Paladin
+--   Trainer in the DB) stands at the keep: the route talks to her for 91294 at 12.1 but trains in Brill (12.6).
 --   XP of the group (all estimated, Forever-new quests): 98601 40, 90902 170, 91208 355, 91209 355, 91282 /
 --   91285 / 91294 / 91316 660 each, 91317 / 95803 / 94427 / 94434 460 each, plus the kills of 91285 and 91317:
 --   the paladin leaves Tirisfal 0.7 level above the other classes (12.79 against 12.10).
 --   Quest rewards of the generic Tirisfal quests: the segments only say "pick the armour your class can wear"; what
 --   a paladin takes (mail, the two-hander) is named in the note of the pal-tir step that stands in front of the
 --   turn-ins: pal-tir-train-1 (3901 / 376), pal-tir-91208 (3902 / 380, 381, 382), pal-tir-train-8 (426, 398, 358),
---   pal-tir-train-10 (97558, 374). There is no class reward table yet (FastesBoooy.AddLibraryData({ rewards = {
---   PALADIN = ... } })): the DB has no reward lists and the old route named the items without their index in the
---   reward window, and a wrong index would make the automation take the wrong item. CONFIRM the indexes in game,
---   then move the choices into the table (phase C).
+--   pal-tir-train-10 (97558, 374). No class reward table (FastesBoooy.AddLibraryData({ rewards = { PALADIN = ... }
+--   })): the DB snapshot has no reward lists and the old route named the items without their index in the reward
+--   window; a wrong index would make the automation take the wrong item, no index only shows a hint.
+--   CONFIRM: the reward indexes of 3901, 376, 3902, 380, 381, 382, 426, 398, 358, 97558, 374 in game, then add the table.
 --
--- Training on 12-22 (CONFIRM, docs/dev/PLAN.md E.3: the paladin trainers in the Undercity and in Thunder Bluff are
--- in the DB but not on the web; the fallback is Shari Stilwell in Brill):
+-- Training on 12-60 (CONFIRM, docs/dev/PLAN.md E.3: the paladin trainers Garen Largo 260093 in the Undercity and
+-- Alodan the Hopeful 246344 in Thunder Bluff are in the DB but not on the web; every step at them carries a CONFIRM
+-- comment and its note names Shari Stilwell in Brill as the fallback: the zeppelins of 22.0, 31.1 and 41.0 land
+-- ~200 yd south of her, the Undercity entrance is ~400 yd south):
 --   14        Garen Largo (Undercity, War Quarter), after h13-uc-end (the gate h13-lvl-14 guarantees the level)
 --   18        Alodan the Hopeful (Thunder Bluff, Pools of Vision: Zamah's cave), after h18-tb-zamah (gate
 --             h18-lvl-18)
@@ -559,14 +566,17 @@ insert({
     after = "h-27-tb-arrive",
     class = "PALADIN",
     steps = {
+        -- CONFIRM: Alodan the Hopeful (see pal-train-18)
         { id = "pal-train-26", train = true, npc = 246344, at = { 1456, 25.81, 19.03 },
           spells = { { ru = "Печать праведности (ранг 4)", en = "Seal of Righteousness (Rank 4)" },
                      { ru = "Вспышка Света (ранг 2)", en = "Flash of Light (Rank 2)" },
                      { ru = "Молот правосудия (ранг 2)", en = "Hammer of Justice (Rank 2)" } },
           note = { ru = "Алодан Жизнерадостный бродит в этой же пещере: обучение 26-го (Печать праведности 4 — главный "
-                       .. "ранг урона). Таланты: 23-25 — Приговор 3/3, 26-28 — Специализация на двуручном оружии.",
+                       .. "ранг урона). Нет его на месте — ранги подождут Брилла (Шари Стилвелл, 2 мин от башни дирижаблей на 31-м). "
+                       .. "Таланты: 23-25 — Приговор 3/3, 26-28 — Специализация на двуручном оружии.",
                    en = "Alodan the Hopeful wanders in the same cave: level-26 training (Seal of Righteousness R4, the "
-                       .. "main damage rank). Talents: 23-25 Conviction 3/3, 26-28 Two-Handed Weapon Specialization." } },
+                       .. "main damage rank). Not there: the ranks wait for Brill (Shari Stilwell, 2 min from the zeppelin tower at "
+                       .. "31). Talents: 23-25 Conviction 3/3, 26-28 Two-Handed Weapon Specialization." } },
     },
 })
 
@@ -577,6 +587,7 @@ insert({
     after = "h-31-tb-hearth",
     class = "PALADIN",
     steps = {
+        -- CONFIRM: Alodan the Hopeful (see pal-train-18)
         { id = "pal-train-30", train = true, npc = 246344, at = { 1456, 25.81, 19.03 },
           spells = { { ru = "Священный удар (ранг 4)", en = "Holy Strike (Rank 4)" },
                      { ru = "Освящение (ранг 2)", en = "Consecration (Rank 2)" },
@@ -585,11 +596,13 @@ insert({
                      { ru = "Возложение рук (ранг 2)", en = "Lay on Hands (Rank 2)" },
                      { ru = "Экзорцизм (ранг 2)", en = "Exorcism (Rank 2)" } },
           note = { ru = "От таверны по мосту на Вершину Духов, вниз в Пруды Видений: Алодан, обучение 28 + 30. Это "
-                       .. "последний визит в Громовой Утёс — дальше тренер Гарен Ларго в Подгороде. Таланты: 29 — "
-                       .. "Sacred Arbiter, 30-32 — Отмщение 3/3.",
+                       .. "последний визит в Громовой Утёс — дальше тренер Гарен Ларго в Подгороде. Нет Алодана — на 31-м маршрут "
+                       .. "прилетает дирижаблем к башне Тирисфаля: оттуда 2 мин на север к Шари Стилвелл в Брилле. "
+                       .. "Таланты: 29 — Sacred Arbiter, 30-32 — Отмщение 3/3.",
                    en = "From the inn over the bridge to Spirit Rise and down into the Pools of Vision: Alodan, "
                        .. "training 28 + 30. Last Thunder Bluff visit of the route; from now on the trainer is Garen "
-                       .. "Largo in Undercity. Talents: 29 Sacred Arbiter, 30-32 Vengeance 3/3." } },
+                       .. "Largo in Undercity. No Alodan: at 31 the zeppelin lands at the Tirisfal tower, 2 min south "
+                       .. "of Shari Stilwell in Brill. Talents: 29 Sacred Arbiter, 30-32 Vengeance 3/3." } },
     },
 })
 
@@ -600,17 +613,20 @@ insert({
     after = "h-34-uc-arrive",
     class = "PALADIN",
     steps = {
+        -- CONFIRM: Garen Largo (see pal-train-14); fallback Shari Stilwell in Brill
         { id = "pal-train-34", train = true, npc = 260093, at = { 1458, 47.53, 15.04 },
           spells = { { ru = "Печать праведности (ранг 5)", en = "Seal of Righteousness (Rank 5)" },
                      { ru = "Благословение могущества (ранг 4)", en = "Blessing of Might (Rank 4)" },
                      { ru = "Божественный щит", en = "Divine Shield" },
                      { ru = "Вспышка Света (ранг 3)", en = "Flash of Light (Rank 3)" },
                      { ru = "Печать воина Света (ранг 4)", en = "Seal of the Crusader (Rank 4)" } },
-          note = { ru = "Квартал Воинов (северо-запад): тренер паладинов Гарен Ларго, обучение 32 + 34. Потом к "
+          note = { ru = "Квартал Воинов (северо-запад): тренер паладинов Гарен Ларго, обучение 32 + 34 (нет его — Шари Стилвелл "
+                       .. "в Брилле, 2 мин на север от входа в Подгород). Потом к "
                        .. "Фаранеллу в зал аптекарей. Таланты: 33 — Покаяние, 34 — Благодарение 1/5. Оружие: квестовых "
                        .. "двуручников до 44-го больше нет (Молот Уничтожения, 17.6 DPS) — есть золото, загляните на "
                        .. "аукцион Подгорода (двуручная булава 25+ DPS).",
-                   en = "The War Quarter (north-west): paladin trainer Garen Largo, training 32 + 34. Then to Faranell "
+                   en = "The War Quarter (north-west): paladin trainer Garen Largo, training 32 + 34 (not there: Shari "
+                       .. "Stilwell in Brill, 2 min north of the Undercity entrance). Then to Faranell "
                        .. "in the Apothecarium. Talents: 33 Repentance, 34 Benediction 1/5. Weapon: no quest two-hander "
                        .. "until 44 (Demolition Hammer, 17.6 dps) - with gold to spare, check the Undercity auction house "
                        .. "(a 2H mace of 25+ dps)." } },
@@ -659,7 +675,8 @@ insert({
                      { ru = "Молот правосудия (ранг 3)", en = "Hammer of Justice (Rank 3)" },
                      { ru = "Свет небес (ранг 6)", en = "Holy Light (Rank 6)" },
                      { ru = "Экзорцизм (ранг 3)", en = "Exorcism (Rank 3)" },
-                     { ru = "Латы", en = "Plate Mail" } },
+                     { ru = "Латы", en = "Plate Mail" },
+                     { ru = "Призыв боевого коня (если есть в списке)", en = "Summon Warhorse (if listed)" } },
           note = { ru = "От башни дирижаблей на север в Брилл (2 мин): Шари Стилвелл у конюшни, обучение 36-40 (Молот "
                        .. "праведника — удар по цели и трём соседним, 6 с). Если в её списке нет рангов 40-го (Молот "
                        .. "праведника, Освящение 3, Печать повиновения 3, Молот правосудия 3) — они у Гарена Ларго в "
@@ -670,7 +687,7 @@ insert({
                        .. "ranks (Hammer of the Righteous, Consecration 3, Seal of Command 3, Hammer of Justice 3): Garen "
                        .. "Largo in Undercity has them (optional step after the horse). Talents: 35-39 Champion of the "
                        .. "Light 5/5, 40 Unsealed Wrath (the Retribution capstone)." } },
-        { id = "pal-40-riding", manual = true, npc = 4773, at = { 1420, 60.08, 52.57 },
+        { id = "pal-40-riding", manual = true, npc = 4773, optional = true, at = { 1420, 60.08, 52.57 },
           note = { ru = "Вельма Варнам рядом: Верховая езда (ученик), ~100 з. — по анонсу Forever скакун выдаётся "
                        .. "вместе с навыком. Если у тренера паладинов был «Призыв боевого коня» — выучили его, езда не нужна. "
                        .. "Не хватает золота — «Вперёд», вернётесь на 44-м (Брилл в 2 мин от башни дирижаблей). "
@@ -684,6 +701,7 @@ insert({
                        .. "Подгород.",
                    en = "Only if the riding skill came without a mount: Zachariah Post - a skeletal horse (any). Then "
                        .. "back to Undercity." } },
+        -- CONFIRM: Garen Largo (see pal-train-14)
         { id = "pal-train-40-garen", train = true, npc = 260093, optional = true, at = { 1458, 47.53, 15.04 },
           spells = { { ru = "Молот праведника", en = "Hammer of the Righteous" },
                      { ru = "Освящение (ранг 3)", en = "Consecration (Rank 3)" },
@@ -704,6 +722,7 @@ insert({
     after = "h-44-uc-arrive",
     class = "PALADIN",
     steps = {
+        -- CONFIRM: Garen Largo (see pal-train-14); fallback Shari Stilwell in Brill
         { id = "pal-train-44", train = true, npc = 260093, at = { 1458, 47.53, 15.04 },
           spells = { { ru = "Молот гнева", en = "Hammer of Wrath" },
                      { ru = "Священный удар (ранг 6)", en = "Holy Strike (Rank 6)" },
@@ -713,13 +732,15 @@ insert({
                      { ru = "Очищение", en = "Cleanse" },
                      { ru = "Экзорцизм (ранг 4)", en = "Exorcism (Rank 4)" },
                      { ru = "Печать воина Света (ранг 5)", en = "Seal of the Crusader (Rank 5)" } },
-          note = { ru = "Квартал Воинов: Гарен Ларго, обучение 42 + 44 (Молот гнева — добивание ниже 20% здоровья). "
+          note = { ru = "Квартал Воинов: Гарен Ларго, обучение 42 + 44 (Молот гнева — добивание ниже 20% здоровья; нет его — "
+                       .. "Шари Стилвелл в Брилле, 1 мин верхом от входа в Подгород). "
                        .. "Без езды с 40-го? Вельма Варнам в Брилле, 2 мин от башни дирижаблей. Таланты: 41-45 — "
                        .. "Божественная сила 5/5 (Свет). Награда Ток'Кара за 1427 в Болоте Печали: Колун мурлоков Ток'Кара "
                        .. "(двуручный топор, +15 к силе), если на 40-м выучили топоры; иначе Сокрушитель мурлоков "
                        .. "Ток'Кара (двуручная булава, +18 к выносливости).",
                    en = "The War Quarter: Garen Largo, training 42 + 44 (Hammer of Wrath finishes targets below 20% "
-                       .. "health). No riding since 40? Velma Warnam in Brill, 2 min from the zeppelin tower. Talents: "
+                       .. "health; not there: Shari Stilwell in Brill, 1 min mounted from the Undercity entrance). No riding "
+                       .. "since 40? Velma Warnam in Brill, 2 min from the zeppelin tower. Talents: "
                        .. "41-45 Divine Strength 5/5 (Holy). Tok'Kar's reward for 1427 in the Swamp of Sorrows: Tok'kar's "
                        .. "Murloc Chopper (2H axe, +15 Str) if you learned Two-Handed Axes at 40, otherwise Tok'kar's "
                        .. "Murloc Basher (2H mace, +18 Sta)." } },
@@ -733,6 +754,7 @@ insert({
     after = "h53-fly-uc",
     class = "PALADIN",
     steps = {
+        -- CONFIRM: Garen Largo (see pal-train-14); fallback Shari Stilwell in Brill
         { id = "pal-train-52", train = true, npc = 260093, at = { 1458, 47.53, 15.04 },
           spells = { { ru = "Печать праведности (ранг 7)", en = "Seal of Righteousness (Rank 7)" },
                      { ru = "Печать повиновения (ранг 4)", en = "Seal of Command (Rank 4)" },
@@ -746,12 +768,14 @@ insert({
                      { ru = "Божественный щит (ранг 2)", en = "Divine Shield (Rank 2)" },
                      { ru = "Гнев небес", en = "Holy Wrath" },
                      { ru = "Экзорцизм (ранг 5)", en = "Exorcism (Rank 5)" } },
-          note = { ru = "Квартал Воинов: Гарен Ларго, обучение 46-52 (ранги 50-го ждали с прошлого визита на 49.5). "
+          note = { ru = "Квартал Воинов: Гарен Ларго, обучение 46-52 (ранги 50-го ждали с прошлого визита на 49.5; нет его — "
+                       .. "Шари Стилвелл в Брилле, 1 мин верхом от входа в Подгород). "
                        .. "Потом в Квартал Магов к Орану. Гнев небес и Экзорцизм — для Чумных земель (нежить). Таланты: "
                        .. "46-50 — Improved Seals 5/5 (Свет), 51-54 — Благодарение до 5/5. Не учили двуручные топоры на "
                        .. "40-м? Ханаши стоит рядом с Белгромом в Аллее Чести Оргриммара (маршрут будет там на 53-м) — без "
                        .. "них Зверобой (4301) бесполезен.",
-                   en = "The War Quarter: Garen Largo, training 46-52 (the 50 ranks waited since the 49.5 visit). Then "
+                   en = "The War Quarter: Garen Largo, training 46-52 (the 50 ranks waited since the 49.5 visit; not there: "
+                       .. "Shari Stilwell in Brill, 1 min mounted from the Undercity entrance). Then "
                        .. "to Oran in the Magic Quarter. Holy Wrath and Exorcism are for the Plaguelands (undead). "
                        .. "Talents: 46-50 Improved Seals 5/5 (Holy), 51-54 Benediction up to 5/5. No Two-Handed Axes "
                        .. "from 40? Hanashi stands next to Belgrom in Orgrimmar's Valley of Honor (the route takes you "
@@ -766,6 +790,7 @@ insert({
     after = "h59-hearth-uc",
     class = "PALADIN",
     steps = {
+        -- CONFIRM: Garen Largo (see pal-train-14)
         { id = "pal-train-58", train = true, npc = 260093, optional = true, at = { 1458, 47.53, 15.04 },
           spells = { { ru = "Печать праведности (ранг 8)", en = "Seal of Righteousness (Rank 8)" },
                      { ru = "Вспышка Света (ранг 6)", en = "Flash of Light (Rank 6)" },
@@ -773,10 +798,12 @@ insert({
                      { ru = "Молот правосудия (ранг 4)", en = "Hammer of Justice (Rank 4)" } },
           note = { ru = "По желанию: Квартал Воинов, Гарен Ларго — ранги 54 и, если уже 58-й (обычно да с попутными "
                        .. "убийствами; по квестам здесь 57.95-57.99), Печать праведности 8. Нет 58-го — «Вперёд», всё "
-                       .. "выучите на 60-м. Таланты: 55-59 — Божественный интеллект 5/5 (Защита).",
+                       .. "выучите на 60-м (нет Гарена — тоже на 60-м, в Брилле). Таланты: 55-59 — Божественный интеллект 5/5 "
+                       .. "(Защита).",
                    en = "Optional: War Quarter, Garen Largo - the 54 ranks and, if you are 58 already (usually yes with "
                        .. "kills on the way; the quests alone give 57.95-57.99 here), Seal of Righteousness R8. Not 58: "
-                       .. "press Forward, you train everything at 60. Talents: 55-59 Divine Intellect 5/5 (Protection)." } },
+                       .. "press Forward, you train everything at 60 (no Garen: also at 60, in Brill). Talents: 55-59 Divine "
+                       .. "Intellect 5/5 (Protection)." } },
     },
 })
 
@@ -792,6 +819,7 @@ insert({
                        .. "из Часовни Последней Надежды.",
                    en = "Hearth to Undercity (bound there before the Plaguelands). On cooldown: fly from Light's Hope "
                        .. "Chapel." } },
+        -- CONFIRM: Garen Largo (see pal-train-14); fallback Shari Stilwell in Brill
         { id = "pal-train-60", train = true, npc = 260093, at = { 1458, 47.53, 15.04 },
           spells = { { ru = "Священный удар (ранг 8)", en = "Holy Strike (Rank 8)" },
                      { ru = "Печать повиновения (ранг 5)", en = "Seal of Command (Rank 5)" },
@@ -801,10 +829,12 @@ insert({
                      { ru = "Свет небес (ранг 9)", en = "Holy Light (Rank 9)" },
                      { ru = "Экзорцизм (ранг 6)", en = "Exorcism (Rank 6)" },
                      { ru = "Печать праведности (ранг 8)", en = "Seal of Righteousness (Rank 8)" } },
-          note = { ru = "Квартал Воинов: Гарен Ларго — обучение 60 (и 58, если пропустили). Талант 60 — Точность 1/3 "
+          note = { ru = "Квартал Воинов: Гарен Ларго — обучение 60 (и 58, если пропустили; нет его — Шари Стилвелл в Брилле, "
+                       .. "1 мин верхом от входа в Подгород). Талант 60 — Точность 1/3 "
                        .. "(Защита). «Призыв скакуна Отрекшихся» (60) — источник пока неизвестен (по анонсу "
                        .. "Blizzard — задание у крепости Бандарион). Маршрут 1-60 пройден!",
-                   en = "The War Quarter: Garen Largo - level-60 training (and 58 if you skipped it). Talent at 60: "
+                   en = "The War Quarter: Garen Largo - level-60 training (and 58 if you skipped it; not there: Shari "
+                       .. "Stilwell in Brill, 1 min mounted from the Undercity entrance). Talent at 60: "
                        .. "Precision 1/3 (Protection). Summon Forsaken Charger (60): source unknown so far (Blizzard "
                        .. "announced a quest at Bandarion Keep). The 1-60 route is done!" } },
     },
