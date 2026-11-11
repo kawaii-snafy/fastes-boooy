@@ -339,7 +339,7 @@ FastesBoooy.AddLibraryInsert({
     race = { "Orc", "Troll" },
     steps = {
         { id = "dur02-korghan", turnin = 813, complete = 812, npc = 3189, at = { 1454, 47.24, 53.58 },
-          note = { ru = "Расселина Тьмы рядом: Кор'ган - сдайте 4 мешочка, получите противоядие для Ринага.",
+          note = { ru = "Расселина Теней рядом: Кор'ган - сдайте 4 мешочка, получите противоядие для Ринага.",
                    en = "The Cleft of Shadow close by: Kor'ghan - hand in the 4 sacs and get the antidote for "
                        .. "Rhinag." } },
     },

@@ -36,6 +36,10 @@ FastesBoooy.AddLibrarySegment({
         en = "1-9 Zephras Isle: Thendal Grove and Shen'dar",
     },
     zone = "Zephras Isle",
+    -- The base profile ends this segment at 9.95; the Skyborne shaman at 10.08 (the shaman letter 92484 and the
+    -- Earth chain 92466 - 92468 of Classes/Shaman.lua are turned in here, Forever-new XP estimated). The planned
+    -- range stays 1-9 (title, level sync) and the WARN of that one route is acknowledged (phase R).
+    ok = "segment-level",
     levels = { 1, 9 },
     steps = {
         ---------------------------------------------------------------------

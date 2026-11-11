@@ -167,6 +167,12 @@ files["addons/FastesBoooy/**/*.lua"] = {
 files["addons/FastesBoooy_*/**/*.lua"] = {
     std = "fastesboooy_route",
 }
+-- Generated route data (tools/gen_route_data.lua): one questMeta entry per line; a long prerequisite list
+-- (preAny of 40 ids, quest 97286) cannot be shorter.
+files["addons/FastesBoooy_*/Data.lua"] = {
+    std = "fastesboooy_route",
+    max_line_length = false,
+}
 
 -- Offline tools: plain Lua 5.1 CLI scripts.
 files["tools/**/*.lua"] = {

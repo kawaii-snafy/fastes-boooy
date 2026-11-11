@@ -80,9 +80,8 @@
 --   after h-24-camp-taurajo  24.9 / 24.1 Ruga Ragetotem: 1823 > 1824 (Twitching Antennae from the silithids of the
 --                                        Field of Giants, which the shared path crosses for 868 anyway)
 --   before h-25-fly-ratchet  25.6 / 24.8 Ruga: 1824 > 1825 (2,330 XP for the two)
---   before h-25-the-crossroads-flight 26.1  1825 at Thun'grim (optional): he stands by the road below Chol'aruk's
---                                        hill, which the path visits 4 steps earlier (no id there: anchor wish in the
---                                        hand-over); from the Crossroads it is a ~1,200 yd round trip
+--   after h-26-cholaruk      26.0        1825 at Thun'grim: he stands by the road ~300 yd below Chol'aruk's hill
+--                                        (780 XP for ~1 minute; the anchor id was added in phase R)
 --   before h-31-org          31.0        BERSERKER STANCE: fly Camp Taurajo > Ratchet, swim to Fray Island, 1718 >
 --                                        1719 The Affray (waves, then Big Will L33), back to Ratchet; the shared
 --                                        next step flies to Orgrimmar from there (~8 min, 3,060 XP)
@@ -696,19 +695,16 @@ insert({
                        .. "of the Crossroads, below Chol'aruk's hill (you are there after Ratchet)." } },
     },
 })
--- 1825 belongs between h-24-barrens-stonetalon:44 (Chol'aruk's hill, 300 yd from Thun'grim) and :46 (Gur'ak):
--- those steps have no id (anchor wish in the hand-over), so the turn-in stands before the next id.
+-- 1825 right after Chol'aruk's hill (h-26-cholaruk, ~300 yd from Thun'grim), before the Crossroads turn-ins.
 insert({
-    before = "h-25-the-crossroads-flight",
+    after = "h-26-cholaruk",
     class = "WARRIOR",
     steps = {
-        { id = "war-1825", turnin = 1825, npc = 5878, optional = true, at = THUNGRIM,
-          note = { ru = "Тун'грим Огнегляд у дороги под холмом Чол'арука: сдайте «Speak with Thun'grim» (780 опыта). "
-                       .. "Лучше сразу после Чол'арука; если уже на Перекрёстке — ~1200 м туда и обратно, тогда "
-                       .. "«Пропуск». Его следующее задание (Brutal Armor) не берите.",
-                   en = "Thun'grim Firegaze by the road below Chol'aruk's hill: turn in Speak with Thun'grim (780 XP). "
-                       .. "Best right after Chol'aruk; already at the Crossroads - ~1,200 yd there and back, then skip. "
-                       .. "Do not take his next quest (Brutal Armor)." } },
+        { id = "war-1825", turnin = 1825, npc = 5878, at = THUNGRIM,
+          note = { ru = "С холма Чол'арука ~300 м на юго-запад к дороге: Тун'грим Огнегляд — сдайте «Speak with "
+                       .. "Thun'grim» (780 опыта). Его следующее задание (Brutal Armor) не берите.",
+                   en = "From Chol'aruk's hill ~300 yd south-west to the road: Thun'grim Firegaze - turn in Speak with "
+                       .. "Thun'grim (780 XP). Do not take his next quest (Brutal Armor)." } },
     },
 })
 insert({

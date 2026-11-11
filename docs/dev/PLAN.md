@@ -1,7 +1,7 @@
 # Implementation plan: FastesBoooy_Guides (28 race + class routes, levels 1-60)
 
-Status: in execution. Done: F1a, F1b, F1c, F2a, F2b, F2c, F2d and the orchestrator fixes F2e (hand-overs in
-`docs/dev/handover/`); next: P1. Where a phase deviated from this text and later phases depend on it, the text
+Status: executed. Done: F1a, F1b, F1c, F2a, F2b, F2c, F2d, the orchestrator fixes F2e, P1, P2 (with the freeze; P3
+postponed by the user), C (nine classes) and R (integration; hand-overs in `docs/dev/handover/`). Where a phase deviated from this text and later phases depend on it, the text
 below was aligned in F2e (marked "as executed"). Branch `claude/beautiful-planck-svbl19`. Revision 2: revised after three
 adversarial reviews (engine and tools, route speed, parallel execution); every finding and what was changed for
 it is in the "Review log" at the end.

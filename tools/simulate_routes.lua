@@ -1389,17 +1389,29 @@ local function simulate(S)
         -- background goals "on the way"
         checkBgLeft(S)
         for _, bg in ipairs({ unpack(E:GetBackground()) }) do
-            if not S.bgSeen[bg.id] then
-                S.bgSeen[bg.id] = true
-                S.stats.bg = S.stats.bg + 1
+            -- the list is a snapshot: an earlier step of this batch (or the current step) may have made a
+            -- goal unnecessary, e.g. a trainer visit kept by the level sync that the route's own next trainer
+            -- visit replaces once the cursor reaches it. The engine then no longer lists the step (below the
+            -- sync floor it is done as a whole although its accept is no longer void): it is not performed.
+            local still = false
+            for _, s in ipairs(E:GetBackground()) do
+                if s == bg then still = true break end
             end
-            bgTries[bg.id] = (bgTries[bg.id] or 0) + 1
-            if bgTries[bg.id] > MAX_BG_TRIES then
-                fail(S, "background step %s never completes", stepName(bg))
+            if not still then
+                vlog(S, "  [bg] %s: no longer a background goal", stepName(bg))
+            else
+                if not S.bgSeen[bg.id] then
+                    S.bgSeen[bg.id] = true
+                    S.stats.bg = S.stats.bg + 1
+                end
+                bgTries[bg.id] = (bgTries[bg.id] or 0) + 1
+                if bgTries[bg.id] > MAX_BG_TRIES then
+                    fail(S, "background step %s never completes", stepName(bg))
+                end
+                vlog(S, "  [bg] %s", stepName(bg))
+                performStep(S, bg)
+                checkClean(S, m, "bg step " .. stepName(bg))
             end
-            vlog(S, "  [bg] %s", stepName(bg))
-            performStep(S, bg)
-            checkClean(S, m, "bg step " .. stepName(bg))
         end
         checkBgLeft(S)
         local after = E:GetCursor()

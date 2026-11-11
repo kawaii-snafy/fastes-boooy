@@ -234,7 +234,7 @@ FastesBoooy.AddLibrarySegment({
         ------------------------------------------------------------------
         -- Back to the Crossroads on foot (level 26)
         ------------------------------------------------------------------
-        { complete = 97003, at = { 1413, 57.95, 26.80 },
+        { id = "h-26-cholaruk", complete = 97003, at = { 1413, 57.95, 26.80 },
           note = { ru = "Бегом на северо-запад (~4 мин вместо полёта): Чол'арук (элитный 20-й) на холме кентавров — голова.",
                    en = "Run north-west (~4 min instead of the flight): Chol'aruk (elite 20) on the centaur hill - his "
                        .. "Head." } },

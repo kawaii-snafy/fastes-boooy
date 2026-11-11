@@ -224,7 +224,7 @@ local ANCHORS = {
         "h-22-tb-start", "h-22-tb-fly", "h-22-tb-fly-org", "h-22-org-fp", "h-22-uc-arrive", "h-22-uc-fly",
         "h-22-the-sepulcher-apothecary", "h-24-tarrenmill-end", "h-24-tb-hearth",
     },
-    ["h-24-barrens-stonetalon"] = { "h-25-sun-rock-retreat", "h25-rebirth-seeds", "h25-rebirth-turnin" },
+    ["h-24-barrens-stonetalon"] = { "h-26-cholaruk", "h-25-sun-rock-retreat", "h25-rebirth-seeds", "h25-rebirth-turnin" },
     ["h-37-desolace-dustwallow"] = { "h-40-org-arrive", "h-38-orgrimmar-flight-master" },
     ["h-41-arathi-badlands"] = { "h-41-uc-arrive" },
     ["h-50-hinterlands-searing-steppes"] = { "h50-owen-thadd" },
@@ -842,6 +842,41 @@ describe("addons/FastesBoooy_Guides", function()
         assert.is_true(checked > 0 or PARTIAL)
     end)
 
+    it("has no placeholder class or race file: every route gets steps of its class file and of its race file", function()
+        -- phase R (D.6 step 1): all nine class files and five race files are written. A route whose class file
+        -- has no insert in scope for its race would silently run on the base profile.
+        local function steps(file, race)
+            local n = 0
+            for _, ins in ipairs(mod.libraryInserts) do
+                local scope = ins.scope or {}
+                if ins.file == file and (scope.race == nil or scope.race[race]) then
+                    for _, step in ipairs(ins.steps) do
+                        local fr = step.filters and step.filters.race
+                        if fr == nil or fr[race] then n = n + 1 end
+                    end
+                end
+            end
+            return n
+        end
+        local checked = 0
+        for _, r in ipairs(RACES) do
+            local raceFile = "Races/" .. r.race .. ".lua"
+            if own(raceFile) and not skipped[raceFile] then
+                checked = checked + 1
+                assert.is_true(steps(raceFile, r.race) > 0, raceFile .. " is a placeholder")
+            end
+            for _, token in ipairs(r.classes) do
+                local classFile = "Classes/" .. CLASSES[token].file .. ".lua"
+                if own(classFile) and not skipped[classFile] then
+                    checked = checked + 1
+                    assert.is_true(steps(classFile, r.race) > 0,
+                        classFile .. " has no step for the route " .. r.slug .. "-" .. CLASSES[token].slug)
+                end
+            end
+        end
+        assert.is_true(checked > 0 or PARTIAL)
+    end)
+
     it("keeps the level-40 contract of the druid file and the riding steps of the race files (C.7)", function()
         -- The druid's level-40 block is three steps with fixed ids: fly to Thunder Bluff and train (an insert
         -- after h-40-org-arrive), then the flight on (an insert of its own before the next shared step). The
@@ -1153,7 +1188,7 @@ end)
 -- resulting WARN. Pinned on the real route: with the override the base Tauren route is clean, without it the
 -- validator refuses the accept.
 -- History: until phase P2 this block held harness proofs of the shared path from synthetic hand-over states of
--- Durotar and Mulgore (tests/fixtures/validator/guides_state_*.json, F2b step 6). The real start zones replaced
+-- Durotar and Mulgore (tests/fixtures/validator/guides_state_*.json, F2b step 6; deleted in phase R). The real start zones replaced
 -- them (P1); P2 retired them so that a class file of phase C cannot fail a proof in a file its agent may not edit.
 ---------------------------------------------------------------------------------------------------------------
 

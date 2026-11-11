@@ -270,7 +270,7 @@ insert({
     race = { "Orc", "Troll" },
     steps = {
         -- CONFIRM: the Troll can do 1501 / 1504 (see wlk-ganrul)
-        { id = "wlk-tablet", complete = 1501, object = 58595, at = STASH, ok = "db-override-unverified",
+        { id = "wlk-tablet", complete = 1501, object = 58595, at = STASH,
           note = { ru = "От Ринага на северо-восток к Черепу-Скале (рядом с башней дирижаблей): в пещере тайник "
                        .. "Пылающего Клинка — скрижаль Верги. Культисты 10-12: бес впереди, «Порча» на каждого.",
                    en = "From Rhinag north-east to Skull Rock (next to the zeppelin tower): the Burning Blade Stash in "
@@ -278,12 +278,12 @@ insert({
         { id = "wlk-ganrul-2", turnin = 1501, accept = 1504, npc = 5875, at = GANRUL, ok = "db-override-unverified",
           note = { ru = "Обратно в Оргриммар через главные ворота, к Ган'рулу в Расселину Теней: «Связывание».",
                    en = "Back into Orgrimmar through the main gate, to Gan'rul in the Cleft of Shadow: The Binding." } },
-        { id = "wlk-binding", complete = 1504, use = 7464, at = ORG_CIRCLE, ok = "db-override-unverified",
+        { id = "wlk-binding", complete = 1504, use = 7464, at = ORG_CIRCLE,
           note = { ru = "Круг призыва в глубине Расселины (49,4, 50,0): используйте «Глифы призыва» и одолейте "
                        .. "Демона Бездны (полное здоровье и мана перед боем).",
                    en = "The summoning circle deep in the Cleft (49.4, 50.0): use the Glyphs of Summoning and defeat "
                        .. "the Voidwalker (full health and mana first)." } },
-        { id = "wlk-ganrul-3", turnin = 1504, npc = 5875, at = GANRUL, ok = "db-override-unverified",
+        { id = "wlk-ganrul-3", turnin = 1504, npc = 5875, at = GANRUL,
           note = { ru = "Ган'рул: «Призыв Демона Бездны» выучен. Демон Бездны держит врагов на себе — ваш питомец до "
                        .. "30-х.",
                    en = "Gan'rul: Summon Voidwalker learned. The Voidwalker holds the mobs - your pet into the 30s." } },
@@ -688,10 +688,9 @@ insert({
                        .. "её зарядит.",
                    en = "Optional (the Orb chain): Menara at the entrance of Ratchet - the orb, then wait while she "
                        .. "charges it." } },
-        { id = "wlk-46-orb", complete = 4975, optional = true, npc = 6266, at = MENARA, ok = "db-override-unverified",
+        { id = "wlk-46-orb", complete = 4975, optional = true, npc = 6266, at = MENARA,
           note = { ru = "Подождите у Менары.", en = "Wait by Menara." } },
         { id = "wlk-46-orb-done", turnin = 4975, optional = true, npc = 6266, at = MENARA,
-          ok = "db-override-unverified",
           note = { ru = "Менара: Сфера Ноз'Орахила — предмет для левой руки. Потом к распорядителю полётов.",
                    en = "Menara: the Orb of Noh'Orahil - an off-hand item. Then to the flight master." } },
     },
