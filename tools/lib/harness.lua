@@ -5,7 +5,7 @@
 -- (tools/validate_routes.lua) and simulated (tools/simulate_routes.lua) from an explicit
 -- character state, so the segments can be written and checked in parallel:
 --
---   lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Horde --segments h-a,h-b \
+--   lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Guides --segments h-a,h-b \
 --          --profile race=Scourge,class=PALADIN,faction=Horde --state start.json --write-state end.json
 --
 -- Harness route: a synthetic route registered for exactly one profile

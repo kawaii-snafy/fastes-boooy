@@ -115,7 +115,9 @@ function Registry:RegisterRoute(def)
             elseif p.kind == "insert" then
                 self:AddInsert(id, p.def)
             else
-                self:AddRouteData(id, p.def)
+                -- AddRouteData checked the shape before it queued the data: merge directly,
+                -- so a bad entry is reported once (as the tools' loader does)
+                ns.Compose.MergeData(route.data, p.def)
             end
         end
     end
@@ -209,6 +211,9 @@ function Registry:AddLibraryData(data)
         addError("AddLibraryData: " .. tostring(err))
         return false
     end
+    local errs = {}
+    ns.Schema.CheckData(data, "AddLibraryData", errs) -- (merged as given; the engine skips a bad entry)
+    addErrors(errs)
     libraryChanged(self)
     return true
 end
@@ -299,6 +304,9 @@ function Registry:AddRouteData(routeId, data)
         addError(("AddRouteData %s: data must be a table"):format(tostring(routeId)))
         return false
     end
+    local errs = {}
+    ns.Schema.CheckData(data, "AddRouteData " .. tostring(routeId), errs)
+    addErrors(errs)
     local route = self.routes[routeId]
     if not route then
         queue(self, routeId, "data", data, "AddRouteData")

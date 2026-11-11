@@ -120,7 +120,9 @@ describe("tools/simulate_routes.lua", function()
     teardown(function() os.execute(("rm -rf '%s'"):format(root)) end)
 
     it("plays the core test route to the end (exit 0)", function()
-        local code, out = run("--fixtures")
+        -- (`--route 'test-*'`: --fixtures also loads the real modules of addons/, whose routes `make simulate`
+        -- plays; simulating all of them here cost busted 26 s per route, 4.8 min with 11 routes)
+        local code, out = run("--fixtures --route 'test-*'")
         assert.equal(0, code, out)
         assert.is_truthy(out:find("OK   test-route (Scourge PALADIN Horde): 26 steps", 1, true), out)
         -- the composed fixture (library segments + inserts); its library module is not simulated alone

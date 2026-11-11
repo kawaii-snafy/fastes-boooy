@@ -37,19 +37,19 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 
 | Цель | Команда |
 |---|---|
-| `make check` | `lint` + `test` + `validate` + `validate-fixtures` + `simulate` + `simulate-sync` + `simulate-fixtures` + `harness-fixtures` (то же, что CI, раздел 10). На 4 ядрах с двумя нынешними маршрутами ≈ 3,7 мин (было ≈ 7 мин при запуске симуляций подряд) |
+| `make check` | `lint` + `test` + `validate` + `validate-fixtures` + `simulate` + `simulate-sync` + `simulate-fixtures` + `harness-fixtures` (то же, что CI, раздел 10). На 4 ядрах с 11 маршрутами `FastesBoooy_Guides` ≈ 4 мин (F2e: 246 с, из них `busted` 71 с; было ≈ 3,7 мин с двумя маршрутами в F1). `make simulate-sync-full` (88 прогонов) ≈ 7 мин |
 | `make check-fast` | быстрый круг: `lint` + `validate` + фикстуры + симуляция маршрута `ROUTE` (по умолчанию `*undead-paladin`) — около полминуты, без busted и без sync-прогонов |
 | `make route ROUTE=<id>` | валидатор с `VALIDATE_FLAGS` и симулятор для одного маршрута (`ROUTE` — то же, что принимает `--route`: список через запятую, `*`) |
 | `make lint` | `luacheck --config .luacheckrc addons tools tests` |
 | `make test` | `busted` (все `tests/spec/*_spec.lua`) |
-| `make validate` | `lua5.1 tools/validate_routes.lua $(VALIDATE_FLAGS)`. `VALIDATE_FLAGS` — ворота маршрутов: сейчас пусто (у прежних модулей комментарии `-- WARN-OK` ещё не переведены в ключ `ok`), с модулем `FastesBoooy_Guides` — `--strict --end-level`, позже бюджет гринда и базовая линия (раздел 5, «Ворота») |
+| `make validate` | `lua5.1 tools/validate_routes.lua $(VALIDATE_FLAGS)`. `VALIDATE_FLAGS` — ворота маршрутов: сейчас `--strict --end-level --max-grind-until h-18-stonetalon-ashenvale=120/200` (строгий режим, уровень 60 в конце, бюджет гринда до конца `h-18`), с фазы C ещё базовая линия `--baseline` (раздел 5, «Ворота») |
 | `make simulate` | каждый маршрут — отдельный процесс симулятора, `JOBS` процессов одновременно (`xargs -P`). Список маршрутов — `lua5.1 tools/simulate_routes.lua --list-routes`; если он не получен (модуль не загрузился) или пуст, цель падает и ничего не симулирует; упавшая симуляция роняет цель, остальные доходят до конца. Вывод каждого процесса печатается одним куском, когда процесс закончился: он собирается во временный файл и выводится под блокировкой (каталог-замок во временном каталоге, `mkdir`), поэтому строки разных процессов не перемешиваются при любом объёме вывода |
-| `make simulate-sync` | «игрок обогнал маршрут» (раздел 8) для маршрутов `SYNC_ROUTES` (сейчас `horde-undead-paladin horde-skyborne-druid`), так же параллельно: `--route R --ahead L` для `L` из `SYNC_LEVELS` (`10 23 35 48`), прыжок посреди участка с квестами в журнале `--ahead L --ahead-at SEG` для `SYNC_MID` (`21/ud-04-barrens,sd-04-barrens 29/h-24-barrens-stonetalon`) и игра с опережением `--level-plus N` для `SYNC_PLUS` (`2 4`): 8 прогонов на маршрут. Пустой `SYNC_ROUTES` — ошибка |
+| `make simulate-sync` | «игрок обогнал маршрут» (раздел 8) для маршрутов `SYNC_ROUTES` (сейчас `undead-paladin skyborne-druid`), так же параллельно: `--route R --ahead L` для `L` из `SYNC_LEVELS` (`10 23 35 48`), прыжок посреди участка с квестами в журнале `--ahead L --ahead-at SEG` для `SYNC_MID` (`21/h-15-barrens 29/h-24-barrens-stonetalon`) и игра с опережением `--level-plus N` для `SYNC_PLUS` (`2 4`): 8 прогонов на маршрут. Пустой `SYNC_ROUTES` — ошибка |
 | `make simulate-sync-full` | то же для **всех** маршрутов (`--list-routes`): ночной запуск CI |
 | `JOBS=N` | число параллельных симуляций `simulate` / `simulate-sync` (по умолчанию — число процессоров, `nproc`) |
 | `make validate-fixtures` / `make simulate-fixtures` | валидатор (0 ERROR) / симулятор на заведомо хороших фикстурах (`FxClean`, `FxNs`, `TestRoute`, библиотека `TestLib` + составной маршрут `TestComposed`, `FxHarnessLib`, модуль с общим содержимым и тремя маршрутами `TestGuides`; симулятор — `TestRoute`, `TestComposed`, `TestGuides`) — стадии проверяют что-то и до появления первого модуля маршрута. Все цели фикстур передают `--no-overrides`: фикстуры используют настоящие id квестов и не должны меняться вместе с `tools/overrides` |
 | `make harness-fixtures` | harness на фикстуре-библиотеке `FastesBoooy_FxHarnessLib` из её состояния `tests/fixtures/validator/harness_state_6.json`: валидатор (`--strict`) и симулятор, оба профиля 22-60 |
-| `make harness PROFILE=… [LIB=…] [SEGMENTS=…] [STATE=…] [OUT=…]` | часть общих сегментов модуля из стартового состояния (раздел 7): валидатор (с `--write-state OUT`), затем симулятор; `LIB` по умолчанию `addons/FastesBoooy_Horde`, пустой `SEGMENTS` — все сегменты |
+| `make harness PROFILE=… [LIB=…] [SEGMENTS=…] [STATE=…] [OUT=…]` | часть общих сегментов модуля из стартового состояния (раздел 7): валидатор (с `--write-state OUT`), затем симулятор; `LIB` по умолчанию `addons/FastesBoooy_Guides`, пустой `SEGMENTS` — все сегменты |
 | `make report` | пишет `docs/VALIDATION.md` (сводный Markdown-отчёт валидатора, раздел 5). Ошибки маршрутов не роняют цель; цель падает, если валидатор не записал отчёт (ошибка Lua в генераторе, неверные аргументы): отчёт сначала пишется во временный файл, так что `docs/VALIDATION.md` либо новый, либо не тронут. `REPORT=файл` — писать в другой файл |
 | `make routedata` / `make routedata-check` | перегенерировать / проверить актуальность `Data.lua` всех модулей маршрутов и библиотек (check — и фикстуры `FxClean`, `TestLib`, `TestComposed`, `FxHarnessLib`, `TestGuides`, без поправок) |
 | `make api BIR=… WOWUI=…` | перегенерировать `data/forever_api.lua` (оба пути обязательны; `WOWUI=none` — без глобалов FrameXML) |
@@ -57,11 +57,12 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 | `make requirements` | заново скачать `data/wowhead_requirements.json` (сеть; потом `make db`) |
 | `make package` | архивы аддонов в `dist/` (воспроизводимые: фиксированные даты, сортировка) |
 
-Измеренное время на 4 ядрах (два нынешних маршрута): валидатор 0,5 с на весь запуск (≈ 0,2 с на
-маршрут), одна симуляция маршрута ≈ 26 с, восемь sync-прогонов маршрута ≈ 150 с процессорного
-времени, `busted` ≈ 100 с, `lint` 3–6 с. Симуляции независимы и масштабируются по ядрам линейно:
-`make simulate` для двух маршрутов — 29 с вместо 52 с подряд, `make simulate-sync` (16 прогонов,
-302 с процессорного времени) — 82 с.
+Измеренное время на 4 ядрах (F1, два маршрута прежних модулей): валидатор 0,5 с на весь запуск
+(≈ 0,2 с на маршрут), одна симуляция маршрута ≈ 26 с, восемь sync-прогонов маршрута ≈ 150 с
+процессорного времени, `busted` ≈ 100 с, `lint` 3–6 с. Симуляции независимы и масштабируются по
+ядрам линейно: `make simulate` для двух маршрутов — 29 с вместо 52 с подряд, `make simulate-sync`
+(16 прогонов, 302 с процессорного времени) — 82 с. Время `make check` и `make simulate-sync-full`
+на нынешних маршрутах — в последнем hand-over (`docs/dev/handover/`).
 
 ## 1. API клиента: `gen_forever_api.py` → `data/forever_api.lua`
 
@@ -356,8 +357,7 @@ questMeta = ... })`.
 со всем, на что ссылаются **его** сегменты; в игре эти имена подмешиваются в данные каждого
 маршрута, использующего библиотеку. Ошибки загрузки зависимости (файл `<Библиотека>/<файл>`)
 тоже останавливают генерацию. Библиотека, объявленная в TOC (`## X-FastesBoooy-Module: library`),
-у которой ещё нет сегментов (заготовка `addons/FastesBoooy_Horde`: файлы сегментов — только
-комментарии), получает пустой `AddLibraryData({ quests = {}, npcs = {} })`; модуль без маршрута,
+у которой ещё нет сегментов (заготовка: файлы сегментов — только комментарии), получает пустой `AddLibraryData({ quests = {}, npcs = {} })`; модуль без маршрута,
 без сегментов и без этого объявления — по-прежнему ошибка («no routes (and no library segments)»).
 
 `places` — места действий `fp`/`fly`/`sethearth`/`hearth`:
@@ -487,7 +487,7 @@ lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Guides --segments 
    ошибки сборки (неизвестный сегмент библиотеки / якорь вставки, id шагов, совпавшие после
    сборки), ненайденная зависимость или цикл зависимостей → `schema` (ERROR) с именем файла.
    **Библиотеки:** сообщения о шагах и сегментах библиотеки помечены `library = "<модуль>"`
-   (в тексте — префикс `[library FastesBoooy_Horde]`, в JSON — поля `library` и `shared`) и
+   (в тексте — префикс `[library <модуль>]`, в JSON — поля `library` и `shared`) и
    выводятся **один раз на маршрут** (одинаковые сообщения следующих профилей маршрута
    отбрасываются, счётчик — `libraryRepeats`). Модуль-библиотека — не маршрут: в отчёте у него
    своя запись `== library module …` (число сегментов и шагов) только с его ошибками загрузки/
@@ -886,8 +886,8 @@ lua5.1 tools/validate_routes.lua tests/fixtures/validator/FastesBoooy_FxClean
 
 ## 7. Harness: часть библиотеки из стартового состояния
 
-Сегменты общей библиотеки (`addons/FastesBoooy_Horde`, 22-60) проверяются и по отдельности, без
-полного маршрута класса (модуля с `UseSegments`). Чтобы проверить **один сегмент** (или несколько
+Общие сегменты (модуль-библиотека или общая часть `addons/FastesBoooy_Guides`) проверяются и по
+отдельности, без полного маршрута класса. Чтобы проверить **один сегмент** (или несколько
 подряд), валидатор и симулятор умеют стартовать из явного состояния персонажа. То же работает
 на модуле, который регистрирует и общее содержимое, и маршруты (`FastesBoooy_Guides`): берётся его
 общая часть, синтетический маршрут `harness-<Имя>` выбирается явно, общие вставки модуля
@@ -905,7 +905,7 @@ make harness PROFILE=race=Scourge,class=PALADIN,faction=Horde SEGMENTS=h-22-hill
 ```
 
 **Синтетический маршрут** (`lib/harness.lua`, `Harness.Build`): модуль-библиотека грузится как
-обычно (со своими зависимостями), затем регистрируется маршрут `harness-<Имя>` (`harness-Horde`)
+обычно (со своими зависимостями), затем регистрируется маршрут `harness-<Имя>` (`harness-Guides`)
 ровно для одного профиля — `RegisterRoute{ api = 1, faction, races = { race }, classes = { class } }`
 + `UseSegments` перечисленных сегментов в этом порядке, **больше ничего** (нет своих сегментов,
 нет классовых вставок). Сборка — настоящим `Core/Compose.lua`; в симуляторе маршрут
@@ -968,14 +968,13 @@ start state»); `log` — в журнале (сдача без взятия не
 библиотеки (конец собственной части 1-22 маршрута) снимается с `--until`:
 
 ```
-lua5.1 tools/validate_routes.lua -q --route horde-undead-paladin --profile race=Scourge,class=PALADIN,faction=Horde \
-       --write-state state_ud_22.json --until h-22-hillsbrad
-lua5.1 tools/validate_routes.lua -q --route horde-skyborne-druid --profile race=Skyborne,class=DRUID,faction=Horde \
-       --write-state state_sd_22.json --until h-22-hillsbrad
+lua5.1 tools/validate_routes.lua -q --route undead-paladin --write-state state_ud_22.json --until h-22-hillsbrad
+lua5.1 tools/validate_routes.lua -q --route skyborne-druid --write-state state_sd_22.json --until h-22-hillsbrad
 ```
 
-(сейчас: нежить-паладин — уровень 22 + 0,06, 170 сданных квестов, камень в Thunder Bluff;
-скайборн-друид — 22 + 0,24, 190 сданных). Тем же способом снимается старт любого сегмента
+(сейчас: нежить-паладин — уровень 22 + 0,04, 179 выполненных квестов, камень в Thunder Bluff;
+скайборн-друид — 22 + 0,44, 190 выполненных, камень в Thunder Bluff. У маршрута с одной расой и
+одним классом `--profile` не нужен.) Тем же способом снимается старт любого сегмента
 библиотеки (`--until h-34-stranglethorn` …) или любого шага. Без `--until` пишется состояние в
 конце маршрута (уровень 60). `--write-state` требует ровно один прогон «маршрут × профиль»
 (иначе код 2: выберите `--route` и `--profile`). Симулятор тоже пишет состояние
@@ -983,7 +982,7 @@ lua5.1 tools/validate_routes.lua -q --route horde-skyborne-druid --profile race=
 
 **Оговорки.** (1) Валидатор считает выполненными **все** шаги, в том числе `optional = true`:
 состояние конца 1-22 включает то, что дают необязательные шаги; для строгой проверки уберите
-такие записи из копии файла (`ud04-org-fp` нежити-паладина с расширением до 60 обязательный).
+такие записи из копии файла.
 Худший случай отчёта о гринде (раздел 5, п. 5) пропускает `optional`-шаги **внутри** прогона, но
 стартовое состояние и `--write-state` остаются состояниями основного прогона. `optional-dependency`
 сообщает о квестах и о `fly X` / `hearth X`, которым нужен необязательный `fp X` / `sethearth X`
@@ -999,7 +998,7 @@ lua5.1 tools/validate_routes.lua -q --route horde-skyborne-druid --profile race=
 
 ```
 lua5.1 tools/simulate_routes.lua --ahead 23 [--route ID] [модуль ...]
-lua5.1 tools/simulate_routes.lua --ahead 21 --ahead-at ud-04-barrens,sd-04-barrens
+lua5.1 tools/simulate_routes.lua --ahead 21 --ahead-at h-15-barrens
 lua5.1 tools/simulate_routes.lua --level-plus 2
 make simulate-sync                      # SYNC_ROUTES x (SYNC_LEVELS + SYNC_MID + SYNC_PLUS), параллельно
 make simulate-sync-full                 # то же для всех маршрутов (--list-routes)
@@ -1014,9 +1013,12 @@ make simulate-sync-full                 # то же для всех маршру
 `preQuestSingle` — любой; предпосылки, которых маршрут не берёт, считаются выполненными) не сданы:
 `FAIL … unreachable accept: step … accepts Q but its route prerequisite(s) … are not turned in` —
 движок должен был пропустить такой `accept` (правило недоступных квестов). Холодный старт в
-конце снова принимает предложения синхронизации (порог был в потерянных SavedVariables).
-Строка `OK` дополняется `ahead: level L`, вторая строка — синхронизации (`level 23:
-ud-01-deathknell -> ud-05-stonetalon-ashenvale; …`) и число «пустых» действий в конце (серые /
+конце снова принимает предложения синхронизации (порог был в потерянных SavedVariables);
+пройденный маршрут и тогда должен остаться пройденным (`cold start: finished`) — курсор не
+вернётся к `accept` серой цепочки, которую прыжок пропустил (правило «защищённых» серых квестов
+не держит цепочку, ведущую к необязательному квесту, мимо которого игрок прошёл: ARCHITECTURE.md,
+«Синхронизация по уровню»). Строка `OK` дополняется `ahead: level L`, вторая строка —
+синхронизации (`level 23: ud-01-deathknell -> h-18-stonetalon-ashenvale; …`) и число «пустых» действий в конце (серые /
 недоступные `accept`, не взятые `complete`/`turnin`/`collect`).
 
 `--ahead L --ahead-at SEG[,SEG…]`: персонаж уровня маршрута проходит маршрут **как обычно** до

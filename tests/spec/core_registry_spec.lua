@@ -134,6 +134,25 @@ describe("core registry", function()
         m:Advance(1)
     end)
 
+    it("reports a bad reward entry of queued route data once (not again when RegisterRoute merges it)", function()
+        m, ns = H.boot({ fixture = false })
+        local R = ns.Registry
+        local FastesBoooy = m.env.FastesBoooy
+        assert.is_false(FastesBoooy.AddRouteData("rw", { quests = { [380] = "Q" },
+            rewards = { PALADIN = { [380] = 0, [381] = 2 } } }))
+        assert.same({
+            "AddRouteData rw: rewards.PALADIN[380]: the choice must be a positive integer (got 0)",
+            "AddRouteData: route rw is not registered yet (RegisterRoute must come first)",
+        }, R.errors)
+        local r = addRoute("rw", nil, 0)
+        assert.is_table(r)
+        assert.equal(2, #R.errors, "the flush of the queue reports nothing new")
+        -- the queued data was merged as given (the engine ignores the bad entry)
+        assert.equal("Q", R:Lookup(r, "quests", 380))
+        assert.same({ [380] = 0, [381] = 2 }, r.data.rewards.PALADIN)
+        m:Advance(1)
+    end)
+
     it("keeps the chosen route per character across a reload", function()
         m, ns = H.boot()
         addRoute("other")

@@ -2817,8 +2817,8 @@ states and harness:
   -h, --help            this help
 
 harness example (Undead Paladin, from the end of the 1-22 route):
-  lua5.1 tools/validate_routes.lua --route horde-undead-paladin --write-state state_ud_22.json --until h-22-hillsbrad
-  lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Horde --segments h-22-hillsbrad \
+  lua5.1 tools/validate_routes.lua --route undead-paladin --write-state state_ud_22.json --until h-22-hillsbrad
+  lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Guides --segments h-22-hillsbrad \
       --profile race=Scourge,class=PALADIN,faction=Horde --state state_ud_22.json --write-state out.json
 
 exit status: 0 ok (also: a harness on a module without shared segments yet - nothing to do), 1 errors

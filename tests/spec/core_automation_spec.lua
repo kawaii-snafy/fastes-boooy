@@ -592,7 +592,7 @@ describe("automation: class reward table (route data `rewards`)", function()
         assert.is_nil(E:GetRewardChoice(364))
     end)
 
-    it("a step-level reward wins over the class table; invalid table entries are ignored", function()
+    it("a step-level reward wins over the class table; invalid table entries are reported and ignored", function()
         gm, gns = H.boot({ fixture = false, register = function(api)
             api.RegisterRoute({ api = 1, id = "rw", title = "Rewards", faction = "Horde", races = { "Scourge" },
                 classes = { "PALADIN", "WARRIOR" }, levels = { 1, 5 } })
@@ -611,6 +611,15 @@ describe("automation: class reward table (route data `rewards`)", function()
         end })
         local E = gns.Engine
         assert.equal("rw", E:GetRoute().id)
+        -- the shape check reports the invalid entries (Schema.CheckData); the table is merged as given
+        local errs = {}
+        for _, e in ipairs(gns.Registry.errors) do errs[#errs + 1] = e end
+        table.sort(errs)
+        assert.same({
+            "AddRouteData rw: rewards.PALADIN[380]: the choice must be a positive integer (got two)",
+            "AddRouteData rw: rewards.PALADIN[3901]: the choice must be a positive integer (got 0)",
+            "AddRouteData rw: rewards.PALADIN[3902]: the choice must be a positive integer (got 1.5)",
+        }, errs)
         assert.equal(2, E:GetRewardChoice(363), "class table (PALADIN)")
         assert.equal(3, E:GetRewardChoice(364), "the step's `reward` wins")
         assert.equal(2, E:GetRewardChoice(376))

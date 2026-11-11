@@ -372,6 +372,74 @@ describe("Schema: core 0.4.0 additions", function()
         assert.same({ race = { Undead = true } }, Schema.NormalizeFilters({ race = "Undead" }, "w", errors))
         assert.same({}, errors)
     end)
+
+    it("an empty class / race list is an error, not 'no filter' (a step and a shared insert)", function()
+        local errors = {}
+        -- the dimension stays unfiltered (the key says nothing usable), the error names it
+        assert.same({}, Schema.NormalizeFilters({ class = {} }, "w", errors))
+        assert.same({ faction = "Horde" }, Schema.NormalizeFilters({ race = {}, faction = "Horde" }, "w", errors))
+        assert.same({
+            "w: class is an empty list: name at least one class token, or leave the key out",
+            "w: race is an empty list: name at least one race token, or leave the key out",
+        }, errors)
+        -- a list without array part counts as empty too
+        errors = {}
+        Schema.NormalizeFilters({ class = { [2] = "MAGE" } }, "w", errors)
+        assert.equal(1, #errors)
+        -- a step: reported (the tools turn it into an ERROR of the file)
+        local _, serrors = step({ accept = 1, class = {} })
+        assert.is_true(hasError(serrors, "class is an empty list"))
+        -- a shared insert with an empty scope list is rejected as a whole: unscoped it would land in
+        -- every route (every class), the opposite of what the author wrote
+        local _, C = Loader.LoadSchema(".")
+        local lib = C.NewLibrary()
+        C.AddLibrarySegment(lib, { id = "lib", title = "L", steps = { { id = "lib-a", accept = 2 } } })
+        for _, def in ipairs({
+            { after = "lib-a", class = {}, steps = { { id = "e-1", manual = true } } },
+            { after = "lib-a", class = "MAGE", race = {}, steps = { { id = "e-2", manual = true } } },
+        }) do
+            local ins, ierrors = C.AddLibraryInsert(lib, def)
+            assert.is_nil(ins)
+            assert.is_true(hasError(ierrors, "is an empty list"))
+            assert.is_true(hasError(ierrors, "^insert after 'lib%-a': the insert is rejected: an empty scope list"))
+        end
+        assert.same({}, lib.inserts)
+        assert.is_nil(lib.scratch.stepById["e-1"], "the ids of a rejected insert stay free")
+        -- the same insert with a real scope is accepted
+        local ins, ierrors = C.AddLibraryInsert(lib, { after = "lib-a", class = "MAGE",
+            steps = { { id = "e-1", manual = true } } })
+        assert.same({}, ierrors)
+        assert.is_table(ins)
+    end)
+
+    it("Schema.CheckData: the shape of the class reward table", function()
+        local errors = {}
+        assert.equal(0, Schema.CheckData({ quests = { [1] = "x" } }, "d", errors))
+        assert.equal(0, Schema.CheckData({ rewards = { DRUID = { [92461] = 1, [92463] = 3 }, MAGE = {} } }, "d", errors))
+        assert.equal(0, Schema.CheckData(nil, "d", errors))
+        assert.same({}, errors)
+        assert.equal(1, Schema.CheckData({ rewards = 5 }, "d", errors))
+        assert.equal("d: rewards must be a table { CLASS = { [questID] = index } }", errors[1])
+        errors = {}
+        Schema.CheckData({ rewards = {
+            Druid = { [1] = 1 },               -- a class name, not the token
+            WARRIOR = 2,                       -- not a table
+            PALADIN = { [0] = 1, x = 1 },      -- keys that are no quest ids
+            MAGE = { [789] = 0 },              -- index 0
+            ROGUE = { [790] = 1.5 },           -- not an integer
+            SHAMAN = { [791] = "two" },        -- not a number
+        } }, "d", errors)
+        table.sort(errors)
+        assert.same({
+            "d: rewards.Druid: unknown class token 'Druid'",
+            "d: rewards.MAGE[789]: the choice must be a positive integer (got 0)",
+            "d: rewards.PALADIN: the key 0 is not a quest id",
+            "d: rewards.PALADIN: the key x is not a quest id",
+            "d: rewards.ROGUE[790]: the choice must be a positive integer (got 1.5)",
+            "d: rewards.SHAMAN[791]: the choice must be a positive integer (got two)",
+            "d: rewards.WARRIOR must be a table { [questID] = index }",
+        }, errors)
+    end)
 end)
 
 describe("Compose (Core/Compose.lua) loaded with the Schema", function()

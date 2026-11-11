@@ -18,8 +18,8 @@ addons/FastesBoooy_<Name>/
 
 Файлы грузятся в порядке TOC. `RegisterRoute` должен идти первым.
 
-Маршрут может брать готовые сегменты из **модуля-библиотеки** (например, общий путь
-22-60 в `FastesBoooy_Horde`) и добавлять к ним свои классовые шаги — см. раздел
+Маршрут может брать готовые **общие сегменты** (например, общий путь 12-60 модуля
+`FastesBoooy_Guides`, `Segments/Shared/`) и добавлять к ним свои классовые шаги — см. раздел
 [«Общие сегменты и вставки»](#общие-сегменты-и-вставки). Один модуль может держать и общие
 сегменты, и общие вставки классов и рас, и сразу много маршрутов (так устроен
 `FastesBoooy_Guides`: 28 маршрутов «раса + класс» из одного набора файлов) — см.
@@ -31,7 +31,7 @@ addons/FastesBoooy_<Name>/
 ```lua
 FastesBoooy.RegisterRoute({
     api = 1,                                  -- версия формата (обязательно)
-    id = "horde-undead-paladin",              -- [A-Za-z0-9-_]
+    id = "undead-paladin",                    -- [A-Za-z0-9-_]
     title = { ru = "Нежить-паладин 1-60", en = "Undead Paladin 1-60" },
     faction = "Horde",                        -- "Horde" | "Alliance"
     races = { "Scourge" },                    -- raceFile из UnitRace()
@@ -39,7 +39,7 @@ FastesBoooy.RegisterRoute({
     levels = { 1, 60 },                       -- {от, до}, до 60 (капа уровня Forever)
     version = "1.0.0",
     default = true,                           -- автоматически выбирать для подходящих персонажей
-    aliases = { "old-route-id" },             -- прежние id маршрута (строка или список), см. ниже
+    aliases = { "horde-undead-paladin" },     -- прежние id маршрута (строка или список), см. ниже
 })
 ```
 
@@ -62,13 +62,17 @@ FastesBoooy.RegisterRoute({
   которого кто-то объявил алиасом («its id is an alias of route …» — старый модуль ещё
   установлен: его маршрут остаётся собой).
 
-Пример: `undead-paladin` с `aliases = "horde-undead-paladin"` подхватывает прогресс
-персонажа, начатый в старом модуле.
+Пример: `undead-paladin` модуля `FastesBoooy_Guides` с `aliases = "horde-undead-paladin"`
+подхватывает прогресс персонажа, начатый в прежнем модуле `FastesBoooy_UndeadPaladin` (так же
+`skyborne-druid` ← `horde-skyborne-druid`).
 
 ## Сегмент
 
+Собственный сегмент маршрута (`AddSegment`; у маршрутов `FastesBoooy_Guides` своих сегментов
+нет — тот же формат там регистрирует `AddLibrarySegment`, см. «Общие сегменты и вставки»):
+
 ```lua
-FastesBoooy.AddSegment("horde-undead-paladin", {
+FastesBoooy.AddSegment("my-route", {
     id = "ud-01-deathknell",
     title = { ru = "1-6 Мертвый Звон", en = "1-6 Deathknell" },
     zone = "Tirisfal Glades",
@@ -273,11 +277,14 @@ steps = {
 ### Модуль-библиотека
 
 (Id квестов, NPC и шагов в примерах этого раздела условные; рабочий пример — фикстура в
-конце раздела.)
+конце раздела. Отдельный модуль-библиотека нужен, когда общее содержимое делят несколько
+аддонов; так был устроен общий путь 22-60 до версии 0.4 (`FastesBoooy_Horde`). Модуль гайдов
+`FastesBoooy_Guides` регистрирует общее содержимое и маршруты сам — см. [«Модуль с общим
+содержимым и маршрутами»](#модуль-с-общим-содержимым-и-маршрутами).)
 
 ```
-addons/FastesBoooy_Horde/
-  FastesBoooy_Horde.toc    -- ## Interface: 16001, ## Dependencies: FastesBoooy,
+addons/FastesBoooy_MyLib/
+  FastesBoooy_MyLib.toc    -- ## Interface: 16001, ## Dependencies: FastesBoooy,
                            -- ## X-FastesBoooy-Module: library
   Data.lua                 -- (генерируется, make routedata) FastesBoooy.AddLibraryData({...})
   Segments/01_h-22-hillsbrad.lua  -- FastesBoooy.AddLibrarySegment({...}) — по файлу на сегмент
@@ -293,7 +300,7 @@ addons/FastesBoooy_Horde/
 
 ```lua
 FastesBoooy.AddLibrarySegment({
-    id = "h-22-barrens",                      -- id общих сегментов Орды: префикс "h-" (соглашение)
+    id = "h-22-barrens",                      -- id общих сегментов пути: префикс "h-" (соглашение)
     title = { ru = "22-24 Степи", en = "22-24 The Barrens" },
     zone = "The Barrens",
     levels = { 22, 24 },
@@ -319,7 +326,8 @@ FastesBoooy.AddLibrarySegment({
 * Id сегментов и id шагов уникальны **во всей библиотеке** (все модули-библиотеки делят одно
   пространство имён): шаги разных сегментов можно комбинировать в одном маршруте. Явные id
   шагов обязательны по смыслу (якоря вставок и `cursorHint` ссылаются на id); по соглашению
-  они начинаются с `h-` (Орда). Без id шаг получает `<сегмент>:<n>`, как в `AddSegment`.
+  шаги общего пути начинаются с `h` (`h-22-…`, `h15-…`), шаги стартовых зон — с префикса зоны
+  (`ud01-…`, `sd02-…`). Без id шаг получает `<сегмент>:<n>`, как в `AddSegment`.
 * `Data.lua` библиотеки генерирует `make routedata`: `FastesBoooy.AddLibraryData({ quests = {...},
   npcs = {...}, objects = ..., items = ..., places = {...}, questMeta = {...} })` — всё, на что
   ссылаются её сегменты. Эти данные подмешиваются в данные каждого маршрута, который использует
@@ -328,24 +336,24 @@ FastesBoooy.AddLibrarySegment({
 ### Маршрут, который использует библиотеку
 
 ```
-## Dependencies: FastesBoooy, FastesBoooy_Horde     -- в TOC модуля маршрута: библиотека грузится раньше
+## Dependencies: FastesBoooy, FastesBoooy_MyLib     -- в TOC модуля маршрута: библиотека грузится раньше
 ```
 
 ```lua
 -- Route.lua
-FastesBoooy.RegisterRoute({ api = 1, id = "horde-undead-paladin", levels = { 1, 60 }, ... })
-FastesBoooy.UseSegments("horde-undead-paladin", {
+FastesBoooy.RegisterRoute({ api = 1, id = "my-route", levels = { 1, 60 }, ... })
+FastesBoooy.UseSegments("my-route", {
     "h-22-barrens", "h-24-stonetalon", "pal-26-class", "h-27-hillsbrad", ...
 })
 
 -- Inserts.lua (классовые шаги)
-FastesBoooy.AddInsert("horde-undead-paladin", {
+FastesBoooy.AddInsert("my-route", {
     after = "h-24-turnin-1062",               -- id шага маршрута: своего или библиотечного
     steps = {
         { id = "pal-24-train", train = true, class = "PALADIN", npc = 3352, at = { 1454, 45.1, 76.9 } },
     },
 })
-FastesBoooy.AddInsert("horde-undead-paladin", {
+FastesBoooy.AddInsert("my-route", {
     before = "h-27-accept-498",
     steps = { { id = "pal-26-level", level = 26 } },
 })
@@ -470,7 +478,7 @@ FastesBoooy.AddLibraryInsert({
 | Ситуация | Когда сообщается |
 |---|---|
 | не таблица; `after` и `before` вместе или ни одного; якорь — не непустая строка; неизвестный ключ; пустой `steps`; ошибка формата шага; неизвестный токен класса; неверная фракция | при вызове, один раз |
-| шаг без `id`; `id`, который уже есть у шага общего сегмента или другой общей вставки | при вызове, один раз; вставка отклоняется целиком |
+| шаг без `id`; `id`, который уже есть у шага общего сегмента или другой общей вставки; пустой список области (`class = {}`, `race = {}`: без отклонения вставка попала бы во все маршруты) | при вызове, один раз; вставка отклоняется целиком |
 | общий сегмент, зарегистрированный позже, повторяет id шага общей вставки | при этом `AddLibrarySegment` («duplicate step id») |
 | якоря нет в маршруте | в ядре никогда не ошибка |
 | позиционный якорь | при сборке, один раз на маршрут |
@@ -495,7 +503,10 @@ FastesBoooy.AddLibraryData({ rewards = { DRUID = { [92461] = 1, [92463] = 3 } } 
 
 * `Engine:GetRewardChoice(questID)`: сначала `reward` шага маршрута (шаг, который сдаёт квест, иначе
   первый шаг, назвавший квест), иначе `rewards[<класс игрока>][questID]`. Индекс — целое ≥ 1, как
-  в `reward`; неверное значение игнорируется.
+  в `reward`; неверное значение игнорируется движком, а при регистрации (`AddLibraryData` /
+  `AddRouteData`) форма таблицы проверяется (`Schema.CheckData`): неизвестный токен класса, не
+  таблица, ключ — не id квеста, индекс — не целое ≥ 1 — ошибка регистрации (в игре —
+  `Registry.errors`, в инструментах — ERROR файла).
 * Данные сливаются по виду и по ключу: у каждого класса свой ключ, файлы классов не мешают
   друг другу. Второй вызов с тем же ключом класса **заменяет** таблицу первого. Данные, пришедшие
   после сборки маршрута (модуль загружен позже), только дополняют: уже действующая таблица класса
@@ -568,7 +579,7 @@ if not FastesBoooy.AddLibraryInsert then return end
 ```lua
 -- Data.lua (библиотека) / Route.lua (маршрут): первая строка модуля
 if (FastesBoooy.API_MINOR or 0) < 1 then
-    print("FastesBoooy_Horde: обновите аддон FastesBoooy (нужно ядро 0.2.0+) / update the FastesBoooy core (0.2.0+)")
+    print("FastesBoooy_MyLib: обновите аддон FastesBoooy (нужно ядро 0.2.0+) / update the FastesBoooy core (0.2.0+)")
     return
 end
 ```
@@ -618,7 +629,7 @@ end
 * Валидатор, симулятор и `gen_route_data` читают `## Dependencies` / `## RequiredDeps` TOC
   модуля и загружают модули `FastesBoooy_*` из того же каталога раньше него (в песочнице, как
   клиент), затем собирают маршрут кодом `Core/Compose.lua`. Сообщения валидатора о шагах
-  библиотеки помечены `[library FastesBoooy_Horde]` (файл — `FastesBoooy_Horde/Segments/…`) и
+  модуля-зависимости помечены `[library <модуль>]` (файл — `<модуль>/Segments/…`) и
   выводятся один раз на маршрут; ошибки загрузки самой библиотеки — один раз за запуск.
   Симулятор проигрывает только модули маршрутов (библиотека загружается как зависимость).
   У модуля, который регистрирует и общее содержимое, и маршруты, шаблоны (общие сегменты и общие

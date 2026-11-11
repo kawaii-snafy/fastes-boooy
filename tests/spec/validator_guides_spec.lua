@@ -172,6 +172,10 @@ FastesBoooy.AddLibraryInsert({ after = "m-seg:1", steps = { { id = "m-y", manual
 FastesBoooy.AddLibraryInsert({ after = "m-2", steps = { { id = "m-good", manual = true }, { manual = true } } })
 -- an anchor no route has: no error of the loader (the validator's module checks see `applied`)
 FastesBoooy.AddLibraryInsert({ after = "nowhere", class = "PALADN", steps = { { id = "m-z", manual = true } } })
+-- an empty scope list: rejected as a whole (unscoped it would land in every route)
+FastesBoooy.AddLibraryInsert({ after = "m-2", class = {}, steps = { { id = "m-empty", manual = true } } })
+-- the class reward table: shape errors are reported with the file (the data is merged as given)
+FastesBoooy.AddLibraryData({ rewards = { PALADIN = { [363] = 0 }, Paladin = { [363] = 1 } } })
 ]])
             write("FastesBoooy_TMix/Route.lua", [[
 FastesBoooy.RegisterRoute({ api = 1, id = "r1", title = "R1", faction = "Horde", races = { "Scourge" },
@@ -187,6 +191,12 @@ FastesBoooy.RegisterRoute({ api = 1, id = "r2-old", title = "R3", faction = "Hor
             assert.same({
                 "Ins.lua: library: insert after 'm-2' step 2: an explicit id is required in a shared insert",
                 "Ins.lua: library: insert after 'nowhere': unknown class token 'PALADN'",
+                "Ins.lua: library: insert after 'm-2': class is an empty list: name at least one class token, or leave "
+                    .. "the key out",
+                "Ins.lua: library: insert after 'm-2': the insert is rejected: an empty scope list would apply it to "
+                    .. "every route",
+                "Ins.lua: AddLibraryData: rewards.PALADIN[363]: the choice must be a positive integer (got 0)",
+                "Ins.lua: AddLibraryData: rewards.Paladin: unknown class token 'Paladin'",
                 "Route.lua: route r2: alias 'r1' is the id of a registered route (alias ignored)",
                 "Route.lua: route r2: alias 'r0' is already used by route r1 (alias ignored)",
                 "Route.lua: route r2-old: its id is an alias of route r2 (alias ignored)",
@@ -199,6 +209,7 @@ FastesBoooy.RegisterRoute({ api = 1, id = "r2-old", title = "R3", faction = "Hor
             assert.same({}, mod.libraryInserts[3].applied)
             assert.same({ r1 = true, r2 = true }, mod.libraryInserts[1].applied)
             assert.is_nil(mod.routeById.r1.stepById["m-good"])
+            assert.is_nil(mod.routeById.r1.stepById["m-empty"])
             assert.equal(mod.routeById.r1, mod.aliases.r0)
             assert.is_nil(mod.aliases["r2-old"])
         end)

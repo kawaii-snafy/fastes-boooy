@@ -523,7 +523,10 @@ return { quests = {
     end)
 
     -- Later phases add files to tools/overrides (zones, classes, shared.lua) and may not touch tests/**:
-    -- no spec may depend on what that directory holds.
+    -- no spec may depend on what that directory holds by default. One exception, named explicitly with
+    -- `--overrides tools/overrides`: the harness proofs of tests/spec/guides_layout_spec.lua (the Tauren runs
+    -- prove the path WITH tools/overrides/shared.lua, docs/dev/PLAN.md D.2 F2b step 6; a class override file
+    -- that moves their numbers fails them, and P2 may retire them before phase C).
     describe("the specs do not depend on tools/overrides", function()
         local TOOLS = { "validate_routes", "simulate_routes", "gen_route_data" }
 

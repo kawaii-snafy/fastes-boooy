@@ -216,11 +216,17 @@ end
 -- insert: Core/Compose.lua) into filters = { class = set, race = set, faction = "Horde" }.
 -- Class tokens and the faction are checked; race tokens only for their type (the raceFile
 -- names are client data: the offline tools check them against the DB snapshot).
+-- An empty list (`class = {}`) is an error: it would read as "no filter" (every class), the
+-- opposite of what an empty list says; the dimension is then left unfiltered (the caller may
+-- reject the definition: a shared insert does, Compose.AddLibraryInsert).
 -- @return filters, or nil when `def` has none of the three keys
 function Schema.NormalizeFilters(def, where, errors)
     local filters
     if def.class ~= nil then
         local set = tokenSet(def.class)
+        if not set then
+            addErr(errors, where, "class is an empty list: name at least one class token, or leave the key out")
+        end
         for tok in pairs(set or {}) do
             if not Schema.CLASSES[tok] then addErr(errors, where, "unknown class token '%s'", tostring(tok)) end
         end
@@ -229,6 +235,9 @@ function Schema.NormalizeFilters(def, where, errors)
     end
     if def.race ~= nil then
         local set = tokenSet(def.race)
+        if not set then
+            addErr(errors, where, "race is an empty list: name at least one race token, or leave the key out")
+        end
         for tok in pairs(set or {}) do
             if type(tok) ~= "string" then addErr(errors, where, "race tokens must be strings (UnitRace raceFile)") end
         end
@@ -602,6 +611,59 @@ function Schema.FiltersCanMatchRoute(filters, route)
     if not meets(filters.race, route.races) then return false end
     if filters.faction and route.faction and filters.faction ~= route.faction then return false end
     return true
+end
+
+-- the keys of t: numbers ascending, then the rest by name (stable messages)
+local function sortedKeys(t)
+    local keys = {}
+    for k in pairs(t) do keys[#keys + 1] = k end
+    table.sort(keys, function(a, b)
+        local na, nb = type(a) == "number", type(b) == "number"
+        if na ~= nb then return na end
+        if na then return a < b end
+        return tostring(a) < tostring(b)
+    end)
+    return keys
+end
+
+--- Shape check of the data kinds the engine reads beyond names (AddLibraryData / AddRouteData).
+-- Today one kind: the class reward table `rewards = { CLASS = { [questID] = index } }` (class
+-- token of Schema.CLASSES, quest id and choice index positive integers). The data is merged as
+-- given; the engine ignores an invalid entry (Engine:GetRewardChoice), so a wrong entry costs a
+-- reward window the player has to answer, and this check makes it visible (the offline tools
+-- report it as an error of the file).
+-- @return the number of errors added
+function Schema.CheckData(data, where, errors)
+    local n0 = #errors
+    if type(data) ~= "table" then return 0 end
+    local rewards = data.rewards
+    if rewards ~= nil then
+        if type(rewards) ~= "table" then
+            addErr(errors, where, "rewards must be a table { CLASS = { [questID] = index } }")
+        else
+            for _, class in ipairs(sortedKeys(rewards)) do
+                local t = rewards[class]
+                local cw = format("rewards.%s", tostring(class))
+                if not Schema.CLASSES[class] then
+                    addErr(errors, where, "%s: unknown class token '%s'", cw, tostring(class))
+                end
+                if type(t) ~= "table" then
+                    addErr(errors, where, "%s must be a table { [questID] = index }", cw)
+                else
+                    for _, q in ipairs(sortedKeys(t)) do
+                        local idx = t[q]
+                        if not isPosInt(q) then
+                            addErr(errors, where, "%s: the key %s is not a quest id", cw, tostring(q))
+                        elseif not isPosInt(idx) then
+                            addErr(errors, where, "%s[%d]: the choice must be a positive integer (got %s)", cw, q,
+                                tostring(idx))
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return #errors - n0
 end
 
 --- Does a route apply to the given player?

@@ -11,7 +11,7 @@
 -- and an error is recorded).
 --
 -- Dependencies: the FastesBoooy_* addons named by "## Dependencies" / "## RequiredDeps"
--- of the module's TOC (e.g. the shared library FastesBoooy_Horde) are loaded first,
+-- of the module's TOC (e.g. a shared library module FastesBoooy_<Lib>) are loaded first,
 -- recursively, from the same addons directory, each with its own private addon table
 -- -- the load order of the client. Their file names are reported as
 -- "<Dependency>/<file>" and their registrations carry `library = "<Dependency>"`.
@@ -338,6 +338,9 @@ function Loader.LoadModule(dir, opts)
                 type(routeId) == "string" and { route = routeId } or nil)
             return false
         end
+        local errs = {}
+        Schema.CheckData(data, "AddRouteData " .. tostring(routeId), errs) -- (as Registry:AddRouteData)
+        addErrors(errs, nil, routeId)
         if not mod.routeById[routeId] then
             queue(routeId, "data", data, "AddRouteData")
             return false
@@ -388,6 +391,9 @@ function Loader.LoadModule(dir, opts)
             addError("AddLibraryData: " .. tostring(err))
             return false
         end
+        local errs = {}
+        Schema.CheckData(data, "AddLibraryData", errs) -- (as Registry:AddLibraryData)
+        addErrors(errs)
         if currentModule == mod.name then mod.libraryData = true end
         return true
     end

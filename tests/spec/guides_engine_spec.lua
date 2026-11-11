@@ -195,23 +195,22 @@ describe("the guides module in the engine: 98389, a quest that may not be offere
         m:AssertClean()
     end)
 
-    it("offered: the paladin's level-4 steps stand between the accept and the next quest giver", function()
+    it("offered: the paladin (a class with its own steps around the accept) walks all three steps", function()
+        -- (what the paladin file puts between the steps is that file's business, phase C may move it: only the
+        -- three generic steps and their order are asserted)
         local m, ns = client({ class = "PALADIN" })
         assert.equal("undead-paladin", ns.Engine:GetRoute().id)
         local shown = play(m, ns, STOP, true)
-        local a = assert(position(shown, ACCEPT))
-        assert.equal("ud01-church-4", shown[a - 1])
-        local n = assert(position(shown, NEXT_AFTER_ACCEPT))
-        assert.is_true(n > a + 1, "no paladin step between " .. ACCEPT .. " and " .. NEXT_AFTER_ACCEPT)
-        for i = a + 1, n - 1 do
-            assert.matches("^pal%-tir%-", shown[i])
-        end
-        assert.is_true(position(shown, COMPLETE) < position(shown, TURNIN))
+        local a, c, t = position(shown, ACCEPT), position(shown, COMPLETE), position(shown, TURNIN)
+        assert.is_truthy(a and c and t, "one of the three steps was not shown")
+        assert.is_true(a < c and c < t)
+        assert.equal(1, count(shown, ACCEPT))
+        assert.equal(1, count(shown, TURNIN))
         assert.is_true(m:IsQuestCompleted(Q))
         m:AssertClean()
     end)
 
-    it("not offered to a paladin either: the class steps behind the accept still come", function()
+    it("not offered to a paladin either: whatever stands behind the accept comes, the later steps never", function()
         -- (the paladin trainer gives the quest, so this is the unlikely direction; the engine must not
         -- depend on which class is refused)
         local m, ns = client({ class = "PALADIN" })
@@ -219,8 +218,7 @@ describe("the guides module in the engine: 98389, a quest that may not be offere
         assert.equal(ACCEPT, shown[#shown])
         local e = ns.Engine
         local after = e:GetSteps()[e:IndexOf(ACCEPT) + 1]
-        assert.matches("^pal%-tir%-", after.id)
-        H.perform(m, ns, after) -- the next thing the paladin can do in the church
+        H.perform(m, ns, after) -- the next thing the player can do (a class step of the church, or Saltain)
         H.settle(m)
         assert.is_true(e:IsDone(ACCEPT))
         local rest = play(m, ns, STOP, false)

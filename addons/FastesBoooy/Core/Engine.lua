@@ -714,7 +714,7 @@ function Engine:ComputeVoid(ctx, limit, floorIndex, givenUp)
         return ahead(i) and self:IsGray(q, level, range)
     end
     -- does the route still lead to an accept of route quest d: one whose step is not passed without
-    -- the game (marked, below the sync floor, `optional` and behind the forward limit) and that the
+    -- the game (marked, below the sync floor, an `optional` non-bg step before the forward limit) and that the
     -- player did not give up? A quest the player has passed or declined protects nothing: the chain
     -- in front of it would only lead to an accept that is not offered any more
     local function wanted(d)

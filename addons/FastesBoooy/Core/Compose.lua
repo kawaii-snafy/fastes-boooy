@@ -276,8 +276,9 @@ end
 --     key replaces the insert's key for that step. A step whose filters cannot match a route
 --     is not composed into that route.
 --   * every step needs an explicit id, unique among all library segment steps and shared-insert
---     steps (one namespace: lib.scratch.stepById). With a missing or duplicate id the WHOLE
---     insert is rejected; other format errors are reported and the insert is kept.
+--     steps (one namespace: lib.scratch.stepById). With a missing or duplicate id, or an empty
+--     scope list (`class = {}` / `race = {}`), the WHOLE insert is rejected; other format errors
+--     are reported and the insert is kept.
 --   * the steps are templates: each route composes its own copies (route.libCopies), tagged
 --     inserted / shared / library / file / anchor / insertSide.
 -- @param source optional { module = "<addon>", file = "<path>" } (offline tools), as for
@@ -290,6 +291,12 @@ function Compose.AddLibraryInsert(lib, def, source)
     local side, anchor, where = parseInsert(def, SHARED_INSERT_KEYS, errors)
     if not side then return nil, errors end
     local scope = Schema.NormalizeFilters(def, where, errors)
+    -- an empty scope list (`class = {}`) would leave the insert unscoped, i.e. in every route of the
+    -- other dimensions: rejected as a whole (Schema reported it)
+    if (def.class ~= nil and not (scope and scope.class)) or (def.race ~= nil and not (scope and scope.race)) then
+        addErr(errors, where, "the insert is rejected: an empty scope list would apply it to every route")
+        return nil, errors
+    end
     local tag = (source and source.module) or true
     local file = source and source.file or nil
     local steps, ok, seen = {}, true, {}

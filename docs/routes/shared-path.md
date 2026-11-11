@@ -768,7 +768,7 @@ id (`<сегмент>:<n>`): такой шаг якорем быть не мож
 
 `h-31-tb-fly`, `h-31-org`, `h-31-uc-arrive`, `h-31-undercity-flight-master`, `h-31-tarrenmill-arrive`, `h-31-hillsbrad-alterac-field`, `h-31-helcular-s-grave`, `h-31-gol-dir`, `h-33-tarrenmill-end`, `h-31-tarren-mill`, `h-31-shards-of-myzrael`, `h-33-hammerfall-arrive`, `h-31-arathi-highlands-field`, `h-31-hillsbrad-arathi-level-gate`, `h-31-iridescent-shards`, `h-31-stone-of-inner`, `h-34-hammerfall-end`
 
-**`h-34-stranglethorn`** — 21 явных id из 60 шагов
+**`h-34-stranglethorn`** — 21 явный id из 60 шагов
 
 `h34-fly-uc`, `h-34-uc-arrive`, `h34-faranell`, `h34-uc-exit`, `h-34-tirisfal-zeppelin-to`, `h-34-gromgol-arrive`, `h34-fp-gromgol`, `h34-sethearth-gromgol`, `h34-road-south`, `h34-road-arena`, `h34-bb-tunnel`, `h-34-booty-bay`, `h34-fp-bootybay`, `h34-hearth-gromgol-1`, `h-34-nesingwary-s-expedition`, `h-34-stranglethorn-vale-field`, `h-34-stranglethorn-level-gate`, `h34-hearth-gromgol-2`, `h36-gromgol-end`, `h34-fly-bootybay`, `h-37-bootybay-end`
 
@@ -776,7 +776,7 @@ id (`<сегмент>:<n>`): такой шаг якорем быть не мож
 
 `h37-fly-gromgol`, `h-37-grom-gol-zeppelin`, `h37-durotar-arrive`, `h-37-orgrimmar`, `h-37-org-arrive`, `h-37-orgrimmar-keldran`, `h-37-orgrimmar-flight-master`, `h37-sunrock-west`, `h37-charred-vale`, `h37-desolace-north`, `h-37-cork-gizelton-bibbly`, `h-37-ghostwalker-arrive`, `h-37-kolkar-guests`, `h-37-smeed-scrabble`, `h37-thunder-axe`, `h-37-desolace-field-loop`, `h-37-hornizz-brimbuzzle`, `h38-level-maraudine`, `h38-melizza`, `h38-sethearth-shadowprey`, `h-37-shadowprey-village`, `h38-fp-shadowprey`, `h38-coast-north`, `h-37-rackmore-s-log`, `h-37-azore-aldamort`, `h-37-rackmore-s-chest`, `h38-hearth-shadowprey`, `h-37-rigger-gizelton`, `h39-level-mannoroc`, `h-37-warug`, `h40-spices`, `h40-hearth-shadowprey`, `h-40-shadowprey-end`, `h40-fly-org`, `h40-sethearth-org`, `h-40-org-arrive`, `h-38-orgrimmar-flight-master`, `h40-rfd-host`, `h-40-brackenwall-arrive`, `h-38-mudcrush-durtfeet`, `h-38-brackenwall-village`, `h-38-ogron`, `h-38-swamp-eye-jarl`, `h40-theramore-docks`, `h-38-dustwallow-marsh-field`, `h-37-desolace-dustwallow-level-gate`, `h-41-brackenwall-end`
 
-**`h-41-arathi-badlands`** — 31 явных id из 79 шагов
+**`h-41-arathi-badlands`** — 31 явный id из 79 шагов
 
 `h41-hearth-org`, `h41-zeppelin-uc`, `h-41-uc-arrive`, `h41-sharlindra`, `h41-sm-accept`, `h-41-undercity-flight-master`, `h41-fly-hammerfall`, `h-41-hammerfall-arrive`, `h41-iridescent-shards`, `h41-arathi-center`, `h-41-stone-of-inner`, `h-41-keystone`, `h-41-faldir-s-cove`, `h-41-trollbane-s-tomb`, `h-41-arathi-highlands-field`, `h-41-hammerfall`, `h-42-arathi-end`, `h41-wetlands`, `h41-dun-algaz`, `h41-loch-modan`, `h41-badlands-pass`, `h-41-rigglefuzz-martek`, `h41-uldaman`, `h-41-lotwil-veriatus-lucien`, `h-42-kargath-arrive`, `h42-sethearth-kargath`, `h-41-badlands-field-loop`, `h-41-arathi-badlands-level-gate`, `h-41-theldurin-the-lost`, `h43-caught`, `h-44-kargath-end`
 

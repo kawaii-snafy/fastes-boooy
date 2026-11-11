@@ -27,7 +27,7 @@
 -- and every race x class profile of each route, a fresh strict mock client
 -- (tests/mocks/wow.lua) is built with a matching player (Skyborne: raceID 96 Horde /
 -- 95 Alliance), the core addon (addons/FastesBoooy), the module's FastesBoooy_*
--- dependencies (## Dependencies, e.g. the shared library FastesBoooy_Horde: loaded first,
+-- dependencies (## Dependencies, e.g. a shared library module FastesBoooy_<Lib>: loaded first,
 -- like the client) and the module are loaded and booted, and the (composed) route is
 -- played step by step doing exactly what the current step asks for through the client API
 -- of the mock. Library modules (AddLibrarySegment, no route) are not simulated on their

@@ -293,12 +293,17 @@ local function factionWord(text)
 end
 
 --- Words with which a note would describe the module instead of the game (A.1: user-visible text never calls
--- the common path "shared" or a "library").
+-- the common path "shared"). Any letter case, every case form of "общий путь" / "общий маршрут". ("Library" is
+-- checked in titles only: a note may name a place, "the library of Shadowfang Keep".)
+local MODULE_WORDS = { "shared",
+    "общий путь", "общего пути", "общему пути", "общим путём", "общим путем", "общем пути",
+    "общий маршрут", "общего маршрута", "общему маршруту", "общим маршрутом", "общем маршруте" }
 local function moduleWord(text)
     if type(text) ~= "string" then return nil end
-    for _, word in ipairs({ "shared", "Shared", "общий путь", "общего пути", "общем пути", "общий маршрут",
-        "общего маршрута", "общем маршруте" }) do
-        if text:find(word, 1, true) then return word end
+    local low = lowerRu(text)
+    for _, word in ipairs(MODULE_WORDS) do
+        local a, b = low:find(word, 1, true)
+        if a then return text:sub(a, b) end
     end
     return nil
 end
@@ -401,10 +406,11 @@ local function assertRoutes(mod, expected)
         if want.alias then
             assert.equal(r, mod.aliases[want.alias], want.id .. ": alias " .. want.alias)
         end
-        for _, word in ipairs({ "Horde", "Орд", "library", "shared" }) do
-            for _, text in ipairs({ r.title.ru, r.title.en, r.description.ru, r.description.en }) do
-                assert.is_nil(text:find(word, 1, true), want.id .. ": '" .. word .. "' in a title or description")
-            end
+        -- (the same matchers as for the notes: any letter case, the Russian case forms)
+        for _, text in ipairs({ r.title.ru, r.title.en, r.description.ru, r.description.en }) do
+            local word = factionWord(text) or moduleWord(text)
+                or lowerRu(text):match("library") or lowerRu(text):match("библиотек")
+            assert.is_nil(word, want.id .. ": '" .. tostring(word) .. "' in a title or description: " .. text)
         end
     end
 end
@@ -998,6 +1004,27 @@ describe("addons/FastesBoooy_Guides", function()
             assert.is_nil(factionWord("Ордос, ордината"))
             assert.is_nil(factionWord("chord, order, hoard, border, Horadric"))
             assert.is_nil(factionWord(""))
+            -- mixed case, the letter Ё in front, punctuation and digits around the word, adjective forms
+            assert.equal("оРдА", factionWord("вся оРдА"))
+            assert.equal("ОрДы", factionWord("«ОрДы»"))
+            assert.equal("Орды", factionWord("2 Орды"))
+            assert.equal("орде", factionWord("к-орде"))
+            assert.equal("Ордын", factionWord("Ордынская застава"))
+            assert.equal("ордын", factionWord("ордынские земли, ордынцы"))
+            assert.equal("Horde", factionWord("Horde's camp"))
+            assert.equal("hOrDe", factionWord("pro-hOrDe"))
+            assert.is_nil(factionWord("Ёорда, ёлка, шорды, хорды"))
+            assert.is_nil(factionWord("Мордор, Гордеев, Кордон"))
+        end)
+
+        it("recognizes the module words in any letter case and Russian case form", function()
+            assert.equal("Shared", moduleWord("Shared path"))
+            assert.equal("SHARED", moduleWord("THE SHARED ROUTE"))
+            assert.equal("Общий путь", moduleWord("Общий путь начинается в Оргриммаре"))
+            assert.equal("общему пути", moduleWord("по общему пути"))
+            assert.equal("ОБЩИМ МАРШРУТОМ", moduleWord("ИДИТЕ ОБЩИМ МАРШРУТОМ"))
+            assert.is_nil(moduleWord("общий котёл, общая дорога, путь на север"))
+            assert.is_nil(moduleWord(nil))
         end)
 
         it("lowers Russian text letter by letter and keeps the byte positions", function()

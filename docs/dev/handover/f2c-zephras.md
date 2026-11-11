@@ -459,7 +459,10 @@ sd03-fly-org           13.24 13.18  fly Orgrimmar
   quests with a choice on the isle are listed in section 1 (the druid's indexes). Without an entry the automation
   stops at the reward window and asks the player.
 * Riding: the race file has both variants (`sky-40-*` for hunter, rogue, shaman, warrior after `h-40-org-arrive`;
-  `sky-40d-*` for the druid after `dru-40-train`). A class file that adds steps after `h-40-org-arrive` lands in
+  `sky-40d-*` for the druid after `dru-40-train`). **Changed in F2d:** both race inserts are
+  `after = "h-40-org-arrive"`; the druid file has `dru-40-fly-tb` / `dru-40-train` after `h-40-org-arrive` and
+  `dru-40-fly-taurajo` as its own insert `before = "h-38-orgrimmar-flight-master"` (PLAN.md C.7 as executed,
+  F2d hand-over section 4, deviation 1). A class file that adds steps after `h-40-org-arrive` lands in
   front of the riding detour (class file before race file); the detour leaves the city by flight, so city steps
   must not come after it.
 * Druid (Tauren): the `dru-zep-*` group is `race = "Skyborne"`; a Mulgore group is still to be written.

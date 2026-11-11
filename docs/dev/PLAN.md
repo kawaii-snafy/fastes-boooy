@@ -1,6 +1,8 @@
 # Implementation plan: FastesBoooy_Guides (28 race + class routes, levels 1-60)
 
-Status: plan, nothing implemented yet. Branch `claude/beautiful-planck-svbl19`. Revision 2: revised after three
+Status: in execution. Done: F1a, F1b, F1c, F2a, F2b, F2c, F2d and the orchestrator fixes F2e (hand-overs in
+`docs/dev/handover/`); next: P1. Where a phase deviated from this text and later phases depend on it, the text
+below was aligned in F2e (marked "as executed"). Branch `claude/beautiful-planck-svbl19`. Revision 2: revised after three
 adversarial reviews (engine and tools, route speed, parallel execution); every finding and what was changed for
 it is in the "Review log" at the end.
 Inputs: the five research reports in `docs/dev/research/` (`core.md`, `tools.md`, `routes.md`, `startzones.md`,
@@ -289,7 +291,9 @@ Semantics (prototype and line references: `core.md` section 5 and appendix B):
 3. **Ids.** Every step needs an explicit `id`, unique in the shared namespace (`lib.scratch.stepById`, the table
    shared segments already use). An insert with a missing or duplicate id is rejected as a whole.
 4. **Order.** Per route: shared inserts first, in registration order, then the route's own `AddInsert` calls.
-   Shared steps do not advance the `<anchor>+<n>` counter of per-route inserts.
+   Shared steps do not advance the `<anchor>+<n>` counter of per-route inserts. (As executed, F1a: this also
+   holds with a forward reference: an insert registered before the insert that supplies its anchor is applied
+   as soon as the anchor exists, before every later insert.)
 5. **Anchors.** A step of a shared segment or of another shared insert (or, per route, an own step). The anchor
    must have an explicit id: `Schema.AddSegment` sets `step.autoId = true` on positional ids and composition
    reports "anchor '<id>' is a positional step id: give the anchor step an explicit id".
@@ -319,7 +323,7 @@ Errors (all go to `Registry.errors` with the prefix `library:`; the tools attach
 | Situation | When |
 |---|---|
 | not a table; both or neither of `after` / `before`; anchor not a non-empty string; unknown key; empty `steps`; step format error; unknown class token; bad faction | call time, once |
-| step without `id`; duplicate id against a shared segment step or another shared insert | call time, once; the whole insert is rejected |
+| step without `id`; duplicate id against a shared segment step or another shared insert; an empty scope list (`class = {}`, `race = {}`: F2e) | call time, once; the whole insert is rejected |
 | a shared segment registered later reuses a shared-insert step id | at that `AddLibrarySegment` (existing "duplicate step id") |
 | anchor not in this route | never an error in the core |
 | positional anchor | composition, once per composed route |
@@ -365,6 +369,9 @@ FastesBoooy.AddLibraryData({ rewards = { DRUID = { [92461] = 1, [92463] = 3 } } 
 `route.data.rewards[facts.class][questID]`. `Compose.MergeData` merges per kind and per key, so each class file
 owns its own key and nothing collides (one call per class: a second call with the same class key replaces the
 first). Step-level `reward` remains valid only on class-scoped steps; shared base steps carry no `reward`.
+(F2e: `Schema.CheckData` checks the shape at registration, in the game and in the tools: unknown class token,
+a value that is not a table, a key that is not a quest id, an index that is not a positive integer are
+registration errors; the engine still ignores such an entry.)
 
 #### A.5.5 Acknowledged warnings: key `ok`
 
@@ -379,7 +386,8 @@ ignores the key. The reason is written as a Lua comment on the same line. Meanin
 * At login, once per session: if `C_AddOns.IsAddOnLoaded` (through a `Compat` wrapper) reports
   `FastesBoooy_Horde`, `FastesBoooy_UndeadPaladin` or `FastesBoooy_SkyborneDruid`, print a localized chat line:
   "delete the old folders ...: their guides are now part of FastesBoooy_Guides" (new strings in
-  `Locales/UI_enUS.lua`, `UI_ruRU.lua`).
+  `Locales/UI_enUS.lua`, `UI_ruRU.lua`). As executed (F1a): only when `FastesBoooy_Guides` is loaded as well
+  (without it the old modules are the guides of the installation).
 * `UI_OPT_NO_ROUTES` names `FastesBoooy_Guides`.
 * `Compose.lua` "unknown library segment" message: reword for one module ("unknown shared segment '%s' (is its
   file listed in the TOC before Route.lua?)").
@@ -459,7 +467,8 @@ turned in on a shared step. It is added to `FIXTURE_VALIDATE`, `FIXTURE_SIMULATE
   * Order: `DB.Prepare` first (the XP median per quest level, `fbdb.lua:36-49`, is computed from the
     **snapshot**), then the overrides. An XP value for one quest therefore never moves the estimate of another
     quest. Spec.
-  * Each file (alphabetical) is loaded in an empty environment under `pcall`. A file that does not load or has a
+  * Each file (`shared.lua` first, then alphabetical: as executed, F1b) is loaded in an empty environment under
+    `pcall`. A file that does not load or has a
     format error is ignored for that run and reported as one line naming the file: ERROR `override-load` on a
     full run, a note when a file filter is active (one agent's half-written file never stops another agent).
   * A file returns `{ quests = { [id] = { ... , source = "<url or 'in game YYYY-MM-DD'>", verified = false } },
@@ -482,8 +491,9 @@ turned in on a shared step. It is added to `FIXTURE_VALIDATE`, `FIXTURE_SIMULATE
   `id <TAB> segment <TAB> level before the step (normal) <TAB> level (worst case) <TAB> anchor of the insert
   or "-" <TAB> file <TAB> actions`. Class agents read the level at every anchor from it and see which of their
   insert steps landed where.
-* Load errors with `--route`: errors of files that contributed no step to the selected routes are printed as
-  notes and do not fail the run.
+* Load errors with `--route` (as executed, F1b): a file that does not load always counts; an error about a route
+  outside the selection is a note; a schema error of a loaded file is a note only when the file's content goes
+  to unselected routes alone.
 
 #### A.6.3 Validator: acknowledged warnings, `--strict`, numeric budgets
 
@@ -990,7 +1000,11 @@ steps of alternative pairs included); the few filtered ones are marked.
 
 How binding the tables are:
 
-* Tirisfal, Zephras: the ids are fixed (F2c creates them; several exist today).
+* Tirisfal, Zephras: the ids are fixed (F2c creates them; several exist today). As executed, the binding lists
+  are those of the F2c hand-overs (`f2c-tirisfal.md` section 3, `f2c-zephras.md` section 4, with the measured
+  levels) and the `ANCHORS` table of `tests/spec/guides_layout_spec.lua`; five Tirisfal rows below differ from
+  the tree (F2c deviations 1, 3, 5, 8, 9; for example the paladin's level-4 insert stands after `ud01-aramis`,
+  the optional accept of 98389, not after `ud01-church-4`). Read levels from `--levels`, never from these tables.
 * Shared path 12-22: the ids are fixed (F2b creates them).
 * Durotar, Mulgore: the tables are the **draft** of `startzones.md` section 6. Hard contract are only the
   hand-over ids (`dur02-end`, `mul03-org-gate`), the letter anchors (`dur01-teeth`, `mul01-hunt`), the class
@@ -1135,8 +1149,9 @@ hearth `h-24-tb-hearth`); shaman 31.05 -> 36.06; hunter and shaman after 57.2 (O
    portal trainer: `train = true` with `npc` (validator INFO `train-service`). Demon trainer, poison / reagent /
    ammunition vendor, mount vendor: `vendor = true` with `npc`. Never use the Thunder Bluff "Rogue Trainer?"
    205729. Start-camp trainers (Valley of Trials, Camp Narache, Deathknell, Thendal) teach only to level 6.
-6. **Ordering at a shared anchor** is: segment-file inserts, class file, race file. Do not anchor on the last
-   step of another file's insert unless this plan says so (C.7).
+6. **Ordering at a shared anchor** is: segment-file inserts, class file, race file. Do not anchor on a step of
+   another file's insert (as executed, C.7 needs no such anchor any more; the layout spec forbids a race file
+   anchored on a class step).
 7. **Acknowledging a WARN**: fix it if possible; otherwise `ok = "<code>"` on the step with the reason as a
    comment on that line (`level-grind` only with a ceiling, A.6.3). Anything that must be confirmed in game
    also gets a comment `-- CONFIRM: <what>`. A WARN on a step in a file you do not own is not yours to
@@ -1207,14 +1222,25 @@ At `h-40-org-arrive` (40.04) the path is in Orgrimmar and next flies to Camp Tau
   anchors are the whole Dustwallow part: 17,370 yd of straight legs, about 41 min on foot against 26 min
   mounted. Undead: after `h-41-uc-arrive` (Brill): Brill cannot be reached from the level-40 stop without a
   zeppelin round trip.
-* **Druid** (`Classes/Druid.lua`, both races): after `h-40-org-arrive` exactly three steps with these ids:
-  `dru-40-fly-tb` (fly Thunder Bluff), `dru-40-train` (Turak Runetotem, Elder Rise), `dru-40-fly-taurajo` (fly
-  Camp Taurajo; the next shared `fly` completes on the same landing).
+* **Druid** (`Classes/Druid.lua`, both races): exactly three steps with these ids, in two inserts (as executed,
+  F2d): `dru-40-fly-tb` (fly Thunder Bluff) and `dru-40-train` (Turak Runetotem, Elder Rise) as one insert
+  `after = "h-40-org-arrive"`; `dru-40-fly-taurajo` (fly Camp Taurajo; the next shared `fly` completes on the
+  same landing) as an insert of its own `before = "h-38-orgrimmar-flight-master"` (the shared step right
+  behind `h-40-org-arrive`). No other druid insert may stand `before = "h-38-orgrimmar-flight-master"` in front
+  of it.
 * **Tauren and Skyborne riding** (race files), two inserts each:
   * non-druids: `after = "h-40-org-arrive"`, `class` = the race's classes without DRUID: a self-contained
     `optional` detour `<r>-40-fly-tb`, the riding steps, `<r>-40-fly-taurajo`;
-  * druids: `after = "dru-40-train"`, `class = "DRUID"`: only the riding steps (ids `<r>-40d-...`, `optional`),
-    so they sit between the druid's training and the druid's flight to Camp Taurajo.
+  * druids: `after = "h-40-org-arrive"`, `class = "DRUID"`: only the riding steps (ids `<r>-40d-...`,
+    `optional`). At one anchor the class file comes before the race file (C.3 rule 6), so the composed druid
+    route reads: `h-40-org-arrive`, `dru-40-fly-tb`, `dru-40-train`, `<r>-40d-...`, `dru-40-fly-taurajo`,
+    `h-38-orgrimmar-flight-master`. The layout spec checks this order for every druid route that has such an
+    insert, and that no race file is anchored on a step of a class file.
+  * Why not `after = "dru-40-train"` (revision 2 of this plan): the base-profile commands (`--skip 'Classes/*'`
+    without `--own`) then find the anchor in no loaded step and fail with ERROR `insert-anchor-unknown` (F2b
+    hand-over, section 8). With the shared anchor the base profile shows the five optional riding steps right
+    after `h-40-org-arrive`, without the druid's flights; that is an artefact of the run (the class file is
+    always loaded in the game) and the validator reports nothing for it.
 * Warlock (Felsteed, Ratchet) and paladin (Warhorse from the trainer) are class-file steps; the race riding
   inserts exclude these classes by their `class` list. The paladin file keeps its own optional riding steps in
   Brill (today's `pal-40-riding`, `pal-40-horse`) as the fallback when the trainer does not offer the Warhorse.
@@ -1286,7 +1312,7 @@ is a regenerated `Data.lua` if `make routedata-check` reports a difference cause
 | Part | Work | Acceptance (besides `luacheck --config .luacheckrc addons tools tests` and `busted` green) |
 |---|---|---|
 | **F1a core** | A.5.1-A.5.6 with the specs of A.5.7; loader stub `AddLibraryInsert`, `mod.libraryInserts`, `opts.replace`; `.luacheckrc` field; fixture `FastesBoooy_TestGuides` | `make validate validate-fixtures simulate-fixtures harness-fixtures routedata-check` green. Old routes: 0 ERROR, end level 60.00, grind 4,972 / 6,179 and 4,878 / 6,082 (appendix 1), 1,713 and 1,748 composed steps, 95 and 145 WARN (the 4 `step-no-profile` per route are gone) |
-| **F1b validator** | A.6.1 (filters, `--own`, lint rule for overrides, harness on mixed modules), A.6.2, A.6.3, with one spec per behaviour: each module check (among them a template step with `race = "Undead"`, an insert with a misspelled anchor under `--skip`, own and foreign), `ok` in three forms and `ok-needs-ceiling`, `--strict` with `--own`, `--end-level`, `--summary`, `--max-grind-until`, `--write-baseline` / `--baseline`, worst-case `fly` and `hearth`, trainer kinds, `--route` lists, `--levels`; overrides: `pcall` on a broken file, the median stays that of the snapshot, duplicate id, `override-foreign-quest`, `exclusive = { remove }` with a replay of 861 + 854 before the accept of 844 | old routes: 18 and 19 WARN (`xp-unknown` is INFO); `lua5.1 tools/validate_routes.lua -q --strict --end-level tests/fixtures/core/FastesBoooy_TestGuides` exits 0; the pinned numbers of the existing validator specs are unchanged |
+| **F1b validator** | A.6.1 (filters, `--own`, lint rule for overrides, harness on mixed modules), A.6.2, A.6.3, with one spec per behaviour: each module check (among them a template step with `race = "Undead"`, an insert with a misspelled anchor under `--skip`, own and foreign), `ok` in three forms and `ok-needs-ceiling`, `--strict` with `--own`, `--end-level`, `--summary`, `--max-grind-until`, `--write-baseline` / `--baseline`, worst-case `fly` and `hearth`, trainer kinds, `--route` lists, `--levels`; overrides: `pcall` on a broken file, the median stays that of the snapshot, duplicate id, `override-foreign-quest`, `exclusive = { remove }` with a replay of 861 + 854 before the accept of 844 | old routes: 18 and 18 WARN (`xp-unknown` is INFO; as executed: the trainer-kind rule turns the nineteenth into INFO `train-service`); `lua5.1 tools/validate_routes.lua -q --strict --end-level tests/fixtures/core/FastesBoooy_TestGuides` exits 0; the pinned numbers of the existing validator specs are unchanged |
 | **F1c report, simulator, build** | A.6.4, A.6.5, A.7 (with the F1 values of `SYNC_ROUTES` / `SYNC_MID`), `nightly.yml`; documentation: `docs/ROUTE_FORMAT.md` (shared inserts and rules 9-10, `ok`, aliases, class reward table, the guard line, version table), `docs/ARCHITECTURE.md`, `tools/README.md` (options, overrides, report layout) | `lua5.1 tools/simulate_routes.lua --list-routes` lists the two routes; `make simulate` runs them in parallel and fails when `--list-routes` fails; `make check` green, its wall time in the hand-over; report regenerated |
 
 Every new behaviour of A.5 and A.6 has a spec. `core_sync_spec.lua:634-650` still loads the old modules (it
@@ -1315,7 +1341,9 @@ ids), `Data.lua`, `docs/VALIDATION.md`.
    class scope). Explicit ids stay; an insert step without an explicit id gets one with the class prefix.
 5. Convert every `-- WARN-OK: <code>` comment into the key `ok` (the reason stays as the comment). The 151
    `xp-unknown` and the 8 `step-no-profile` comments are dropped (INFO now; pruned now). The 17 `level-grind`
-   gates get a ceiling: the larger of the two routes' normal kills at that gate, rounded up to the next 10.
+   gates get a ceiling: the larger of the two routes' normal kills at that gate, rounded up to the next 10 (as
+   executed: 13 of them; three gates need kills in the worst case only and the optional `h48-tanaris-level-gate`
+   stays under the WARN threshold, so an `ok` there would be `ok-unused`).
    The paladin's acknowledgement of `segment-level` for `h-22-hillsbrad` moves onto that segment.
    Set `VALIDATE_FLAGS = --strict --end-level`.
 6. Delete the three old folders. Update `Makefile` (`LIB`, `SYNC_ROUTES = undead-paladin skyborne-druid`,
@@ -1452,6 +1480,18 @@ Acceptance F2d: 11 routes: all commands exit 0; `undead-paladin` total grind <= 
 of B.8, stop and report the numbers, do not relax the limit; the harness proofs of F2b still pass; the four
 simulations `OK`; `make check` green.
 
+#### F2e: orchestrator fixes (one agent; added during execution)
+
+Not in revision 2. Resolves what the F1a .. F2d hand-overs passed to the orchestrator before P1 starts: the
+level-sync run `--ahead 48` of every base route (a finished route must stay finished on a cold start: core
+`Engine:ComputeVoid`, the "protected" rule of gray quests), the engine scenario of 98389 as a spec
+(`tests/spec/guides_engine_spec.lua`), the module checks the core still lacked (an empty scope list of a shared
+insert, the shape of the class reward table), the faction-word matchers of the layout spec, unused fixtures,
+stale documentation (`docs/ARCHITECTURE.md`, `docs/ROUTE_FORMAT.md`, `tools/README.md`, tool usage texts,
+`docs/routes/*.md`, `README.md`) and this plan (C.2, C.3, C.7, D.4, D.5, D.6 and the "as executed" notes).
+Hand-over: `docs/dev/handover/F2e-orchestrator-fixes.md`. Acceptance: luacheck, busted, `make check`,
+`make routedata-check`, a fresh report and `make simulate-sync-full` for all 11 routes.
+
 ### D.3 Phase P1: Durotar and Mulgore (two agents in parallel)
 
 Inputs: `startzones.md` (all), sections B.1, B.2, B.8, C.2, C.3 of this plan, `docs/ROUTE_FORMAT.md`.
@@ -1520,7 +1560,10 @@ Work:
    steps by the variant in force (B.5, E.1, E.2), quest-log size, the timed 853 for races that walk to Thunder
    Bluff.
 3. `Races/Orc.lua`, `Races/Troll.lua`, `Races/Tauren.lua` (C.6, C.7); review `Races/Scourge.lua` and
-   `Races/Skyborne.lua`.
+   `Races/Skyborne.lua`. The Tauren druid riding insert is `after = "h-40-org-arrive"`, `class = "DRUID"`, ids
+   `tau-40d-...`, all `optional` (C.7 as executed; with `after = "dru-40-train"` the layout spec and the
+   base-profile command fail). `h15-xr-arrive` gets `ok = "db-override-unverified"` with the first Tauren route
+   (the layout spec demands it).
 4. Ceilings: every `ok = { ["level-grind"] = N }` of a shared gate is set to the largest normal-run kill count
    over the 28 base routes, rounded up to the next 10.
 5. **Hub ids in `h-24` .. `h-56`.** Give an explicit id (`hNN-<place>-<what>`, `NN` = level of the step) to
@@ -1591,7 +1634,7 @@ hand-overs.
 | Warlock | `Classes/Warlock.lua`, `overrides/warlock.lua` | `orc-`, `troll-`, `undead-warlock` |
 | Mage | `Classes/Mage.lua`, `overrides/mage.lua` | `orc-`, `troll-`, `undead-mage` |
 | Priest | `Classes/Priest.lua`, `overrides/priest.lua` | `troll-`, `undead-priest` |
-| Druid | `Classes/Druid.lua` (exists: add the Tauren groups, review the race scopes P2 set), `overrides/druid.lua` | `tauren-`, `skyborne-druid` |
+| Druid | `Classes/Druid.lua` (exists: add the Tauren groups, review the race scopes P2 set; keep the two level-40 inserts of C.7 apart), `overrides/druid.lua` | `tauren-`, `skyborne-druid` |
 | Paladin | `Classes/Paladin.lua` (exists: review against C, the trainer question E.3), `overrides/paladin.lua` | `undead-paladin` |
 
 Each agent also owns `docs/dev/handover/c-<class>.md` and `docs/routes/class-<class>.md`. Forbidden:
@@ -1637,7 +1680,8 @@ Owned: everything.
    tools/validate_routes.lua -q $(VALIDATE_FLAGS) --summary $G` for all 28 routes with all class files.
 2. Resolve what the hand-overs list: foreign warnings on shared steps (fix or `ok`; `segment-level` and
    `level-grind` ceilings that a class moved), anchor wishes (add the id, move the insert), `ok-unused`,
-   `shared-unused`, the module checks across files (race files anchored on `dru-40-train`).
+   `shared-unused`, the module checks across files (no race file is anchored on a class step any more: C.7 as
+   executed; the layout spec forbids it).
 3. XP values and mask corrections for shared quests from the hand-overs go into `tools/overrides/shared.lua`;
    then write `baseline.json` again from the base routes and check all 28 routes against it.
 4. `PLACE_NAMES_RU` from the hand-overs; `make routedata`; `make report`.
@@ -1664,7 +1708,7 @@ and `Data.lua` fresh; two addon folders.
 | E.3 | Paladin trainers in Thunder Bluff and the Undercity (DB yes, web no). | Keep today's steps, notes name Brill as fallback, `-- CONFIRM`. | yes |
 | E.4 | Troll warlock Voidwalker quests 1501 / 1504 (Orc-only in the DB). | Routed for the Troll through an unverified DB override (C.5). | yes |
 | E.5 | Orc mage 1959-1962, 1943-1946; Skyborne druid Cure Poison / Aquatic Form. | Not routed for these combos. | optional |
-| E.6 | 98389 "A Light in the Darkness" (no class mask, but given by the paladin trainer in Deathknell). | Stays a generic step of `ud-01`, `optional = true`, `-- CONFIRM`. | yes |
+| E.6 | 98389 "A Light in the Darkness" (no class mask, but given by the paladin trainer in Deathknell). | Stays a generic step of `ud-01`, `optional = true`, `-- CONFIRM`. Its three steps (`ud01-aramis`, `ud01-cocoons`, `ud01-98389`) are optional and carry no action of another quest (layout spec); `tests/spec/guides_engine_spec.lua` plays `ud-01` in the real engine for a character the quest is not offered to (shown once, never again, also after `/reload` and a cold start) and with the quest taken (F2e). | yes |
 | E.7 | Every Forever-new quest has estimated XP (a third of the start-zone quest XP; the one web value is 25 % below its estimate). | Estimates are used; every `reqLevel`-critical accept has a gate and every trainer hub that the base profile reaches within 0.4 level of an even level has a trainer-hub gate (B.8), so a lower real XP costs kills, not a broken route or a missed training. Real values go into the override files as they are recorded (`/fb xp`); an XP override never moves the estimate of other quests. | record XP |
 | E.8 | Index-only class quests (snapshot scoped to paladin and druid; `make db` inputs are not in the repository). | Not routed unless key (C.5); no snapshot rebuild in this project. | - |
 | E.9 | Is the first mount included in the 100 gold; riding prices. | Riding and mount steps are `optional`, notes give both readings. | yes |
@@ -1787,7 +1831,7 @@ rejected.
 | ET-7 | minor | The worst-case run ignores `fp` and `sethearth` learned only on optional steps. | `validator.lua:1748`, `:1360-1375`, `:1244-1251`. | accepted | A.6.3 "Worst case"; C.4; spec in D.1 F1b. |
 | ET-8 | minor | The `simulate` recipe ignores a failing `--list-routes` and then runs every route in one process. | Not re-run; follows from the pipeline status and from GNU xargs running once on empty input. | accepted | A.7 recipe (`|| exit 1`, empty check, `xargs -r`), same rule for the sync targets; A.6.5 exit code of `--list-routes`. |
 | ET-9 | minor | The simulator takes reward choices only from `step.reward`; the class reward table would be tested by unit specs only. | `simulate_routes.lua:413-421`, `:452-456`; 13 `reward` steps in the druid route. | accepted | A.6.5 "Reward choices"; fixture quest in A.5.7. |
-| ET-10 | minor | The new module checks would flag the old library module and fixtures in F1; the expected F1 warning counts were wrong. | Today's output: the library reports 0 / 0; 4 `step-no-profile` per route. | accepted | A.6.2 (checks only for a module that registers routes, over its own templates); D.1: 95 / 145 WARN after F1a, 18 / 19 after F1b. |
+| ET-10 | minor | The new module checks would flag the old library module and fixtures in F1; the expected F1 warning counts were wrong. | Today's output: the library reports 0 / 0; 4 `step-no-profile` per route. | accepted | A.6.2 (checks only for a module that registers routes, over its own templates); D.1: 95 / 145 WARN after F1a, 18 / 19 after F1b (as executed: 18 / 18, the nineteenth is INFO `train-service`; D.1 row F1b). |
 | ET-11 | minor | `--strict` counts WARNs on files the agent may not edit: the phase gate can deadlock. | `validator.lua:2615`. | accepted | `--own` (A.6.1, A.6.3), used in F2c, P1, C; foreign warnings go to the hand-over (D.0 rules 5 and 7; C.3 rule 7). |
 | ET-12 | minor | After P1 and C the tree fails the CI freshness steps; nothing says so. | `.github/workflows/ci.yml`. | accepted | D.0 rule 2 (closing step by the orchestrator; which commits are pushed); A.7. |
 | RS-1 | major | Every Tauren gets `accept-exclusive` on the shared accept of 844 after 861 / 854. | DB: 861 and 854 have `exclusive = {844}`, 860 has `breadcrumbFor = 844`, `preSingle = {861}`; `validator.lua:942-955`. | accepted | B.2 "The Tauren breadcrumbs and 844"; override fields `exclusive` etc. in A.6.2; `tools/overrides/shared.lua` and the replay spec in D.2 F2b; synthetic Tauren state with its real `done` list; E.21. Not taken: making the validator skip the reverse index along `next` / `breadcrumbFor` chains (854 has no such link to 844, so it would cure only 861). |
