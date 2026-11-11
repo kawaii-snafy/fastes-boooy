@@ -80,8 +80,12 @@
 --       - gray (settings.skipGray): an `accept` of a quest that is trivial for the player's level
 --         (Compat.IsQuestGray: the client's C_QuestLog.IsQuestTrivial, else the FrameXML rule with
 --         route data questMeta level), unless the quest is "protected": a prerequisite (questMeta
---         preAll / preAny) of a later route quest that is neither turned in nor in the log and is
---         not gray itself or is protected (chains that unlock good quests are kept);
+--         preAll / preAny) of a later route quest that is neither turned in nor in the log, that
+--         the route still leads to (not every accept of it is "not taken" for another reason, see
+--         below: marked, below the sync floor, `optional` and passed, given up -- a quest the
+--         player has passed or declined keeps no chain alive, so a finished route stays finished
+--         on a cold start) and that is not gray itself or is protected (chains that unlock good
+--         quests are kept);
 --       - unreachable: an `accept` whose route-quest prerequisites can no longer be met -- preAll
 --         holds a dead route quest, or preAny is non-empty and all of it are dead route quests
 --         (prerequisites that are not route quests are assumed met); a route quest p is dead when
@@ -709,13 +713,28 @@ function Engine:ComputeVoid(ctx, limit, floorIndex, givenUp)
     local function grayAt(q, i)
         return ahead(i) and self:IsGray(q, level, range)
     end
+    -- does the route still lead to an accept of route quest d: one whose step is not passed without
+    -- the game (marked, below the sync floor, `optional` and behind the forward limit) and that the
+    -- player did not give up? A quest the player has passed or declined protects nothing: the chain
+    -- in front of it would only lead to an accept that is not offered any more
+    local function wanted(d)
+        local g = givenUp[d]
+        if g and self.removed[d] then g = nil end -- (the pending QUEST_REMOVED hold: maybe turned in)
+        for _, j in ipairs(acceptAt[d] or EMPTY) do
+            local sj = steps[j]
+            if not (j < floorIndex or isMarked(sj.id) or (sj.optional and not sj.bg and j < limit) or (g and g > j)) then
+                return true
+            end
+        end
+        return false
+    end
     local protected
     protected = function(q)
         local r = protMemo[q]
         if r ~= nil then return r end
         protMemo[q] = false -- the dependency graph is acyclic (first accepts strictly ordered)
         for _, d in ipairs(deps[q] or EMPTY) do
-            if open(d) and (not grayAt(d, acceptAt[d][1]) or protected(d)) then
+            if open(d) and wanted(d) and (not grayAt(d, acceptAt[d][1]) or protected(d)) then
                 -- an alternative (preAny) already turned in does not need q
                 local m = meta[d]
                 local needed = true
