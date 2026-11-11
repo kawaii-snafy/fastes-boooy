@@ -1,10 +1,46 @@
 -- FastesBoooy_Guides / Classes / Paladin.lua
 --
--- Paladin class steps on the shared path (Segments/Shared), as shared inserts with class scope (step ids
--- "pal-..."). Every insert is anchored to a shared step with an explicit id; the inserted steps belong to the
--- anchor's segment. Plan: research paladin60.md / plan60.json classInserts.PALADIN, moved to the levels the
--- validator reaches. (The class steps of Tirisfal 1-12 are still inside the Tirisfal segments; phase F2c moves
--- them here.)
+-- Every step that exists because of the class, as shared inserts with class scope (step ids "pal-..."; below
+-- level 12 one group per start zone, "pal-tir-..." for Tirisfal: the Undead are the only paladins of the
+-- module). Every insert is anchored to a step with an explicit id of a start-zone or shared segment; the
+-- inserted steps belong to the anchor's segment. Plan: research paladin60.md / plan60.json
+-- classInserts.PALADIN, moved to the levels the validator reaches.
+--
+-- Tirisfal 1-12 (Segments/Tirisfal; level before the first step of the insert, validator normal run):
+--   Deathknell, Aramis Hammerhand in the church (he teaches up to level 6)
+--     after ud01-364        2.6   the letter 98601 (Sarvis) > 90902 (Aramis), training at 1 (the Mindless Ones
+--                                 reward pays it), 90902 runs along the first loop
+--     after ud01-aramis     4.0   90902 turned in, 91208 + 91209 (both need level 4: the gate ud01-xp-4 gives it
+--                                 with the two generic turn-ins of ud01-church-4), training at 4. The anchor is
+--                                 the generic accept of 98389 at Aramis himself, not ud01-church-4: a training
+--                                 step in front of an accept at the same NPC is fast-forwarded (look-ahead rule)
+--     after ud01-boxes            91208 (Frightened Paladin, west of the church)
+--     after ud01-98389            91208 turned in (Aramis; the generic 98389 is turned in to him right before)
+--   Brill, Shari Stilwell by the stables (outside the inn, between the entrance and the inn)
+--     after ud02-dillinger-report  6.5   91209 turned in, training at 6, Wooden Mallet (optional): Shari stands on
+--                                 the way from Dillinger to the inn, so the visit comes before ud02-sethearth
+--     after ud02-shari-99144  8.3  training at 8 (99144, a quest of every class, is turned in to her first)
+--     after ud02-level-10    10.2  91282 "A Second Home", training at 10
+--     after ud02-carolai-2   12.6  training at 12 (Carolai stands 35 yd from Shari)
+--   Bandarion Keep and Shadowvale: the chain 91282 > 91285 > 91294 > 91316 / 91317 > 95803 runs next to the
+--     generic keep quests (96899 > 96896 > 98545, 99152, 99153, 95314), same order as before the split:
+--     before ud02-keep (Breton), after ud02-leonid-letter (murlocs, Driftwood Smasher, Hilda), after ud02-hilda
+--     (the tour, Danitha, Jorin), after ud02-ephram (the two along-the-way goals), after ud02-elixir-bg (Rudolph
+--     Gelhardt's head: behind the generic along-the-way goals, so all four are listed while he is hunted), after
+--     ud02-shadowvale (Shadowvale), after ud02-hilda-2 (turn-ins), after ud02-lvl-12 (94427, optional).
+--   Undercity, after ud02-fp-uc: Tanis Alderwood 94427 > 94434 (optional: 10 Linen Cloth), Lady Sylvanas 95803
+--     (the Royal Quarter walk exists only for it: 460 XP estimated, and the chain ends there).
+--   Skipped: the rest of the Lesson in Divinity chain 94435+ (crosses Tirisfal twice for Redemption).
+--   XP of the group (all estimated, Forever-new quests): 98601 40, 90902 170, 91208 355, 91209 355, 91282 /
+--   91285 / 91294 / 91316 660 each, 91317 / 95803 / 94427 / 94434 460 each, plus the kills of 91285 and 91317:
+--   the paladin leaves Tirisfal 0.7 level above the other classes (12.79 against 12.10).
+--   Quest rewards of the generic Tirisfal quests: the segments only say "pick the armour your class can wear"; what
+--   a paladin takes (mail, the two-hander) is named in the note of the pal-tir step that stands in front of the
+--   turn-ins: pal-tir-train-1 (3901 / 376), pal-tir-91208 (3902 / 380, 381, 382), pal-tir-train-8 (426, 398, 358),
+--   pal-tir-train-10 (97558, 374). There is no class reward table yet (FastesBoooy.AddLibraryData({ rewards = {
+--   PALADIN = ... } })): the DB has no reward lists and the old route named the items without their index in the
+--   reward window, and a wrong index would make the automation take the wrong item. CONFIRM the indexes in game,
+--   then move the choices into the table (phase C).
 --
 -- Training on 12-22 (CONFIRM, docs/dev/PLAN.md E.3: the paladin trainers in the Undercity and in Thunder Bluff are
 -- in the DB but not on the web; the fallback is Shari Stilwell in Brill):
@@ -17,7 +53,7 @@
 --
 -- Training (no paladin trainer in Orgrimmar or any questing hub 22-60; Garen Largo in the Undercity War Quarter,
 -- Alodan the Hopeful in the Thunder Bluff Pools of Vision, Shari Stilwell in Brill). Visits at the impactful levels
--- only, each at a stop the library makes anyway (level at the stop: validator normal / worst case):
+-- only, each at a stop the path makes anyway (level at the stop: validator normal / worst case):
 --   26        Alodan, after h-27-tb-arrive (27.58 / 27.12; 27.39 without the optional class chain; Zamah stands in
 --             the same cave)
 --   28 + 30   Alodan, after h-31-tb-hearth (30.91 / 30.91; 28 alone is not worth the h-28 detour)
@@ -57,11 +93,317 @@
 -- turn-in) and is followed by quest steps that cannot be done before it.
 
 if not FastesBoooy.AddLibraryInsert then return end
+local insert = FastesBoooy.AddLibraryInsert
 
 ------------------------------------------------------------------------------------------------------------------
+-- Tirisfal (Undead) ---------------------------------------------------------------------------------------------
+-- Deathknell: the letter, Aramis Hammerhand, training at 1
+------------------------------------------------------------------------------------------------------------------
+insert({
+    after = "ud01-364",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-letter", accept = 98601, npc = { 1569, 1661 }, at = { 1420, 30.85, 66.1 },
+          note = { ru = "Сарвис (или Элрет рядом) даёт и письмо паладина: «Трудный путь».",
+                   en = "Sarvis (or Elreth next to him) also has the paladin's letter: A Difficult Path." } },
+        { id = "pal-tir-aramis", turnin = 98601, accept = 90902, npc = 244808, at = { 1420, 31.1, 66.41 },
+          use = 282423,
+          note = { ru = "Прочитайте свиток (кнопка предмета) и поговорите с Арамисом — тренером паладинов "
+                       .. "в церкви.",
+                   en = "Read the Consecrated Scroll (item button), then talk to Aramis Hammerhand, "
+                       .. "the paladin trainer in the church." } },
+        { id = "pal-tir-train-1", train = true, npc = 244808, at = { 1420, 31.1, 66.41 },
+          spells = { { ru = "Аура благочестия", en = "Devotion Aura" } },
+          note = { ru = "Выучите Ауру благочестия (10 меди — хватает денег за зомби). Награды при следующей сдаче "
+                       .. "в церкви (скелеты, лапы и крылья): кольчужные поножи и кожаный пояс.",
+                   en = "Train Devotion Aura (10 copper, paid by The Mindless Ones reward). Rewards at the next "
+                       .. "turn-ins in the church (skeletons, paws and wings): Roamer's Leggings (mail) and Old "
+                       .. "Leather Belt." } },
+        { id = "pal-tir-heal-bg", complete = 90902, bg = true, at = { 1420, 31.6, 63.7 },
+          note = { ru = "Свет небес на раненых стражников смерти, лежащих по всей деревне (5). "
+                       .. "Лечите, когда мана полная.",
+                   en = "Cast Holy Light on the Injured Deathguards lying around the village (5), "
+                       .. "whenever your mana is full." } },
+    },
+})
+
+------------------------------------------------------------------------------------------------------------------
+-- Deathknell: level 4 (the generic gate ud01-xp-4 and the turn-ins of ud01-church-4 give it). Anchored on the
+-- generic accept at Aramis (ud01-aramis), so the training follows every quest action at him.
+------------------------------------------------------------------------------------------------------------------
+insert({
+    after = "ud01-aramis",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-90902", turnin = 90902, npc = 244808, at = { 1420, 31.1, 66.41 },
+          note = { ru = "Арамис: сдайте лечение стражников.",
+                   en = "Aramis Hammerhand: turn in the healing of the Deathguards." } },
+        { id = "pal-tir-91209", -- 91209 is carried: turned in to Shari Stilwell in Brill (pal-tir-shari)
+          accept = { 91208, 91209 }, npc = 244808, at = { 1420, 31.1, 66.41 },
+          note = { ru = "Возьмите оба задания (нужен 4-й уровень). 91209 ведёт к тренеру паладинов в Брилле — "
+                       .. "держите его.",
+                   en = "Take both quests (they need level 4). 91209 leads to the paladin trainer in Brill: keep it." } },
+        { id = "pal-tir-train-4", train = true, npc = 244808, at = { 1420, 31.1, 66.41 },
+          spells = { { ru = "Правосудие", en = "Judgement" },
+                     { ru = "Благословение могущества", en = "Blessing of Might" } },
+          note = { ru = "В Forever Правосудие не снимает печать: жмите его по откату. "
+                       .. "Не хватает денег — сначала Правосудие.",
+                   en = "In Forever Judgement does not consume the Seal: use it on cooldown. "
+                       .. "Short on money: Judgement first." } },
+    },
+})
+
+insert({
+    after = "ud01-boxes",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-frightened", complete = 91208, npc = 246143, at = { 1420, 27.69, 63.82 },
+          note = { ru = "Испуганный паладин к западу от церкви: заговорите с ней, она нападёт — убейте её.",
+                   en = "Frightened Paladin west of the church: talk to her, she turns hostile, kill her." } },
+    },
+})
+
+insert({
+    after = "ud01-98389",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-91208", turnin = 91208, npc = 244808, at = { 1420, 31.1, 66.41 },
+          note = { ru = "Арамис: сдайте и «Примирение». Он учит до 6-го уровня; дальше — Шари Стилвелл в Брилле. "
+                       .. "Награды дальше в Мертвом Звоне: у Салтейна и Аррена — кольчужные наручи и кольчужный "
+                       .. "жилет; за повязки Алого ордена — Полуторный меч Отрекшихся (двуручный), если его "
+                       .. "название не красное, иначе Кувалда Отрекшихся; за документы Коргала — щит.",
+                   en = "Aramis Hammerhand: turn in Coming to Terms as well. He teaches up to level 6; then it is "
+                       .. "Shari Stilwell in Brill. Rewards ahead in Deathknell: Rustmetal Bracers and Rugged Mail "
+                       .. "Vest (mail) at Saltain and Arren; Forsaken Bastard Sword (two-hander) for the Scarlet "
+                       .. "Armbands if its name is not red, otherwise Forsaken Maul; Deathguard Buckler for "
+                       .. "Korgal's documents." } },
+    },
+})
+
+------------------------------------------------------------------------------------------------------------------
+-- Brill, level 6: Shari Stilwell stands between Dillinger (the entrance) and the inn
+------------------------------------------------------------------------------------------------------------------
+insert({
+    after = "ud02-dillinger-report",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-shari", complete = 91209, turnin = 91209, npc = 246152, at = { 1420, 60.22, 52.66 },
+          note = { ru = "Шари Стилвелл — тренер паладинов у конюшни. Поговорите с ней и сдайте задание.",
+                   en = "Shari Stilwell, the paladin trainer by the stables: talk to her and turn in." } },
+        { id = "pal-tir-train-6", train = true, npc = 246152, at = { 1420, 60.22, 52.66 },
+          spells = { { ru = "Священный удар", en = "Holy Strike" },
+                     { ru = "Свет небес (ранг 2)", en = "Holy Light (Rank 2)" } },
+          note = { ru = "Нужен 6-й уровень. Священный удар — главная кнопка: жмите по откату вместе "
+                       .. "с Правосудием. Не продавайте льняную ткань — 10 штук понадобятся паладину в Подгороде.",
+                   en = "Needs level 6. Holy Strike is your key button: use it on cooldown together "
+                       .. "with Judgement. Keep Linen Cloth: a paladin quest in the Undercity takes 10." } },
+        { id = "pal-tir-mallet", vendor = true, npc = 2136, optional = true, at = { 1420, 60.12, 53.39 },
+          note = { ru = "Деревянная киянка у Оливера Двора (двуручная булава, 5 ед. урона в секунду, 6 с 66 м): "
+                       .. "купите, если она лучше вашего оружия и хватает денег. Продайте серый хлам.",
+                   en = "Wooden Mallet from Oliver Dwor (two-handed mace, 5 DPS, 6s 66c): buy it if it beats "
+                       .. "your weapon and you can afford it. Sell grey loot." } },
+    },
+})
+
+------------------------------------------------------------------------------------------------------------------
+-- Brill, level 8: after the turn-in of 99144 at Shari
+------------------------------------------------------------------------------------------------------------------
+insert({
+    after = "ud02-shari-99144",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-train-8", train = true, npc = 246152, at = { 1420, 60.22, 52.66 },
+          spells = { { ru = "Молот правосудия", en = "Hammer of Justice" } },
+          note = { ru = "Шари Стилвелл: нужен 8-й уровень (если нет — выучите на 10-м вместе с остальным). Молот "
+                       .. "правосудия держите на случай беды, например для Глаза Личинки. Награды при следующем "
+                       .. "возвращении в Брилл — кольчуга: Сапоги склепохода (Диллинджер), Латунные чешуйчатые "
+                       .. "штаны (Зиганд, за Глаз Личинки), Перчатки из холодной стали (Севрен, за гноллов).",
+                   en = "Shari Stilwell: needs level 8 (if not yet, train it at level 10 with the rest). Keep "
+                       .. "Hammer of Justice for emergencies, Maggot Eye for example. Rewards when you are back in "
+                       .. "Brill, all mail: Cryptwalker Boots (Dillinger), Brass Scale Pants (Zygand, for Maggot "
+                       .. "Eye), Cold Steel Gauntlets (Sevren, for the gnolls)." } },
+    },
+})
+
+------------------------------------------------------------------------------------------------------------------
+-- Brill, level 10 (the generic gate ud02-level-10): the quest to Bandarion Keep, training
+------------------------------------------------------------------------------------------------------------------
+insert({
+    after = "ud02-level-10",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-91282", accept = 91282, npc = 246152, at = { 1420, 60.22, 52.66 },
+          note = { ru = "Шари Стилвелл: задание паладина в крепость Бандарион.",
+                   en = "Shari Stilwell: the paladin quest to Bandarion Keep." } },
+        { id = "pal-tir-train-10", train = true, npc = 246152, at = { 1420, 60.22, 52.66 },
+          spells = { { ru = "Печать праведности (ранг 2)", en = "Seal of Righteousness (Rank 2)" },
+                     { ru = "Аура благочестия (ранг 2)", en = "Devotion Aura (Rank 2)" },
+                     { ru = "Возложение рук", en = "Lay on Hands" } },
+          note = { ru = "Обучение 10-го уровня. Выучите и Молот правосудия, если пропустили. Таланты: первое "
+                       .. "очко — в Воздаяние. Награды на восточном круге: за шкуры мурлоков (Шелена Робарт) — "
+                       .. "Подошвы из плавников (+1 к силе); за кольца (Берджесс) — Пояс с застёжками (кольчуга).",
+                   en = "Level-10 training. Also train Hammer of Justice if you missed it. Talents: first point "
+                       .. "in Retribution. Rewards on the east loop: Finscale Soles (+1 Str) for the murloc skins "
+                       .. "(Shelene Rhobart); Clasped Belt (mail) for the rings (Burgess)." } },
+    },
+})
+
+------------------------------------------------------------------------------------------------------------------
+-- Bandarion Keep: 91282 > 91285 > 91294 > 91316 / 91317 > 95803, next to the generic keep quests
+------------------------------------------------------------------------------------------------------------------
+insert({
+    before = "ud02-keep",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-breton", turnin = 91282, accept = 91285, npc = 246349, at = { 1420, 21.85, 45.23 },
+          note = { ru = "Бретон Сэмюэлс у крепости Бандарион.", en = "Breton Samuels at Bandarion Keep." } },
+    },
+})
+
+insert({
+    after = "ud02-leonid-letter",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-murlocs", complete = 91285, at = { 1420, 26.8, 45.0 },
+          note = { ru = "Лагерь мурлоков на берегу озера сразу к востоку от крепости: 8 налётчиков и 8 провидцев.",
+                   en = "Murloc camp on the lake shore just east of the keep: 8 Vile Fin Attackers and 8 Seers." } },
+        { id = "pal-tir-smasher", turnin = 91285, accept = 91294, npc = 246349, at = { 1420, 21.85, 45.23 },
+          note = { ru = "Бретон Сэмюэлс. Награда: Плавниковый крушитель (двуручная булава; не Головолом) — главное "
+                       .. "оружие до Молота Каменного леса (855, ~19 ур.).",
+                   en = "Breton Samuels. Reward: Driftwood Smasher (two-handed mace; not Skullthumper) - your main "
+                       .. "weapon until the Stonewood Hammer from 855 (~level 19)." } },
+        { id = "pal-tir-hilda", complete = { [91294] = { 1 } }, npc = 246389, at = { 1420, 21.96, 47.25 },
+          note = { ru = "Хильда Сокрушительница у южной стены крепости: поговорите с ней (обход крепости).",
+                   en = "Hilda the Breaker by the south wall of the keep: talk to her (the tour of the grounds)." } },
+    },
+})
+
+insert({
+    after = "ud02-hilda",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-ander", complete = { [91294] = { 3 } }, npc = 246394, at = { 1420, 25.41, 50.41 },
+          note = { ru = "Андер Соллиден патрулирует дорогу к юго-востоку от крепости.",
+                   en = "Ander Solliden patrols the road south-east of the keep." } },
+        { id = "pal-tir-jorin", complete = { [91294] = { 2 } }, npc = 246393, at = { 1420, 22.69, 44.70 },
+          note = { ru = "Джорин Кроге внутри крепости.", en = "Jorin Croge inside the keep." } },
+        { id = "pal-tir-danitha", complete = { [91294] = { 4 } }, turnin = 91294, accept = 91317, npc = 246378,
+          at = { 1420, 22.09, 44.66 },
+          note = { ru = "Данита Морр наверху.", en = "Danitha Morr upstairs." } },
+        { id = "pal-tir-91316", accept = 91316, npc = 246393, at = { 1420, 22.69, 44.70 },
+          note = { ru = "Джорин Кроге: доски для ремонта крепости.", en = "Jorin Croge: lumber for the repairs." } },
+    },
+})
+
+------------------------------------------------------------------------------------------------------------------
+-- Shadowvale: the Tarnished, the lumber, Rudolph Gelhardt's head
+------------------------------------------------------------------------------------------------------------------
+insert({
+    after = "ud02-ephram",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-tarnished-bg", complete = 91317, bg = true, at = { 1420, 14.8, 63.1 },
+          note = { ru = "Потускневшие работяги (8) и фанатики (6) по всей Тенистой долине.",
+                   en = "Tarnished Drudges (8) and Zealots (6) all over Shadowvale." } },
+        { id = "pal-tir-lumber-bg", complete = 91316, bg = true, at = { 1420, 10.2, 65.5 },
+          note = { ru = "Кучи досок (12 досок) на земле в Тенистой долине.",
+                   en = "Lumber Piles (12 Sturdy Lumber) on the ground in Shadowvale." } },
+    },
+})
+
+-- The head is a blocking step: it stands behind the generic along-the-way goals (bones, elixir bottles), so all
+-- four goals of Shadowvale are listed while the paladin hunts Rudolph (the engine lists only the bg steps in
+-- front of the cursor).
+insert({
+    after = "ud02-elixir-bg",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-head", collect = { [270435] = 1 }, npc = 259431, at = { 1420, 11.51, 64.18 },
+          note = { ru = "Рудольф Гельхардт (12) наверху: заберите его голову.",
+                   en = "Rudolph Gelhardt (12) upstairs: loot his head." } },
+    },
+})
+
+insert({
+    after = "ud02-shadowvale",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-shadowvale", complete = { 91317, 91316 }, at = { 1420, 11.5, 65.5 },
+          note = { ru = "Добейте Потускневших и доски, прежде чем возвращаться в крепость.",
+                   en = "Finish the Tarnished and the lumber before you head back to the keep." } },
+    },
+})
+
+insert({
+    after = "ud02-hilda-2",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-91316-turnin", turnin = 91316, npc = 246393, at = { 1420, 22.69, 44.70 },
+          note = { ru = "Джорин Кроге. Награда: башенный щит — пригодится только для игры со щитом.",
+                   en = "Jorin Croge. Reward: Salvaged Wooden Tower Shield - only useful for shield play." } },
+        { id = "pal-tir-95803", turnin = 91317, accept = 95803, npc = 246378, at = { 1420, 22.09, 44.66 },
+          note = { ru = "Данита: голову Рудольфа нужно отнести леди Сильване в Подгород.",
+                   en = "Danitha: Rudolph's head goes to Lady Sylvanas in the Undercity." } },
+    },
+})
+
+-- 94427 needs level 12: the generic gate ud02-lvl-12 guarantees it. The chain is optional (its second quest
+-- takes 10 Linen Cloth), so nothing mandatory depends on it.
+insert({
+    after = "ud02-lvl-12",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-94427", accept = 94427, npc = 246378, optional = true, at = { 1420, 22.09, 44.66 },
+          note = { ru = "По желанию, если есть 10 льняной ткани: Данита Морр — «Урок божественности» (сдаётся в "
+                       .. "Подгороде). Нет ткани — пропустите этот шаг и два шага у Танис в Подгороде.",
+                   en = "Optional, if you carry 10 Linen Cloth: Danitha Morr - A Lesson in Divinity (turned in at "
+                       .. "the Undercity). No cloth: skip this step and the two steps at Tanis in the Undercity." } },
+    },
+})
+
+------------------------------------------------------------------------------------------------------------------
+-- Brill, level 12: Shari Stilwell, 35 yd from Carolai
+------------------------------------------------------------------------------------------------------------------
+insert({
+    after = "ud02-carolai-2",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-train-12", train = true, npc = 246152, at = { 1420, 60.22, 52.66 },
+          spells = { { ru = "Священный удар (ранг 2)", en = "Holy Strike (Rank 2)" },
+                     { ru = "Благословение могущества (ранг 2)", en = "Blessing of Might (Rank 2)" } },
+          note = { ru = "Шари Стилвелл: обучение 12-го уровня. Следующий тренер — Гарен Ларго в Подгороде на 14-м "
+                       .. "(конец Серебряного бора).",
+                   en = "Shari Stilwell: level-12 training. The next trainer is Garen Largo in the Undercity at 14 "
+                       .. "(end of Silverpine)." } },
+    },
+})
+
+------------------------------------------------------------------------------------------------------------------
+-- Undercity: A Lesson in Divinity (optional), Lady Sylvanas
+------------------------------------------------------------------------------------------------------------------
+insert({
+    after = "ud02-fp-uc",
+    class = "PALADIN",
+    steps = {
+        { id = "pal-tir-tanis", turnin = 94427, accept = 94434, npc = 257648, optional = true,
+          at = { 1458, 65.48, 37.49 },
+          note = { ru = "Танис Алдервуд в Торговом квартале (если брали «Урок божественности»).",
+                   en = "Tanis Alderwood in the Trade Quarter (if you took A Lesson in Divinity)." } },
+        { id = "pal-tir-tanis-2", complete = 94434, turnin = 94434, npc = 257648, optional = true,
+          at = { 1458, 65.48, 37.49 },
+          note = { ru = "Отдайте 10 льняной ткани. Следующее задание (обратно в крепость) не берите.",
+                   en = "Hand in 10 Linen Cloth. Do not take the next one (back to the keep)." } },
+        { id = "pal-tir-sylvanas", turnin = 95803, npc = 10181, at = { 1458, 58.05, 91.79 },
+          note = { ru = "Леди Сильвана в Королевском квартале: отдайте голову Рудольфа.",
+                   en = "Lady Sylvanas in the Royal Quarter: hand over Rudolph's head." } },
+    },
+})
+
+------------------------------------------------------------------------------------------------------------------
+-- Shared path --------------------------------------------------------------------------------------------------
 -- 14: Undercity (Garen Largo)
 ------------------------------------------------------------------------------------------------------------------
-FastesBoooy.AddLibraryInsert({
+insert({
     after = "h13-uc-end",
     class = "PALADIN",
     steps = {
@@ -78,7 +420,7 @@ FastesBoooy.AddLibraryInsert({
 ------------------------------------------------------------------------------------------------------------------
 -- 18: Thunder Bluff (Alodan, in Zamah's cave)
 ------------------------------------------------------------------------------------------------------------------
-FastesBoooy.AddLibraryInsert({
+insert({
     after = "h18-tb-zamah",
     class = "PALADIN",
     steps = {
@@ -97,7 +439,7 @@ FastesBoooy.AddLibraryInsert({
 ------------------------------------------------------------------------------------------------------------------
 -- 20: Thunder Bluff (Alodan), from Elder Rise
 ------------------------------------------------------------------------------------------------------------------
-FastesBoooy.AddLibraryInsert({
+insert({
     after = "h18-tb-2",
     class = "PALADIN",
     steps = {
@@ -122,7 +464,7 @@ FastesBoooy.AddLibraryInsert({
 ------------------------------------------------------------------------------------------------------------------
 -- 22: Thunder Bluff (Alodan), after Zamah's two quest steps
 ------------------------------------------------------------------------------------------------------------------
-FastesBoooy.AddLibraryInsert({
+insert({
     after = "h-22-tb-start",
     class = "PALADIN",
     steps = {
@@ -141,7 +483,7 @@ FastesBoooy.AddLibraryInsert({
 ------------------------------------------------------------------------------------------------------------------
 -- 22-24: optional class chain, part 1 (Bandarion Keep -> the Sepulcher -> Fenris Isle -> the Sepulcher)
 ------------------------------------------------------------------------------------------------------------------
-FastesBoooy.AddLibraryInsert({
+insert({
     before = "h-22-uc-fly",
     class = "PALADIN",
     steps = {
@@ -163,7 +505,7 @@ FastesBoooy.AddLibraryInsert({
     },
 })
 
-FastesBoooy.AddLibraryInsert({
+insert({
     after = "h-22-the-sepulcher-apothecary",
     class = "PALADIN",
     steps = {
@@ -213,7 +555,7 @@ FastesBoooy.AddLibraryInsert({
 ------------------------------------------------------------------------------------------------------------------
 -- 26: Thunder Bluff (Alodan)
 ------------------------------------------------------------------------------------------------------------------
-FastesBoooy.AddLibraryInsert({
+insert({
     after = "h-27-tb-arrive",
     class = "PALADIN",
     steps = {
@@ -231,7 +573,7 @@ FastesBoooy.AddLibraryInsert({
 ------------------------------------------------------------------------------------------------------------------
 -- 28 + 30: Thunder Bluff (Alodan), last Thunder Bluff visit of the route
 ------------------------------------------------------------------------------------------------------------------
-FastesBoooy.AddLibraryInsert({
+insert({
     after = "h-31-tb-hearth",
     class = "PALADIN",
     steps = {
@@ -254,7 +596,7 @@ FastesBoooy.AddLibraryInsert({
 ------------------------------------------------------------------------------------------------------------------
 -- 32 + 34: Undercity (Garen Largo)
 ------------------------------------------------------------------------------------------------------------------
-FastesBoooy.AddLibraryInsert({
+insert({
     after = "h-34-uc-arrive",
     class = "PALADIN",
     steps = {
@@ -278,7 +620,7 @@ FastesBoooy.AddLibraryInsert({
 ------------------------------------------------------------------------------------------------------------------
 -- 40: Two-Handed Axes (Hanashi, Orgrimmar) before the 1427 reward (Tok'kar's Murloc Chopper) and Beastslayer
 ------------------------------------------------------------------------------------------------------------------
-FastesBoooy.AddLibraryInsert({
+insert({
     after = "h41-hearth-org",
     class = "PALADIN",
     steps = {
@@ -305,7 +647,7 @@ FastesBoooy.AddLibraryInsert({
 -- 36-40 + riding: Brill (Shari Stilwell, Velma Warnam, Zachariah Post), 2 minutes from the zeppelin tower;
 -- optional Garen Largo (Undercity) for the level-40 ranks if Shari's list lacks them
 ------------------------------------------------------------------------------------------------------------------
-FastesBoooy.AddLibraryInsert({
+insert({
     after = "h-41-uc-arrive",
     class = "PALADIN",
     steps = {
@@ -358,7 +700,7 @@ FastesBoooy.AddLibraryInsert({
 ------------------------------------------------------------------------------------------------------------------
 -- 42 + 44: Undercity (Garen Largo)
 ------------------------------------------------------------------------------------------------------------------
-FastesBoooy.AddLibraryInsert({
+insert({
     after = "h-44-uc-arrive",
     class = "PALADIN",
     steps = {
@@ -387,7 +729,7 @@ FastesBoooy.AddLibraryInsert({
 ------------------------------------------------------------------------------------------------------------------
 -- 46-52: Undercity (Garen Largo); the Undercity stop at 49.5 (h-50-uc-arrive) is short of 50
 ------------------------------------------------------------------------------------------------------------------
-FastesBoooy.AddLibraryInsert({
+insert({
     after = "h53-fly-uc",
     class = "PALADIN",
     steps = {
@@ -420,7 +762,7 @@ FastesBoooy.AddLibraryInsert({
 ------------------------------------------------------------------------------------------------------------------
 -- 54 + 58 (optional): Undercity, last stop before the Plaguelands (57.95-57.99)
 ------------------------------------------------------------------------------------------------------------------
-FastesBoooy.AddLibraryInsert({
+insert({
     after = "h59-hearth-uc",
     class = "PALADIN",
     steps = {
@@ -441,7 +783,7 @@ FastesBoooy.AddLibraryInsert({
 ------------------------------------------------------------------------------------------------------------------
 -- 60: hearth to Undercity (bound at h-58-uc-arrive), level-60 training
 ------------------------------------------------------------------------------------------------------------------
-FastesBoooy.AddLibraryInsert({
+insert({
     after = "h-60-end",
     class = "PALADIN",
     steps = {

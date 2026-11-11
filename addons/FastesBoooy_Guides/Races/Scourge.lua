@@ -10,28 +10,15 @@
 --                 minute, straight legs gate - Doras - Thatog - Borstan - Kor'geld - Valley of Honor - Kor'geld -
 --                 Migi - gate against gate - Doras - gate) plus the dialogs for about 4,200 XP: 28 kills (14 min)
 --                 at the level-22 gate otherwise (docs/dev/PLAN.md B.8). 97326 is optional as in h-12.
---   Until the Tirisfal segments end on the Silverpine road (phase F2c, docs/dev/PLAN.md B.2), the walk out of the
---   Undercity to that road (und-uc-exit, und-silverpine-road) stands here, before the first step of
---   h-13-silverpine. The F2c agent moves it into ud-02-tirisfal (ud02-silverpine-road) and deletes it here.
--- Not written yet: riding and the mount at 40 for the classes other than the paladin (Velma Warnam and Zachariah
---   Post in Brill, after h-41-uc-arrive): their routes do not exist before phase F2c removes `only`.
+--   Level 40      riding (Velma Warnam) and the skeletal horse (Zachariah Post) in Brill, after h-41-uc-arrive
+--                 (the Tirisfal zeppelin tower, level 41.0 / 40.9): the first stop after level 40 from which Brill
+--                 can be reached without a zeppelin round trip (docs/dev/PLAN.md C.7). The whole detour is optional
+--                 (100 gold may be missing): tower -> Brill 190 yd on foot, Brill -> Undercity 380 yd mounted
+--                 instead of tower -> Undercity 190 yd. Classes MAGE, PRIEST, ROGUE, WARRIOR: the warlock gets the
+--                 Felsteed and the paladin the Warhorse from their class files.
+-- The walk from the Undercity to the Silverpine road is part of ud-02-tirisfal (ud02-uc-exit,
+-- ud02-silverpine-road).
 if not FastesBoooy.AddLibraryInsert then return end
-
-------------------------------------------------------------------------------
--- Undercity -> the Silverpine road (interim: belongs to ud-02-tirisfal, see the header)
-------------------------------------------------------------------------------
-FastesBoooy.AddLibraryInsert({
-    before = "h13-erland",
-    race = "Scourge",
-    steps = {
-        { id = "und-uc-exit", go = true, at = { 1420, 61.92, 64.85 },
-          note = { ru = "Выйдите из Подгорода на лифте к Руинам Лордерона.",
-                   en = "Leave the Undercity by the lift up to the Ruins of Lordaeron." } },
-        { id = "und-silverpine-road", go = true, at = { 1420, 53.2, 75.8 },
-          note = { ru = "На юго-запад к дороге в Серебряный бор, восточнее лагеря Алого ордена.",
-                   en = "South-west to the Silverpine Forest road, east of the Scarlet camp." } },
-    },
-})
 
 ------------------------------------------------------------------------------
 -- The Sepulcher: 6321 > 6323 (Karos Razok is the flight master: quest steps before the fp step)
@@ -113,5 +100,37 @@ FastesBoooy.AddLibraryInsert({
                   .. "competition - abandon the quest (the guide skips this and the next step).",
           } },
         { id = "und-org-boulders-turnin", turnin = 97326, optional = true, npc = 268684, at = { 1454, 36.82, 29.06 } },
+    },
+})
+
+------------------------------------------------------------------------------
+-- Level 40: riding in Brill (optional; not for the warlock and the paladin)
+------------------------------------------------------------------------------
+FastesBoooy.AddLibraryInsert({
+    after = "h-41-uc-arrive",
+    race = "Scourge",
+    class = { "MAGE", "PRIEST", "ROGUE", "WARRIOR" },
+    steps = {
+        { id = "und-40-brill", go = true, optional = true, radius = 25, at = { 1420, 60.08, 52.57 },
+          note = { ru = "По желанию, со 100 з.: верховая езда. От башни дирижаблей на север в Брилл (меньше минуты), "
+                       .. "конюшня на западной стороне. Нет денег - пропустите этот и три следующих шага: маршрут "
+                       .. "снова будет у этой башни на 44-м.",
+                   en = "Optional, with 100 g: riding. North from the zeppelin tower to Brill (under a minute), the "
+                       .. "stables on the west side. No gold: skip this and the next three steps - the route is "
+                       .. "back at this tower at 44." } },
+        -- Velma Warnam is the Undead riding trainer (validator: INFO train-service).
+        { id = "und-40-riding", train = true, optional = true, npc = 4773, at = { 1420, 60.08, 52.57 },
+          spells = { { ru = "Верховая езда (ученик)", en = "Apprentice Riding" } },
+          note = { ru = "Вельма Варнам у конюшни: «Верховая езда (ученик)», около 100 з. По анонсу Forever скакун "
+                       .. "выдаётся вместе с навыком.",
+                   en = "Velma Warnam by the stables: Apprentice Riding, about 100 g. Forever announced that a mount "
+                       .. "comes with the skill." } },
+        { id = "und-40-horse", vendor = true, optional = true, npc = 4731, at = { 1420, 59.87, 52.68 },
+          note = { ru = "Только если с навыком не дали скакуна: Захария Пост рядом - конь-скелет (любой).",
+                   en = "Only if the skill came without a mount: Zachariah Post next to her - a skeletal horse "
+                       .. "(any)." } },
+        { id = "und-40-back", go = true, optional = true, at = { 1420, 61.92, 64.85 },
+          note = { ru = "Верхом на юг мимо башни дирижаблей в Руины Лордерона, к лифтам Подгорода.",
+                   en = "Ride south past the zeppelin tower into the Ruins of Lordaeron, to the Undercity lifts." } },
     },
 })

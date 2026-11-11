@@ -1,8 +1,10 @@
 -- FastesBoooy_Guides / Classes / Druid.lua
--- Druid class steps on the shared path, as shared inserts with class scope (step ids "dru-..."): the Thunder Bluff
--- visit of the Skyborne at 13, the Moonglade visits of 14-22, the Cat Form chain at 20, class training 24-60
--- (Travel Form at 30, Dire Bear Form at 40) and the Torwa Pathfinder chain in Un'Goro (9063 -> 9052 -> 9051).
--- (The class steps of Zephras Isle 1-13 are still inside the Zephras segments; phase F2c moves them here.)
+-- Every step that exists because of the class (druid), as shared inserts with class scope (step ids "dru-..."):
+-- the Skyborne group of Zephras Isle 1-13 (ids "dru-zep-...": the letter, training, the Bear Form chain, class gear)
+-- with the Thunder Bluff visit at 13, the Moonglade visits of 14-22, the Cat Form chain at 20, class training 24-60
+-- (Travel Form at 30, Dire Bear Form at 40) and the Torwa Pathfinder chain in Un'Goro (9063 -> 9052 -> 9051); and
+-- the druid's reward choices for quests of the shared steps (the class reward table).
+-- The Tauren group below level 12 (Mulgore) does not exist yet: phase C writes it.
 -- Sources: research druid60.md / druid60.json (trainers, spells by level, training plan, talents, class quests),
 -- plan60.json classInserts.DRUID; NPCs / objects / quests: tools/data/forever_db.lua; ruRU names: Wowhead Forever
 -- ru tooltips.
@@ -11,6 +13,24 @@
 --   unscoped: the Tauren druid harness run (tests/spec/guides_layout_spec.lua) passes with them.
 --   Always Skyborne-only: 94911 / 94913 (Thunder Bluff, Moonglade) and the Cat Form chain 98340 > 98341 > 98404 >
 --   98738 > 98362 (its middle is Skyborne-only in the DB; the Tauren druid needs other quests: phase C).
+--
+-- Zephras Isle, Skyborne (validator level before the step, normal / worst case where they differ). All quest XP of
+-- the isle is estimated, so `optional` marks the two visits that sit right after an even level:
+--   2       after  sd01-rorian            3.02         the letter 92485 (Rorian > Xyton Silverwind), training 1.
+--   4       after  sd01-rorian-4          4.60         Xyton again (optional; the gate sd01-level-4 stands in front).
+--   6       after  sd01-raan-2            6.36         Naeluna Swiftmend in Shen'dar, between the campfire and Aonda.
+--   8       after  sd01-danarii-2         8.91         Naeluna (optional), the Walking Stick at Tephri (optional).
+--   9       after  sd02-endaria          10.33         the Zephrali Greatstaff at Falfaan (optional).
+--   10      after  sd02-valanaar-10      11.21         Lotheluum Starbreeze: 94006 and training 10 (the shared gate
+--                                                      sd02-level-10 guarantees the level), Urs'endris in the falls
+--                                                      basin (94006 > 94638), Ur'endra next to the shared Construct
+--                                                      Parts.
+--           after  sd02-fendaal-2        11.42         back to Urs'endris: Bear Form; out of the basin, north to the
+--                                                      lake.
+--   12      after  sd02-lotheluum-2      13.00/12.94   Lotheluum, after the shared turn-in of 94491 at him.
+--           after  sd02-plateau          13.32/13.26   Hana Lighthoof (optional), 94911 at Muln Earthfury.
+-- Not routed for a Skyborne: Cure Poison 6126-6130 and Aquatic Form 27-31 (Tauren-only in the DB; the note of
+-- dru-cat-start tells the player to take 27 by hand if Turak offers it).
 --
 -- Where the visits go on 12-22 (the druid trains in Moonglade: Teleport: Moonglade right before a shared hearth
 -- step costs nothing):
@@ -30,15 +50,15 @@
 -- Bunthen Plainswind (druid-only flight Nighthaven -> Thunder Bluff) is the fallback named in the note.
 --
 -- Where the visits go on 22-60 (validator level at the insert, normal / worst case = no optional step done):
---   24      after  h-24-tb-arrive         24.95/24.05  Turak (Elder Rise); next library step is Tah (other NPC).
---   26+28   before h-28-thunder-bluff     28.76/28.22  Turak, on the way back from Skywatcher Plateau (the plan's
---                                                      anchor h-28-tb-arrive is only 27.97 in the worst case).
+--   24      after  h-24-tb-arrive         25.16/24.06  Turak (Elder Rise); next library step is Tah (other NPC).
+--   26+28   before h-28-thunder-bluff     28.94/28.23  Turak, on the way back from Skywatcher Plateau (the plan's
+--                                                      anchor h-28-tb-arrive is below 28 in the worst case).
 --   30      after  h-31-tb-end            31.01        Turak next to Magatha: TRAVEL FORM. 30 comes in the
 --                                                      Shimmering Flats (h-27 #115), but the hearthstone is
 --                                                      reserved for the Flats -> Thunder Bluff hearth there.
---   32      after  h-33-tarrenmill-end    32.07/31.86  Teleport: Moonglade + hearth to Tarren Mill (the library
+--   32      after  h-33-tarrenmill-end    32.06/31.85  Teleport: Moonglade + hearth to Tarren Mill (the library
 --                                                      binds it there and keeps it for this visit).
---   34+36   before h38-hearth-shadowprey  37.69/37.70  Moonglade right before the library's own hearth (no extra
+--   34+36   before h38-hearth-shadowprey  37.70        Moonglade right before the library's own hearth (no extra
 --                                                      hearth use: Teleport, train, then the library hearth).
 --   38+40   after  h-40-org-arrive        40.06/40.01  dru-40-fly-tb, dru-40-train (Turak: DIRE BEAR FORM; not
 --                                                      40 yet: the 38 set only), dru-40-fly-taurajo (own fly step:
@@ -46,7 +66,7 @@
 --                                                      landing). These three ids are a contract with the race files
 --                                                      (docs/dev/PLAN.md C.7): the riding steps of a Skyborne or
 --                                                      Tauren druid are inserted after dru-40-train.
---   42+44   before h44-hearth-gromgol     44.52/44.51  Moonglade before the library hearth (instead of the plan's
+--   42+44   before h44-hearth-gromgol     44.52/44.50  Moonglade before the library hearth (instead of the plan's
 --                                                      Kargath hearth at 44.02: that would put the h44-hearth-gromgol
 --                                                      hearth half a level later on cooldown).
 --   46+48   after  h-50-mojache-end       49.40/49.36  Jannos Lighthoof in Camp Mojache (h-48-mojache-arrive is
@@ -59,7 +79,7 @@
 --                                                      h54-torwa-3, Devilsaur stab in loop 2 (bg), 9051 at
 --                                                      h55-torwa-end. 9053 (Sunken Temple) is not taken: the route's
 --                                                      optional Sunken Temple run is in h-50, before 9051.
---   54      before h56-hearth-gadgetzan   55.04        Moonglade before the library hearth (the plan's slot before
+--   54      before h56-hearth-gadgetzan   55.05/55.04  Moonglade before the library hearth (the plan's slot before
 --                                                      h-55-cenarionhold-arrive would need a second Gadgetzan hearth
 --                                                      0.1 level after h55-hearth-gadgetzan).
 --   56      before h-58-org-arrive        57.21/57.17  Moonglade before the library hearth (Felwood -> Orgrimmar).
@@ -75,6 +95,257 @@ if not FastesBoooy.AddLibraryInsert then return end
 
 local TURAK = { 1456, 76.48, 27.22 }
 local LOGANAAR = { 1450, 52.53, 40.57 }
+
+-- Class reward table (one call per class file): the druid's choices for quests that are turned in on shared steps
+-- of Zephras Isle (the segments carry no `reward`).
+FastesBoooy.AddLibraryData({ rewards = { DRUID = {
+    [92461] = 1, [92463] = 3, [92469] = 1, [92470] = 2, [92473] = 1, [92517] = 3, [92528] = 1, [93318] = 1,
+    [92550] = 3, -- sd-01-zephras
+    [92579] = 3, [92684] = 3, [93165] = 1, [93172] = 1, -- sd-02-zephras
+} } })
+
+------------------------------------------------------------------------------
+-- Zephras Isle 1-9 (Skyborne): the letter, training at Thendal (1, 4) and Shen'dar (6, 8), the first staff
+------------------------------------------------------------------------------
+-- Rorian gives the letter in the dialog of the shared step; Xyton stands next to him.
+FastesBoooy.AddLibraryInsert({
+    after = "sd01-rorian",
+    class = "DRUID",
+    race = "Skyborne",
+    steps = {
+        { id = "dru-zep-letter", accept = 92485, npc = 251361, at = { 2521, 42.05, 23.49 },
+          note = {
+              ru = "Rorian даёт и классовое задание друида: «Ученик природы» (A Student of Nature).",
+              en = "Rorian also gives the druid class quest: A Student of Nature.",
+          } },
+        { id = "dru-zep-xyton", turnin = 92485, use = 282420, npc = 251373, at = { 2521, 41.66, 23.33 },
+          note = {
+              ru = "Классовое задание: прочитайте «Сложенный пергамент» (сумка), "
+                  .. "затем поговорите с Xyton.",
+              en = "Druid class quest: read the Folded Parchment from your bags, then talk to Xyton.",
+          } },
+        { id = "dru-zep-train-1", train = true, npc = 251373, at = { 2521, 41.66, 23.33 },
+          spells = { { ru = "Знак дикой природы", en = "Mark of the Wild" } },
+          note = {
+              ru = "Выучите «Знак дикой природы» и держите его на себе. Первые уровни: «Гнев», добивайте посохом.",
+              en = "Learn Mark of the Wild and keep it up. The first levels: Wrath, then melee.",
+          } },
+    },
+})
+FastesBoooy.AddLibraryInsert({
+    after = "sd01-rorian-4",
+    class = "DRUID",
+    race = "Skyborne",
+    steps = {
+        { id = "dru-zep-train-4", train = true, optional = true, npc = 251373, at = { 2521, 41.66, 23.33 },
+          spells = { { ru = "Лунный огонь", en = "Moonfire" }, { ru = "Омоложение", en = "Rejuvenation" } },
+          note = {
+              ru = "Xyton рядом с Rorian. Уровень 4: «Лунный огонь» и «Омоложение».",
+              en = "Xyton next to Rorian. Level 4: Moonfire and Rejuvenation.",
+          } },
+    },
+})
+-- Naeluna stands between Raan's campfire and Constable Aonda: after the last step at the campfire.
+FastesBoooy.AddLibraryInsert({
+    after = "sd01-raan-2",
+    class = "DRUID",
+    race = "Skyborne",
+    steps = {
+        { id = "dru-zep-train-6", train = true, npc = 254081, at = { 2521, 45.16, 44.22 },
+          spells = { { ru = "Гнев (ранг 2)", en = "Wrath (Rank 2)" }, { ru = "Шипы", en = "Thorns" } },
+          note = {
+              ru = "Naeluna Swiftmend на востоке деревни. Уровень 6: «Гнев» 2 и «Шипы» "
+                  .. "(+ «Лунный огонь»/«Омоложение», если не взяли на 4). Дальше: с магами High Order "
+                  .. "Apprentice деритесь вплотную; элиту Vulgara (задание с доски) бейте с «Шипами» и "
+                  .. "«Омоложением», держа дистанцию.",
+              en = "Naeluna Swiftmend on the east side of the village. Level 6: Wrath 2 and Thorns (+ Moonfire / "
+                  .. "Rejuvenation if you skipped them at 4). Ahead: fight the High Order Apprentices (casters) "
+                  .. "up close; fight the elite Vulgara (the wanted poster) with Thorns and Rejuvenation up, at "
+                  .. "a distance.",
+          } },
+    },
+})
+FastesBoooy.AddLibraryInsert({
+    after = "sd01-danarii-2",
+    class = "DRUID",
+    race = "Skyborne",
+    steps = {
+        { id = "dru-zep-train-8", train = true, optional = true, npc = 254081, at = { 2521, 45.16, 44.22 },
+          spells = {
+              { ru = "Гнев деревьев", en = "Entangling Roots" },
+              { ru = "Целительное прикосновение (ранг 2)", en = "Healing Touch (Rank 2)" },
+          },
+          note = {
+              ru = "Naeluna Swiftmend рядом. Уровень 8: «Гнев деревьев» и «Целительное прикосновение» 2 "
+                  .. "(не 8 - пропустите).",
+              en = "Naeluna Swiftmend next to him. Level 8: Entangling Roots and Healing Touch 2 (not 8 yet - skip).",
+          } },
+        { id = "dru-zep-staff-1", vendor = true, optional = true, npc = 257421, at = { 2521, 44.79, 44.17 },
+          note = {
+              ru = "Tephri Thriceforged: Walking Stick (посох, 4.2 DPS, ур. 3, ~5 с), если ваше "
+                  .. "оружие слабее. Иначе пропустите.",
+              en = "Tephri Thriceforged: buy the Walking Stick (staff, 4.2 DPS, level 3, ~5s) if your weapon is "
+                  .. "weaker. Otherwise skip.",
+          } },
+    },
+})
+
+------------------------------------------------------------------------------
+-- Zephras Isle 9-13 (Skyborne): a staff, training at 10 and the Bear Form chain 94006 > 94638, training at 12,
+-- 94911 on Skywatcher Plateau
+------------------------------------------------------------------------------
+FastesBoooy.AddLibraryInsert({
+    after = "sd02-endaria",
+    class = "DRUID",
+    race = "Skyborne",
+    steps = {
+        { id = "dru-zep-staff-2", vendor = true, optional = true, npc = 271465, at = { 2521, 59.40, 75.73 },
+          note = {
+              ru = "По пути на север к Riaani: Falfaan Halfwind - Zephrali Greatstaff (8.48 DPS, ур. 9, ~22 с), "
+                  .. "если оружие слабее 8.5 DPS и хватает денег. Иначе пропустите.",
+              en = "On the way north to Riaani: Falfaan Halfwind - Zephrali Greatstaff (8.48 DPS, level 9, ~22s) if "
+                  .. "your weapon is below 8.5 DPS and you can afford it. Otherwise skip.",
+          } },
+    },
+})
+-- Bear Form, first half: the shared gate sd02-level-10 guarantees level 10 (reqLevel of 94006). From Lotheluum to
+-- Urs'endris in the falls basin, then to Ur'endra, who wanders next to the Construct Parts of the shared path
+-- (sd02-parts-lightning is the next shared step).
+FastesBoooy.AddLibraryInsert({
+    after = "sd02-valanaar-10",
+    class = "DRUID",
+    race = "Skyborne",
+    steps = {
+        -- The accept comes before the training at the same NPC: with the accept right after the train step, the
+        -- automation takes 94006 from the trainer's gossip and the accept (an anchor) forwards the training before
+        -- the trainer window is ever opened.
+        { id = "dru-zep-bear-accept", accept = 94006, npc = 252359, at = { 2521, 63.99, 75.08 },
+          note = {
+              ru = "Lotheluum Starbreeze на востоке Валанаара: классовое задание (облик "
+                  .. "медведя). Обучение - следующим шагом, у него же.",
+              en = "Lotheluum Starbreeze in the east of Valanaar: the druid class quest (Bear Form). "
+                  .. "The training is the next step, from him too.",
+          } },
+        { id = "dru-zep-train-10", train = true, npc = 252359, at = { 2521, 63.99, 75.08 },
+          spells = {
+              { ru = "Хватка природы", en = "Nature's Grasp" },
+              { ru = "Омоложение (ранг 2)", en = "Rejuvenation (Rank 2)" },
+              { ru = "Знак дикой природы (ранг 2)", en = "Mark of the Wild (Rank 2)" },
+              { ru = "Лунный огонь (ранг 2)", en = "Moonfire (Rank 2)" },
+              { ru = "Телепортация: Лунная поляна (если есть)", en = "Teleport: Moonglade (if offered)" },
+          },
+          note = {
+              ru = "Lotheluum ещё раз (обучение в его меню). Уровень 10: всё из списка (+ Трепка/Рык, "
+                  .. "если уже доступны). Таланты: Свирепость (Ferocity) 5/5 с 10 по 14.",
+              en = "Lotheluum again (training in his menu). Level 10: everything listed (+ Maul / Growl "
+                  .. "if offered already). Talents: Ferocity 5/5 from 10 to 14.",
+          } },
+        { id = "dru-zep-bear-north", go = true, at = { 2521, 65.42, 71.47 }, radius = 20,
+          note = {
+              ru = "Из Валанаара на север.",
+              en = "North out of Valanaar.",
+          } },
+        { id = "dru-zep-bear-cliff", go = true, at = { 2521, 69.01, 65.86 }, radius = 20,
+          note = {
+              ru = "На северо-восток к обрыву над водопадами, оттуда спланируйте "
+                  .. "«Шагом по воздуху» вниз к Urs'endris.",
+              en = "North-east to the cliff above the falls, then glide down to Urs'endris with Walk on Air.",
+          } },
+        { id = "dru-zep-bear-spirit", turnin = 94006, accept = 94638, npc = 255853,
+          at = { 2521, 69.81, 61.71 },
+          note = {
+              ru = "Urs'endris, Великий дух медведя.",
+              en = "Urs'endris, the Great Windborne Bear Spirit.",
+          } },
+        { id = "dru-zep-bear-exit", go = true, at = { 2521, 59.59, 66.70 }, radius = 25,
+          note = {
+              ru = "Из котловины водопадов выход на запад.",
+              en = "The way out of the falls basin is to the west.",
+          } },
+        { id = "dru-zep-bear-kill", complete = 94638, npc = 258443, at = { 2521, 54.35, 65.53 },
+          note = {
+              ru = "Убейте Ur'endra (10 ур., медведица), бродит у 54,65. Construct Parts (следующий шаг) - чуть "
+                  .. "западнее.",
+              en = "Kill Ur'endra (level 10 bear), she wanders around 54,65. The Construct Parts (the next step) "
+                  .. "are just to the west.",
+          } },
+    },
+})
+-- Bear Form, second half: back to Urs'endris from Fendaal (the last shared step before the path turns north), then
+-- out of the basin and north to the lake, where the shared path goes on (sd02-parts-gyrozephyr).
+FastesBoooy.AddLibraryInsert({
+    after = "sd02-fendaal-2",
+    class = "DRUID",
+    race = "Skyborne",
+    steps = {
+        { id = "dru-zep-bear-ridge", go = true, at = { 2521, 60.25, 62.74 }, radius = 25,
+          note = {
+              ru = "На восток; с гребня спланируйте «Шагом по воздуху» к Urs'endris.",
+              en = "East; glide from the ridge down to Urs'endris with Walk on Air.",
+          } },
+        { id = "dru-zep-bear-form", turnin = 94638, npc = 255853, at = { 2521, 69.81, 61.71 },
+          note = {
+              ru = "Награда - облик медведя. Дальше деритесь в нём (Трепку выучите "
+                  .. "у тренера при возвращении).",
+              en = "The reward is Bear Form. Fight in it from now on (learn Maul at the trainer when you are back).",
+          } },
+        { id = "dru-zep-bear-exit-2", go = true, at = { 2521, 59.41, 66.95 }, radius = 25,
+          note = {
+              ru = "Снова выход из котловины на запад.",
+              en = "Leave the basin to the west again.",
+          } },
+        { id = "dru-zep-bear-lake", go = true, at = { 2521, 58.92, 55.01 }, radius = 25,
+          note = {
+              ru = "На север (лагерь Al'Aketh восточнее - не заходите).",
+              en = "North (the Al'Aketh camp is to the east - stay out of it).",
+          } },
+    },
+})
+-- After the shared turn-in of 94491 at Lotheluum (a train step in front of it would be fast-forwarded).
+FastesBoooy.AddLibraryInsert({
+    after = "sd02-lotheluum-2",
+    class = "DRUID",
+    race = "Skyborne",
+    steps = {
+        { id = "dru-zep-train-12", train = true, npc = 252359, at = { 2521, 63.99, 75.08 },
+          spells = {
+              { ru = "Трепка", en = "Maul" },
+              { ru = "Рык", en = "Growl" },
+              { ru = "Деморализующий рёв", en = "Demoralizing Roar" },
+              { ru = "Восстановление (12)", en = "Regrowth (12)" },
+              { ru = "Исступление (12)", en = "Enrage (12)" },
+          },
+          note = {
+              ru = "Lotheluum: медвежьи умения, если ещё нет; на 12 - «Восстановление» и "
+                  .. "«Исступление» (не 12 - их выучите на плато в Мулгоре).",
+              en = "Lotheluum: bear abilities if you lack them; at 12 also Regrowth and Enrage (not 12 yet - learn "
+                  .. "them on the plateau in Mulgore).",
+          } },
+    },
+})
+FastesBoooy.AddLibraryInsert({
+    after = "sd02-plateau",
+    class = "DRUID",
+    race = "Skyborne",
+    steps = {
+        { id = "dru-zep-train-12-plateau", train = true, optional = true, npc = 262560, at = { 1412, 33.42, 22.13 },
+          spells = {
+              { ru = "Восстановление", en = "Regrowth" },
+              { ru = "Исступление", en = "Enrage" },
+          },
+          note = {
+              ru = "Если не выучили 12-й в Валанааре: тренер Hana Lighthoof тут же. "
+                  .. "Уже выучили - пропустите.",
+              en = "Skipped the level 12 training in Valanaar: trainer Hana Lighthoof is right here. "
+                  .. "Done already - skip.",
+          } },
+        { id = "dru-zep-child-accept", accept = 94911, npc = 259118, at = { 1412, 33.41, 22.58 },
+          note = {
+              ru = "Классовое задание: Muln Earthfury - «Дитя природы» (к Тюраку в Громовой Утёс).",
+              en = "Druid class quest: Muln Earthfury - Child of Nature (to Turak in Thunder Bluff).",
+          } },
+    },
+})
 
 ------------------------------------------------------------------------------
 -- 13, Skyborne: Thunder Bluff, Elder Rise (Turak): optional training, 94911 > 94913
@@ -101,7 +372,7 @@ FastesBoooy.AddLibraryInsert({
               { ru = "Телепортация: Лунная поляна (если нет)", en = "Teleport: Moonglade (if missing)" },
               { ru = "Восстановление, Исступление (если нет)", en = "Regrowth, Enrage (if missing)" },
           },
-          note = { ru = "Turak Runetotem. Нет «Телепортации: Лунная поляна» (нужна на 14-м) - заговорите с ним с зажатым Shift и "
+          note = { ru = "Тюрак Рунический Тотем. Нет «Телепортации: Лунная поляна» (нужна на 14-м) - заговорите с ним с зажатым Shift и "
                        .. "сначала откройте обучение. Всё есть - пропустите.",
                    en = "Turak Runetotem. No Teleport: Moonglade yet (needed at 14) - talk to him holding Shift and open the training "
                        .. "first. Everything known - skip." } },
@@ -148,7 +419,7 @@ FastesBoooy.AddLibraryInsert({
               { ru = "Шипы (ранг 2)", en = "Thorns (Rank 2)" },
               { ru = "Целительное прикосновение (ранг 3)", en = "Healing Touch (Rank 3)" },
           },
-          note = { ru = "Лунная поляна (из Подгорода - «Телепортация: Лунная поляна»; следующий шаг - камень). Loganaar: обучение "
+          note = { ru = "Лунная поляна (из Подгорода - «Телепортация: Лунная поляна»; следующий шаг - камень). Логанаар: обучение "
                        .. "14-го уровня (главное - «Оглушить»).",
                    en = "Moonglade (from the Undercity cast Teleport: Moonglade; the next step is the hearthstone). Loganaar: level "
                        .. "14 training (Bash matters most)." } },
@@ -169,7 +440,7 @@ FastesBoooy.AddLibraryInsert({
               { ru = "Омоложение (ранг 3)", en = "Rejuvenation (Rank 3)" },
               { ru = "Заклинания 14-го уровня, если нет", en = "Level 14 spells if missing" },
           },
-          note = { ru = "Следующий шаг - камень. «Телепортация: Лунная поляна» прямо от гарпий, Loganaar: обучение 16-го уровня "
+          note = { ru = "Следующий шаг - камень. «Телепортация: Лунная поляна» прямо от гарпий, Логанаар: обучение 16-го уровня "
                        .. "(главное - «Размах»). Таланты: Звериный инстинкт (Feral Instinct).",
                    en = "The next step is the hearthstone. Cast Teleport: Moonglade right at the harpies, Loganaar: level 16 training "
                        .. "(Swipe matters most). Talents: Feral Instinct." } },
@@ -192,7 +463,7 @@ FastesBoooy.AddLibraryInsert({
               { ru = "Восстановление (ранг 2)", en = "Regrowth (Rank 2)" },
               { ru = "Спячка", en = "Hibernate" },
           },
-          note = { ru = "Следующий шаг - камень. «Телепортация: Лунная поляна» прямо у оазиса, Loganaar: обучение 18-го уровня "
+          note = { ru = "Следующий шаг - камень. «Телепортация: Лунная поляна» прямо у оазиса, Логанаар: обучение 18-го уровня "
                        .. "(главное - «Трепка» и «Волшебный огонь»). Таланты: Кошачья стремительность (Feline Swiftness).",
                    en = "The next step is the hearthstone. Cast Teleport: Moonglade right at the oasis, Loganaar: level 18 training "
                        .. "(Maul and Faerie Fire matter most). Talents: Feline Swiftness." } },
@@ -208,7 +479,7 @@ FastesBoooy.AddLibraryInsert({
     race = "Skyborne",
     steps = {
         { id = "dru-cat-start", accept = 98340, npc = 3033, at = { 1456, 76.48, 27.22 },
-          note = { ru = "Turak Runetotem на этой же вершине: «Великий дух кошки». Учиться пока не нужно - после облика кошки. "
+          note = { ru = "Тюрак Рунический Тотем на этой же вершине: «Великий дух кошки». Учиться пока не нужно - после облика кошки. "
                        .. "Предложит ещё и «Урок» (A Lesson to Learn, водный облик; по базе только для тауренов) - возьмите вручную: "
                        .. "сдача у Dendrite, «Испытание озера» там же (~1000 опыта).",
                    en = "Turak Runetotem on the same rise: The Great Cat Spirit. No training yet - after Cat Form. If he also offers "
@@ -247,13 +518,13 @@ FastesBoooy.AddLibraryInsert({
               en = "Cast Teleport: Moonglade again - faster than walking. Dendrite.",
           } },
         { id = "dru-cat-hearth-tb", hearth = "Thunder Bluff", at = { 1456, 45.81, 64.71 },
-          note = { ru = "Камень возвращения в Громовой Утёс (привязан шагом раньше; общий путь использует его снова только из "
-                       .. "Зорам'гара). Камень не готов - Bunthen Plainswind (44.3, 45.9) летит в Громовой Утёс.",
-                   en = "Hearth to Thunder Bluff (bound one step earlier; the shared path uses it again only from Zoram'gar). "
+          note = { ru = "Камень возвращения в Громовой Утёс (привязан шагом раньше; гайд использует его снова только из "
+                       .. "Зорам'гара). Камень не готов - Бунтен Ветер Равнин (44.3, 45.9) летит в Громовой Утёс.",
+                   en = "Hearth to Thunder Bluff (bound one step earlier; the guide uses it again only from Zoram'gar). "
                        .. "Hearthstone not ready - Bunthen Plainswind (44.3, 45.9) flies to Thunder Bluff." } },
         { id = "dru-cat-form", turnin = 98362, npc = 3033, at = { 1456, 76.48, 27.22 },
           note = {
-              ru = "Через мост на Вершину Старейшин: Turak. Награда - облик кошки, «Цапнуть», «Разорвать» "
+              ru = "Через мост на Вершину Старейшин: Тюрак. Награда - облик кошки, «Цапнуть», «Разорвать» "
                   .. "и «Крадущийся зверь».",
               en = "Over the bridge to Elder Rise: Turak. The reward is Cat Form plus Claw, Rip and Prowl.",
           } },
@@ -274,7 +545,7 @@ FastesBoooy.AddLibraryInsert({
               { ru = "Знак дикой природы (ранг 3)", en = "Mark of the Wild (Rank 3)" },
               { ru = "Возрождение", en = "Rebirth" },
           },
-          note = { ru = "Turak Runetotem на Вершине Старейшин: обучение 20-го уровня. «Цапнуть», «Разорвать» и «Крадущегося зверя» "
+          note = { ru = "Тюрак Рунический Тотем на Вершине Старейшин: обучение 20-го уровня. «Цапнуть», «Разорвать» и «Крадущегося зверя» "
                        .. "даёт облик кошки (задание); у тренера главное - «Полоснуть» и «Знамение ясности». Таланты: Звериная атака "
                        .. "(Feral Charge). Дальше бегайте в облике кошки.",
                    en = "Turak Runetotem on Elder Rise: level 20 training. Claw, Rip and Prowl come with Cat Form (the quest); at the "
@@ -296,7 +567,7 @@ FastesBoooy.AddLibraryInsert({
               { ru = "Омоложение (ранг 4)", en = "Rejuvenation (Rank 4)" },
               { ru = "Умиротворение животного", en = "Soothe Animal" },
           },
-          note = { ru = "Следующий шаг - камень. «Телепортация: Лунная поляна» прямо из Зорам'гара, Loganaar: обучение 22-го уровня. "
+          note = { ru = "Следующий шаг - камень. «Телепортация: Лунная поляна» прямо из Зорам'гара, Логанаар: обучение 22-го уровня. "
                        .. "Таланты: Дикая ярость (Savage Fury).",
                    en = "The next step is the hearthstone. Cast Teleport: Moonglade right at Zoram'gar, Loganaar: level 22 training. "
                        .. "Talents: Savage Fury." } },

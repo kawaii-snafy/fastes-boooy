@@ -9,8 +9,12 @@
 --                 Skywatcher Plateau: the whole trip is optional (100 gold, 15-20 min). docs/dev/PLAN.md C.7: the
 --                 druid's level-40 block already flies to Thunder Bluff and on to Camp Taurajo, so for druids the
 --                 riding steps sit between dru-40-train and dru-40-fly-taurajo (Classes/Druid.lua).
--- Not written yet: the riding trip of the other classes (after h-40-org-arrive, with its own flights sky-40-fly-tb
---   and sky-40-fly-taurajo): their routes do not exist before phase F2c removes `only`.
+--                 The other classes (hunter, rogue, shaman, warrior) get the same trip as a self-contained
+--                 optional detour after h-40-org-arrive: sky-40-fly-tb, the riding steps, sky-40-fly-taurajo (the
+--                 next shared step is the flight Orgrimmar -> Camp Taurajo: it completes on the same landing; with
+--                 the detour skipped it is flown from Orgrimmar as written).
+-- The racial quests of the start zone itself (92474 Walk on Air, 92598 Skysight, 95350 at its end) are steps of
+-- the Zephras segments: only Skyborne walk them.
 if not FastesBoooy.AddLibraryInsert then return end
 
 ------------------------------------------------------------------------------
@@ -121,6 +125,80 @@ FastesBoooy.AddLibraryInsert({
                   .. "лифту Громового Утёса и наверх к Талу.",
               en = "From the plateau glide down the east edge with Walk on Air (or take the mountain path), ride to the "
                   .. "Thunder Bluff lift and up to Tal.",
+          } },
+    },
+})
+
+------------------------------------------------------------------------------
+-- 40, the other classes: the same optional riding trip as a detour of its own (docs/dev/PLAN.md C.7)
+------------------------------------------------------------------------------
+FastesBoooy.AddLibraryInsert({
+    after = "h-40-org-arrive",
+    race = "Skyborne",
+    class = { "HUNTER", "ROGUE", "SHAMAN", "WARRIOR" },
+    steps = {
+        { id = "sky-40-fly-tb", fly = "Thunder Bluff", optional = true, npc = 2995, at = { 1456, 47.00, 49.83 },
+          note = {
+              ru = "По желанию, на 40-м и со 100 з.: верховая езда на острове Зефрас (~20 мин туда и обратно; "
+                  .. "ездовое животное даёт +60% к скорости). Дорас на башне в Долине Силы: летите в Громовой Утёс. "
+                  .. "Нет денег или 40-го - пропустите этот и 6 следующих шагов и летите от Дораса сразу в Лагерь "
+                  .. "Таурахо.",
+              en = "Optional, at 40 with 100 g: riding on Zephras Isle (~20 min there and back; a mount is +60% "
+                  .. "speed). Doras on the tower in the Valley of Strength: fly to Thunder Bluff. No gold or not 40: "
+                  .. "skip this and the next 6 steps and fly from Doras straight to Camp Taurajo.",
+          } },
+        { id = "sky-40-path", go = true, optional = true, radius = 25, at = { 1412, 40.30, 17.60 },
+          note = {
+              ru = "На лифте вниз, на север вдоль утёса к горной тропе и по ней на Небесное плато.",
+              en = "Take the lift down, run north along the bluff to the mountain path and up to Skywatcher "
+                  .. "Plateau.",
+          } },
+        { id = "sky-40-skycutter", go = true, optional = true, radius = 40, npc = 259119,
+          at = { 1412, 33.40, 22.55 },
+          note = {
+              ru = "Небесное плато, причал Ваятелей ветра (Алаана Штормовой Полет): небесный корабль до острова "
+                  .. "Зефрас (Небесные доки Валанаара; по веб-гайдам корабль стоит чуть ниже плато, 34.3, 25.8). "
+                  .. "Корабля на Зефрас нет - пропустите 2 следующих шага и возвращайтесь к Талу (езда - позже).",
+              en = "Skywatcher Plateau, the Windshaper dock (Alaana Stormwalker): the skycutter to Zephras Isle "
+                  .. "(Valanaar Skydocks; web guides put the boat just below the plateau, 34.3, 25.8). No skycutter "
+                  .. "to Zephras: skip the next 2 steps and go back to Tal (riding later).",
+          } },
+        -- Genn Fairweather is the Skyborne riding trainer (validator: INFO train-service).
+        { id = "sky-40-riding", train = true, optional = true, npc = 265756,
+          at = { 2521, 53.83, 81.33 },
+          spells = {
+              { ru = "Верховая езда (ученик)", en = "Apprentice Riding" },
+          },
+          note = {
+              ru = "С причала на запад к конюшням у Валанаара: Генн Чистое Небо - «Верховая езда (ученик)» (100 з.; "
+                  .. "навык включает езду на галстрайдерах). В Forever ездовое животное выдаётся вместе с навыком; не "
+                  .. "выдали - купите галстрайдера у него же.",
+              en = "From the dock west to the stables by Valanaar: Genn Fairweather - Apprentice Riding (100 g; the "
+                  .. "skill includes Galestrider Riding). Forever grants a mount with the skill; if it does not, buy a "
+                  .. "Galestrider from him.",
+          } },
+        { id = "sky-40-back", go = true, optional = true, radius = 15, npc = 275270, at = { 2521, 57.92, 80.78 },
+          note = {
+              ru = "Обратно к Небесным докам (начальник порта Ваятелей ветра): небесный корабль до Мулгора. Камень "
+                  .. "не используйте: он привязан к Оргриммару для следующего сегмента.",
+              en = "Back to the Valanaar Skydocks (Windshapers Dockmaster): the skycutter to Mulgore. Do not hearth: "
+                  .. "the stone stays bound to Orgrimmar for the next segment.",
+          } },
+        { id = "sky-40-tb", go = true, optional = true, radius = 15, npc = 2995, at = { 1456, 47.00, 49.83 },
+          note = {
+              ru = "С плато спланируйте «Шагом по воздуху» с восточного края (или спуститесь горной тропой), верхом к "
+                  .. "лифту Громового Утёса и наверх к Талу.",
+              en = "From the plateau glide down the east edge with Walk on Air (or take the mountain path), ride to the "
+                  .. "Thunder Bluff lift and up to Tal.",
+          } },
+        -- The next shared step (h-38-orgrimmar-flight-master) is the same flight, written for Orgrimmar ("Doras"):
+        -- it completes on the same landing (fly = arrival at `at`).
+        { id = "sky-40-fly-taurajo", fly = "Camp Taurajo", optional = true, npc = 10378, at = { 1413, 44.45, 59.15 },
+          note = {
+              ru = "Тал на центральной вершине Громового Утёса (не Дорас: вы не в Оргриммаре): летите в Лагерь "
+                  .. "Таурахо.",
+              en = "Tal on the central mesa of Thunder Bluff (not Doras: you are not in Orgrimmar): fly to Camp "
+                  .. "Taurajo.",
           } },
     },
 })

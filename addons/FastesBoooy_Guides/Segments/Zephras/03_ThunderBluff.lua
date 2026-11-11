@@ -10,9 +10,12 @@
 -- Open game fact (docs/dev/PLAN.md E.2): the flight Thunder Bluff -> Orgrimmar at 13 assumes that the Skyborne know
 -- the Orgrimmar flight point from the start. If they do not, the fall-back is the walk through the Barrens.
 --
+-- Every step has an explicit id (prefix "sd03-"); anchors (docs/dev/PLAN.md C.2): sd03-spirit (the arrival in
+-- Thunder Bluff: class trainers of the city, the druid's 94911 > 94913), sd03-fp-tb, sd03-fly-org (the last step).
+--
 -- This is the last segment file of the zone, so it holds the start-zone announcement (read by Route.lua): the
--- segments every Skyborne route starts with. `only`: while the Zephras segments still hold the druid's class
--- steps, only the druid route of the zone's race is registered.
+-- segments every Skyborne route starts with. The zone is class-neutral (phase F2c), so the announcement carries
+-- no `only`: all five Skyborne routes are registered.
 if not FastesBoooy.AddLibraryInsert then return end
 local _, ns = ...
 
@@ -54,4 +57,4 @@ FastesBoooy.AddLibrarySegment({
 })
 
 ns.startZones = ns.startZones or {}
-ns.startZones.Zephras = { "sd-01-zephras", "sd-02-zephras", "sd-03-thunder-bluff", only = { "DRUID" } }
+ns.startZones.Zephras = { "sd-01-zephras", "sd-02-zephras", "sd-03-thunder-bluff" }
