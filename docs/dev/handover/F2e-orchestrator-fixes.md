@@ -265,3 +265,28 @@ Acceptance, re-run on the final tree (4 CPUs):
 | `make routedata-check` | exit 0 |
 | `make report`, then `git diff docs/VALIDATION.md` | written; no diff |
 | `make simulate-sync-full` | exit 0, 88 of 88 runs `OK` (11 routes x 8), 428 s wall; `--ahead 48`: nine base routes "cold start: finished", `undead-paladin` 1753/1754, `skyborne-druid` 1784/1784 (as before). Warnings: only the three known ones (11 x `h-53-...:41`, 20 x `sd02-hearth`, 10 x `sky-1061`) |
+
+## Resumed run (after the pause)
+
+The phase was paused during the fix round of verification round 1. On resumption the working tree was clean on top of
+the checkpoint `44f1787`; every fix listed in the table above is in the tree (the `RegisterRoute` flush merges queued
+data directly, the new `core_registry_spec.lua` case, the `ARCHITECTURE.md` sentence, the `wanted` comment in
+`Engine.lua`, item 1 of this hand-over, PLAN.md ET-10). Nothing was half-done: no fix finished here, none dropped,
+no code changed. `Data.lua` and `docs/VALIDATION.md` did not need regenerating.
+
+Acceptance on the resumed tree (4 CPUs):
+
+| Command | Result |
+|---|---|
+| `luacheck --config .luacheckrc addons tools tests` | 0 warnings / 0 errors in 175 files |
+| `busted` | 719 successes / 0 failures / 0 errors, 76 s |
+| `make check` | exit 0, 252 s wall: lint 0 / 0; busted 719 / 0 / 0 (74 s); `make validate` 0 ERROR, 0 WARN, 188 accepted (strict); fixtures 7 modules 0 errors; `make simulate` 11 of 11 passed; `make simulate-sync` 16 of 16 passed; fixture simulations 5 / 5; harness fixture runs pass. Simulator warnings: only the three known ones |
+| `make routedata-check` | exit 0 (all `Data.lua` up to date) |
+| `make report`, then `git status` | written; no diff |
+
+`make simulate-sync-full` was not re-run (nightly; the round-1 result above stands, no code changed since).
+
+Minor, for phase R: the engine header (`Engine.lua`, "not taken" rule) and one comment near line 1516 still say
+"behind the forward limit" for "already passed" (the idiom the round-1 fix kept on purpose); `ARCHITECTURE.md` and the
+`wanted` comment say "before the forward limit". Same meaning, two wordings: unify when the engine docs are next
+touched.
