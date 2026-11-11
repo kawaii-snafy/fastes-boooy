@@ -74,7 +74,7 @@
 --   one NPC are merged into one step - a sethearth at an innkeeper who also gives a quest shares the step with that
 --   accept (h50-revantusk-hearth: Lard binds and gives 7840; a separate accept right after it would fast-forward the
 --   bind when the gossip auto-accept takes 7840 first); the paladin's training insert after h-50-uc-arrive (Oran) is followed by a
---   step at another NPC (the level there is ~49.5 since the 46-60 densify pass: docs/routes/horde-22-60.md section 10
+--   step at another NPC (the level there is ~49.5 since the 46-60 densify pass: docs/routes/shared-path.md, anchors,
 --   suggests merging pal-train-50 into the 52 set). Shared-item quests (Bloodmages) finish with collect totals; bg
 --   goals get a later non-bg finishing step.
 if not FastesBoooy.AddLibraryInsert then return end
@@ -168,7 +168,9 @@ FastesBoooy.AddLibrarySegment({
           note = { ru = "Проводите его из сторожки (эльфы нападают по пути). Тайник — на Отвесных скалах на востоке.",
                    en = "Escort him out of the lodge (elves attack on the way). His secret is on the Overlook Cliffs "
                        .. "to the east." } },
-        { complete = 77, at = { 1425, 53.51, 40.85 },
+        -- explicit id: the note names an object of the world ("Horde Supply Crate"); the faction-word check of
+        -- tests/spec/guides_layout_spec.lua lists the step by id
+        { id = "h50-honey-ripples", complete = 77, at = { 1425, 53.51, 40.85 },
           note = { ru = "На восток по дороге к Осклизлой скале: 10 бутылок медовой зыби из ящиков Орды (46.5,39.4 и "
                        .. "58.2,41.8).",
                    en = "East along the road to Skulk Rock: 10 Hinterlands Honey Ripples from the Horde Supply Crates "

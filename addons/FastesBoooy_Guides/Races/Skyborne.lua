@@ -8,7 +8,8 @@
 --   Riding at 40  Genn Fairweather on Zephras Isle (stablemaster and riding trainer), reached by skycutter from
 --                 Skywatcher Plateau: the whole trip is optional (100 gold, 15-20 min). docs/dev/PLAN.md C.7: the
 --                 druid's level-40 block already flies to Thunder Bluff and on to Camp Taurajo, so for druids the
---                 riding steps sit between dru-40-train and dru-40-fly-taurajo (Classes/Druid.lua).
+--                 riding steps sit between dru-40-train and dru-40-fly-taurajo (Classes/Druid.lua): both inserts
+--                 are `after = "h-40-org-arrive"` and the class file is registered first.
 --                 The other classes (hunter, rogue, shaman, warrior) get the same trip as a self-contained
 --                 optional detour after h-40-org-arrive: sky-40-fly-tb, the riding steps, sky-40-fly-taurajo (the
 --                 next shared step is the flight Orgrimmar -> Camp Taurajo: it completes on the same landing; with
@@ -66,10 +67,14 @@ FastesBoooy.AddLibraryInsert({
 })
 
 ------------------------------------------------------------------------------
--- 40, druids: the optional riding trip to Zephras Isle, between the druid's training and its flight on
+-- 40, druids: the optional riding trip to Zephras Isle, between the druid's training and its flight on.
+-- The anchor is the shared step, not dru-40-train: the class file is registered first, so at h-40-org-arrive
+-- its two steps (dru-40-fly-tb, dru-40-train) come first and these follow; dru-40-fly-taurajo is an insert of
+-- its own in front of the next shared step. An anchor inside Classes/Druid.lua would be the id of no loaded
+-- step in a base-profile run (--skip 'Classes/*': ERROR insert-anchor-unknown).
 ------------------------------------------------------------------------------
 FastesBoooy.AddLibraryInsert({
-    after = "dru-40-train",
+    after = "h-40-org-arrive",
     race = "Skyborne",
     class = "DRUID",
     steps = {

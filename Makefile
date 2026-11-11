@@ -9,7 +9,8 @@
 #   make lint         luacheck with the generated 'forever' std (.luacheckrc)
 #   make test         busted specs (tests/spec)
 #   make validate     route validator against tools/data/forever_db.lua (addons/FastesBoooy_Guides: every
-#                     route, the shared segments and inserts), gate VALIDATE_FLAGS (--strict --end-level)
+#                     route, the shared segments and inserts), gate VALIDATE_FLAGS (--strict --end-level
+#                     and the grind budget of levels 1-22)
 #   make simulate     run every route through the real engine on the WoW mock, JOBS simulations at a
 #                     time (the route list comes from tools/simulate_routes.lua --list-routes; a module
 #                     that does not load fails the target)
@@ -41,9 +42,11 @@ LUACHECK = luacheck
 BUSTED = busted
 PYTHON = python3
 # The gate of `make validate` / `make route` (docs/dev/PLAN.md A.6.3): no unaccepted warning (every WARN
-# is fixed or acknowledged with the `ok` key of its step / segment) and the planned end level in the
-# normal and the worst-case run. Later phases add the grind budget (--max-grind-until) and the baseline.
-VALIDATE_FLAGS = --strict --end-level
+# is fixed or acknowledged with the `ok` key of its step / segment), the planned end level in the
+# normal and the worst-case run, and the grind budget of levels 1-22 (B.8): from level 1 to the end of
+# h-18-stonetalon-ashenvale no route needs more than 120 grind kills, 200 in the worst case (optional
+# steps skipped). A later phase adds the baseline (--baseline: no class route above the base of its race).
+VALIDATE_FLAGS = --strict --end-level --max-grind-until h-18-stonetalon-ashenvale=120/200
 # Parallel simulations: one simulator process per line of arguments, JOBS at a time. A failing job
 # makes xargs (and the target) fail. Each job collects its output in a file of a temporary directory
 # and prints it when it ends, while it holds a lock (a directory: mkdir is atomic and needs no extra
@@ -124,7 +127,7 @@ CONVERSION =
 all: check
 
 help:
-	@sed -n '4,37p' Makefile
+	@sed -n '4,38p' Makefile
 
 check: lint test validate validate-fixtures simulate simulate-sync simulate-fixtures harness-fixtures
 

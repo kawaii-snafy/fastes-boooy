@@ -61,11 +61,15 @@
 --   34+36   before h38-hearth-shadowprey  37.70        Moonglade right before the library's own hearth (no extra
 --                                                      hearth use: Teleport, train, then the library hearth).
 --   38+40   after  h-40-org-arrive        40.06/40.01  dru-40-fly-tb, dru-40-train (Turak: DIRE BEAR FORM; not
---                                                      40 yet: the 38 set only), dru-40-fly-taurajo (own fly step:
---                                                      the shared next step names Doras, it completes on the same
---                                                      landing). These three ids are a contract with the race files
---                                                      (docs/dev/PLAN.md C.7): the riding steps of a Skyborne or
---                                                      Tauren druid are inserted after dru-40-train.
+--                                                      40 yet: the 38 set only); then, as an insert of its own
+--                                                      before h-38-orgrimmar-flight-master, dru-40-fly-taurajo
+--                                                      (own fly step: the shared next step names Doras, it
+--                                                      completes on the same landing). These three ids are a
+--                                                      contract with the race files (docs/dev/PLAN.md C.7): the
+--                                                      riding steps of a Skyborne or Tauren druid are inserted
+--                                                      `after = "h-40-org-arrive"` with class = "DRUID" and land
+--                                                      between dru-40-train and dru-40-fly-taurajo (class file
+--                                                      first, then race file). Keep the two inserts apart.
 --   42+44   before h44-hearth-gromgol     44.52/44.50  Moonglade before the library hearth (instead of the plan's
 --                                                      Kargath hearth at 44.02: that would put the h44-hearth-gromgol
 --                                                      hearth half a level later on cooldown).
@@ -735,8 +739,17 @@ FastesBoooy.AddLibraryInsert({
                   .. "Claw 3, Shred 3. Not 40 yet: learn the 38 set (Claw 3, Shred 3): Dire Bear Form and the rest at "
                   .. "the next Loganaar visit. Talents 38-40: Rend and Tear 5/5, Shifting Power.",
           } },
-        -- The next library step (h-38-orgrimmar-flight-master) is the same flight, written for Orgrimmar ("Doras"):
-        -- this step says it from Tal, and the library step completes on the same landing (fly = arrival at `at`).
+    },
+})
+-- The flight on is an insert of its own, in front of the next shared step: the riding steps of the race file
+-- (Races/Skyborne.lua, later Races/Tauren.lua: `after = "h-40-org-arrive"`, class = "DRUID") are registered after
+-- this file and so land behind dru-40-train and in front of this step. That step (h-38-orgrimmar-flight-master)
+-- is the same flight, written for Orgrimmar ("Doras"): this step says it from Tal, and the shared step completes
+-- on the same landing (fly = arrival at `at`).
+FastesBoooy.AddLibraryInsert({
+    before = "h-38-orgrimmar-flight-master",
+    class = "DRUID",
+    steps = {
         { id = "dru-40-fly-taurajo", fly = "Camp Taurajo", npc = 10378, at = { 1413, 44.45, 59.15 },
           note = {
               ru = "Тал на центральной вершине Громового Утёса (не Дорас: вы не в Оргриммаре): летите в Лагерь "

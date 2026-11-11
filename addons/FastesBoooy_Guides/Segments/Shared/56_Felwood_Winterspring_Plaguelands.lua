@@ -89,7 +89,7 @@
 --   step per NPC; bg goals have a later non-bg finishing step; optional steps are followed by a mandatory anchor.
 --   Class anchors: h-58-org-arrive / h-58-uc-arrive are at ~57.2 since the densify pass; the last Undercity stop
 --   (after h59-hearth-uc) ends at ~57.99 and 58 comes at the Bulwark (h-59-wpl-end, ~58.05): the 58 ranks are best
---   trained with the 60 set after h-60-end (docs/routes/horde-22-60.md section 10).
+--   trained with the 60 set after h-60-end (docs/routes/shared-path.md, the anchor table).
 if not FastesBoooy.AddLibraryInsert then return end
 FastesBoooy.AddLibrarySegment({
     id = "h-56-felwood-winterspring-plaguelands",
