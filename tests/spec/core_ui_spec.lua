@@ -1104,10 +1104,12 @@ describe("obsolete addon folders", function()
             mm:RegisterAddOn("AdventureAtlas_Guides", { Title = "new" })
             mm:RegisterAddOn("FastesBoooy", { Title = "old core" })
             mm:RegisterAddOn("FastesBoooy_Horde", { Title = "old" })
+            mm:RegisterAddOn("FastesBoooy_SkyborneDruid", { Title = "old" })
+            mm:RegisterAddOn("FastesBoooy_UndeadPaladin", { Title = "old, not loaded" }, false)
             mm:RegisterAddOn("FastesBoooy_Guides", { Title = "old, not loaded" }, false)
         end })
-        assert.same({ "FastesBoooy", "FastesBoooy_Horde" }, UI().Options:ObsoleteModules())
-        local line = "Delete the old folders FastesBoooy, FastesBoooy_Horde from Interface\\AddOns: "
+        assert.same({ "FastesBoooy", "FastesBoooy_Horde", "FastesBoooy_SkyborneDruid" }, UI().Options:ObsoleteModules())
+        local line = "Delete the old folders FastesBoooy, FastesBoooy_Horde, FastesBoooy_SkyborneDruid from Interface\\AddOns: "
             .. "Adventure Atlas replaces them (AdventureAtlas and AdventureAtlas_Guides)."
         assert.equal(1, count(line))
         -- once per session: another PLAYER_LOGIN delivery does not repeat it
@@ -1118,8 +1120,9 @@ describe("obsolete addon folders", function()
         -- also without AdventureAtlas_Guides: the old folders never belong to this installation
         m, ns = H.boot({ locale = "ruRU", setup = function(mm)
             mm:RegisterAddOn("FastesBoooy_Guides", {})
+            mm:RegisterAddOn("FastesBoooy_UndeadPaladin", {})
         end })
-        assert.equal(1, count("Удалите старые папки FastesBoooy_Guides из Interface\\AddOns: их заменил "
+        assert.equal(1, count("Удалите старые папки FastesBoooy_Guides, FastesBoooy_UndeadPaladin из Interface\\AddOns: их заменил "
             .. "Adventure Atlas (AdventureAtlas и AdventureAtlas_Guides)."))
     end)
 

@@ -2,8 +2,8 @@
 
 Файл: [`Classes/Druid.lua`](../../addons/AdventureAtlas_Guides/Classes/Druid.lua) — 43 вставки, 96 шагов
 (9 необязательных), все с областью `class = "DRUID"` и id `dru-…`, и таблица наград класса. Гайдов два:
-`tauren-druid` «Таурен-друид 1-60» и `skyborne-druid` «Скайборн-друид 1-60» (прежний id `horde-skyborne-druid` —
-псевдоним, сохранённый прогресс переходит сам). Путь, по которому идут все классы: стартовые зоны —
+`tauren-druid` «Таурен-друид 1-60» и `skyborne-druid` «Скайборн-друид 1-60» (прежний id `horde-skyborne-druid` по-прежнему
+принимается как псевдоним). Путь, по которому идут все классы: стартовые зоны —
 [race-tauren.md](race-tauren.md) и [race-skyborne.md](race-skyborne.md), с 12-го — [shared-path.md](shared-path.md).
 Здесь — только то, что добавляет класс. Числа — вывод валидатора на момент написания (фаза C); свежие — в
 [docs/VALIDATION.md](../VALIDATION.md).

@@ -63,8 +63,10 @@ AdventureAtlas.RegisterRoute({
   установлен: его маршрут остаётся собой).
 
 Пример: `undead-paladin` модуля `AdventureAtlas_Guides` с `aliases = "horde-undead-paladin"`
-подхватывает прогресс персонажа, начатый в прежнем модуле `FastesBoooy_UndeadPaladin` (так же
-`skyborne-druid` ← `horde-skyborne-druid`).
+принимает прежний id версии 0.3 (`/aa route horde-undead-paladin`; так же `skyborne-druid` ←
+`horde-skyborne-druid`). В 0.4 алиас переносил и прогресс, начатый в модуле `FastesBoooy_UndeadPaladin`;
+сохранённые данные аддона под прежним именем FastesBoooy в Adventure Atlas не переносятся (README,
+«Обновление с FastesBoooy»).
 
 ## Сегмент
 
@@ -567,7 +569,7 @@ addons/AdventureAtlas_Guides/
 ### Версия ядра
 
 Формат маршрутов остаётся `api = 1`: все расширения аддитивные. Уровень возможностей ядра виден
-в `AdventureAtlas.API_MINOR` (у ядра 0.1.x поля нет); `/aa status` показывает версию ядра и
+в `AdventureAtlas.API_MINOR` (у ядра 0.1.x поля не было); `/aa status` показывает версию ядра и
 `route API 1.<API_MINOR>`.
 
 | `API_MINOR` | Ядро | Что появилось для модулей маршрутов |
@@ -576,6 +578,11 @@ addons/AdventureAtlas_Guides/
 | 1 | 0.2.0 | `AddLibrarySegment`, `AddLibraryData`, `UseSegments`, `AddInsert` |
 | 1 | 0.3.0, 0.3.1 | синхронизация по уровню, серые и недоступные квесты, задержка автоматики, `questMeta` (API маршрутов не менялся) |
 | 2 | 0.4.0 | `AddLibraryInsert`; общие шаги не попадают в маршруты, которым не подходят их фильтры; `aliases` маршрута; таблица наград по классам (`rewards`); ключ `ok` шага и сегмента |
+| 2 | 0.5.0 | переименование FastesBoooy → Adventure Atlas: глобальная таблица `AdventureAtlas` (была `FastesBoooy`), папки `AdventureAtlas` / `AdventureAtlas_Guides`, `## Dependencies: AdventureAtlas` (API маршрутов не менялся) |
+
+Ядра до 0.5.0 назывались FastesBoooy и давали глобальную таблицу `FastesBoooy`. Модуль с
+`## Dependencies: AdventureAtlas` со старым ядром не загружается вовсе, поэтому проверки ниже нужны для будущих
+версий ядра Adventure Atlas.
 
 Со старым ядром модуль, вызвавший функцию, которой в нём нет, получил бы ошибку Lua
 (`attempt to call field 'UseSegments' (a nil value)`). Два способа этого избежать:
@@ -595,7 +602,7 @@ if not AdventureAtlas.AddLibraryInsert then return end
 ```lua
 -- Data.lua (библиотека) / Route.lua (маршрут): первая строка модуля
 if (AdventureAtlas.API_MINOR or 0) < 1 then
-    print("AdventureAtlas_MyLib: обновите аддон AdventureAtlas (нужно ядро 0.2.0+) / update the AdventureAtlas core (0.2.0+)")
+    print("AdventureAtlas_MyLib: обновите аддон Adventure Atlas (нужно ядро 0.2.0+) / update the Adventure Atlas core (0.2.0+)")
     return
 end
 ```
