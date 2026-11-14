@@ -7,6 +7,7 @@
 --   knowledge   "Knowledge base": a placeholder until the quest list exists (docs/dev/ATLAS.md)
 -- A tab's page is built the first time it is shown and refreshed while visible. The window and
 -- its selected tab live in ns.db.frames.atlas (position: UI.MakeMovable / UI.RestorePosition).
+-- The window is the named frame AdventureAtlasFrame, listed in UISpecialFrames: Escape closes it.
 --
 -- Consumes ns.Engine (GetRoute / GetNaturalCursor / GetChapters) and ns.UI (toolkit of
 -- UI/StepFrame.lua, incl. UI.PlayerLevel). Exposes ns.Atlas.
@@ -28,6 +29,7 @@ local PAD = 14
 local ROW_HEIGHT = 20
 local DEFAULT_TAB = "adventure"
 
+local FRAME_NAME = "AdventureAtlasFrame" -- global name: UISpecialFrames lists frames by name
 local frame -- the window, created on first use
 
 local function atlasDB() return UI.FramesDB("atlas") end
@@ -219,7 +221,7 @@ for _, t in ipairs(TABS) do TAB_BY_KEY[t.key] = t end
 
 function Atlas:Create()
     if frame then return frame end
-    frame = CreateFrame("Frame", nil, UIParent, "BasicFrameTemplateWithInset")
+    frame = CreateFrame("Frame", FRAME_NAME, UIParent, "BasicFrameTemplateWithInset")
     frame:SetSize(WIDTH, HEIGHT)
     frame:SetFrameStrata("HIGH")
     frame:SetToplevel(true)
@@ -244,6 +246,7 @@ function Atlas:Create()
 
     frame:SetScript("OnShow", function() Atlas:Refresh() end)
     frame:Hide()
+    tinsert(UISpecialFrames, FRAME_NAME) -- Escape closes it, like the Blizzard windows
     return frame
 end
 

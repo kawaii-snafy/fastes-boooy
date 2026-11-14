@@ -23,7 +23,7 @@ m:AssertClean()                            -- no script errors, no contract viol
 | File | Content |
 |---|---|
 | `wow.lua` | `Mock.new`, global environment, strictness, diagnostics, `Provide*` |
-| `wow/allowlist.lua` | loads `tools/data/forever_api.lua`; widget method / handler sets (with inheritance) |
+| `wow/allowlist.lua` | loads `tools/data/forever_api.lua` (+ the globals confirmed in game, `tools/data/forever_api_confirmed.lua`); widget method / handler sets (with inheritance) |
 | `wow/signatures.lua` | GENERATED argument / event payload specs (`gen_signatures.py` from `research/apidocs.json`) |
 | `wow/luaenv.lua` | Lua 5.1 base + `string/table/math/bit/coroutine` restricted to client members + WoW extensions |
 | `wow/system.lua` | clock, `C_Timer`, events, error handler, TOC / SavedVariables, slash, popups, `Settings`, `C_AddOns` |
@@ -146,6 +146,7 @@ shift, ctrl, alt, guid` } (raceID / classID / faction derived; Skyborne = 95 All
   objective gets one placeholder `"event"` objective; other objective-less quests are complete
   on accept (deliveries). `tools/simulate_routes.lua` passes the route's `complete` quests.
 * **UI**: `Click(button)`, `Enter(region)` / `Leave`, `TypeText(editBox, s)`, `DragSlider(s, v)`,
+  `PressEscape()` (hides the shown frames named in `UISpecialFrames`, like `CloseSpecialWindows`),
   `TooltipLines()`, `VisibleTexts([root])`, `FindWidgets(pred)`, `WidgetState(w)`,
   `IsWidgetVisible(w)`, `PopupClick(which, "button1")`, `PopupVisible(which)`, `m.chat`,
   `m.settingsOpened`, `m.userWaypoint`.

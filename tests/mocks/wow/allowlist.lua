@@ -47,6 +47,14 @@ function A.load(apiPath)
             if globals[name] == nil then globals[name] = list end
         end
     end
+    -- globals the dump misses but that were confirmed in game (tools/data/forever_api_confirmed.lua)
+    local confirmedPath = apiPath:gsub("forever_api%.lua$", "forever_api_confirmed.lua")
+    if confirmedPath ~= apiPath then
+        A.confirmed = loadData(confirmedPath)
+        for _, name in ipairs(A.confirmed.globals or {}) do
+            if globals[name] == nil then globals[name] = "confirmed" end
+        end
+    end
     for ns in pairs(api.namespaces or {}) do globals[ns] = globals[ns] or "namespaces" end
     for lib in pairs(api.luaNamespaces or {}) do globals[lib] = globals[lib] or "luaNamespaces" end
     for t in pairs(api.frameXMLTables or {}) do globals[t] = globals[t] or "frameXMLTables" end

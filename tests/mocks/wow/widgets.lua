@@ -1431,6 +1431,8 @@ ctx.register(function(m)
         m:Provide(fname, m:_newWidget("Frame", fname, uiParent, { shown = false }))
     end
     m:Provide("Minimap", m:_newWidget("Minimap", "Minimap", uiParent, {}))
+    -- names of the frames Escape closes (UIParent.lua; addons append theirs): see M:PressEscape
+    m:Provide("UISpecialFrames", {})
 
     m:ProvideAPI("GetCursorPosition", function() return 960, 540 end)
     m:ProvideAPI("GetScreenWidth", function() return 1920 end)
@@ -1490,6 +1492,22 @@ function M:Leave(region)
         st.mouseOver = false
         if self._mouseFocus == region then self._mouseFocus = nil end
         self:_runScript(region, "OnLeave", true)
+    end)
+end
+
+--- Simulate the Escape key outside an edit box: like the client's CloseSpecialWindows, hide every
+-- shown frame named in UISpecialFrames. @return true when a frame was closed
+function M:PressEscape()
+    return self:_top(function()
+        local closed = false
+        for _, name in ipairs(self.env.UISpecialFrames) do
+            local f = rawget(self.env, name)
+            if f and f:IsShown() then
+                f:Hide()
+                closed = true
+            end
+        end
+        return closed
     end)
 end
 

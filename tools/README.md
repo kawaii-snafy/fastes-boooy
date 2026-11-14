@@ -11,6 +11,7 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 |---|---|
 | `gen_forever_api.py` | разбирает дамп API клиента Forever → `data/forever_api.lua` |
 | `data/forever_api.lua` | (генерируется, коммитится) функции/неймспейсы/события/FrameXML/шаблоны/миксины/методы виджетов/Enum клиента Forever |
+| `data/forever_api_confirmed.lua` | (ведётся вручную) глобалы клиента, которых нет в дампе, но которые проверены в игре (`UISpecialFrames`); мок и luacheck читают его вместе с `forever_api.lua` |
 | `build_db_snapshot.py` | снимок БД Forever из research-JSON → `data/forever_db.lua` |
 | `data/forever_db.lua` | (генерируется, коммитится) квесты, NPC, объекты, предметы, зоны, правила опыта |
 | `fetch_wowhead_requirements.py` | списки «Requirements:» подсказок Wowhead Forever для квестов снимка → `data/wowhead_requirements.json` (количества целей Forever; вход `build_db_snapshot.py`) |

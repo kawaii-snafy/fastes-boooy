@@ -10,6 +10,7 @@
 --                           AddLibraryData/AddLibraryInsert)
 --   AdventureAtlasDB      account SavedVariables  (ns.db)
 --   AdventureAtlasCharDB  character SavedVariables (ns.cdb)
+-- Named frame (a global set by CreateFrame): AdventureAtlasFrame, the atlas window (UI/Atlas.lua).
 
 local ADDON, ns = ...
 -- luacheck: ignore 212/self

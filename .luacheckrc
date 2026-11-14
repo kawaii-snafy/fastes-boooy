@@ -25,6 +25,14 @@ end
 
 local api = loadApi()
 
+-- Globals the dump misses but that were confirmed in game (maintained by hand).
+local CONFIRMED_FILE = "tools/data/forever_api_confirmed.lua"
+local confirmed = { globals = {} }
+do
+    local ok, t = pcall(dofile, CONFIRMED_FILE)
+    if ok and type(t) == "table" then confirmed = t end
+end
+
 local function fieldsOf(list, readOnly)
     local f = {}
     for _, name in ipairs(list or {}) do
@@ -50,6 +58,7 @@ local function buildForeverStd()
     addPlain(api.globals)
     addPlain(api.luaGlobals)
     addPlain(api.frameXMLGlobals)
+    addPlain(confirmed.globals)
     addPlain(LUA_BASE_EXTRA)
     -- LE_* constants
     addPlain(api.leGlobals)
