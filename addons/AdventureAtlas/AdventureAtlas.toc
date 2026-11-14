@@ -27,3 +27,5 @@ Core\Waypoint.lua
 UI\StepFrame.lua
 UI\Arrow.lua
 UI\Options.lua
+UI\Atlas.lua
+UI\MinimapButton.lua

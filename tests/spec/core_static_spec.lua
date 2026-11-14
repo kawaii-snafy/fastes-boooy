@@ -121,7 +121,7 @@ describe("static API scan of the core addon", function()
     for _, f in ipairs(files) do results[f] = scan(f) end
 
     it("compiles every file listed in the TOC (Lua 5.1)", function()
-        assert.equal(16, #files)
+        assert.equal(18, #files)
         for _, f in ipairs(files) do
             local chunk, err = loadfile(f)
             assert.is_function(chunk, err)

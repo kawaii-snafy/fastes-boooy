@@ -315,12 +315,15 @@ ns.DEFAULTS = {
             levelSync = "ask",      -- level sync (Core/Engine.lua): "ask" (suggest a jump), "auto" (jump), "off"
             levelSyncMargin = 2,    -- a segment is outleveled at level >= segment.levels[2] + margin (0..5)
             skipGray = true,        -- accepts of gray (trivial) route quests count as done (chains kept)
+            minimapButton = true,   -- the minimap button that opens the atlas (UI/MinimapButton.lua)
         },
         frames = {
             -- top-anchored (UI/StepFrame.lua keeps the top edge, so the buttons do not move with the height)
             steps = { point = "TOPRIGHT", relativePoint = "RIGHT", x = -80, y = 180 },
             arrow = { point = "TOP", relativePoint = "TOP", x = 0, y = -140 },
+            atlas = { point = "CENTER", relativePoint = "CENTER", x = 0, y = 40 }, -- UI/Atlas.lua (+ tab = key)
         },
+        minimap = { angle = 200 }, -- UI/MinimapButton.lua: button position on the minimap rim, degrees
         xpLog = {},        -- [questID] = xp reward observed in game (max seen)
         xpLogLevel = {},   -- [questID] = player level when xpLog[questID] was recorded
     },

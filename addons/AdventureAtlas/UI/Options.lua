@@ -55,7 +55,7 @@ local CHECK_SECTIONS = {
     { title = "UI_OPT_SECTION_AUTOMATION", keys = { "automation", "autoAccept", "autoTurnin", "autoGossip" },
         sliders = DELAY_RANGES },
     { title = "UI_OPT_SECTION_NAVIGATION", keys = { "arrow", "blizzWaypoint" } },
-    { title = "UI_OPT_SECTION_WINDOW", keys = { "locked", "hideInCombat", "debug" } },
+    { title = "UI_OPT_SECTION_WINDOW", keys = { "minimapButton", "locked", "hideInCombat", "debug" } },
 }
 -- shown greyed out while the automation master switch is off
 local NEEDS_AUTOMATION = { autoAccept = true, autoTurnin = true, autoGossip = true, autoDelay = true,
@@ -644,6 +644,9 @@ function Options:Build()
     local posBtn = UI.CreateButton(panel, L.UI_OPT_RESET_POS, L.UI_OPT_RESET_POS_TT,
         function() if UI.ResetPositions() then out(L.UI_POS_RESET) end end, 180, 22)
     posBtn:SetPoint("TOPLEFT", xpBtn, "BOTTOMLEFT", 0, -4)
+    local atlasBtn = UI.CreateButton(panel, L.UI_OPT_OPEN_ATLAS, nil,
+        function() if ns.Atlas then ns.Atlas:Open() end end, 180, 22)
+    atlasBtn:SetPoint("TOPLEFT", posBtn, "BOTTOMLEFT", 0, -4)
 
     -- right column: sliders, level sync, then routes
     local rx, ry = 330, -72
@@ -775,8 +778,8 @@ end
 
 local function printHelp()
     out(L.UI_HELP_HEADER)
-    for _, k in ipairs({ "show", "lock", "resetpos", "next", "sync", "reset", "routes", "route", "config", "delay", "status",
-        "xp", "debug" }) do
+    for _, k in ipairs({ "atlas", "minimap", "show", "lock", "resetpos", "next", "sync", "reset", "routes", "route",
+        "config", "delay", "status", "xp", "debug" }) do
         out(L["UI_HELP_" .. k])
     end
 end
@@ -884,6 +887,15 @@ COMMANDS.hide = function()
 end
 COMMANDS.toggle = function()
     if UI.IsGuideHidden() then COMMANDS.show() else COMMANDS.hide() end
+end
+-- /aa atlas: open / close the atlas window (UI/Atlas.lua)
+COMMANDS.atlas = function() if ns.Atlas then ns.Atlas:Toggle() end end
+-- /aa minimap: show / hide the minimap button (UI/MinimapButton.lua)
+COMMANDS.minimap = function()
+    local on = S().minimapButton == false
+    UI.SetSetting("minimapButton", on)
+    Options:Refresh()
+    out(on and L.UI_MINIMAP_SHOWN or L.UI_MINIMAP_HIDDEN)
 end
 COMMANDS.lock = function()
     UI.SetSetting("locked", true)

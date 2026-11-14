@@ -55,6 +55,14 @@ leveling guide stay.
 * **Order.** Rename -> window + minimap button -> knowledge base -> your adventure (speedrun overview, calm mode,
   finds).
 
+## Status
+
+* 2026-11-14, core 0.5.0: renamed. The window (UI/Atlas.lua, BasicFrameTemplateWithInset, own tab buttons) and the
+  minimap button (UI/MinimapButton.lua) exist. "Your adventure" shows the active route, its progress and its
+  chapters (Engine:GetChapters: segment runs, steps that are not background goals); "Knowledge base" is a
+  placeholder. Escape does not close the window: `UISpecialFrames` is not in the Forever API dump
+  (tools/data/forever_api.lua), so the strict checks do not allow it until it is confirmed in game.
+
 ## What this meant for the guide work
 
 * Packaging stays: `AdventureAtlas` (core) + `AdventureAtlas_Guides` (data). Atlas data will be further data files or

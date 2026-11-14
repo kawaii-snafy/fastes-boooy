@@ -309,6 +309,29 @@ function Engine:GetUpcoming(n)
     return out
 end
 
+--- Chapters of the active route for the atlas overview: one entry per segment run of the filtered
+-- steps (UI/Atlas.lua), in route order. Entry: { id, seg (the segment table: title, zone, levels),
+-- total (steps that are not background goals), done (of them, in the last evaluation), current
+-- (the run of the first not-done step) }. Empty without a route; no entry is current once the route
+-- is finished.
+function Engine:GetChapters()
+    local out = {}
+    local steps, done = self.steps, self.done
+    if not self.route or not steps then return out end
+    local currentRun = self.natural and self.segRunOf[self.natural]
+    for r, run in ipairs(self.segRuns) do
+        local total, n = 0, 0
+        for i = run.first, run.last do
+            if not steps[i].bg then
+                total = total + 1
+                if done[i] then n = n + 1 end
+            end
+        end
+        out[#out + 1] = { id = run.id, seg = run.seg, total = total, done = n, current = r == currentRun }
+    end
+    return out
+end
+
 --- Index into GetSteps() of a step (object or id), nil when filtered out.
 function Engine:IndexOf(step)
     if type(step) == "table" then step = step.id end
