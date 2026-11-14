@@ -2741,7 +2741,8 @@ local USAGE = [[
 usage: lua5.1 tools/validate_routes.lua [options] [module-dir ...]
 
 Validates AdventureAtlas route modules against the Forever DB snapshot.
-Without module dirs, every addons/AdventureAtlas_*/ module (with a TOC) is checked.
+Without module dirs, every addons/AdventureAtlas_*/ module (with a TOC) is checked, except data addons
+(## X-AdventureAtlas-Module: data, e.g. AdventureAtlas_Knowledge).
 
 selection:
   --route ID[,ID...]    validate only these routes; `*` is a wildcard ('orc-*,troll-*', '*-warrior').

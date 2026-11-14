@@ -538,5 +538,20 @@ AdventureAtlas.AddLibrarySegment({ id = "hx", title = "X", levels = { 1, 2 }, st
             assert.matches("but the module registers route%(s%)", route.errors[1].msg)
             assert.is_false(route.isLibrary)
         end)
+
+        it("leaves data addons (value data) out of the module discovery", function()
+            local root = tmpname()
+            os.execute(("mkdir -p '%s/AdventureAtlas_HxData' '%s/AdventureAtlas_HxMod'"):format(root, root))
+            writeFile(root .. "/AdventureAtlas_HxData/AdventureAtlas_HxData.toc",
+                "## Interface: 16001\n## LoadOnDemand: 1\n## X-AdventureAtlas-Module: data\nData.lua\n")
+            writeFile(root .. "/AdventureAtlas_HxMod/AdventureAtlas_HxMod.toc",
+                "## Interface: 16001\n## Dependencies: AdventureAtlas\nRoute.lua\n")
+            local found = Loader.DiscoverModules(root)
+            os.execute(("rm -rf '%s'"):format(root))
+            assert.same({ root .. "/AdventureAtlas_HxMod" }, found)
+            for _, dir in ipairs(Loader.DiscoverModules("addons")) do
+                assert.is_nil(dir:find("Knowledge", 1, true), dir)
+            end
+        end)
     end)
 end)

@@ -101,6 +101,24 @@ describe("knowledge base data", function()
         for _, id in ipairs(new) do assert.is_true(K():Get(id).new, tostring(id)) end
     end)
 
+    it("checks the Skyborne race bit by faction, the faction of the data and class zone names", function()
+        boot()
+        K():Load()
+        local q = K():Get(92598) -- The Gift of Skysight: Skyborne of the Horde only (bit 2^33)
+        assert.equal(2 ^ 33, q.ra)
+        assert.is_true(K():IsFor(q, { race = "Skyborne", class = "DRUID", faction = "Horde" }))
+        assert.is_false(K():IsFor(q, { race = "Skyborne", class = "DRUID", faction = "Alliance" }))
+        assert.is_false(K():IsFor(K():Get(363), { race = "Human", class = "PALADIN", faction = "Alliance" }))
+        assert.equal("Warrior", K():ZoneName(K():Get(1498).z)) -- a class quest sort: the client's class name
+    end)
+
+    it("passes the client's reason when the data addon cannot be loaded", function()
+        boot({ data = false })
+        local ok, why = K():Load()
+        assert.is_false(ok)
+        assert.equal("MISSING", why)
+    end)
+
     it("lowers Cyrillic text for the search", function()
         boot({ data = false })
         assert.equal("долина ёжиков abc", K().LowerText("ДОЛИНА Ёжиков ABC"))
@@ -154,6 +172,54 @@ describe("knowledge base tab", function()
         end
     end)
 
+    it("scrolls with the slider, filters by the highest level and brings the search hint back", function()
+        boot()
+        local p = openTab()
+        local all = K():Search({ mine = true })
+        m:DragSlider(p.slider, 50)
+        assert.equal(50, p.offset)
+        assert.equal(all[51], p.rows[1].questID)
+        m:TypeText(p.maxBox, "5")
+        assert.is_true(has(texts(), ("Found: %d"):format(#K():Search({ mine = true, maxLevel = 5 }))))
+        for _, row in ipairs(p.rows) do
+            if row:IsShown() then assert.is_true(K():Get(row.questID).l <= 5) end
+        end
+        m:TypeText(p.search, "x")
+        assert.is_false(p.searchHint:IsShown())
+        p.search:SetText("")
+        m:TypeText(p.search, "")
+        assert.is_true(p.searchHint:IsShown())
+    end)
+
+    it("shows an item-started quest of another race on the card, without a place to lead to", function()
+        boot()
+        local p = openTab()
+        m:Click(p.checks.mine)
+        assert.is_false(ns.db.knowledge.mine)
+        m:TypeText(p.search, "Welcome!")
+        m:Click(rowOf(5843))
+        local t = texts()
+        assert.is_true(has(t, "Start: item Valley of Trials Gift Voucher"))
+        assert.is_true(has(t, "Not taken  -  not available to your character"))
+        assert.is_false(p.leadButton:IsEnabled())
+    end)
+
+    it("refreshes once for a burst of quest titles arriving", function()
+        boot()
+        openTab()
+        m:Advance(1) -- the titles the first drawing asked for
+        local calls = 0
+        local orig = K().Search
+        K().Search = function(...) calls = calls + 1; return orig(...) end
+        for _, id in ipairs({ 5843, 1498, 92598, 7501, 1501, 1519 }) do -- quests outside the test route
+            ns:Fire("QUEST_DATA_LOADED", id, true)
+        end
+        assert.equal(0, calls)
+        m:Advance(0.25) -- one batch (0.2 s); titles the redraw asks for come in a later batch
+        assert.equal(1, calls)
+        K().Search = orig
+    end)
+
     it("scrolls the virtual list with the mouse wheel", function()
         boot()
         local p = openTab()
@@ -191,6 +257,8 @@ describe("knowledge base tab", function()
         assert.is_nil(ns.Waypoint:GetCustom())
         assert.is_true(H.chatHas(m, "You have arrived: Rude Awakening: Undertaker Mordo"))
         assert.equal("Lead me there", p.leadButton:GetText())
+        local target = ns.Waypoint:GetTarget()
+        assert.equal(ns.Engine:GetCurrentStep(), target and target.step) -- the arrow follows the route again
     end)
 
     it("leads to the end of a quest in the log and can stop leading", function()
@@ -206,6 +274,17 @@ describe("knowledge base tab", function()
         assert.same({ map = 1420, x = 30.84, y = 66.2 }, ns.Waypoint:GetCustom().at)
         m:Click(p.leadButton)
         assert.is_nil(ns.Waypoint:GetCustom())
+    end)
+
+    it("does not lead to a place on another continent", function()
+        boot()
+        local p = openTab()
+        m:TypeText(p.search, "rude")
+        m:Click(rowOf(363))
+        assert.is_true(p.leadButton:IsEnabled())
+        m:MoveTo(1411, 50, 50) -- Durotar (Kalimdor); the quest giver is in Tirisfal Glades
+        m:Fire("ZONE_CHANGED_NEW_AREA")
+        assert.is_false(p.leadButton:IsEnabled())
     end)
 
     it("says when the data addon is missing (ruRU)", function()

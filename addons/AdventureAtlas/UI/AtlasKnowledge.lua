@@ -203,7 +203,7 @@ local function buildList(page)
     end)
     page.slider = slider
 
-    local empty = page:CreateFontString(nil, "OVERLAY", "GameFontDisable")
+    local empty = list:CreateFontString(nil, "OVERLAY", "GameFontDisable") -- above the list's background
     empty:SetPoint("TOPLEFT", list, "TOPLEFT", 6, -6)
     empty:SetWidth(LIST_WIDTH - 12)
     empty:SetJustifyH("LEFT")
@@ -285,7 +285,7 @@ local function buildCard(page)
 end
 
 -- "Undertaker Mordo (Tirisfal Glades 30.2, 71.7)" for the first NPC / object of a list,
--- "item: Name" for a starting item. @return text, map, x, y (map nil: no position)
+-- "item Name" (L.UI_KB_ITEM_FMT) for a starting item. @return text, map, x, y (map nil: no position)
 local function placeText(list)
     local K = ns.Knowledge
     if not list then return nil end
@@ -308,22 +308,29 @@ local function placeText(list)
     return nil
 end
 
+-- "after: A, B" (all needed) / "after: A / B" (one of them); "next: C"
 local function chainText(q)
     local K = ns.Knowledge
-    local before = {}
-    for _, id in ipairs(q.pa or {}) do before[#before + 1] = K:Title(id) end
-    for _, id in ipairs(q.py or {}) do before[#before + 1] = K:Title(id) end
+    local function titles(list, sep)
+        local t = {}
+        for _, id in ipairs(list or {}) do t[#t + 1] = K:Title(id) end
+        return #t > 0 and table.concat(t, sep) or nil
+    end
     local parts = {}
-    if #before > 0 then parts[#parts + 1] = format(L.UI_KB_CHAIN_BEFORE_FMT, table.concat(before, ", ")) end
+    local all, any = titles(q.pa, ", "), titles(q.py, " / ")
+    if all then parts[#parts + 1] = format(L.UI_KB_CHAIN_BEFORE_FMT, all) end
+    if any then parts[#parts + 1] = format(L.UI_KB_CHAIN_BEFORE_FMT, any) end
     if q.nx then parts[#parts + 1] = format(L.UI_KB_CHAIN_NEXT_FMT, K:Title(q.nx)) end
     if #parts == 0 then return L.UI_KB_CHAIN_NONE end
     return table.concat(parts, "; ")
 end
 
---- Where "Lead me" goes: the end while the quest is in the log, else the start.
+--- Where "Lead me" goes: the end while the quest is in the log, else the start. Only a place the arrow
+-- can point at from here (same continent / coordinate frame). @return map, x, y, text (map nil: none)
 local function leadTarget(q, status)
     local list = status == "active" and q.e or q.s
     local text, map, x, y = placeText(list)
+    if not map or not select(3, ns.Compat.DistanceTo(map, x, y)) then return nil end
     return map, x, y, text
 end
 
@@ -377,7 +384,7 @@ function KB.lead(page)
         if not map then return end
         W:SetCustom(map, x, y, format("%s: %s", K:Title(id), text), id)
     end
-    KB.refresh(page)
+    -- the atlas refreshes on WAYPOINT_CUSTOM
 end
 
 ---------------------------------------------------------------------------

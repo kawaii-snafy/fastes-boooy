@@ -2,7 +2,7 @@
 -- tools/gen_route_data.lua -- (re)generate <module>/Data.lua for route modules.
 --
 --   lua5.1 tools/gen_route_data.lua [--db FILE] [--no-overrides] [--check] [--stdout] <module-dir> [...]
---   lua5.1 tools/gen_route_data.lua --all            (every addons/AdventureAtlas_*/ module)
+--   lua5.1 tools/gen_route_data.lua --all            (every addons/AdventureAtlas_*/ module; data addons skipped)
 --   lua5.1 tools/gen_route_data.lua --stdout --skip 'Classes/*' --keep Classes/Mage.lua <module-dir>
 --                                    (a partial load, only to look at: never written, never --check;
 --                                    a glob that matches no TOC file is refused, exit status 2)

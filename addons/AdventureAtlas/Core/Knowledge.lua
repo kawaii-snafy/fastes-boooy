@@ -48,7 +48,8 @@ local function lowerText(s)
 end
 Knowledge.LowerText = lowerText
 
---- Store the data of AdventureAtlas_Knowledge (one call). Builds the level-sorted id list.
+--- Store the data of AdventureAtlas_Knowledge (one call). Builds the level-sorted id list; adds the
+-- run-time fields lname (lowered enUS name) and ltsrc / ltitle (cached localized title, lowered) to records.
 function Knowledge:Add(data)
     if type(data) ~= "table" or type(data.quests) ~= "table" then
         ns.Print("%s", "AddKnowledge: no quests table")
@@ -68,7 +69,6 @@ function Knowledge:Add(data)
         return a < b
     end)
     self.ids = ids
-    if ns.Fire then ns:Fire("KNOWLEDGE_LOADED") end
     return true
 end
 
@@ -82,8 +82,8 @@ function Knowledge:Load()
     if self.data then return true end
     local reason
     if C_AddOns and C_AddOns.LoadAddOn then
-        local ok, r = pcall(C_AddOns.LoadAddOn, self.ADDON)
-        reason = ok and r or "ERROR"
+        local ok, loaded, why = pcall(C_AddOns.LoadAddOn, self.ADDON)
+        if not ok then reason = "ERROR" elseif not loaded then reason = why end
     end
     if self.data then return true end
     return false, reason or "MISSING"
@@ -149,7 +149,8 @@ end
 
 --- Ids of the quests that match, in level order.
 -- filter = { text = "...", minLevel = n, maxLevel = n, mine = bool, hideDone = bool, onlyNew = bool }
--- text matches the enUS name, the cached localized title or the zone name (case-insensitive).
+-- text matches the enUS name, the cached localized title or the zone name (case-insensitive); quests
+-- without a fixed level (l <= 0) pass any level range.
 function Knowledge:Search(filter)
     local out = {}
     if not self.data then return out end
@@ -168,8 +169,9 @@ function Knowledge:Search(filter)
         if ok and text then
             local found = q.lname:find(text, 1, true)
             if not found then
-                local t = ns.Compat.GetCachedQuestTitle and ns.Compat.GetCachedQuestTitle(id)
-                found = t and lowerText(t):find(text, 1, true)
+                local t = ns.Compat.GetCachedQuestTitle(id)
+                if t and t ~= q.ltsrc then q.ltsrc, q.ltitle = t, lowerText(t) end -- lowered once per title
+                found = t and q.ltitle:find(text, 1, true)
             end
             if not found then
                 local zt = zoneText[q.z]

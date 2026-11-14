@@ -310,19 +310,43 @@ end
 -- wiring
 ---------------------------------------------------------------------------
 
-local function refresh() Atlas:Refresh() end
+-- What each tab shows changes with these events (the others do not redraw it):
+-- adventure: the route and its progress; knowledge: quest status, titles, the arrow's target.
+local TAB_EVENTS = {
+    adventure = { "ROUTE_CHANGED", "STEP_CHANGED", "PROGRESS_UPDATED", "UI_VISIBILITY_CHANGED", "PLAYER_LEVEL_UP" },
+    knowledge = { "QUEST_TURNED_IN", "QUEST_ACCEPTED", "QUEST_REMOVED", "QUEST_TITLES", "WAYPOINT_CUSTOM",
+        "ZONE_CHANGED_NEW_AREA" }, -- the zone: whether "Lead me" can point at the quest from here
+}
+local refreshOn = {}
+for key, events in pairs(TAB_EVENTS) do
+    for _, e in ipairs(events) do
+        refreshOn[e] = refreshOn[e] or {}
+        refreshOn[e][key] = true
+    end
+end
 
-ns:Listen("ROUTE_CHANGED", refresh)
-ns:Listen("STEP_CHANGED", refresh)
-ns:Listen("PROGRESS_UPDATED", refresh)
-ns:Listen("UI_VISIBILITY_CHANGED", refresh)
-ns:Listen("QUEST_DATA_LOADED", refresh)   -- localized quest titles of the knowledge base
-ns:Listen("WAYPOINT_CUSTOM", refresh)     -- "Lead me" / arrival
+local function onEvent(event)
+    local tabs = refreshOn[event]
+    if tabs and tabs[Atlas:SelectedTab()] then Atlas:Refresh() end
+end
+
+for _, e in ipairs({ "ROUTE_CHANGED", "STEP_CHANGED", "PROGRESS_UPDATED", "UI_VISIBILITY_CHANGED", "WAYPOINT_CUSTOM" }) do
+    ns:Listen(e, function() onEvent(e) end)
+end
+for _, e in ipairs({ "PLAYER_LEVEL_UP", "QUEST_TURNED_IN", "QUEST_ACCEPTED", "QUEST_REMOVED", "ZONE_CHANGED_NEW_AREA" }) do
+    ns:On(e, function() onEvent(e) end)
+end
+-- localized quest titles of the knowledge base arrive one by one: one QUEST_TITLES refresh for a burst
+local titlesPending = false
+ns:Listen("QUEST_DATA_LOADED", function()
+    if titlesPending or not Atlas:IsShown() then return end
+    titlesPending = true
+    C_Timer.After(0.2, function()
+        titlesPending = false
+        onEvent("QUEST_TITLES")
+    end)
+end)
 ns:Listen("SETTINGS_CHANGED", function(_, key)
     -- /aa resetpos: back to the default place
     if key == "frames" and frame then UI.RestorePosition(frame, "atlas", "CENTER", "CENTER", 0, 40) end
 end)
-ns:On("PLAYER_LEVEL_UP", refresh)
-ns:On("QUEST_TURNED_IN", refresh)
-ns:On("QUEST_ACCEPTED", refresh)
-ns:On("QUEST_REMOVED", refresh)

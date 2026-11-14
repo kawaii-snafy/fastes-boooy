@@ -321,7 +321,7 @@ return {
 
 ```
 lua5.1 tools/gen_route_data.lua <каталог-модуля> [...]   # записать
-lua5.1 tools/gen_route_data.lua --all                     # все addons/AdventureAtlas_*/ (маршруты и библиотеки)
+lua5.1 tools/gen_route_data.lua --all                     # все addons/AdventureAtlas_*/ (маршруты и библиотеки; не аддоны данных)
 lua5.1 tools/gen_route_data.lua --all --check             # CI: код 1, если Data.lua устарел
 lua5.1 tools/gen_route_data.lua --stdout <каталог>        # напечатать
 lua5.1 tools/gen_route_data.lua --stdout --skip 'Classes/*' --keep Classes/Warrior.lua <каталог>
@@ -383,7 +383,8 @@ enUS-именем из `areaNames` снимка БД: в игре аддон б�
 lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
 ```
 
-Без каталогов проверяет все `addons/AdventureAtlas_*/` с TOC (модули маршрутов — собранными вместе с их
+Без каталогов проверяет все `addons/AdventureAtlas_*/` с TOC, кроме аддонов данных (`## X-AdventureAtlas-Module: data`,
+например `AdventureAtlas_Knowledge`) (модули маршрутов — собранными вместе с их
 библиотеками-зависимостями, и сами модули-библиотеки). `--help` печатает опции теми же группами.
 
 **Выбор**

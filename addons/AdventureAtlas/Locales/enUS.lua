@@ -29,7 +29,7 @@ L.STEP_MANUAL = "Press \"Forward\" when done"
 L.STEP_SPELLS = "Learn: %s"
 L.STEP_OBJECTIVE = "%s"
 -- Core/Waypoint.lua: arrival at a target chosen in the knowledge base
-L.WAYPOINT_ARRIVED_FMT = "You have arrived: %s. The arrow follows the route again."
+L.WAYPOINT_ARRIVED_FMT = "You have arrived: %s."
 L.STEP_OBJECTIVE_PENDING = "Objective %d"
 L.QUEST_FALLBACK = "Quest #%d"
 L.ITEM_FALLBACK = "Item #%d"
