@@ -26,6 +26,10 @@
 -- settings.blizzWaypoint: also place Blizzard's user waypoint on the target
 -- (+ super-track => Blizzard's own on-screen arrow); only a waypoint placed by
 -- the addon is ever cleared.
+--
+-- A target chosen by the player (Waypoint:SetCustom: "lead me" in the knowledge base) takes the
+-- place of the route step until the player arrives (CUSTOM_RADIUS yards; a chat line says so) or
+-- Waypoint:ClearCustom; ns:Fire("WAYPOINT_CUSTOM", custom|nil) follows each change.
 
 local _, ns = ...
 -- luacheck: ignore 212/self
@@ -43,6 +47,7 @@ local Waypoint = {
 ns.Waypoint = Waypoint
 
 local TICK = 0.1
+local CUSTOM_RADIUS = 10 -- yards: arrival at a custom target
 
 local function settings()
     return ns.db and ns.db.settings or {}
@@ -53,6 +58,7 @@ function Waypoint:GetTarget()
 end
 
 local function currentStep()
+    if Waypoint.custom then return Waypoint.custom end
     local E = ns.Engine
     if not (E and E.started) then return nil end
     local step = E:GetCurrentStep()
@@ -76,7 +82,9 @@ end
 
 function Waypoint:RefreshLabel()
     local step = self.step
-    if step then
+    if step and step.custom then
+        self.label = step.label
+    elseif step then
         local ok, label = pcall(ns.Steps.Label, ns.Steps, step)
         self.label = ok and label or tostring(step.id)
     else
@@ -137,6 +145,10 @@ function Waypoint:Tick()
         return self:Update()
     end
     self.target = self:Compute(step)
+    if step.custom and self.target.distance and self.target.distance <= CUSTOM_RADIUS then
+        ns.Print(ns.L.WAYPOINT_ARRIVED_FMT, step.label or "")
+        return self:ClearCustom()
+    end
     self:SyncBlizz(self.target)
     ns:Fire("WAYPOINT_UPDATED", self.target)
 end
@@ -163,6 +175,25 @@ function Waypoint:Update()
     self:StartTicker()
     ns:Fire("WAYPOINT_UPDATED", self.target)
 end
+
+--- Lead the arrow to a place of the player's choice (uiMapID, x / y in percent, label shown with it;
+-- ref: what the caller leads to, e.g. a quest id, kept in GetCustom().ref).
+function Waypoint:SetCustom(map, x, y, label, ref)
+    self.custom = { id = "atlas-target", custom = true, at = { map = map, x = x, y = y },
+        radius = CUSTOM_RADIUS, label = label, ref = ref }
+    self:Update()
+    ns:Fire("WAYPOINT_CUSTOM", self.custom)
+end
+
+--- Back to the route step.
+function Waypoint:ClearCustom()
+    if not self.custom then return end
+    self.custom = nil
+    self:Update()
+    ns:Fire("WAYPOINT_CUSTOM", nil)
+end
+
+function Waypoint:GetCustom() return self.custom end
 
 local function update() Waypoint:Update() end
 local function relabel()

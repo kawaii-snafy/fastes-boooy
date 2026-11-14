@@ -611,7 +611,9 @@ function Loader.UnmatchedFilters(dirs, skip, keep)
     return out
 end
 
---- List route module directories under `addonsDir` (AdventureAtlas_* with a TOC), sorted.
+--- List route module directories under `addonsDir` (AdventureAtlas_* with a TOC), sorted. Data
+-- addons of the atlas (TOC "## X-AdventureAtlas-Module: data", e.g. AdventureAtlas_Knowledge) hold
+-- no routes and are left out.
 function Loader.DiscoverModules(addonsDir)
     local out = {}
     local p = io.popen('ls -1 "' .. addonsDir:gsub('"', '\\"') .. '" 2>/dev/null')
@@ -619,7 +621,10 @@ function Loader.DiscoverModules(addonsDir)
     for name in p:lines() do
         if name:match("^AdventureAtlas_") then
             local dir = addonsDir .. "/" .. name
-            if Loader.FindToc(dir) then out[#out + 1] = dir end
+            local tocPath = Loader.FindToc(dir)
+            if tocPath and Loader.ParseToc(tocPath).meta["X-AdventureAtlas-Module"] ~= "data" then
+                out[#out + 1] = dir
+            end
         end
     end
     p:close()

@@ -27,6 +27,7 @@
 #                     validate, then simulate a part of the shared segments from a start state (OUT: end state)
 #   make report       write docs/VALIDATION.md (validator Markdown report; fails when no report was written)
 #   make routedata    regenerate Data.lua of every guide module (addons/AdventureAtlas_Guides/Data.lua)
+#   make knowledge    regenerate the knowledge base quests (addons/AdventureAtlas_Knowledge/Quests.lua)
 #   make api BIR=... WOWUI=...          regenerate tools/data/forever_api.lua
 #   make db RESEARCH=... CONVERSION=... regenerate tools/data/forever_db.lua (objective counts:
 #                     tools/data/wowhead_requirements.json)
@@ -123,12 +124,12 @@ RESEARCH =
 CONVERSION =
 
 .PHONY: all check check-fast route lint test validate validate-fixtures simulate simulate-sync simulate-sync-full \
-	simulate-fixtures harness-fixtures harness report routedata routedata-check api db requirements package clean help
+	simulate-fixtures harness-fixtures harness report routedata routedata-check knowledge knowledge-check api db requirements package clean help
 
 all: check
 
 help:
-	@sed -n '4,38p' Makefile
+	@sed -n '4,39p' Makefile
 
 check: lint test validate validate-fixtures simulate simulate-sync simulate-fixtures harness-fixtures
 
@@ -217,6 +218,12 @@ report:
 
 routedata:
 	$(LUA) tools/gen_route_data.lua --all
+
+knowledge:
+	$(LUA) tools/gen_knowledge_data.lua
+
+knowledge-check:
+	$(LUA) tools/gen_knowledge_data.lua --check
 
 routedata-check:
 	$(LUA) tools/gen_route_data.lua --all --check

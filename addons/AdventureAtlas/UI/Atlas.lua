@@ -4,7 +4,7 @@
 -- `/aa atlas` or the settings. Tabs (TABS below, in display order):
 --   adventure   "Your adventure": the character's path -- for now the active leveling route: title,
 --               level, progress, and its chapters (segments) with the current one marked
---   knowledge   "Knowledge base": a placeholder until the quest list exists (docs/dev/ATLAS.md)
+--   knowledge   "Knowledge base": the quests of Forever with search and filters (UI/AtlasKnowledge.lua)
 -- A tab's page is built the first time it is shown and refreshed while visible. The window and
 -- its selected tab live in ns.db.frames.atlas (position: UI.MakeMovable / UI.RestorePosition).
 -- The window is the named frame AdventureAtlasFrame, listed in UISpecialFrames: Escape closes it.
@@ -196,25 +196,13 @@ local function refreshAdventure(page)
 end
 
 ---------------------------------------------------------------------------
--- "Knowledge base" tab
----------------------------------------------------------------------------
-
-local function buildKnowledge(page)
-    local text = page:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    text:SetPoint("TOPLEFT", page, "TOPLEFT", 0, 0)
-    text:SetWidth(PAGE_WIDTH)
-    text:SetJustifyH("LEFT")
-    text:SetText(L.UI_ATLAS_KNOWLEDGE_SOON)
-    page.text = text
-end
-
----------------------------------------------------------------------------
 -- window
 ---------------------------------------------------------------------------
 
 local TABS = {
     { key = "adventure", label = "UI_ATLAS_TAB_ADVENTURE", build = buildAdventure, refresh = refreshAdventure },
-    { key = "knowledge", label = "UI_ATLAS_TAB_KNOWLEDGE", build = buildKnowledge },
+    { key = "knowledge", label = "UI_ATLAS_TAB_KNOWLEDGE", build = ns.AtlasKnowledge.build,
+        refresh = ns.AtlasKnowledge.refresh },
 }
 local TAB_BY_KEY = {}
 for _, t in ipairs(TABS) do TAB_BY_KEY[t.key] = t end
@@ -328,8 +316,13 @@ ns:Listen("ROUTE_CHANGED", refresh)
 ns:Listen("STEP_CHANGED", refresh)
 ns:Listen("PROGRESS_UPDATED", refresh)
 ns:Listen("UI_VISIBILITY_CHANGED", refresh)
+ns:Listen("QUEST_DATA_LOADED", refresh)   -- localized quest titles of the knowledge base
+ns:Listen("WAYPOINT_CUSTOM", refresh)     -- "Lead me" / arrival
 ns:Listen("SETTINGS_CHANGED", function(_, key)
     -- /aa resetpos: back to the default place
     if key == "frames" and frame then UI.RestorePosition(frame, "atlas", "CENTER", "CENTER", 0, 40) end
 end)
 ns:On("PLAYER_LEVEL_UP", refresh)
+ns:On("QUEST_TURNED_IN", refresh)
+ns:On("QUEST_ACCEPTED", refresh)
+ns:On("QUEST_REMOVED", refresh)

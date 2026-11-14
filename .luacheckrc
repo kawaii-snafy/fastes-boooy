@@ -183,6 +183,15 @@ files["addons/AdventureAtlas_*/Data.lua"] = {
     max_line_length = false,
 }
 
+-- Generated knowledge base data (tools/gen_knowledge_data.lua): one AddKnowledge call, a quest per line.
+stds.adventureatlas_data = {
+    read_globals = { AdventureAtlas = { fields = { AddKnowledge = {} } } },
+}
+files["addons/AdventureAtlas_Knowledge/**/*.lua"] = {
+    std = "adventureatlas_data",
+    max_line_length = false,
+}
+
 -- Offline tools: plain Lua 5.1 CLI scripts.
 files["tools/**/*.lua"] = {
     std = "lua51",

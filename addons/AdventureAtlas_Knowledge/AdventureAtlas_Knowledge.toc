@@ -1,0 +1,10 @@
+## Interface: 16001
+## Title: Adventure Atlas: Knowledge
+## Notes: Knowledge base data for Adventure Atlas: the quests of World of Warcraft: Forever. Loaded when the atlas tab opens.
+## Notes-ruRU: Данные базы знаний Adventure Atlas: квесты World of Warcraft: Forever. Загружается при открытии вкладки атласа.
+## Dependencies: AdventureAtlas
+## LoadOnDemand: 1
+## X-AdventureAtlas-Module: data
+## Version: 0.5.0
+
+Quests.lua

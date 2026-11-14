@@ -237,7 +237,7 @@ describe("atlas window", function()
         local f = atlas():GetFrame()
         m:Click(f.tabs.knowledge)
         local t = texts()
-        assert.is_true(has(t, "Coming soon: the quest list of World of Warcraft: Forever with search and filters."))
+        assert.is_true(has(t, "For my character")) -- the knowledge base page (tests/spec/core_knowledge_spec.lua)
         assert.is_false(has(t, "Chapters of the route"))
         assert.equal("knowledge", atlas():SelectedTab())
 

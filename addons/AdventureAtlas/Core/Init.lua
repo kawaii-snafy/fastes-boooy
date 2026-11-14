@@ -32,7 +32,8 @@ ns.ADDON = ADDON or "AdventureAtlas"
 --      core 0.3.0: level sync, gray-quest skipping, unreachable-step rules, delayed automation (no route API change)
 --      core 0.3.1: audit fixes (skip undo, fp window, auto sync at login, bgDone), UI polish (no route API change)
 --   2  core 0.4.0: + AddLibraryInsert, route aliases, class reward table
---      core 0.5.0: renamed FastesBoooy -> AdventureAtlas (globals, folders, slash commands; no route API change)
+--      core 0.5.0: renamed FastesBoooy -> AdventureAtlas (globals, folders, slash commands; no route API change);
+--                  + AddKnowledge for the knowledge base data addon (Core/Knowledge.lua; guarded by presence)
 -- A module guards with `if (AdventureAtlas.API_MINOR or 0) < 1 then ... return end` (an older core
 -- has no API_MINOR at all) or, file by file, with `if not AdventureAtlas.AddLibraryInsert then return end`,
 -- see docs/ROUTE_FORMAT.md "Версия ядра".
@@ -324,6 +325,7 @@ ns.DEFAULTS = {
             arrow = { point = "TOP", relativePoint = "TOP", x = 0, y = -140 },
             atlas = { point = "CENTER", relativePoint = "CENTER", x = 0, y = 40 }, -- UI/Atlas.lua (+ tab = key)
         },
+        knowledge = { mine = true, hideDone = false, onlyNew = false }, -- UI/AtlasKnowledge.lua check boxes
         minimap = { angle = 200 }, -- UI/MinimapButton.lua: button position on the minimap rim, degrees
         xpLog = {},        -- [questID] = xp reward observed in game (max seen)
         xpLogLevel = {},   -- [questID] = player level when xpLog[questID] was recorded

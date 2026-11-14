@@ -53,8 +53,8 @@ jobs:
       - name: Simulate "player ahead of the route" (SYNC_ROUTES, in parallel)
         run: make simulate-sync
 
-      - name: Generated route data is up to date
-        run: make routedata-check
+      - name: Generated route data and knowledge base data are up to date
+        run: make routedata-check knowledge-check
 
       # `make report` fails when the validator wrote no report (a crash of the report generator;
       # routes with errors do not fail it), and leaves the committed file untouched in that case:

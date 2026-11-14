@@ -516,6 +516,7 @@ end' "$@" --no-overrides tests/fixtures/validator/AdventureAtlas_FxClean
             assert.is_true(count >= 8)
             -- generated files are checked for freshness, the addons are packaged
             assert.is_true(ran["routedata-check"])
+            assert.is_true(ran["knowledge-check"])
             assert.is_true(ran["package"])
             -- `make report` fails when the validator wrote no report (the cases above), so the step
             -- must not hide its exit status; then the committed file is compared

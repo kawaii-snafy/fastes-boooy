@@ -27,6 +27,8 @@ L.STEP_VENDOR = "Посетить торговца (продать / докуп�
 L.STEP_MANUAL = "Нажмите «Вперёд», когда закончите"
 L.STEP_SPELLS = "Выучить: %s"
 L.STEP_OBJECTIVE = "%s"
+-- Core/Waypoint.lua: прибытие к цели, выбранной в базе знаний
+L.WAYPOINT_ARRIVED_FMT = "Вы на месте: %s. Стрелка снова ведёт по маршруту."
 L.STEP_OBJECTIVE_PENDING = "Цель %d"
 L.QUEST_FALLBACK = "Задание №%d"
 L.ITEM_FALLBACK = "Предмет №%d"

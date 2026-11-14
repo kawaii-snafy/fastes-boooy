@@ -342,6 +342,18 @@ function Mock.loadAddon(m, tocPath, addonName, opts)
     for _, n in ipairs(addon.savedVariables) do m._svNames[n] = true end
     m.addons[addonName] = addon
     m.addonOrder[#m.addonOrder + 1] = addonName
+    -- opts.deferred (a "## LoadOnDemand: 1" addon): registered only; C_AddOns.LoadAddOn runs it
+    local function run()
+        m:_applySavedVariables(addon)
+        addon.svApplied = true
+        for _, file in ipairs(toc.files) do m:_runFile(toc.dir .. file, addonName, addon.ns) end
+        addon.loaded = true
+        m:Fire("ADDON_LOADED", addonName, false)
+    end
+    if opts and opts.deferred then
+        addon.load = run
+        return addon.ns
+    end
     m:_top(function()
         if toc.metaLower.loadsavedvariablesfirst == "1" then m:_applySavedVariables(addon); addon.svApplied = true end
         for _, file in ipairs(toc.files) do
@@ -639,6 +651,7 @@ ctx.register(function(m)
         LoadAddOn = function(name)
             local a = addonOf(name)
             if not a then return false, "MISSING" end
+            if not a.loaded and a.load then a.load() end
             return true, nil
         end,
     })

@@ -17,6 +17,7 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 | `fetch_wowhead_requirements.py` | списки «Requirements:» подсказок Wowhead Forever для квестов снимка → `data/wowhead_requirements.json` (количества целей Forever; вход `build_db_snapshot.py`) |
 | `data/wowhead_requirements.json` | (генерируется, коммитится) `{"<questID>": [[имя, N или null], ...]}` — 1 958 квестов, у 1 842 есть список (снимок 2026-11-08) |
 | `validate_routes.lua` | **валидатор маршрутов** (CLI; логика в `lib/validator.lua`; раздел 5; `--state`/`--write-state`/`--harness` — раздел 7) |
+| `gen_knowledge_data.lua` | генерирует `addons/AdventureAtlas_Knowledge/Quests.lua` из снимка БД: квесты, доступные Орде (имя, уровни, зона, маски рас / классов, кто выдаёт и принимает, цепочка, опыт, «новое в Forever»), NPC и объекты с координатами; формат — в шапке скрипта |
 | `gen_route_data.lua` | генерирует `<модуль>/Data.lua` (enUS-имена квестов/NPC маршрута, `places` — id зон и ruRU-имена мест, `questMeta` — уровни и предпосылки квестов; у модуля-библиотеки и у модуля с общим содержимым и маршрутами — `AddLibraryData`) |
 | `package_addons.py` | `dist/<Аддон>-<версия>.zip` для каждого каталога `addons/*` |
 | `gen_confirm_list.py` | список «что подтвердить в игре» из комментариев `-- CONFIRM` модуля гайдов: `python3 -I tools/gen_confirm_list.py > docs/routes/confirm-in-game.md` (вручную, после правок с `CONFIRM`; CI его свежесть не проверяет) |
@@ -53,6 +54,7 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 | `make harness-fixtures` | harness на фикстуре-библиотеке `AdventureAtlas_FxHarnessLib` из её состояния `tests/fixtures/validator/harness_state_6.json`: валидатор (`--strict`) и симулятор, оба профиля 22-60 |
 | `make harness PROFILE=… [LIB=…] [SEGMENTS=…] [STATE=…] [OUT=…]` | часть общих сегментов модуля из стартового состояния (раздел 7): валидатор (с `--write-state OUT`), затем симулятор; `LIB` по умолчанию `addons/AdventureAtlas_Guides`, пустой `SEGMENTS` — все сегменты |
 | `make report` | пишет `docs/VALIDATION.md` (сводный Markdown-отчёт валидатора, раздел 5). Ошибки маршрутов не роняют цель; цель падает, если валидатор не записал отчёт (ошибка Lua в генераторе, неверные аргументы): отчёт сначала пишется во временный файл, так что `docs/VALIDATION.md` либо новый, либо не тронут. `REPORT=файл` — писать в другой файл |
+| `make knowledge` / `make knowledge-check` | перегенерировать / проверить актуальность данных базы знаний |
 | `make routedata` / `make routedata-check` | перегенерировать / проверить актуальность `Data.lua` всех модулей маршрутов и библиотек (check — и фикстуры `FxClean`, `TestLib`, `TestComposed`, `FxHarnessLib`, `TestGuides`, без поправок) |
 | `make api BIR=… WOWUI=…` | перегенерировать `data/forever_api.lua` (оба пути обязательны; `WOWUI=none` — без глобалов FrameXML) |
 | `make db RESEARCH=… CONVERSION=…` | перегенерировать `data/forever_db.lua` (`CONVERSION` = `QuestieDB/data/Forever/conversion.json` или `none`; количества целей — из `data/wowhead_requirements.json`) |

@@ -7,6 +7,8 @@
 ```
 addons/
   AdventureAtlas/                 ядро (без контента)
+  AdventureAtlas_Knowledge/       данные базы знаний (LoadOnDemand, ## X-AdventureAtlas-Module: data):
+    Quests.lua                    квесты Орды из снимка БД (генерируется: make knowledge)
   AdventureAtlas_Guides/          все гайды: один маршрут на расу и класс (id <раса>-<класс>, 1-60)
     Data.lua                      имена квестов / NPC / мест, questMeta (генерируется: make routedata)
     Segments/<Зона>/              стартовые зоны (Tirisfal, Zephras, Durotar, Mulgore): классово-нейтральные
@@ -53,9 +55,11 @@ docs/                             документация (маршруты: do
 | `Core/Engine.lua` | активный маршрут (при активации сохранённый прогресс переносится с алиаса на id маршрута), отфильтрованный список шагов, курсор, фоновые цели, ручные отметки, перемотка вперёд, серые / недоступные / не взятые квесты, синхронизация по уровню, выбор награды (`GetRewardChoice`: `reward` шага, иначе таблица наград класса), реакции на события, колбэки `STEP_CHANGED`, `SYNC_SUGGESTION` |
 | `Core/Automation.lua` | автопринятие/автосдача квестов маршрута (QUEST_DETAIL / QUEST_PROGRESS / QUEST_COMPLETE / GOSSIP_SHOW / QUEST_GREETING), выбор награды, автодиалог; задержка действий (`autoDelay` + случайная добавка) с перепроверкой; Shift — пауза автоматики |
 | `Core/Waypoint.lua` | расчёт расстояния/направления до цели шага, нативная метка Blizzard (`C_Map.SetUserWaypoint` + `C_SuperTrack`) |
+| `Core/Knowledge.lua` | данные базы знаний: `AdventureAtlas.AddKnowledge` (аддон `AdventureAtlas_Knowledge`, грузится по требованию `Knowledge:Load`), поиск и фильтры `Knowledge:Search`, доступность квеста расе / классу, статус (выполнен / в журнале), локализованные названия зон |
 | `UI/StepFrame.lua` | окно шагов (текущий шаг, «Попутно», следующие невыполненные), прогресс целей, кнопки «Назад» / «Вперёд» / «Настройки», плашка синхронизации по уровню |
 | `UI/Arrow.lua` | стрелка-навигатор с дистанцией |
-| `UI/Atlas.lua` | окно атласа с вкладками: «Твоё приключение» (маршрут персонажа, прогресс, главы — `Engine:GetChapters`), «База знаний» (пока заглушка); страница вкладки строится при первом показе, выбранная вкладка и позиция — в `ns.db.frames.atlas` |
+| `UI/AtlasKnowledge.lua` | вкладка «База знаний»: поиск, уровни, фильтры (`ns.db.knowledge`), виртуальный список (10 строк поверх результатов), карточка квеста, «Вести стрелкой» (`Waypoint:SetCustom`) |
+| `UI/Atlas.lua` | окно атласа с вкладками: «Твоё приключение» (маршрут персонажа, прогресс, главы — `Engine:GetChapters`), «База знаний» (`UI/AtlasKnowledge.lua`); страница вкладки строится при первом показе, выбранная вкладка и позиция — в `ns.db.frames.atlas` |
 | `UI/MinimapButton.lua` | кнопка на краю миникарты без внешних библиотек: левый клик — атлас, правый — настройки, перетаскивание по кругу (угол в `ns.db.minimap.angle`); настройка `minimapButton`, `/aa minimap` |
 | `UI/Options.lua` | панель настроек + `/aa`. Кнопки маршрутов и `/aa routes` показывают только маршруты, подходящие персонажу (остальные — числом; `/aa routes all` — все id и названия без сборки); один раз за сессию строка в чат о загруженных папках прежнего имени (`FastesBoooy`, `FastesBoooy_Guides`, `FastesBoooy_Horde`, `FastesBoooy_UndeadPaladin`, `FastesBoooy_SkyborneDruid`) |
 | `Locales/*.lua` | строки интерфейса (ruRU, enUS) |

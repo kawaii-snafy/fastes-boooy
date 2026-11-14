@@ -57,6 +57,13 @@ leveling guide stay.
 
 ## Status
 
+* 2026-11-14: knowledge base, first version. tools/gen_knowledge_data.lua writes the Horde-available quests of the
+  snapshot (2832; zone, levels, race / class masks, start / end NPCs with positions, chain, XP, "new") into the
+  load-on-demand addon AdventureAtlas_Knowledge (TOC `## X-AdventureAtlas-Module: data`: the route tools skip it).
+  Core/Knowledge.lua loads and searches it; UI/AtlasKnowledge.lua is the tab (search by name or zone, level range,
+  "for my character", "hide done", "only new", quest card, "lead me" = Waypoint:SetCustom). Open: quest titles in
+  Russian only when the client has cached them (searching in Russian finds only those); NPC names are enUS;
+  quest sorts -1 and 0 have no category name ("Other"); the area of the Craftsman's Writs (16941) is our label.
 * 2026-11-14, core 0.5.0: renamed. The window (UI/Atlas.lua, BasicFrameTemplateWithInset, own tab buttons) and the
   minimap button (UI/MinimapButton.lua) exist. "Your adventure" shows the active route, its progress and its
   chapters (Engine:GetChapters: segment runs, steps that are not background goals); "Knowledge base" is a

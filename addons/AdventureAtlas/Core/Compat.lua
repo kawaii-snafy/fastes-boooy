@@ -178,6 +178,19 @@ end
 
 local titleCache, titleRequested = {}, {}
 
+--- Localized quest title if the client has it cached, without asking for it (searches over many quests).
+function Compat.GetCachedQuestTitle(questID)
+    if type(questID) ~= "number" then return nil end
+    local t = titleCache[questID]
+    if t then return t end
+    t = try(C_QuestLog.GetTitleForQuestID, questID)
+    if not isSecret(t) and type(t) == "string" and t ~= "" then
+        titleCache[questID] = t
+        return t
+    end
+    return nil
+end
+
 --- Localized quest title from the client cache. Requests the data when it is
 -- not cached yet; ns:Fire("QUEST_DATA_LOADED", questID, success) follows.
 -- @return title or nil
