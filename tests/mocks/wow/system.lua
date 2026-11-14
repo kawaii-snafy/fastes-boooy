@@ -315,7 +315,11 @@ end
 
 --- Load an addon from its TOC (files only; ADDON_LOADED is fired by Mock.boot).
 -- Returns the addon's private namespace table (the 2nd vararg of every file).
-function Mock.loadAddon(m, tocPath, addonName)
+-- @param opts { skip = { [TOC path with forward slashes] = true } }: files that are not run (the file
+--        filter of the offline tools, --skip / --keep: tools/lib/route_loader.lua mod.skipSet);
+--        addon.skipped lists them
+function Mock.loadAddon(m, tocPath, addonName, opts)
+    local skip = opts and opts.skip or nil
     local toc = Mock.parseToc(tocPath)
     addonName = addonName or tocPath:match("([^/\\]+)%.toc$"):gsub("[_%-]Camelot$", ""):gsub("[_%-]Forever$", "")
     local iface = tonumber((toc.metaLower.interface or ""):match("(%d+)"))
@@ -329,7 +333,7 @@ function Mock.loadAddon(m, tocPath, addonName)
     local addon = {
         name = addonName, toc = toc, meta = toc.meta, metaLower = toc.metaLower, interface = iface,
         ns = {}, loaded = false,
-        savedVariables = {},
+        savedVariables = {}, skipped = {},
     }
     for _, n in ipairs(splitList(toc.metaLower.savedvariables)) do addon.savedVariables[#addon.savedVariables + 1] = n end
     for _, n in ipairs(splitList(toc.metaLower.savedvariablespercharacter)) do
@@ -344,7 +348,11 @@ function Mock.loadAddon(m, tocPath, addonName)
             if file:match("%.xml$") then
                 error("mock: " .. addonName .. ": XML files are not supported by the mock (" .. file .. ")", 0)
             end
-            m:_runFile(toc.dir .. file, addonName, addon.ns)
+            if skip and skip[file] then
+                addon.skipped[#addon.skipped + 1] = file
+            else
+                m:_runFile(toc.dir .. file, addonName, addon.ns)
+            end
         end
     end)
     addon.loaded = true

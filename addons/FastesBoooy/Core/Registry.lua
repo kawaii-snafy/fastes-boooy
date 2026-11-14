@@ -1,16 +1,20 @@
 -- FastesBoooy / Core / Registry.lua
 --
 -- Route storage: FastesBoooy.RegisterRoute / AddSegment / AddRouteData, the shared
--- library (AddLibrarySegment / AddLibraryData) and its use by routes (UseSegments /
--- AddInsert) -- public API, see docs/ROUTE_FORMAT.md -- and route selection.
+-- library (AddLibrarySegment / AddLibraryData / AddLibraryInsert) and its use by routes
+-- (UseSegments / AddInsert) -- public API, see docs/ROUTE_FORMAT.md -- and route selection.
 --
---   ns.Registry:Get(id)            -> route | nil
---   ns.Registry:List()             -> array of routes (registration order)
+--   ns.Registry:Get(id)            -> route | nil (id = a route id or one of its `aliases`)
+--   ns.Registry:List([noCompose])  -> array of routes (registration order); noCompose = true:
+--                                     without composing them (titles / ids only: a composed
+--                                     route of another class costs memory, Registry:Matching)
+--   ns.Registry:Matching(facts)    -> the routes of this character (composed)
 --   ns.Registry:Select(facts)      -> best matching route | nil
 --   ns.Registry:Finalize([route])  -> compose the routes whose UseSegments / AddInsert /
 --                                     segments / library changed (Core/Compose.lua)
 --   ns.Registry.errors             -> array of "where: message" strings
 --   ns.Registry.library            -> library store (Compose.NewLibrary)
+--   ns.Registry.aliases            -> [former route id] = route (RegisterRoute{ aliases = ... })
 --   ns.Registry:Lookup(route, kind, id) -> localized name from route data | nil
 --
 -- Composition is lazy: UseSegments / AddInsert only record what to do, and a composed
@@ -33,7 +37,8 @@ local Registry = {
     order = {},      -- array of routes
     errors = {},
     pending = {},    -- [routeId] = { {kind="segment"|"data"|"uses"|"insert", def=...}, ... } added before RegisterRoute
-    library = nil,   -- shared library segments / data (Compose.NewLibrary), created on first use
+    library = nil,   -- shared library segments / data / inserts (Compose.NewLibrary), created on first use
+    aliases = {},    -- [former route id] = route (RegisterRoute{ aliases = "old-id" | { ... } })
 }
 ns.Registry = Registry
 
@@ -77,10 +82,27 @@ function Registry:RegisterRoute(def)
         addError(("route %s: registered twice (second definition ignored)"):format(tostring(id)))
         return nil
     end
+    if self.aliases[id] then
+        -- a route id always wins over an alias (e.g. an old guide module is still installed)
+        addError(("route %s: its id is an alias of route %s (alias ignored)"):format(id, tostring(self.aliases[id].id)))
+        self.aliases[id] = nil
+    end
     route.data = route.data or {}
     route.registeredAt = #self.order + 1
     self.routes[id] = route
     self.order[#self.order + 1] = route
+    -- former ids: Registry:Get resolves them, Engine:ActivateRoute moves the saved progress over.
+    -- A route id always wins over an alias (Get looks at the ids first).
+    for _, alias in ipairs(route.aliases or {}) do
+        if self.routes[alias] then
+            addError(("route %s: alias '%s' is the id of a registered route (alias ignored)"):format(id, alias))
+        elseif self.aliases[alias] then
+            addError(("route %s: alias '%s' is already used by route %s (alias ignored)"):format(id, alias,
+                tostring(self.aliases[alias].id)))
+        else
+            self.aliases[alias] = route
+        end
+    end
 
     local pending = self.pending[id]
     self.pending[id] = nil
@@ -93,7 +115,9 @@ function Registry:RegisterRoute(def)
             elseif p.kind == "insert" then
                 self:AddInsert(id, p.def)
             else
-                self:AddRouteData(id, p.def)
+                -- AddRouteData checked the shape before it queued the data: merge directly,
+                -- so a bad entry is reported once (as the tools' loader does)
+                ns.Compose.MergeData(route.data, p.def)
             end
         end
     end
@@ -165,9 +189,10 @@ local function libraryChanged(self)
     end
 end
 
---- FastesBoooy.AddLibrarySegment(def): a class-neutral segment of a library module
--- (e.g. FastesBoooy_Horde), same definition as AddSegment, used by routes through
--- UseSegments. Library segment ids and step ids are unique across the whole library.
+--- FastesBoooy.AddLibrarySegment(def): a shared segment (same definition as AddSegment),
+-- used by routes through UseSegments. Library segment ids and step ids are unique across
+-- the whole library. A step whose class / race / faction filter cannot match a route is
+-- not composed into that route (Core/Compose.lua).
 -- @return segment or nil
 function Registry:AddLibrarySegment(def)
     local seg, errors = ns.Compose.AddLibrarySegment(library(self), def)
@@ -186,8 +211,25 @@ function Registry:AddLibraryData(data)
         addError("AddLibraryData: " .. tostring(err))
         return false
     end
+    local errs = {}
+    ns.Schema.CheckData(data, "AddLibraryData", errs) -- (merged as given; the engine skips a bad entry)
+    addErrors(errs)
     libraryChanged(self)
     return true
+end
+
+--- FastesBoooy.AddLibraryInsert({ after = "<stepId>" | before = "<stepId>", class = , race = ,
+-- faction = , steps = {...} }): shared steps (class training, class and race quests, riding)
+-- next to a step of a shared segment or of another shared insert. Applied to every route
+-- with a UseSegments list that contains the anchor; class / race / faction are the default
+-- filters of the steps, and a step that cannot match a route is not composed into it. Every
+-- step needs an explicit id, unique in the library (Core/Compose.lua: AddLibraryInsert).
+-- @return insert record or nil
+function Registry:AddLibraryInsert(def)
+    local ins, errors = ns.Compose.AddLibraryInsert(library(self), def)
+    addErrors(errors, "library")
+    if ins then libraryChanged(self) end
+    return ins
 end
 
 --- FastesBoooy.UseSegments(routeId, { "h-...", ... }): append library segments to the
@@ -262,6 +304,9 @@ function Registry:AddRouteData(routeId, data)
         addError(("AddRouteData %s: data must be a table"):format(tostring(routeId)))
         return false
     end
+    local errs = {}
+    ns.Schema.CheckData(data, "AddRouteData " .. tostring(routeId), errs)
+    addErrors(errs)
     local route = self.routes[routeId]
     if not route then
         queue(self, routeId, "data", data, "AddRouteData")
@@ -276,23 +321,34 @@ end
 -- queries
 ---------------------------------------------------------------------------
 
+--- Route by id, or by one of its former ids (`aliases`) when no route has that id.
 function Registry:Get(id)
     if id == nil then return nil end
-    local route = self.routes[id]
+    local route = self.routes[id] or self.aliases[id]
     if route and route.dirty then self:Finalize(route) end
     return route
 end
 
-function Registry:List()
-    self:Finalize()
+--- Every route in registration order.
+-- @param noCompose true: do not compose them (ids, titles, levels...; route.steps of a route
+--        that was never read is then empty). Composing every route costs about 1.2 MB each:
+--        the UI lists with noCompose and shows Registry:Matching.
+function Registry:List(noCompose)
+    if not noCompose then self:Finalize() end
     local out = {}
     for i, r in ipairs(self.order) do out[i] = r end
     return out
 end
 
+--- Is the route composed and up to date (its steps can be counted without composing it)?
+-- A plain route (no UseSegments / AddInsert) always is.
+function Registry:IsComposed(route)
+    return route ~= nil and not (route.own and route.dirty)
+end
+
 --- Routes applicable to the player (faction / race / class), in registration order.
 -- Only these are composed (Core/Compose.lua) -- a composed route of another class or race
--- is built when it is listed (Registry:List) or chosen (Registry:Get).
+-- is built when it is chosen (Registry:Get) or when everything is listed (Registry:List()).
 function Registry:Matching(facts)
     local out = {}
     for _, r in ipairs(self.order) do
@@ -354,5 +410,6 @@ end
 --- Test helper: forget every route and error.
 function Registry:Wipe()
     self.routes, self.order, self.errors, self.pending, self.library = {}, {}, {}, {}, nil
+    self.aliases = {}
     Registry.errors = self.errors
 end

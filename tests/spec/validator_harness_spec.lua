@@ -192,9 +192,20 @@ describe("start-state harness", function()
             assert.are.same({ "fh-brill" }, hb.segments)
         end)
 
-        it("refuses route modules and missing directories", function()
-            local hb = Harness.Build("tests/fixtures/validator/FastesBoooy_FxClean", { schema = schema, profile = PALADIN })
-            assert.matches("registers route%(s%) %(fx%-clean%)", hb.fatal)
+        it("accepts a module that registers routes when it has shared segments; refuses the others", function()
+            -- a mixed module (the shape of FastesBoooy_Guides): the harness uses its shared part
+            local hb = Harness.Build("tests/fixtures/core/FastesBoooy_TestGuides", { schema = schema, profile = PALADIN,
+                segments = { "tg-ud-01-deathknell" } })
+            assert.is_nil(hb.fatal)
+            assert.are.same({}, hb.errors)
+            assert.are.equal("harness-TestGuides", hb.route.id)
+            assert.are.same({ "tg-ud-01-deathknell" }, hb.segments)
+            assert.are.equal(3, #hb.mod.routes, "the module's own routes are loaded next to the harness route")
+            -- the shared insert of the paladin's class file applies to the harness route
+            assert.is_truthy(hb.route.stepById["tg-pal-train-1"])
+            -- a route module without shared segments has nothing for a harness
+            hb = Harness.Build("tests/fixtures/validator/FastesBoooy_FxClean", { schema = schema, profile = PALADIN })
+            assert.matches("registers route%(s%) %(fx%-clean%) but no shared segments", hb.fatal)
             hb = Harness.Build("tests/fixtures/validator/FastesBoooy_Nope", { schema = schema, profile = PALADIN })
             assert.matches("no TOC file found", hb.fatal)
         end)
@@ -322,7 +333,7 @@ describe("start-state harness", function()
             assert.is_nil(es.meta.startState)
         end)
 
-        it("step-no-profile is not reported for the single harness profile; filtered steps are skipped", function()
+        it("a shared step of another class is not composed into the harness route (no step-no-profile)", function()
             local root = tmpname()
             os.execute(("mkdir -p '%s/FastesBoooy_HxLib'"):format(root))
             writeFile(root .. "/FastesBoooy_HxLib/FastesBoooy_HxLib.toc",
@@ -334,17 +345,22 @@ FastesBoooy.AddLibrarySegment({ id = "hx", title = "X", levels = { 1, 2 }, steps
     { id = "hx-2", turnin = 363, npc = 1569, at = { 1420, 30.8, 66.2 } },
 } })
 ]])
-            local r = harness(nil, { lib = root .. "/FastesBoooy_HxLib" })
+            local r, hb = harness(nil, { lib = root .. "/FastesBoooy_HxLib" })
             os.execute(("rm -rf '%s'"):format(root))
             assert.are.equal(0, r.counts.ERROR + r.counts.WARN)
             assert.is_nil(codes(r)["step-no-profile"])
-            assert.are.equal(1, codes(r, "INFO")["step-skipped"])
+            -- the harness route has one race and one class: Core/Compose.lua leaves the DRUID step out
+            -- (before core 0.4.0 it was composed and skipped by the profile: INFO step-skipped)
+            local ids = {}
+            for i, s in ipairs(hb.route.steps) do ids[i] = s.id end
+            assert.are.same({ "hx-1", "hx-2" }, ids)
+            assert.is_nil(codes(r, "INFO")["step-skipped"])
         end)
     end)
 
     describe("command line", function()
-        local VAL = "lua5.1 tools/validate_routes.lua "
-        local SIM = "lua5.1 tools/simulate_routes.lua "
+        local VAL = "lua5.1 tools/validate_routes.lua --no-overrides "
+        local SIM = "lua5.1 tools/simulate_routes.lua --no-overrides "
 
         it("validate: harness from the fixture state, end state written; chaining via files", function()
             local out1, out2 = tmpname(), tmpname()
@@ -442,10 +458,10 @@ FastesBoooy.AddLibrarySegment({ id = "hx", title = "X", levels = { 1, 2 }, steps
                 .. "## X-FastesBoooy-Module: library\nData.lua\nSegments\\01_a.lua\n")
             writeFile(dir .. "/Segments/01_a.lua", "-- placeholder: no registration yet\n")
             -- gen_route_data writes empty library data for it
-            local code, out = run("lua5.1 tools/gen_route_data.lua --stdout '" .. dir .. "'")
+            local code, out = run("lua5.1 tools/gen_route_data.lua --no-overrides --stdout '" .. dir .. "'")
             assert.are.equal(0, code, out)
             assert.matches("FastesBoooy.AddLibraryData%({\n    quests = {},\n    npcs = {},\n}%)", out)
-            run("lua5.1 tools/gen_route_data.lua '" .. dir .. "'")
+            run("lua5.1 tools/gen_route_data.lua --no-overrides '" .. dir .. "'")
             local mod = Loader.LoadModule(dir, { schema = schema })
             assert.is_true(mod.isLibrary)
             assert.are.same({}, mod.errors)

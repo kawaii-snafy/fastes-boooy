@@ -92,7 +92,9 @@ end
 
 -- route buttons in the right column, below the level-sync section (header at about -472 on the
 -- Settings canvas, 24 px per button): the canvas is 601 px tall and Apply / Close sit at -610..-632, so
--- three buttons + the "more routes" and error notes end above -600; the rest: /fb routes
+-- three buttons + the "more routes" and error notes end above -600; the rest: /fb routes.
+-- The buttons are the routes of this character (Registry:Matching, normally one); the routes of
+-- other races and classes are only counted (never composed here: about 1.2 MB each).
 local MAX_ROUTE_BUTTONS = 3
 
 ---------------------------------------------------------------------------
@@ -436,7 +438,12 @@ local function routeTooltip(self)
         lines[#lines + 1] = format(L.UI_OPT_ROUTE_LEVELS_FMT, r.levels[1], r.levels[2])
     end
     if r.version then lines[#lines + 1] = format(L.UI_OPT_ROUTE_VERSION_FMT, tostring(r.version)) end
-    if type(r.steps) == "table" then lines[#lines + 1] = format(L.UI_OPT_ROUTE_STEPS_FMT, #r.steps) end
+    -- the step count only of a composed route (showing a tooltip must not compose one)
+    local R = ns.Registry
+    local composed = not (R and R.IsComposed) or R:IsComposed(r)
+    if composed and type(r.steps) == "table" then
+        lines[#lines + 1] = format(L.UI_OPT_ROUTE_STEPS_FMT, #r.steps)
+    end
     local desc = UI.Text(r.description)
     if desc then lines[#lines + 1] = { desc, 1, 0.82, 0 } end
     lines[#lines + 1] = { L.UI_OPT_ROUTE_CLICK, 0.5, 0.8, 1 }
@@ -463,19 +470,40 @@ local function routeButton(i)
     return b
 end
 
-local function listRoutes()
-    local R = ns.Registry
-    local list = R and R.List and R:List()
-    return type(list) == "table" and list or {}
-end
-
 local function activeRouteId()
     local route = ns.Engine and ns.Engine:GetRoute()
     return route and route.id
 end
 
+-- every registered route, registration order, WITHOUT composing them (ids / titles only)
+local function allRoutes()
+    local R = ns.Registry
+    local list = R and R.List and R:List(true)
+    return type(list) == "table" and list or {}
+end
+
+-- The routes of this character: Registry:Matching (composes only these), plus the active route
+-- first when it was chosen by hand for another race / class.
+-- @return list, total number of registered routes
+local function listRoutes()
+    local R = ns.Registry
+    local total = #allRoutes()
+    local facts = (ns.Engine and ns.Engine.facts) or (ns.Compat and ns.Compat.PlayerFacts and ns.Compat.PlayerFacts())
+    local list = R and R.Matching and R:Matching(facts)
+    list = type(list) == "table" and list or {}
+    local active = ns.Engine and ns.Engine:GetRoute()
+    if active then
+        local found = false
+        for _, r in ipairs(list) do
+            if r == active then found = true break end
+        end
+        if not found then table.insert(list, 1, active) end
+    end
+    return list, total
+end
+
 local function refreshRoutes()
-    local list = listRoutes()
+    local list, total = listRoutes()
     local active = activeRouteId()
     local shown = 0
     for i, r in ipairs(list) do
@@ -499,10 +527,12 @@ local function refreshRoutes()
     local last = routeButtons[shown] or routesAnchor
     routesNote:ClearAllPoints()
     routesNote:SetPoint("TOPLEFT", last, "BOTTOMLEFT", 0, -6)
-    if #list == 0 then
+    if total == 0 then
         routesNote:SetText(L.UI_OPT_NO_ROUTES)
-    elseif #list > MAX_ROUTE_BUTTONS then
-        routesNote:SetText(format(L.UI_OPT_MORE_ROUTES_FMT, #list - MAX_ROUTE_BUTTONS))
+    elseif shown == 0 then
+        routesNote:SetText(format(L.UI_OPT_NO_MATCHING_FMT, total))
+    elseif total > shown then
+        routesNote:SetText(format(L.UI_OPT_MORE_ROUTES_FMT, total - shown))
     else
         routesNote:SetText("")
     end
@@ -751,17 +781,31 @@ local function printHelp()
     end
 end
 
-local function printRoutes()
-    local list = listRoutes()
+-- /fb routes: the routes of this character, then the number of the others;
+-- /fb routes all: every route (id and title; nothing is composed for the listing)
+local function printRoutes(arg)
+    local all = (arg or ""):lower() == "all"
+    local list, total
+    if all then
+        list = allRoutes()
+        total = #list
+    else
+        list, total = listRoutes()
+    end
     local active = activeRouteId()
-    if #list == 0 then
+    if total == 0 then
         out(L.UI_ROUTES_NONE)
     else
-        out(L.UI_ROUTES_HEADER)
-        for _, r in ipairs(list) do
-            out(format(L.UI_ROUTE_LINE_FMT, r.id == active and "*" or "-", tostring(r.id),
-                UI.Text(r.title) or ""))
+        if #list == 0 then
+            out(L.UI_ROUTES_NO_MATCH)
+        else
+            out(L.UI_ROUTES_HEADER)
+            for _, r in ipairs(list) do
+                out(format(L.UI_ROUTE_LINE_FMT, r.id == active and "*" or "-", tostring(r.id),
+                    UI.Text(r.title) or ""))
+            end
         end
+        if total > #list then out(format(L.UI_ROUTES_OTHERS_FMT, total - #list)) end
     end
     local errors = ns.Registry and ns.Registry.errors
     if type(errors) == "table" and #errors > 0 then
@@ -991,6 +1035,35 @@ SlashCmdList.FASTESBOOOY = function(msg) Options:HandleSlash(msg) end
 local function refreshIfShown()
     if panel and panel:IsShown() then Options:Refresh() end
 end
+
+-- Guide modules of core 0.3 and older: their content is part of FastesBoooy_Guides now. Left
+-- installed next to it they register the same shared segments a second time (errors) and a
+-- second default route, so say it once per session. Without FastesBoooy_Guides they are the
+-- guides of this installation (a core updated on its own): nothing to delete then.
+local GUIDES_MODULE = "FastesBoooy_Guides"
+local OBSOLETE_MODULES = { "FastesBoooy_Horde", "FastesBoooy_UndeadPaladin", "FastesBoooy_SkyborneDruid" }
+
+--- Names of the loaded guide modules that FastesBoooy_Guides replaces (empty list: none, or
+-- FastesBoooy_Guides is not loaded).
+function Options:ObsoleteModules()
+    local found = {}
+    local C = ns.Compat
+    if C and C.IsAddOnLoaded and C.IsAddOnLoaded(GUIDES_MODULE) then
+        for _, name in ipairs(OBSOLETE_MODULES) do
+            if C.IsAddOnLoaded(name) then found[#found + 1] = name end
+        end
+    end
+    return found
+end
+
+local obsoleteWarned = false
+ns:On("PLAYER_LOGIN", function()
+    if obsoleteWarned then return end
+    local found = Options:ObsoleteModules()
+    if #found == 0 then return end
+    obsoleteWarned = true
+    out(format(L.UI_OBSOLETE_MODULES_FMT, table.concat(found, ", ")))
+end)
 
 ns:Listen("DB_READY", function() Options:Build() end)
 ns:Listen("ROUTE_CHANGED", refreshIfShown)

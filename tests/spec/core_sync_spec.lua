@@ -461,6 +461,110 @@ describe("gray quests (settings.skipGray)", function()
         assert.is_false(done(ns, "s2-t4"), "taken: its turn-in is needed")
     end)
 
+    -- A quest the player has passed or declined keeps no gray chain alive. The shape of the real
+    -- routes: 1424 > 1429 > 1444 (gray at 60) lead to the optional dungeon quest 1445 (level 50, not
+    -- gray at 60). A character that finished the route without that chain (a level sync at 48 jumps
+    -- over it) and lost its SavedVariables must still see the route as finished.
+    describe("protection ends with the quest the chain leads to", function()
+        local FIN = "fin-route"
+        local FQ = {
+            [93001] = { title = "Chain One", level = 2 },
+            [93002] = { title = "Chain Two", level = 3, pre = { 93001 } },
+            [93003] = { title = "Optional Dungeon", level = 14, pre = { 93002 } },
+            [93004] = { title = "The Last One", level = 12 },
+        }
+        local function registerFin(api)
+            api.RegisterRoute({ api = 1, id = FIN, title = { en = "Finished route", ru = "Пройденный маршрут" },
+                faction = "Horde", races = { "Scourge" }, classes = { "PALADIN" }, levels = { 1, 10 }, default = true })
+            api.AddSegment(FIN, { id = "f1", title = { en = "1-5", ru = "1-5" }, levels = { 1, 5 }, steps = {
+                { id = "f-a1", accept = 93001 },
+                { id = "f-t1", turnin = 93001, accept = 93002 },
+                { id = "f-t2", turnin = 93002 },
+            } })
+            api.AddSegment(FIN, { id = "f2", title = { en = "5-10", ru = "5-10" }, levels = { 5, 10 }, steps = {
+                { id = "f-opt", accept = 93003, optional = true },
+                { id = "f-opt-t", turnin = 93003, optional = true },
+                { id = "f-a4", accept = 93004 },
+                { id = "f-end", turnin = 93004 },
+            } })
+            local meta = {}
+            for id, q in pairs(FQ) do meta[id] = { level = q.level, reqLevel = 1, preAll = q.pre } end
+            api.AddRouteData(FIN, { questMeta = meta })
+        end
+        local function bootFin(opts)
+            opts = opts or {}
+            local m, ns = H.new({ fixture = false, quests = false, register = registerFin,
+                setup = function(m)
+                    for id, q in pairs(FQ) do m:DefineQuest(id, q) end
+                    for _, q in ipairs(opts.completed or {}) do m.completed[q] = true end
+                end,
+                player = { level = 15 },
+                savedVariables = { FastesBoooyDB = { settings = { levelSync = opts.levelSync or "off" } } } })
+            Mock.boot(m, { "FastesBoooy" })
+            H.settle(m)
+            return m, ns
+        end
+
+        it("a finished route is finished on a cold start: the passed optional quest protects nothing", function()
+            -- level 15: 93001 (2) and 93002 (3) are gray, 93003 (14) is not; the last step is done, so
+            -- the optional accept of 93003 lies behind the forward limit ("not taken")
+            for _, mode in ipairs({ "off", "ask", "auto" }) do
+                local m, ns = bootFin({ completed = { 93004 }, levelSync = mode })
+                assert.is_false(ns.Compat.IsQuestGray(93003, 14, 15))
+                assert.equal(idx(ns, "f-end"), E(ns).anchor, mode)
+                assert.equal("gray", why(ns, "f-a1", "accept", 93001), mode)
+                assert.equal("orphan", why(ns, "f-t1", "turnin", 93001), mode)
+                assert.equal("gray", why(ns, "f-t1", "accept", 93002), mode)
+                assert.equal("orphan", why(ns, "f-t2", "turnin", 93002), mode)
+                assert.equal("<end>", H.cur(ns), mode .. ": the route is finished")
+                assert.is_nil(E(ns):GetNaturalCursor(), mode)
+                assert.is_nil(E(ns):GetSyncSuggestion(), mode)
+                assert.is_nil(E(ns):GetAcceptQuests()[93001], mode)
+                m:AssertClean()
+            end
+        end)
+
+        it("the chain stays while the route still leads to the quest", function()
+            -- nothing done: the optional accept is ahead of the forward limit and may still be taken
+            local m, ns = bootFin()
+            assert.is_true(E(ns).forwardLimit < idx(ns, "f-opt"))
+            assert.is_nil(why(ns, "f-a1", "accept", 93001))
+            assert.equal("f-a1", H.cur(ns))
+            -- the player declines the optional quest (Skip on its accept step): nothing needs the chain
+            ns.cdb.skipped["f-opt"] = true
+            E(ns):Refresh()
+            assert.equal("gray", why(ns, "f-a1", "accept", 93001))
+            assert.equal("gray", why(ns, "f-t1", "accept", 93002))
+            assert.equal("f-a4", H.cur(ns))
+            -- (the high-water mark is now behind the optional step: taking the mark away does not
+            -- bring the chain back, the step stays passed)
+            ns.cdb.skipped["f-opt"] = nil
+            E(ns):Refresh()
+            assert.equal("gray", why(ns, "f-a1", "accept", 93001))
+            assert.equal("f-a4", H.cur(ns))
+            -- Reset forgets the mark and the high-water mark: the chain is back
+            E(ns):Reset()
+            H.settle(m)
+            assert.is_nil(why(ns, "f-a1", "accept", 93001))
+            assert.equal("f-a1", H.cur(ns))
+            m:AssertClean()
+        end)
+
+        it("a quest of the chain in the log, or the optional quest itself, is never skipped", function()
+            local m, ns = bootFin({ completed = { 93004 } })
+            assert.equal("<end>", H.cur(ns))
+            -- the player takes the first quest of the chain by hand: its turn-in is wanted again, the
+            -- next accept stays gray (nothing kept needs it)
+            m:AddQuestToLog(93001)
+            H.settle(m)
+            assert.is_nil(why(ns, "f-a1", "accept", 93001))
+            assert.is_nil(why(ns, "f-t1", "turnin", 93001))
+            assert.equal("gray", why(ns, "f-t1", "accept", 93002))
+            assert.equal("f-t1", H.cur(ns))
+            m:AssertClean()
+        end)
+    end)
+
     it("Compat.IsQuestGray: the client's IsQuestTrivial when cached, else the rule with the route level", function()
         local m, ns = boot(10)
         local C = ns.Compat
@@ -583,7 +687,7 @@ describe("route data questMeta", function()
     end
 
     it("gen_route_data writes level / reqLevel / preAll / preAny / items from the DB snapshot", function()
-        local code, out = run("lua5.1 tools/gen_route_data.lua --stdout " .. H.LIB_DIR)
+        local code, out = run("lua5.1 tools/gen_route_data.lua --no-overrides --stdout " .. H.LIB_DIR)
         assert.equal(0, code, out)
         local chunk = assert(loadstring(out))
         local captured
@@ -630,14 +734,57 @@ describe("settings", function()
     end)
 end)
 
+describe("the guides module", function()
+    local MODULES = { { "addons/FastesBoooy_Guides/FastesBoooy_Guides.toc", "FastesBoooy_Guides" } }
+
+    -- 0.4.0 renamed the two routes of 0.3 (three modules -> FastesBoooy_Guides). Their former ids are `aliases`
+    -- in Route.lua; without them a character silently loses the manual route choice, the high-water mark and
+    -- the level-sync floor, and no tool notices.
+    it("keeps the former route ids as aliases: progress saved by 0.3 is adopted", function()
+        local FLOOR = "h-27-ashenvale-needles-level-gate" -- a step of the shared path, in both routes
+        local function bootSaved(old)
+            return H.boot({ fixture = false, db = true, modules = MODULES, player = { level = 30 },
+                savedVariables = { FastesBoooyCharDB = {
+                    route = old, cursorHint = 1, cursorHintId = FLOOR, cursorHintRoute = old,
+                    syncFloor = { route = old, stepId = FLOOR, from = "h-27-ashenvale-needles",
+                        to = "h-27-ashenvale-needles", level = 30, hint = { 1, FLOOR, old } },
+                    syncDismissed = { route = old, segment = "h-27-ashenvale-needles", level = 30 },
+                } } })
+        end
+        -- the second case is a manual choice of a route for another race and class: without the alias the
+        -- automatic selection would give this Undead paladin "undead-paladin"
+        for _, case in ipairs({
+            { old = "horde-undead-paladin", id = "undead-paladin" },
+            { old = "horde-skyborne-druid", id = "skyborne-druid" },
+        }) do
+            local m, ns = bootSaved(case.old)
+            local R, e, cdb = ns.Registry, E(ns), m.env.FastesBoooyCharDB
+            assert.same({}, R.errors)
+            assert.equal("undead-paladin", (R:Get("horde-undead-paladin") or {}).id, "alias lost in Route.lua")
+            assert.equal("skyborne-druid", (R:Get("horde-skyborne-druid") or {}).id, "alias lost in Route.lua")
+            assert.is_nil(R.routes["horde-undead-paladin"])
+            assert.is_nil(R.routes["horde-skyborne-druid"])
+            assert.equal(case.id, e:GetRoute().id, case.old)
+            assert.equal(case.id, cdb.route, case.old)
+            assert.equal(case.id, cdb.cursorHintRoute, case.old)
+            assert.equal(case.id, cdb.syncFloor.route, case.old)
+            assert.equal(case.id, cdb.syncFloor.hint[3], case.old)
+            assert.equal(case.id, cdb.syncDismissed.route, case.old)
+            assert.equal(cdb.syncFloor, e:GetSyncFloor(), "the saved floor is the active route's again")
+            assert.is_true(e:FloorIndex() > 100, "the floor step is deep in the route")
+            m:AssertClean()
+        end
+    end)
+end)
+
 describe("performance", function()
     it("a refresh of a 1700-step route with the void pass stays cheap", function()
         local m, ns = H.new({ fixture = false, db = true, player = { level = 23 }, modules = {
-            { "addons/FastesBoooy_Horde/FastesBoooy_Horde.toc", "FastesBoooy_Horde" },
-            { "addons/FastesBoooy_UndeadPaladin/FastesBoooy_UndeadPaladin.toc", "FastesBoooy_UndeadPaladin" } } })
-        Mock.boot(m, { "FastesBoooy", "FastesBoooy_Horde", "FastesBoooy_UndeadPaladin" })
+            { "addons/FastesBoooy_Guides/FastesBoooy_Guides.toc", "FastesBoooy_Guides" } } })
+        Mock.boot(m, { "FastesBoooy", "FastesBoooy_Guides" })
         H.settle(m)
         local e = E(ns)
+        assert.equal("undead-paladin", e:GetRoute().id)
         assert.is_true(#e:GetSteps() > 1500)
         assert.equal("ud-01-deathknell", e:GetSyncSuggestion().from.id)
         e:ApplySync()

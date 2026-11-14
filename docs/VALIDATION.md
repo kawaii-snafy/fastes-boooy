@@ -4,1172 +4,1173 @@
 
 Снимок БД: World of Warcraft: Forever 1.60.1.70862 (Interface 16001), дата снимка 2026-11-07, `tools/data/forever_db.lua`.
 
-Как читать: **ERROR** — маршрут сломан (квест недоступен, не тот NPC, нарушена цепочка, переполнен журнал, уровень ниже требуемого); **WARN** — вероятная проблема (NPC далеко от точки `at`, опыт квеста неизвестен и оценён, квест не сдан к концу маршрута); **INFO** — справка (пропущенные по фильтру шаги, оценки опыта за убийства). Симуляция опыта — оценка: опыт квестов из БД (для новых квестов Forever — медиана по уровню), опыт за мобов — формула Classic со штрафом Forever за «зелёных» мобов, без rested-бонуса.
+Как читать: **ERROR** — маршрут сломан (квест недоступен, не тот NPC, нарушена цепочка, переполнен журнал, уровень ниже требуемого); **WARN** — вероятная проблема (NPC далеко от точки `at`, большой гринд до порога уровня, квест не сдан к концу маршрута); предупреждение, принятое автором ключом `ok` на шаге или сегменте, считается отдельно («принято»); **INFO** — справка (оценки опыта, квесты с неизвестным опытом), в отчёте только числом по кодам. Симуляция опыта — оценка: опыт квестов из БД (для новых квестов Forever — медиана по уровню), опыт за мобов — формула Classic со штрафом Forever за «зелёных» мобов, без rested-бонуса.
+
+Отчёт сводный: сообщения о шагах общих сегментов показаны один раз для всех маршрутов (раздел «Общие шаги»), в разделе маршрута — только его собственные. Полный список по каждому маршруту: `lua5.1 tools/validate_routes.lua --route <id>` (с `-v` — и INFO) или `--json FILE`.
 
 Перегенерировать: `make report` (или `lua5.1 tools/validate_routes.lua --markdown docs/VALIDATION.md`).
 
-**Итого: 0 ERROR, 248 WARN, 775 INFO.**
+**Итого: 0 ERROR, 0 WARN, 12571 INFO; принято предупреждений (`ok`): 488.**
 
-## Библиотека FastesBoooy_Horde
+Прогонов (маршрут × профиль): 28. ERROR и WARN без повторов: 0 из 0 (сообщений о шагах общих сегментов: 0, строк в разделе «Общие шаги»: 0).
 
-Модуль общих сегментов (library: 12 segment(s), 1300 step(s)): шаги проверяются в маршрутах, которые их используют (`UseSegments`), сообщения о них помечены `[library FastesBoooy_Horde]`. Результат: **0 ERROR, 0 WARN, 0 INFO**.
+## Модули и общие проверки
+
+### Общая часть модуля FastesBoooy_Guides
+
+Проверки шаблонов (shared: 26 segment(s), 364 insert(s), 2747 step(s)): общие сегменты и общие вставки (`AddLibraryInsert`) проверяются один раз для всех маршрутов. Результат: **0 ERROR, 0 WARN, 0 INFO**.
 
 Ошибок и предупреждений нет.
 
-## horde-skyborne-druid — Skyborne Druid (Horde) 1-60
+## Сводка по маршрутам
 
-Модуль `FastesBoooy_SkyborneDruid`, профиль: Skyborne DRUID Horde. Результат: **0 ERROR, 149 WARN, 390 INFO**.
+Строка на маршрут × профиль. «Худший» — прогон, в котором шаги `optional = true` и их квесты не выполнены. Гринд — убийства мобов своего уровня до порогов `level`; «+15 %» — то же с попутными убийствами в пути на 15 % опыта квестов. «Оценён опыт» — квесты, опыт которых в БД неизвестен (медиана по уровню), и их доля в опыте квестов.
 
-Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1922500 (из них оценено 121565; квестов с неизвестным опытом: 126), за убийства по целям 813449, гринд 1348795 (~4878 убийств); максимум квестов в журнале 23 из 40; принято 727, сдано 727, не сдано к концу 0.
+| маршрут | профиль | ERROR | WARN | принято | конец | худший конец | гринд | худший гринд | гринд +15 % | худший +15 % | оценён опыт | журнал | шагов | необязательных |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `orc-hunter` | Orc HUNTER Horde | 0 | 0 | 16 | 60.00 | 60.00 | 4944 | 6207 | 3943 | 5288 | 63 (4.5 %) | 23 | 1710 | 168 |
+| `orc-mage` | Orc MAGE Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4978 | 6225 | 3973 | 5301 | 65 (4.6 %) | 23 | 1699 | 163 |
+| `orc-rogue` | Orc ROGUE Horde | 0 | 0 | 18 | 60.00 | 60.00 | 4954 | 6187 | 3947 | 5259 | 63 (4.5 %) | 23 | 1712 | 168 |
+| `orc-shaman` | Orc SHAMAN Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4937 | 6183 | 3946 | 5269 | 63 (4.5 %) | 23 | 1724 | 171 |
+| `orc-warlock` | Orc WARLOCK Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4897 | 6199 | 3892 | 5276 | 66 (4.6 %) | 23 | 1728 | 177 |
+| `orc-warrior` | Orc WARRIOR Horde | 0 | 0 | 16 | 60.00 | 60.00 | 4914 | 6155 | 3913 | 5227 | 64 (4.5 %) | 23 | 1720 | 162 |
+| `troll-hunter` | Troll HUNTER Horde | 0 | 0 | 16 | 60.00 | 60.00 | 4944 | 6207 | 3943 | 5288 | 63 (4.5 %) | 23 | 1712 | 170 |
+| `troll-mage` | Troll MAGE Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4978 | 6225 | 3973 | 5301 | 64 (4.6 %) | 23 | 1701 | 165 |
+| `troll-priest` | Troll PRIEST Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4950 | 6219 | 3944 | 5296 | 63 (4.5 %) | 23 | 1708 | 169 |
+| `troll-rogue` | Troll ROGUE Horde | 0 | 0 | 18 | 60.00 | 60.00 | 4954 | 6187 | 3947 | 5259 | 63 (4.5 %) | 23 | 1714 | 170 |
+| `troll-shaman` | Troll SHAMAN Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4937 | 6183 | 3946 | 5269 | 63 (4.5 %) | 23 | 1726 | 173 |
+| `troll-warlock` | Troll WARLOCK Horde | 0 | 0 | 19 | 60.00 | 60.00 | 4897 | 6199 | 3892 | 5276 | 67 (4.7 %) | 23 | 1728 | 177 |
+| `troll-warrior` | Troll WARRIOR Horde | 0 | 0 | 16 | 60.00 | 60.00 | 4914 | 6155 | 3913 | 5227 | 64 (4.5 %) | 23 | 1722 | 164 |
+| `tauren-druid` | Tauren DRUID Horde | 0 | 0 | 18 | 60.00 | 60.00 | 4890 | 6118 | 3899 | 5197 | 67 (4.7 %) | 23 | 1736 | 156 |
+| `tauren-hunter` | Tauren HUNTER Horde | 0 | 0 | 18 | 60.00 | 60.00 | 4933 | 6180 | 3937 | 5265 | 62 (4.5 %) | 23 | 1713 | 165 |
+| `tauren-shaman` | Tauren SHAMAN Horde | 0 | 0 | 19 | 60.00 | 60.00 | 4930 | 6167 | 3940 | 5250 | 62 (4.5 %) | 23 | 1728 | 168 |
+| `tauren-warrior` | Tauren WARRIOR Horde | 0 | 0 | 18 | 60.00 | 60.00 | 4905 | 6128 | 3909 | 5206 | 63 (4.5 %) | 23 | 1725 | 159 |
+| `undead-mage` | Scourge MAGE Horde | 0 | 0 | 16 | 60.00 | 60.00 | 4973 | 6208 | 3971 | 5288 | 64 (4.5 %) | 23 | 1725 | 162 |
+| `undead-paladin` | Scourge PALADIN Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4902 | 6173 | 3914 | 5260 | 82 (5.2 %) | 23 | 1754 | 173 |
+| `undead-priest` | Scourge PRIEST Horde | 0 | 0 | 16 | 60.00 | 60.00 | 4951 | 6209 | 3944 | 5286 | 64 (4.5 %) | 23 | 1727 | 166 |
+| `undead-rogue` | Scourge ROGUE Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4948 | 6165 | 3938 | 5237 | 63 (4.5 %) | 23 | 1740 | 168 |
+| `undead-warlock` | Scourge WARLOCK Horde | 0 | 0 | 17 | 60.00 | 60.00 | 4898 | 6187 | 3890 | 5265 | 66 (4.6 %) | 23 | 1749 | 174 |
+| `undead-warrior` | Scourge WARRIOR Horde | 0 | 0 | 16 | 60.00 | 60.00 | 4904 | 6144 | 3907 | 5216 | 63 (4.5 %) | 23 | 1748 | 166 |
+| `skyborne-druid` | Skyborne DRUID Horde | 0 | 0 | 19 | 60.00 | 60.00 | 4852 | 6052 | 3865 | 5139 | 125 (6.3 %) | 23 | 1784 | 168 |
+| `skyborne-hunter` | Skyborne HUNTER Horde | 0 | 0 | 19 | 60.00 | 60.00 | 4888 | 6121 | 3903 | 5209 | 120 (6.1 %) | 23 | 1757 | 172 |
+| `skyborne-rogue` | Skyborne ROGUE Horde | 0 | 0 | 19 | 60.00 | 60.00 | 4889 | 6090 | 3909 | 5177 | 116 (6.0 %) | 23 | 1758 | 172 |
+| `skyborne-shaman` | Skyborne SHAMAN Horde | 0 | 0 | 20 | 60.00 | 60.00 | 4896 | 6118 | 3916 | 5203 | 123 (6.2 %) | 23 | 1770 | 175 |
+| `skyborne-warrior` | Skyborne WARRIOR Horde | 0 | 0 | 18 | 60.00 | 60.00 | 4862 | 6070 | 3879 | 5151 | 117 (6.0 %) | 23 | 1763 | 166 |
 
-Гринд до порогов уровня (шаги `level`): ~4878 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 161 — и их квесты): ~6082. С попутными убийствами в пути на 15 % опыта квестов: ~3883 (худший случай ~5172).
+## Сравнение путей
 
-| порог уровня | шаг | убийств | худший случай | +15 % | худший +15 % |
-|---|---|---:|---:|---:|---:|
-| 2 | sd-01-zephras#5 id=sd01-level-2 | 0 | 0 | 0 | 0 |
-| 3 | sd-01-zephras#20 id=sd01-level-3 | 0 | 0 | 0 | 0 |
-| 4 | sd-01-zephras#26 id=sd01-level-4 | 0 | 0 | 0 | 0 |
-| 10 | sd-02-zephras#23 id=sd02-level-10 | 0 | 0 | 0 | 0 |
-| 16 | sd-04-barrens#61 | 0 | 0 | 0 | 0 |
-| 20 | sd-05-stonetalon-ashenvale#44 id=sd05-level-20 | 0 | 0 | 0 | 0 |
-| 22 | sd-05-stonetalon-ashenvale#86 id=sd05-level-22 | 0 | 40 | 0 | 0 |
-| 23 +85% | h-22-hillsbrad#57 id=h-22-hillsbrad-level-gate | 0 | 57 | 0 | 0 |
-| 26 +84% | h-24-barrens-stonetalon#90 id=h-24-barrens-stonetalon-level-gate | 0 | 229 | 0 | 172 |
-| 29 | h-27-ashenvale-needles#117 | 0 | 0 | 0 | 0 |
-| 30 +67% | h-27-ashenvale-needles#120 id=h-27-ashenvale-needles-level-gate | 109 | 313 | 0 | 259 |
-| 33 +43% | h-31-hillsbrad-arathi#56 id=h-31-hillsbrad-arathi-level-gate | 273 | 326 | 117 | 291 |
-| 35 +75% | h-34-stranglethorn#50 id=h-34-stranglethorn-level-gate | 152 | 152 | 119 | 119 |
-| 37 +50% | h-37-desolace-dustwallow#36 id=h38-level-maraudine | 325 | 346 | 297 | 320 |
-| 39 +78% | h-37-desolace-dustwallow#63 id=h39-level-mannoroc | 683 | 683 | 672 | 671 |
-| 40 +25% | h-37-desolace-dustwallow#117 id=h-37-desolace-dustwallow-level-gate | 0 | 0 | 0 | 0 |
-| 43 +80% | h-41-arathi-badlands#70 id=h-41-arathi-badlands-level-gate | 765 | 918 | 695 | 864 |
-| 45 +90% | h-44-swamp-stranglethorn#89 id=h-44-swamp-stranglethorn-level-gate | 177 | 185 | 109 | 117 |
-| 47 (необязательный) | h-46-tanaris-feralas#54 id=h48-tanaris-level-gate | 29 | — | 0 | — |
-| 49 +30% | h-46-tanaris-feralas#108 id=h-46-tanaris-feralas-level-gate | 589 | 715 | 528 | 641 |
-| 52 +30% | h-50-hinterlands-searing-steppes#139 id=h-50-hinterlands-searing-steppes-level-gate | 154 | 308 | 46 | 201 |
-| 54 | h-53-azshara-ungoro-silithus#108 id=h55-silithus-grind | 0 | 0 | 0 | 0 |
-| 54 +74% | h-53-azshara-ungoro-silithus#114 id=h55-silithus-field-grind | 318 | 349 | 200 | 239 |
-| 55 | h-53-azshara-ungoro-silithus#127 id=h-53-azshara-ungoro-silithus-level-gate | 0 | 0 | 0 | 0 |
-| 57 | h-56-felwood-winterspring-plaguelands#72 id=h57-winterspring-grind | 584 | 604 | 511 | 534 |
-| 59 +98% | h-56-felwood-winterspring-plaguelands#206 id=h-56-felwood-winterspring-plaguelands-level-gate | 720 | 857 | 589 | 744 |
+Общий хвост всех маршрутов — 15 сегм., начиная с `h-13-silverpine` (точка слияния). Стартовый участок — сегменты маршрута до неё: уровень на входе в `h-13-silverpine` и гринд до этого места (мин–макс по маршрутам участка).
 
-| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (убийств) | журнал |
+| стартовый участок | маршруты | уровень в точке слияния | гринд до неё | худший случай |
+|---|---|---:|---:|---:|
+| `dur-01-valley-of-trials`, `dur-02-durotar`, `h-12-orgrimmar-tirisfal` | все 6 `orc-*`, все 7 `troll-*` | 12.39–12.67 | 0–9 | 0–9 |
+| `mul-01-camp-narache`, `mul-02-mulgore`, `mul-03-barrens-crossing`, `h-12-orgrimmar-tirisfal` | все 4 `tauren-*` | 13.01–13.43 | 0–1 | 0–1 |
+| `ud-01-deathknell`, `ud-02-tirisfal` | все 6 `undead-*` | 12.12–12.79 | 0–3 | 2–9 |
+| `sd-01-zephras`, `sd-02-zephras`, `sd-03-thunder-bluff`, `h-12-orgrimmar-tirisfal` | все 5 `skyborne-*` | 14.09–14.27 | 0 | 0 |
+
+Сегменты: уровень на входе и в конце и гринд (убийств) — мин–макс по маршрутам, которые проходят сегмент.
+
+| сегмент | план | маршруты | уровень на входе | уровень в конце | гринд | худший случай |
 |---|---|---|---:|---:|---:|---:|
-| `sd-01-zephras` 1-9 Zephras Isle: Thendal Grove and Shen'dar | 1–9 | 1.00 → 9.95 | 16865 | 10397 | 0 (0) | 2 |
-| `sd-02-zephras` 9-13 Zephras Isle: Valanaar, Bear Form, Shadowwind Forest | 9–13 | 9.95 → 13.32 | 21255 | 9196 | 0 (0) | 2 |
-| `sd-03-mulgore-silverpine` 13-15 Thunder Bluff, Orgrimmar, Silverpine Forest | 13–15 | 13.32 → 15.59 | 22965 | 6288 | 0 (0) | 3 |
-| `sd-04-barrens` 15-18 The Barrens: the Crossroads, Ratchet, Camp Taurajo | 15–18 | 15.59 → 19.02 | 44015 | 15416 | 0 (0) | 13 |
-| `sd-05-stonetalon-ashenvale` 18-22 Stonetalon, The Barrens, Cat Form, Ashenvale | 18–22 | 19.02 → 22.24 | 51470 | 24335 | 0 (0) | 0 |
-| `h-22-hillsbrad` 22-24 Hillsbrad Foothills (Tarren Mill) | 22–24 | 22.24 → 24.97 | 61855 | 19051 | 0 (0) | 4 |
-| `h-24-barrens-stonetalon` 24-27 Ratchet, Southern Barrens, Stonetalon | 24–27 | 24.97 → 27.38 | 64980 | 21038 | 0 (0) | 9 |
-| `h-27-ashenvale-needles` 27-31 Ashenvale, Skywatcher Plateau, Thousand Needles | 27–31 | 27.38 → 31.01 | 102715 | 33767 | 21255 (109) | 6 |
-| `h-31-hillsbrad-arathi` 31-34 Hillsbrad, Alterac Mountains, Arathi Highlands | 31–34 | 31.01 → 34.05 | 66900 | 43399 | 56565 (273) | 4 |
-| `h-34-stranglethorn` 34-37 Stranglethorn Vale | 34–37 | 34.05 → 36.06 | 46085 | 51482 | 33440 (152) | 1 |
-| `h-37-desolace-dustwallow` 37-41 Desolace and Dustwallow Marsh | 37–41 | 36.06 → 41.01 | 110880 | 55325 | 235545 (1008) | 1 |
-| `h-41-arathi-badlands` 41-44 Arathi Highlands and Badlands | 41–44 | 41.01 → 44.02 | 69630 | 38121 | 196500 (765) | 4 |
-| `h-44-swamp-stranglethorn` 44-46 Swamp of Sorrows and Stranglethorn Vale | 44–46 | 44.02 → 46.01 | 120640 | 59796 | 47790 (177) | 4 |
-| `h-46-tanaris-feralas` 46-50 Tanaris and Feralas | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 176570 (618) | 9 |
-| `h-50-hinterlands-searing-steppes` 50-53 Hinterlands, Searing Gorge, Burning Steppes, Blasted Lands | 50–53 | 49.40 → 52.57 | 277710 | 153285 | 46970 (154) | 9 |
-| `h-53-azshara-ungoro-silithus` 53-56 Azshara, Tanaris, Un'Goro Crater, Silithus | 53–56 | 52.57 → 55.04 | 246260 | 71198 | 100170 (318) | 6 |
-| `h-56-felwood-winterspring-plaguelands` 56-60 Felwood, Winterspring, the Plaguelands | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 433990 (1304) | 0 |
+| `dur-01-valley-of-trials` 1-5 Valley of Trials | 1–5 | все 6 `orc-*`, все 7 `troll-*` | 1.00 | 5.30–5.78 | 0 | 0 |
+| `dur-02-durotar` 5-11 Durotar | 5–11 | все 6 `orc-*`, все 7 `troll-*` | 5.30–5.78 | 11.09–11.36 | 0–9 | 0–9 |
+| `h-12-orgrimmar-tirisfal` 12-13 Orgrimmar, Tirisfal Glades | 12–13 | `orc-hunter`, `orc-mage`, `orc-rogue` и ещё 19 | 11.09–13.48 | 12.39–14.27 | 0 | 0 |
+| `mul-01-camp-narache` 1-6 Camp Narache, Red Cloud Mesa | 1–6 | все 4 `tauren-*` | 1.00 | 6.03–6.31 | 0–1 | 0–1 |
+| `mul-02-mulgore` 6-12 Mulgore: Bloodhoof Village and Thunder Bluff | 6–12 | все 4 `tauren-*` | 6.03–6.31 | 11.46–11.72 | 0 | 0 |
+| `mul-03-barrens-crossing` 12 Through the Barrens to Orgrimmar | 12–12 | все 4 `tauren-*` | 11.46–11.72 | 12.06–12.57 | 0 | 0 |
+| `ud-01-deathknell` 1-6 Deathknell | 1–6 | все 6 `undead-*` | 1.00 | 5.75–5.91 | 0–2 | 0–2 |
+| `ud-02-tirisfal` 6-13 Tirisfal Glades | 6–13 | все 6 `undead-*` | 5.75–5.91 | 12.12–12.79 | 0–1 | 0–7 |
+| `sd-01-zephras` 1-9 Zephras Isle: Thendal Grove and Shen'dar | 1–9 | все 5 `skyborne-*` | 1.00 | 9.95–10.08 | 0 | 0 |
+| `sd-02-zephras` 9-13 Zephras Isle: Valanaar, the Windfield orchard, Shadowwind Forest | 9–13 | все 5 `skyborne-*` | 9.95–10.08 | 13.25–13.48 | 0 | 0 |
+| `sd-03-thunder-bluff` 13 Thunder Bluff, the flight to Orgrimmar | 13–13 | все 5 `skyborne-*` | 13.25–13.48 | 13.25–13.48 | 0 | 0 |
+| `h-13-silverpine` 13-15 Silverpine Forest | 13–15 | все 28 | 12.12–14.27 | 14.13–15.60 | 0–18 | 0–18 |
+| `h-15-barrens` 15-18 The Barrens | 15–18 | все 28 | 14.13–15.60 | 18.03–18.78 | 0 | 0 |
+| `h-18-stonetalon-ashenvale` 18-22 Barrens, Stonetalon, Ashenvale | 18–22 | все 28 | 18.03–18.78 | 22.04–22.44 | 0–36 | 24–145 |
+| `h-22-hillsbrad` 22-24 Hillsbrad Foothills (Tarren Mill) | 22–24 | все 28 | 22.04–22.44 | 24.82–25.16 | 0 | 13–52 |
+| `h-24-barrens-stonetalon` 24-27 Ratchet, Southern Barrens, Stonetalon | 24–27 | все 28 | 24.82–25.16 | 27.30–27.55 | 0 | 201–221 |
+| `h-27-ashenvale-needles` 27-31 Ashenvale, Skywatcher Plateau, Thousand Needles | 27–31 | все 28 | 27.30–27.55 | 31.01 | 76–122 | 313–314 |
+| `h-31-hillsbrad-arathi` 31-34 Hillsbrad, Alterac Mountains, Arathi Highlands | 31–34 | все 28 | 31.01 | 34.05–34.06 | 258–274 | 311–327 |
+| `h-34-stranglethorn` 34-37 Stranglethorn Vale | 34–37 | все 28 | 34.05–34.06 | 36.06 | 151–152 | 151–152 |
+| `h-37-desolace-dustwallow` 37-41 Desolace and Dustwallow Marsh | 37–41 | все 28 | 36.06 | 41.01–41.13 | 998–1009 | 1028–1029 |
+| `h-41-arathi-badlands` 41-44 Arathi Highlands and Badlands | 41–44 | все 28 | 41.01–41.13 | 44.02 | 720–765 | 907–919 |
+| `h-44-swamp-stranglethorn` 44-46 Swamp of Sorrows and Stranglethorn Vale | 44–46 | все 28 | 44.02 | 46.01 | 177–178 | 184–185 |
+| `h-46-tanaris-feralas` 46-50 Tanaris and Feralas | 46–50 | все 28 | 46.01 | 49.40 | 601–618 | 714–715 |
+| `h-50-hinterlands-searing-steppes` 50-53 Hinterlands, Searing Gorge, Burning Steppes, Blasted Lands | 50–53 | все 28 | 49.40 | 52.57–52.60 | 148–154 | 300–308 |
+| `h-53-azshara-ungoro-silithus` 53-56 Azshara, Tanaris, Un'Goro Crater, Silithus | 53–56 | все 28 | 52.57–52.60 | 55.04–55.05 | 319–362 | 349–392 |
+| `h-56-felwood-winterspring-plaguelands` 56-60 Felwood, Winterspring, the Plaguelands | 56–60 | все 28 | 55.04–55.05 | 60.00 | 1304 | 1460–1461 |
 
-| уровень | где | код | сообщение |
+## Общие шаги
+
+ERROR и WARN на шагах общих сегментов — по одной строке на (уровень, код, шаг или сегмент, квест) со списком маршрутов. Числа, которые зависят от прогона (симулированный уровень, недобор опыта, число убийств), показаны диапазоном по маршрутам.
+
+Ошибок и предупреждений на общих шагах нет.
+
+<details><summary>Принятые предупреждения на общих шагах, `ok` (23)</summary>
+
+| где | код | маршруты | сообщение |
 |---|---|---|---|
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#3 id=h-22-tb-fly-org (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `step-no-profile` | step matches none of the route's profiles (Skyborne DRUID Horde): it is never shown |
-| WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#51 id=h-25-sun-rock-retreat (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `step-no-profile` | step matches none of the route's profiles (Skyborne DRUID Horde): it is never shown |
-| WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#64 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `step-no-profile` | step matches none of the route's profiles (Skyborne DRUID Horde): it is never shown |
-| WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#76 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `step-no-profile` | step matches none of the route's profiles (Skyborne DRUID Horde): it is never shown |
-| WARN | sd-01-zephras#2 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92460 "Coming of Age": quest XP unknown in the DB (Forever-new quest?); estimated 40 (median of level-1 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#6 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92462 "Infestation Investigation": quest XP unknown in the DB (Forever-new quest?); estimated 170 (median of level-2 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#7 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 94414 "The Anchors of Zephras": quest XP unknown in the DB (Forever-new quest?); estimated 170 (median of level-2 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#10 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92461 "Harmony in Balance": quest XP unknown in the DB (Forever-new quest?); estimated 40 (median of level-1 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#10 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92474 "Falling With Style": quest XP unknown in the DB (Forever-new quest?); estimated 170 (median of level-2 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#11 id=sd01-92485 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92485 "A Student of Nature": quest XP unknown in the DB (Forever-new quest?); estimated 170 (median of level-2 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#17 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92464 "Elemental Unrest": quest XP unknown in the DB (Forever-new quest?); estimated 250 (median of level-3 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#21 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92465 "Agitators": quest XP unknown in the DB (Forever-new quest?); estimated 250 (median of level-3 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#23 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 93552 "Harvesting Windstones": quest XP unknown in the DB (Forever-new quest?); estimated 355 (median of level-4 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#24 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92463 "The Cirrusfly Queen": quest XP unknown in the DB (Forever-new quest?); estimated 250 (median of level-3 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#25 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92598 "The Gift of Skysight": quest XP unknown in the DB (Forever-new quest?); estimated 355 (median of level-4 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#27 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92469 "Return to Rorian": quest XP unknown in the DB (Forever-new quest?); estimated 355 (median of level-4 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#29 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92471 "Aetheen of the Gales": quest XP unknown in the DB (Forever-new quest?); estimated 355 (median of level-4 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#34 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92470 "Foul Matriarch": quest XP unknown in the DB (Forever-new quest?); estimated 335 (median of level-5 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#35 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92473 "Aggressive Encroachment": quest XP unknown in the DB (Forever-new quest?); estimated 355 (median of level-4 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#38 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92544 "Al'Aketh Thugs": quest XP unknown in the DB (Forever-new quest?); estimated 335 (median of level-5 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#40 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92472 "The Next Step": quest XP unknown in the DB (Forever-new quest?); estimated 335 (median of level-5 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#41 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92595 "The Windshapers": quest XP unknown in the DB (Forever-new quest?); estimated 550 (median of level-6 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#44 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 96638 "The Adventurer": quest XP unknown in the DB (Forever-new quest?); estimated 550 (median of level-6 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#46 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 96101 "The Great Outdoors": quest XP unknown in the DB (Forever-new quest?); estimated 550 (median of level-6 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#48 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92514 "Welcome to Shen'dar Village": quest XP unknown in the DB (Forever-new quest?); estimated 550 (median of level-6 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#52 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 96646 "Camping 101: Cooking": quest XP unknown in the DB (Forever-new quest?); estimated 550 (median of level-6 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#59 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92517 "The Criminal Element": quest XP unknown in the DB (Forever-new quest?); estimated 625 (median of level-7 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#60 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 93036 "Infiltrating the Cult": quest XP unknown in the DB (Forever-new quest?); estimated 700 (median of level-8 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#62 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 93319 "Pilfered Windstones": quest XP unknown in the DB (Forever-new quest?); estimated 625 (median of level-7 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#63 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 94411 "Meddlesome Mages": quest XP unknown in the DB (Forever-new quest?); estimated 550 (median of level-6 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#71 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92529 "Falaath Village": quest XP unknown in the DB (Forever-new quest?); estimated 700 (median of level-8 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#74 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92528 "Among the Faithful": quest XP unknown in the DB (Forever-new quest?); estimated 700 (median of level-8 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#75 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 93318 "WANTED: Vulgara the Insatiable": quest XP unknown in the DB (Forever-new quest?); estimated 775 (median of level-9 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#79 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 93951 "A Little Beauty": quest XP unknown in the DB (Forever-new quest?); estimated 625 (median of level-7 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#80 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92553 "Restocking the Larders": quest XP unknown in the DB (Forever-new quest?); estimated 550 (median of level-6 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#81 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92516 "Hippogryph Harassment": quest XP unknown in the DB (Forever-new quest?); estimated 625 (median of level-7 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#83 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 93926 "The Western Watch": quest XP unknown in the DB (Forever-new quest?); estimated 700 (median of level-8 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#89 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92515 "The Problem With Prideclaws": quest XP unknown in the DB (Forever-new quest?); estimated 550 (median of level-6 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#90 (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92551 "Stolen Supplies": quest XP unknown in the DB (Forever-new quest?); estimated 700 (median of level-8 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#91 id=sd01-end (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 92550 "Havoc in the Highlands": quest XP unknown in the DB (Forever-new quest?); estimated 700 (median of level-8 quests). Record the real value in game with /fb xp |
-| WARN | sd-01-zephras#91 id=sd01-end (Segments/01_Zephras_1_9.lua) | `xp-unknown` | turnin 93927 "A Last Request": quest XP unknown in the DB (Forever-new quest?); estimated 700 (median of level-8 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#8 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 93948 "Deliver the Signet": quest XP unknown in the DB (Forever-new quest?); estimated 775 (median of level-9 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#9 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 92579 "To Valanaar": quest XP unknown in the DB (Forever-new quest?); estimated 700 (median of level-8 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#11 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 92700 "The Grand Skyseer": quest XP unknown in the DB (Forever-new quest?); estimated 775 (median of level-9 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#14 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 93735 "The Broken Construct": quest XP unknown in the DB (Forever-new quest?); estimated 775 (median of level-9 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#15 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 92679 "Blood Tithe": quest XP unknown in the DB (Forever-new quest?); estimated 775 (median of level-9 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#21 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 92682 "Make Yourself Useful": quest XP unknown in the DB (Forever-new quest?); estimated 775 (median of level-9 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#21 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 92684 "Ornery Ornery Galestriders": quest XP unknown in the DB (Forever-new quest?); estimated 775 (median of level-9 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#21 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 92698 "What Is My Purpose?": quest XP unknown in the DB (Forever-new quest?); estimated 775 (median of level-9 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#21 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 92683 "Flutterfly Dust": quest XP unknown in the DB (Forever-new quest?); estimated 775 (median of level-9 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#23 id=sd02-level-10 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 92685 "The Hills Have Eyes": quest XP unknown in the DB (Forever-new quest?); estimated 775 (median of level-9 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#28 id=sd02-bear-quest (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 94006 "The Great Ursera Spirit": quest XP unknown in the DB (Forever-new quest?); estimated 420 (median of level-10 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#34 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 98512 "Al'Aketh Assassins": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#36 id=sd02-bearform (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 94638 "Strength and Mercy": quest XP unknown in the DB (Forever-new quest?); estimated 420 (median of level-10 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#40 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 93159 "The Strange Hermit": quest XP unknown in the DB (Forever-new quest?); estimated 680 (median of level-13 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#46 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 94484 "Unnerving Silence": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#50 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 94485 "Tears of the Lady": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#50 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 94486 "Feathers for Binding": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#50 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 94487 "Unwanted and Unworthy": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#55 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 93165 "Mercy Falls on Deaf Ears": quest XP unknown in the DB (Forever-new quest?); estimated 680 (median of level-13 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#56 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 94489 "The Wounds of Betrayal": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#56 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 94490 "Ripped Missive": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#56 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 94488 "The Ties That Bind": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#57 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 93160 "The Forest's Bounty": quest XP unknown in the DB (Forever-new quest?); estimated 680 (median of level-13 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#57 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 93172 "Free the Hollows": quest XP unknown in the DB (Forever-new quest?); estimated 680 (median of level-13 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#59 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 94896 "Aid For The Refugees": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#59 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 94897 "The Fate of a Loved One": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#60 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 94491 "The Fate of the Den": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#62 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 93317 "Crab Season": quest XP unknown in the DB (Forever-new quest?); estimated 775 (median of level-9 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#63 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 93737 "The Broken Construct": quest XP unknown in the DB (Forever-new quest?); estimated 775 (median of level-9 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#64 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 93736 "Unwelcome Spirits": quest XP unknown in the DB (Forever-new quest?); estimated 775 (median of level-9 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#65 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 93738 "The Broken Construct": quest XP unknown in the DB (Forever-new quest?); estimated 775 (median of level-9 quests). Record the real value in game with /fb xp |
-| WARN | sd-02-zephras#66 (Segments/02_Zephras_9_12.lua) | `xp-unknown` | turnin 92708 "A Grand Adventure": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | sd-03-mulgore-silverpine#6 id=sd03-child (Segments/03_Mulgore_Silverpine.lua) | `xp-unknown` | turnin 94911 "Child of Nature": quest XP unknown in the DB (Forever-new quest?); estimated 420 (median of level-10 quests). Record the real value in game with /fb xp |
-| WARN | sd-03-mulgore-silverpine#9 id=sd03-fly-org (Segments/03_Mulgore_Silverpine.lua) | `fly-unknown-fp` | fly Orgrimmar: flight point Orgrimmar was not learned before (no earlier fp step): a flight there is not offered |
-| WARN | sd-03-mulgore-silverpine#13 (Segments/03_Mulgore_Silverpine.lua) | `xp-unknown` | turnin 97246 "Meal Appeal": quest XP unknown in the DB (Forever-new quest?); estimated 1050 (median of level-15 quests). Record the real value in game with /fb xp |
-| WARN | sd-03-mulgore-silverpine#16 (Segments/03_Mulgore_Silverpine.lua) | `xp-unknown` | turnin 97242 "Yelmak's Medley": quest XP unknown in the DB (Forever-new quest?); estimated 1050 (median of level-15 quests). Record the real value in game with /fb xp |
-| WARN | sd-03-mulgore-silverpine#18 (Segments/03_Mulgore_Silverpine.lua) | `xp-unknown` | turnin 97275 "Whuut's the Rush": quest XP unknown in the DB (Forever-new quest?); estimated 1050 (median of level-15 quests). Record the real value in game with /fb xp |
-| WARN | sd-03-mulgore-silverpine#19 (Segments/03_Mulgore_Silverpine.lua) | `xp-unknown` | turnin 97249 "Favorite Food": quest XP unknown in the DB (Forever-new quest?); estimated 1050 (median of level-15 quests). Record the real value in game with /fb xp |
-| WARN | sd-03-mulgore-silverpine#22 (Segments/03_Mulgore_Silverpine.lua) | `xp-unknown` | turnin 97326 "Rocks to Rests": quest XP unknown in the DB (Forever-new quest?); estimated 1050 (median of level-15 quests). Record the real value in game with /fb xp |
-| WARN | sd-03-mulgore-silverpine#23 (Segments/03_Mulgore_Silverpine.lua) | `xp-unknown` | turnin 95350 "Welcome to Azeroth": quest XP unknown in the DB (Forever-new quest?); estimated 680 (median of level-13 quests). Record the real value in game with /fb xp |
-| WARN | sd-03-mulgore-silverpine#29 (Segments/03_Mulgore_Silverpine.lua) | `xp-unknown` | turnin 96895 "The Argent Emissary": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | sd-03-mulgore-silverpine#31 (Segments/03_Mulgore_Silverpine.lua) | `xp-unknown` | turnin 96897 "The Cult of the Damned": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | sd-03-mulgore-silverpine#31 (Segments/03_Mulgore_Silverpine.lua) | `xp-unknown` | turnin 96898 "Remnants of War": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | sd-03-mulgore-silverpine#51 (Segments/03_Mulgore_Silverpine.lua) | `xp-unknown` | turnin 91920 "Wild Eyes": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | sd-03-mulgore-silverpine#54 (Segments/03_Mulgore_Silverpine.lua) | `xp-unknown` | turnin 91921 "Return to Quinn (Again)": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | sd-03-mulgore-silverpine#68 (Segments/03_Mulgore_Silverpine.lua) | `xp-unknown` | turnin 97891 "Prompt Potion Runner": quest XP unknown in the DB (Forever-new quest?); estimated 875 (median of level-16 quests). Record the real value in game with /fb xp |
-| WARN | sd-03-mulgore-silverpine#71 id=sd03-moonglade (Segments/03_Mulgore_Silverpine.lua) | `xp-unknown` | turnin 94913 "Moonglade": quest XP unknown in the DB (Forever-new quest?); estimated 420 (median of level-10 quests). Record the real value in game with /fb xp |
-| WARN | sd-04-barrens#8 (Segments/04_Barrens.lua) | `xp-unknown` | turnin 98024 "Journey to the Crossroads": quest XP unknown in the DB (Forever-new quest?); estimated 680 (median of level-13 quests). Record the real value in game with /fb xp |
-| WARN | sd-04-barrens#31 (Segments/04_Barrens.lua) | `xp-unknown` | turnin 97253 "Parts and Pieces": quest XP unknown in the DB (Forever-new quest?); estimated 1050 (median of level-15 quests). Record the real value in game with /fb xp |
-| WARN | sd-04-barrens#45 (Segments/04_Barrens.lua) | `xp-unknown` | turnin 95494 "Bruised Pride and Lion Hides": quest XP unknown in the DB (Forever-new quest?); estimated 1350 (median of level-18 quests). Record the real value in game with /fb xp |
-| WARN | sd-04-barrens#45 (Segments/04_Barrens.lua) | `xp-unknown` | turnin 95507 "Vrang's Game": quest XP unknown in the DB (Forever-new quest?); estimated 1350 (median of level-18 quests). Record the real value in game with /fb xp |
-| WARN | sd-04-barrens#46 (Segments/04_Barrens.lua) | `xp-unknown` | turnin 95495 "The Hermit Tanner": quest XP unknown in the DB (Forever-new quest?); estimated 1350 (median of level-18 quests). Record the real value in game with /fb xp |
-| WARN | sd-04-barrens#48 (Segments/04_Barrens.lua) | `xp-unknown` | turnin 95621 "Trouble in the Valley": quest XP unknown in the DB (Forever-new quest?); estimated 1350 (median of level-18 quests). Record the real value in game with /fb xp |
-| WARN | sd-04-barrens#50 (Segments/04_Barrens.lua) | `xp-unknown` | turnin 95508 "Unwelcome Guests": quest XP unknown in the DB (Forever-new quest?); estimated 1350 (median of level-18 quests). Record the real value in game with /fb xp |
-| WARN | sd-04-barrens (Segments/04_Barrens.lua) | `segment-level` | segment sd-04-barrens ends at simulated level 19.02; planned end level 18 |
-| WARN | sd-05-stonetalon-ashenvale#32 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) | `xp-unknown` | turnin 95774 "Her Name Is Olgra": quest XP unknown in the DB (Forever-new quest?); estimated 780 (median of level-20 quests). Record the real value in game with /fb xp |
-| WARN | sd-05-stonetalon-ashenvale#54 id=sd05-cat-dendrite (Segments/05_Barrens_Stonetalon_Ashenvale.lua) | `xp-unknown` | turnin 98340 "The Great Cat Spirit": quest XP unknown in the DB (Forever-new quest?); estimated 780 (median of level-20 quests). Record the real value in game with /fb xp |
-| WARN | sd-05-stonetalon-ashenvale#55 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) | `xp-unknown` | turnin 98341 "The Great Windborne Cat Spirit": quest XP unknown in the DB (Forever-new quest?); estimated 780 (median of level-20 quests). Record the real value in game with /fb xp |
-| WARN | sd-05-stonetalon-ashenvale#58 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) | `xp-unknown` | turnin 98404 "The Great Windborne Cat Spirit": quest XP unknown in the DB (Forever-new quest?); estimated 780 (median of level-20 quests). Record the real value in game with /fb xp |
-| WARN | sd-05-stonetalon-ashenvale#59 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) | `xp-unknown` | turnin 98738 "Blessings of the Great Windborne Cat Spirit": quest XP unknown in the DB (Forever-new quest?); estimated 780 (median of level-20 quests). Record the real value in game with /fb xp |
-| WARN | sd-05-stonetalon-ashenvale#61 id=sd05-catform (Segments/05_Barrens_Stonetalon_Ashenvale.lua) | `xp-unknown` | turnin 98362 "To Thunder Bluff": quest XP unknown in the DB (Forever-new quest?); estimated 780 (median of level-20 quests). Record the real value in game with /fb xp |
-| WARN | sd-05-stonetalon-ashenvale#75 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) | `xp-unknown` | turnin 98251 "Never Coming Back": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
-| WARN | sd-05-stonetalon-ashenvale#76 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) | `xp-unknown` | turnin 98252 "A Void Path": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#22 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `at-far-from-giver` | turnin 1098 "Deathstalkers in Shadowfang": no quest ender spawns on uiMap 1421 |
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#29 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `xp-unknown` | turnin 95883 "The Tortured Soul": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#30 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `xp-unknown` | turnin 95885 "The Offering of Blood": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#58 id=h-22-deathstalker-masoj (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `xp-unknown` | turnin 98094 "Scout Support": quest XP unknown in the DB (Forever-new quest?); estimated 2000 (median of level-25 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#28 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `xp-unknown` | turnin 98093 "Field to Clear": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#30 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `xp-unknown` | turnin 97250 "Wrongly Blamed, Justly Corrected": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#43 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `xp-unknown` | turnin 92706 "WANTED: Bruuz": quest XP unknown in the DB (Forever-new quest?); estimated 780 (median of level-20 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#46 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `xp-unknown` | turnin 97003 "Chol'aruk the Ravener": quest XP unknown in the DB (Forever-new quest?); estimated 1250 (median of level-21 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#84 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `at-far-from-giver` | accept 6561 "Blackfathom Villainy": no quest giver spawns on uiMap 1440 |
-| WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#93 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `xp-unknown` | turnin 86576 "Bloodfury Trinkets": quest XP unknown in the DB (Forever-new quest?); estimated 2100 (median of level-26 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#3 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 97538 "Pigments for Paints": quest XP unknown in the DB (Forever-new quest?); estimated 2100 (median of level-26 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#17 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 6383 "The Ashenvale Hunt": quest XP unknown in the DB (Forever-new quest?); estimated 780 (median of level-20 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#47 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 96260 "Stronger than Steel": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-30 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#48 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 96241 "Talkin' bout Toxins, Mon": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-30 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#49 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 96259 "Defending the Dead": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-30 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#50 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 96261 "The Broodmother": quest XP unknown in the DB (Forever-new quest?); estimated 1250 (median of level-31 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#50 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 96294 "A Darker Truth": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-30 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#55 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `at-far-from-giver` | accept 1144 "Willix the Importer": no quest giver spawns on uiMap 1413 |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#57 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `at-far-from-giver` | turnin 1144 "Willix the Importer": no quest ender spawns on uiMap 1413 |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#107 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 98069 "Stolen Freewind Supplies": quest XP unknown in the DB (Forever-new quest?); estimated 1250 (median of level-31 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#107 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 98070 "Stop the Screeching": quest XP unknown in the DB (Forever-new quest?); estimated 1250 (median of level-31 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#120 id=h-27-ashenvale-needles-level-gate (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `level-grind` | level 30 +67%: simulated level 30.22 is short by 21255 XP; ~109 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-31-hillsbrad-arathi#56 id=h-31-hillsbrad-arathi-level-gate (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) | `level-grind` | level 33 +43%: simulated level 32.43 is short by 56565 XP; ~273 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-31-hillsbrad-arathi#71 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) | `xp-unknown` | turnin 97539 "Silky Sutures": quest XP unknown in the DB (Forever-new quest?); estimated 2800 (median of level-36 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-34-stranglethorn#50 id=h-34-stranglethorn-level-gate (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) | `level-grind` | level 35 +75%: simulated level 35.25 is short by 33440 XP; ~152 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-37-desolace-dustwallow#36 id=h38-level-maraudine (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) | `level-grind` | level 37 +50%: simulated level 36.50 is short by 73955 XP; ~325 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-37-desolace-dustwallow#63 id=h39-level-mannoroc (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) | `level-grind` | level 39 +78%: simulated level 37.82 is short by 161590 XP; ~683 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-37-desolace-dustwallow#72 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) | `xp-unknown` | turnin 93225 "Carved Centaur Totems": quest XP unknown in the DB (Forever-new quest?); estimated 2350 (median of level-40 quests). Record the real value in game with /fb xp |
-| WARN | h-37-desolace-dustwallow#77 id=dru-riding (Inserts.lua) | `train-not-class-trainer` | train: NPC 265756 "Genn Fairweather" is a trainer ("Stablemaster and Riding Trainer") but not a Druid trainer (profession/riding trainer?) |
-| WARN | [library FastesBoooy_Horde] h-41-arathi-badlands#70 id=h-41-arathi-badlands-level-gate (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) | `level-grind` | level 43 +80%: simulated level 41.89 is short by 196500 XP; ~765 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-44-swamp-stranglethorn#31 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) | `xp-unknown` | turnin 1422 "Threat From the Sea": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-44-swamp-stranglethorn#55 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) | `xp-unknown` | turnin 349 "Stranglethorn Fever": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-44-swamp-stranglethorn#89 id=h-44-swamp-stranglethorn-level-gate (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) | `level-grind` | level 45 +90%: simulated level 45.49 is short by 47790 XP; ~177 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-46-tanaris-feralas#108 id=h-46-tanaris-feralas-level-gate (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) | `level-grind` | level 49 +30%: simulated level 48.07 is short by 168595 XP; ~589 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#12 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) | `xp-unknown` | turnin 81949 "Legends of the Tidesages": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#139 id=h-50-hinterlands-searing-steppes-level-gate (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) | `level-grind` | level 52 +30%: simulated level 52.01 is short by 46970 XP; ~154 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#4 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) | `xp-unknown` | turnin 81954 "Venomous Journeys": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#4 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) | `xp-unknown` | turnin 81955 "A Mind of Metal": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#4 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) | `xp-unknown` | turnin 81953 "Stonewrought Design": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#4 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) | `xp-unknown` | turnin 81947 "Sanguine Sorcery": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#4 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) | `xp-unknown` | turnin 81956 "Conjurer's Codex": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#114 id=h55-silithus-field-grind (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) | `level-grind` | level 54 +74%: simulated level 54.16 is short by 100170 XP; ~318 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#72 id=h57-winterspring-grind (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) | `level-grind` | level 57: simulated level 55.99 is short by 189770 XP; ~584 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#86 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) | `xp-unknown` | turnin 81952 "Everyday Etiquette": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#206 id=h-56-felwood-winterspring-plaguelands-level-gate (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) | `level-grind` | level 59 +98%: simulated level 58.81 is short by 244220 XP; ~720 same-level kills needed (estimate) |
-
-<details><summary>INFO (390)</summary>
-
-- sd-01-zephras#4 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 92461 "Harmony in Balance": ~8 kills, +400 kill XP (estimate); level now 2.04
-- sd-01-zephras#4 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 92462 "Infestation Investigation": ~8 kills, +336 kill XP (estimate); level now 2.42
-- sd-01-zephras#7 (Segments/01_Zephras_1_9.lua) `complete-no-kill` complete 94414 "The Anchors of Zephras": no kill XP for objective 1 257554 "Halaan Hawk-Eye": talk objective
-- sd-01-zephras#16 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 92463 "The Cirrusfly Queen": ~1 kills, +60 kill XP (estimate); level now 3.18
-- sd-01-zephras#19 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 92465 "Agitators": ~13 kills, +598 kill XP (estimate); level now 3.79
-- sd-01-zephras#22 id=sd01-hearth-3 (Segments/01_Zephras_1_9.lua) `hearth-unbound` hearth Thendal Village: no earlier sethearth step (default bind point assumed)
-- sd-01-zephras#31 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 92473 "Aggressive Encroachment": ~9 kills, +441 kill XP (estimate); level now 4.98
-- sd-01-zephras#32 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 92470 "Foul Matriarch": ~10 kills, +576 kill XP (estimate); level now 5.19
-- sd-01-zephras#37 (Segments/01_Zephras_1_9.lua) `complete-no-kill` complete 92544 "Al'Aketh Thugs": no kill XP for objective 3 256935 "Malduko Cloudcrush": friendly NPC (faction 'AH')
-- sd-01-zephras#37 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 92544 "Al'Aketh Thugs": ~10 kills, +530 kill XP (estimate); level now 5.63
-- sd-01-zephras#41 (Segments/01_Zephras_1_9.lua) `complete-no-kill` complete 92514 "Welcome to Shen'dar Village": no kill XP for objective 1 251902 "Illaya Amberwind": talk objective
-- sd-01-zephras#41 (Segments/01_Zephras_1_9.lua) `complete-no-kill` complete 92595 "The Windshapers": no kill XP for objective 1 251902 "Illaya Amberwind": talk objective
-- sd-01-zephras#43 id=sd01-innkeeper (Segments/01_Zephras_1_9.lua) `complete-no-kill` complete 92514 "Welcome to Shen'dar Village": no kill XP for objective 2 254089 "Coriella Calmbreeze": talk objective
-- sd-01-zephras#52 (Segments/01_Zephras_1_9.lua) `complete-no-kill` complete 96646 "Camping 101: Cooking": no kill XP for objective 1 251905 "Zerril Softbreeze": talk objective
-- sd-01-zephras#53 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 92515 "The Problem With Prideclaws": ~15 kills, +855 kill XP (estimate); level now 6.90
-- sd-01-zephras#54 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 92553 "Restocking the Larders": ~17 kills, +1602 kill XP (estimate); level now 7.28
-- sd-01-zephras#55 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 94411 "Meddlesome Mages": ~6 kills, +264 kill XP (estimate); level now 7.33
-- sd-01-zephras#56 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 93319 "Pilfered Windstones": ~15 kills, +1200 kill XP (estimate); level now 7.60
-- sd-01-zephras#57 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 92517 "The Criminal Element": ~1 kills, +80 kill XP (estimate); level now 7.62
-- sd-01-zephras#58 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 92517 "The Criminal Element": ~10 kills, +800 kill XP (estimate); level now 7.80
-- sd-01-zephras#67 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 92516 "Hippogryph Harassment": ~15 kills, +796 kill XP (estimate); level now 8.44
-- sd-01-zephras#69 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 93318 "WANTED: Vulgara the Insatiable": ~2 kills, +340 kill XP (estimate); level now 8.50
-- sd-01-zephras#72 (Segments/01_Zephras_1_9.lua) `complete-no-kill` complete 92528 "Among the Faithful": no kill XP for objective 1 254128 "Wardrobe": event objective
-- sd-01-zephras#83 (Segments/01_Zephras_1_9.lua) `complete-no-kill` complete 93926 "The Western Watch": no kill XP for objective 1 252155 "Peacekeeper Vaaniel": interact objective
-- sd-01-zephras#84 (Segments/01_Zephras_1_9.lua) `complete-no-kill` complete 93927 "A Last Request": no kill XP for objective 1 256966 "Skypriest Aanders": friendly NPC (faction 'AH')
-- sd-01-zephras#85 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 92551 "Stolen Supplies": ~15 kills, +825 kill XP (estimate); level now 9.43
-- sd-01-zephras#86 (Segments/01_Zephras_1_9.lua) `complete-kill-xp` complete 92550 "Havoc in the Highlands": ~12 kills, +694 kill XP (estimate); level now 9.54
-- sd-02-zephras#3 (Segments/02_Zephras_9_12.lua) `complete-kill-xp` complete 93317 "Crab Season": ~9 kills, +608 kill XP (estimate); level now 10.04
-- sd-02-zephras#14 (Segments/02_Zephras_9_12.lua) `complete-no-kill` complete 93737 "The Broken Construct": no kill XP for objective 1 256083 "Riaani Nightwind": event objective
-- sd-02-zephras#15 (Segments/02_Zephras_9_12.lua) `complete-no-kill` complete 92679 "Blood Tithe": no kill XP for objective 1 252800 "Aamelia Windfield": interact objective; 2 252448 "Alvarion Windfield": event objective
-- sd-02-zephras#16 (Segments/02_Zephras_9_12.lua) `complete-kill-xp` complete 92684 "Ornery Ornery Galestriders": ~11 kills, +682 kill XP (estimate); level now 10.63
-- sd-02-zephras#18 (Segments/02_Zephras_9_12.lua) `complete-kill-xp` complete 92682 "Make Yourself Useful": ~5 kills, +310 kill XP (estimate); level now 10.67
-- sd-02-zephras#22 (Segments/02_Zephras_9_12.lua) `complete-kill-xp` complete 92685 "The Hills Have Eyes": ~11 kills, +550 kill XP (estimate); level now 11.13
-- sd-02-zephras#30 (Segments/02_Zephras_9_12.lua) `complete-kill-xp` complete 94638 "Strength and Mercy": ~1 kills, +82 kill XP (estimate); level now 11.27
-- sd-02-zephras#33 (Segments/02_Zephras_9_12.lua) `complete-kill-xp` complete 98512 "Al'Aketh Assassins": ~10 kills, +650 kill XP (estimate); level now 11.35
-- sd-02-zephras#40 (Segments/02_Zephras_9_12.lua) `complete-no-kill` complete 93159 "The Strange Hermit": no kill XP for objective 1 251684 "Strange Hermit": talk objective
-- sd-02-zephras#43 (Segments/02_Zephras_9_12.lua) `complete-kill-xp` complete 93172 "Free the Hollows": ~10 kills, +820 kill XP (estimate); level now 11.64
-- sd-02-zephras#43 (Segments/02_Zephras_9_12.lua) `complete-kill-xp` complete 93736 "Unwelcome Spirits": ~15 kills, +1230 kill XP (estimate); level now 11.78
-- sd-02-zephras#44 (Segments/02_Zephras_9_12.lua) `complete-kill-xp` complete 94897 "The Fate of a Loved One": ~2 kills, +164 kill XP (estimate); level now 11.80
-- sd-02-zephras#48 (Segments/02_Zephras_9_12.lua) `complete-kill-xp` complete 93165 "Mercy Falls on Deaf Ears": ~8 kills, +656 kill XP (estimate); level now 11.95
-- sd-02-zephras#49 (Segments/02_Zephras_9_12.lua) `complete-kill-xp` complete 94486 "Feathers for Binding": ~30 kills, +2220 kill XP (estimate); level now 12.17
-- sd-02-zephras#49 (Segments/02_Zephras_9_12.lua) `complete-kill-xp` complete 94487 "Unwanted and Unworthy": ~15 kills, +1080 kill XP (estimate); level now 12.28
-- sd-02-zephras#51 (Segments/02_Zephras_9_12.lua) `complete-kill-xp` complete 94488 "The Ties That Bind": ~2 kills, +144 kill XP (estimate); level now 12.47
-- sd-02-zephras#53 (Segments/02_Zephras_9_12.lua) `complete-no-kill` complete 94489 "The Wounds of Betrayal": no kill XP for objective 1 258130 "Jorel Windsinger": talk objective; 2 258134 "Naaleos Leafwhisper": interact objective
-- sd-02-zephras#66 (Segments/02_Zephras_9_12.lua) `complete-no-kill` complete 92708 "A Grand Adventure": no kill XP for objective 1 251968 "Ayessa Dawnsinger": event objective
-- sd-03-mulgore-silverpine#30 (Segments/03_Mulgore_Silverpine.lua) `complete-kill-xp` complete 96897 "The Cult of the Damned": ~16 kills, +1176 kill XP (estimate); level now 14.02
-- sd-03-mulgore-silverpine#30 (Segments/03_Mulgore_Silverpine.lua) `complete-kill-xp` complete 96898 "Remnants of War": ~18 kills, +1134 kill XP (estimate); level now 14.10
-- sd-03-mulgore-silverpine#37 (Segments/03_Mulgore_Silverpine.lua) `complete-kill-xp` complete 429 "Wild Hearts": ~5 kills, +240 kill XP (estimate); level now 14.26
-- sd-03-mulgore-silverpine#42 (Segments/03_Mulgore_Silverpine.lua) `complete-kill-xp` complete 447 "A Recipe For Death": ~18 kills, +1278 kill XP (estimate); level now 14.48
-- sd-03-mulgore-silverpine#43 (Segments/03_Mulgore_Silverpine.lua) `complete-kill-xp` complete 421 "Prove Your Worth": ~5 kills, +240 kill XP (estimate); level now 14.50
-- sd-03-mulgore-silverpine#46 (Segments/03_Mulgore_Silverpine.lua) `complete-kill-xp` complete 91920 "Wild Eyes": ~5 kills, +395 kill XP (estimate); level now 14.65
-- sd-03-mulgore-silverpine#47 (Segments/03_Mulgore_Silverpine.lua) `complete-kill-xp` complete 437 "The Dead Fields": ~2 kills, +230 kill XP (estimate); level now 14.67
-- sd-03-mulgore-silverpine#52 (Segments/03_Mulgore_Silverpine.lua) `complete-kill-xp` complete 423 "Arugal's Folly": ~14 kills, +1191 kill XP (estimate); level now 14.95
-- sd-03-mulgore-silverpine#56 (Segments/03_Mulgore_Silverpine.lua) `complete-kill-xp` complete 425 "Ivar the Foul": ~2 kills, +164 kill XP (estimate); level now 15.08
-- sd-03-mulgore-silverpine#59 (Segments/03_Mulgore_Silverpine.lua) `complete-kill-xp` complete 424 "Arugal's Folly": ~2 kills, +240 kill XP (estimate); level now 15.21
-- sd-04-barrens#11 (Segments/04_Barrens.lua) `complete-kill-xp` complete 869 "Raptor Thieves": ~18 kills, +1188 kill XP (estimate); level now 15.89
-- sd-04-barrens#11 (Segments/04_Barrens.lua) `complete-kill-xp` complete 844 "Plainstrider Menace": ~11 kills, +550 kill XP (estimate); level now 15.93
-- sd-04-barrens#13 (Segments/04_Barrens.lua) `complete-kill-xp` complete 871 "Disrupt the Attacks": ~19 kills, +726 kill XP (estimate); level now 15.98
-- sd-04-barrens#15 (Segments/04_Barrens.lua) `complete-kill-xp` complete 845 "The Zhevra": ~6 kills, +438 kill XP (estimate); level now 16.07
-- sd-04-barrens#18 (Segments/04_Barrens.lua) `complete-kill-xp` complete 872 "The Disruption Ends": ~18 kills, +1140 kill XP (estimate); level now 16.19
-- sd-04-barrens#26 (Segments/04_Barrens.lua) `complete-kill-xp` complete 821 "Chen's Empty Keg": ~18 kills, +1500 kill XP (estimate); level now 16.35
-- sd-04-barrens#29 (Segments/04_Barrens.lua) `complete-kill-xp` complete 887 "Southsea Freebooters": ~18 kills, +1134 kill XP (estimate); level now 16.45
-- sd-04-barrens#38 (Segments/04_Barrens.lua) `complete-kill-xp` complete 855 "Centaur Bracers": ~23 kills, +1334 kill XP (estimate); level now 16.91
-- sd-04-barrens#38 (Segments/04_Barrens.lua) `complete-kill-xp` complete 903 "Prowlers of the Barrens": ~11 kills, +979 kill XP (estimate); level now 16.98
-- sd-04-barrens#40 (Segments/04_Barrens.lua) `complete-kill-xp` complete 850 "Kolkar Leaders": ~2 kills, +250 kill XP (estimate); level now 16.99
-- sd-04-barrens#42 (Segments/04_Barrens.lua) `complete-kill-xp` complete 867 "Harpy Raiders": ~12 kills, +912 kill XP (estimate); level now 17.09
-- sd-04-barrens#44 (Segments/04_Barrens.lua) `complete-kill-xp` complete 95494 "Bruised Pride and Lion Hides": ~9 kills, +837 kill XP (estimate); level now 17.14
-- sd-04-barrens#47 (Segments/04_Barrens.lua) `complete-kill-xp` complete 95621 "Trouble in the Valley": ~2 kills, +260 kill XP (estimate); level now 17.38
-- sd-04-barrens#49 (Segments/04_Barrens.lua) `complete-no-objectives` complete 95508 "Unwelcome Guests": the DB lists no objectives
-- sd-04-barrens#54 (Segments/04_Barrens.lua) `complete-kill-xp` complete 901 "Samophlange": ~2 kills, +220 kill XP (estimate); level now 17.62
-- sd-04-barrens#58 (Segments/04_Barrens.lua) `complete-kill-xp` complete 858 "Ignition": ~2 kills, +272 kill XP (estimate); level now 17.68
-- sd-04-barrens#61 (Segments/04_Barrens.lua) `complete-kill-xp` complete 896 "Miner's Fortune": ~2 kills, +186 kill XP (estimate); level now 17.76
-- sd-04-barrens#69 (Segments/04_Barrens.lua) `complete-kill-xp` complete 881 "Echeyakee": ~2 kills, +220 kill XP (estimate); level now 17.98
-- sd-04-barrens#75 (Segments/04_Barrens.lua) `complete-kill-xp` complete 865 "Raptor Horns": ~8 kills, +920 kill XP (estimate); level now 18.34
-- sd-04-barrens#80 (Segments/04_Barrens.lua) `complete-kill-xp` complete 851 "Verog the Dervish": ~2 kills, +270 kill XP (estimate); level now 18.36
-- sd-04-barrens#83 (Segments/04_Barrens.lua) `complete-no-kill` complete 4921 "Lost in Battle": no kill XP for objective 1 10668 "Beaten Corpse": talk objective
-- sd-04-barrens#95 (Segments/04_Barrens.lua) `complete-kill-xp` complete 880 "Altered Beings": ~12 kills, +948 kill XP (estimate); level now 18.83
-- sd-04-barrens#96 (Segments/04_Barrens.lua) `complete-kill-xp` complete 852 "Hezrul Bloodmark": ~2 kills, +282 kill XP (estimate); level now 18.84
-- sd-04-barrens#98 (Segments/04_Barrens.lua) `complete-kill-xp` complete 875 "Harpy Lieutenants": ~9 kills, +850 kill XP (estimate); level now 19.01
-- sd-05-stonetalon-ashenvale#1 id=sd05-start (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 6548 "Avenge My Village": ~14 kills, +686 kill XP (estimate); level now 19.06
-- sd-05-stonetalon-ashenvale#3 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 6629 "Kill Grundig Darkcloud": ~7 kills, +509 kill XP (estimate); level now 19.14
-- sd-05-stonetalon-ashenvale#7 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 6461 "Blood Feeders": ~10 kills, +820 kill XP (estimate); level now 19.18
-- sd-05-stonetalon-ashenvale#12 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 6461 "Blood Feeders": ~7 kills, +700 kill XP (estimate); level now 19.23
-- sd-05-stonetalon-ashenvale#13 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 1062 "Goblin Invaders": ~15 kills, +1785 kill XP (estimate); level now 19.32
-- sd-05-stonetalon-ashenvale#13 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 1093 "Super Reaper 6000": ~2 kills, +280 kill XP (estimate); level now 19.33
-- sd-05-stonetalon-ashenvale#23 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 878 "Tribes at War": ~30 kills, +3600 kill XP (estimate); level now 19.85
-- sd-05-stonetalon-ashenvale#23 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 95774 "Her Name Is Olgra": ~6 kills, +600 kill XP (estimate); level now 19.87
-- sd-05-stonetalon-ashenvale#23 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 899 "Consumed by Hatred": ~90 kills, +8496 kill XP (estimate); level now 20.25
-- sd-05-stonetalon-ashenvale#25 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 882 "Ishamuhale": ~2 kills, +252 kill XP (estimate); level now 20.26
-- sd-05-stonetalon-ashenvale#37 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 5052 "Blood Shards of Agamaggan": ~2 kills, +184 kill XP (estimate); level now 20.84
-- sd-05-stonetalon-ashenvale#40 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 907 "Enraged Thunder Lizards": ~5 kills, +793 kill XP (estimate); level now 21.01
-- sd-05-stonetalon-ashenvale#42 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 913 "Cry of the Thunderhawk": ~2 kills, +224 kill XP (estimate); level now 21.08
-- sd-05-stonetalon-ashenvale#69 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-no-kill` complete 1090 "Gerenzo's Orders": no kill XP for objective 1 4276 "Piznik": event objective
-- sd-05-stonetalon-ashenvale#74 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 98251 "Never Coming Back": ~12 kills, +1842 kill XP (estimate); level now 21.81
-- sd-05-stonetalon-ashenvale#84 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 6442 "Naga at the Zoram Strand": ~30 kills, +3564 kill XP (estimate); level now 22.10
-- [library FastesBoooy_Horde] h-22-hillsbrad#3 id=h-22-tb-fly-org (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `step-skipped` step filtered out for Skyborne DRUID Horde (class/race/faction filter)
-- [library FastesBoooy_Horde] h-22-hillsbrad#28 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 95883 "The Tortured Soul": ~2 kills, +204 kill XP (estimate); level now 23.43
-- [library FastesBoooy_Horde] h-22-hillsbrad#38 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 496 "Elixir of Suffering": ~17 kills, +2168 kill XP (estimate); level now 23.74
-- [library FastesBoooy_Horde] h-22-hillsbrad#39 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 501 "Elixir of Pain": ~15 kills, +2400 kill XP (estimate); level now 23.82
-- [library FastesBoooy_Horde] h-22-hillsbrad#40 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 567 "Dangerous!": ~2 kills, +352 kill XP (estimate); level now 23.84
-- [library FastesBoooy_Horde] h-22-hillsbrad#41 id=h-22-hillsbrad-foothills-field (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 527 "Battle of Hillsbrad": ~14 kills, +2122 kill XP (estimate); level now 23.91
-- [library FastesBoooy_Horde] h-22-hillsbrad#44 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 546 "Souvenirs of Death": ~45 kills, +6560 kill XP (estimate); level now 24.18
-- [library FastesBoooy_Horde] h-22-hillsbrad#45 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 549 "WANTED: Syndicate Personnel": ~20 kills, +1930 kill XP (estimate); level now 24.24
-- [library FastesBoooy_Horde] h-22-hillsbrad#45 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 1066 "Blood of Innocents": ~8 kills, +840 kill XP (estimate); level now 24.27
-- [library FastesBoooy_Horde] h-22-hillsbrad#49 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 528 "Battle of Hillsbrad": ~15 kills, +2475 kill XP (estimate); level now 24.35
-- [library FastesBoooy_Horde] h-22-hillsbrad#56 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-no-kill` complete 529 "Battle of Hillsbrad": no kill XP for objective 1 2404 "Blacksmith Verringtan": service NPC (repair, vendor); 2 2265 "Hillsbrad Apprentice Blacksmith": service NPC (questgiver, vendor)
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#7 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `quest-profession` accept 862 "Dig Rat Stew": requires Cooking 15 (profession); optional step
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#16 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 98093 "Field to Clear": ~14 kills, +1512 kill XP (estimate); level now 25.06
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#17 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 97250 "Wrongly Blamed, Justly Corrected": ~3 kills, +471 kill XP (estimate); level now 25.07
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#18 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 862 "Dig Rat Stew": ~12 kills, +0 kill XP (estimate); level now 25.07
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#19 id=h-24-the-barrens-field (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 843 "Gann's Reclamation": ~22 kills, +2246 kill XP (estimate); level now 25.14
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#22 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 846 "Revenge of Gann": ~27 kills, +3429 kill XP (estimate); level now 25.29
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#26 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 879 "Betrayal from Within": ~6 kills, +774 kill XP (estimate); level now 25.45
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#26 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 893 "Weapons of Choice": ~6 kills, +698 kill XP (estimate); level now 25.47
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#35 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 92706 "WANTED: Bruuz": ~2 kills, +296 kill XP (estimate); level now 25.75
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#37 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 873 "Isha Awak": ~2 kills, +374 kill XP (estimate); level now 25.78
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#39 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 891 "The Guns of Northwatch": ~18 kills, +196 kill XP (estimate); level now 25.87
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#44 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 97003 "Chol'aruk the Ravener": ~2 kills, +296 kill XP (estimate); level now 26.00
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#51 id=h-25-sun-rock-retreat (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `step-skipped` step filtered out for Skyborne DRUID Horde (class/race/faction filter)
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#58 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 6284 "Arachnophobia": ~2 kills, +304 kill XP (estimate); level now 26.23
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#61 id=h-25-stonetalon-mountains-field (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 1096 "Gerenzo Wrenchwhistle": ~2 kills, +366 kill XP (estimate); level now 26.24
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#64 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `step-skipped` step filtered out for Skyborne DRUID Horde (class/race/faction filter)
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#66 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 1087 "Cenarius' Legacy": ~12 kills, +1496 kill XP (estimate); level now 26.34
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#68 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 6393 "Elemental War": ~15 kills, +1680 kill XP (estimate); level now 26.38
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#69 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 86576 "Bloodfury Trinkets": ~23 kills, +2576 kill XP (estimate); level now 26.45
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#70 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 6282 "Harpies Threaten": ~28 kills, +3696 kill XP (estimate); level now 26.56
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#76 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `step-skipped` step filtered out for Skyborne DRUID Horde (class/race/faction filter)
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#90 id=h-24-barrens-stonetalon-level-gate (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 6283 "Bloodfury Bloodline": ~2 kills, +628 kill XP (estimate); level now 27.17
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#11 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 6503 "Ashenvale Outrunners": ~9 kills, +864 kill XP (estimate); level now 27.72
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#19 id=h-27-ashenvale-field-loop (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 6441 "Satyr Horns": ~24 kills, +4752 kill XP (estimate); level now 27.96
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#20 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1088 "Ordanus": ~2 kills, +396 kill XP (estimate); level now 27.97
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#22 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 25 "Stonetalon Standstill": ~12 kills, +1329 kill XP (estimate); level now 28.01
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#42 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 96260 "Stronger than Steel": ~5 kills, +925 kill XP (estimate); level now 28.49
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#43 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 96241 "Talkin' bout Toxins, Mon": ~8 kills, +1480 kill XP (estimate); level now 28.53
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#44 id=h-28-mulgore-skywatcher-plateau (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 96259 "Defending the Dead": ~15 kills, +2535 kill XP (estimate); level now 28.59
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#45 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 96261 "The Broodmother": ~1 kills, +407 kill XP (estimate); level now 28.60
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#69 id=h-28-thousand-needles-field (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 4841 "Pacify the Centaur": ~28 kills, +2486 kill XP (estimate); level now 29.09
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#73 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1153 "A New Ore Sample": ~2 kills, +330 kill XP (estimate); level now 29.10
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#81 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 98070 "Stop the Screeching": ~15 kills, +2770 kill XP (estimate); level now 29.33
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#82 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1150 "Test of Endurance": ~2 kills, +418 kill XP (estimate); level now 29.34
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#88 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1131 "Steelsnap": ~2 kills, +398 kill XP (estimate); level now 29.35
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#91 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 4966 "Protect Kanati Greycloud": ~1 kills, +143 kill XP (estimate, objective counts partly assumed); level now 29.48
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#94 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 5151 "Hypercapacitor Gizmo": ~2 kills, +798 kill XP (estimate); level now 29.55
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#101 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 5147 "WANTED: Arnak Grimtotem": ~2 kills, +380 kill XP (estimate); level now 29.63
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#115 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1175 "A Bump in the Road": ~26 kills, +5550 kill XP (estimate); level now 30.06
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#116 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1105 "Hardened Shells": ~14 kills, +2730 kill XP (estimate); level now 30.12
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#117 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1104 "Salt Flat Venom": ~9 kills, +2016 kill XP (estimate); level now 30.16
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#119 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1176 "Load Lightening": ~15 kills, +3060 kill XP (estimate); level now 30.22
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#17 id=h-31-hillsbrad-alterac-field (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 533 "Infiltration": ~2 kills, +420 kill XP (estimate); level now 31.17
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#18 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 552 "Helcular's Revenge": ~2 kills, +350 kill XP (estimate); level now 31.18
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#19 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 544 "Prison Break In": ~8 kills, +1778 kill XP (estimate); level now 31.22
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#19 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 556 "Stone Tokens": ~15 kills, +3000 kill XP (estimate); level now 31.27
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#20 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 532 "Battle of Hillsbrad": ~6 kills, +575 kill XP (estimate); level now 31.29
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#21 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 567 "Dangerous!": ~1 kills, +93 kill XP (estimate); level now 31.29
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#29 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 545 "Dalaran Patrols": ~14 kills, +3080 kill XP (estimate); level now 31.61
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#29 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 557 "Bracers of Binding": ~6 kills, +1320 kill XP (estimate); level now 31.64
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#30 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 539 "Battle of Hillsbrad": ~11 kills, +1105 kill XP (estimate); level now 31.66
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#31 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 567 "Dangerous!": ~1 kills, +153 kill XP (estimate); level now 31.66
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#38 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-no-kill` complete 503 "Gol'dir": no kill XP for objective 1 2316 "Gol'dir": event objective
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#38 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 503 "Gol'dir": ~2 kills, +480 kill XP (estimate); level now 31.88
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#44 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 676 "The Hammer May Fall": ~18 kills, +3790 kill XP (estimate); level now 32.13
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#45 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 1164 "To Steal From Thieves": ~6 kills, +1350 kill XP (estimate); level now 32.15
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#53 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 672 "Raising Spirits": ~15 kills, +2355 kill XP (estimate); level now 32.25
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#54 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 97539 "Silky Sutures": ~18 kills, +3690 kill XP (estimate); level now 32.32
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#55 id=h-31-arathi-highlands-field (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 677 "Call to Arms": ~28 kills, +6020 kill XP (estimate); level now 32.43
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#58 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 642 "The Princess Trapped": ~18 kills, +4158 kill XP (estimate); level now 33.50
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#64 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 701 "Guile of the Raptor": ~18 kills, +4338 kill XP (estimate); level now 33.72
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#64 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 678 "Call to Arms": ~14 kills, +3274 kill XP (estimate); level now 33.78
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#66 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 671 "Foul Magics": ~15 kills, +2070 kill XP (estimate); level now 33.81
-- [library FastesBoooy_Horde] h-34-stranglethorn#22 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 581 "Hunt for Yenniku": ~14 kills, +2646 kill XP (estimate); level now 34.16
-- [library FastesBoooy_Horde] h-34-stranglethorn#22 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 189 "Bloodscalp Ears": ~23 kills, +4347 kill XP (estimate); level now 34.23
-- [library FastesBoooy_Horde] h-34-stranglethorn#22 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 596 "Bloody Bone Necklaces": ~38 kills, +7182 kill XP (estimate); level now 34.34
-- [library FastesBoooy_Horde] h-34-stranglethorn#27 id=h-34-stranglethorn-vale-field (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 185 "Tiger Mastery": ~10 kills, +1200 kill XP (estimate); level now 34.38
-- [library FastesBoooy_Horde] h-34-stranglethorn#27 id=h-34-stranglethorn-vale-field (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 190 "Panther Mastery": ~10 kills, +1200 kill XP (estimate); level now 34.40
-- [library FastesBoooy_Horde] h-34-stranglethorn#27 id=h-34-stranglethorn-vale-field (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 575 "Supply and Demand": ~3 kills, +360 kill XP (estimate); level now 34.41
-- [library FastesBoooy_Horde] h-34-stranglethorn#30 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 186 "Tiger Mastery": ~10 kills, +1640 kill XP (estimate); level now 34.47
-- [library FastesBoooy_Horde] h-34-stranglethorn#30 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 191 "Panther Mastery": ~10 kills, +1640 kill XP (estimate); level now 34.50
-- [library FastesBoooy_Horde] h-34-stranglethorn#31 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 194 "Raptor Mastery": ~10 kills, +1890 kill XP (estimate); level now 34.53
-- [library FastesBoooy_Horde] h-34-stranglethorn#31 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 605 "Singing Blue Shards": ~15 kills, +2115 kill XP (estimate); level now 34.56
-- [library FastesBoooy_Horde] h-34-stranglethorn#36 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 213 "Hostile Takeover": ~12 kills, +2700 kill XP (estimate); level now 34.67
-- [library FastesBoooy_Horde] h-34-stranglethorn#37 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 568 "The Defense of Grom'gol": ~15 kills, +3375 kill XP (estimate); level now 34.72
-- [library FastesBoooy_Horde] h-34-stranglethorn#37 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 195 "Raptor Mastery": ~10 kills, +2250 kill XP (estimate); level now 34.76
-- [library FastesBoooy_Horde] h-34-stranglethorn#38 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 187 "Tiger Mastery": ~10 kills, +2150 kill XP (estimate); level now 34.79
-- [library FastesBoooy_Horde] h-34-stranglethorn#41 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 188 "Tiger Mastery": ~2 kills, +494 kill XP (estimate); level now 34.86
-- [library FastesBoooy_Horde] h-34-stranglethorn#44 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 569 "The Defense of Grom'gol": ~15 kills, +3540 kill XP (estimate); level now 34.99
-- [library FastesBoooy_Horde] h-34-stranglethorn#45 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 192 "Panther Mastery": ~10 kills, +2435 kill XP (estimate); level now 35.03
-- [library FastesBoooy_Horde] h-34-stranglethorn#45 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 570 "Mok'thardin's Enchantment": ~14 kills, +3388 kill XP (estimate); level now 35.08
-- [library FastesBoooy_Horde] h-34-stranglethorn#49 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 582 "Headhunting": ~30 kills, +6930 kill XP (estimate); level now 35.25
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#22 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-no-kill` complete 5561 "Kodo Roundup": no kill XP for objective 1 4700 "Aged Kodo": interact objective
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#25 id=h37-thunder-axe (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1435 "The Burning of Spirits": ~23 kills, +2070 kill XP (estimate); level now 36.21
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#28 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1365 "Khan Dez'hepah": ~2 kills, +396 kill XP (estimate); level now 36.27
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#29 id=h-37-desolace-field-loop (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1434 "Befouled by Satyr": ~28 kills, +3220 kill XP (estimate); level now 36.32
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#29 id=h-37-desolace-field-loop (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1481 "The Corrupter": ~2 kills, +252 kill XP (estimate); level now 36.32
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#34 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1366 "Centaur Bounty": ~23 kills, +2070 kill XP (estimate); level now 36.47
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#35 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 93225 "Carved Centaur Totems": ~8 kills, +1888 kill XP (estimate); level now 36.50
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#46 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 6142 "Clam Bait": ~15 kills, +1380 kill XP (estimate); level now 37.52
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#46 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 6161 "Claim Rackmore's Treasure!": ~2 kills, +256 kill XP (estimate); level now 37.52
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#48 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 5741 "Sceptre of Light": ~2 kills, +256 kill XP (estimate); level now 37.53
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#49 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 5381 "Hand of Iruxos": ~2 kills, +460 kill XP (estimate); level now 37.53
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#51 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 6143 "Other Fish to Fry": ~19 kills, +2341 kill XP (estimate); level now 37.60
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#51 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1482 "The Corrupter": ~2 kills, +302 kill XP (estimate); level now 37.60
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#51 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 6161 "Claim Rackmore's Treasure!": ~2 kills, +214 kill XP (estimate); level now 37.61
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#52 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 6027 "Book of the Ancients": ~2 kills, +482 kill XP (estimate); level now 37.61
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#62 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 5581 "Portals of the Legion": ~4 kills, +964 kill XP (estimate, objective counts partly assumed); level now 37.82
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#64 id=h-37-warug (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 6134 "Ghost-o-plasm Round Up": ~12 kills, +2532 kill XP (estimate); level now 39.81
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#80 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 6626 "A Host of Evil": ~24 kills, +4320 kill XP (estimate); level now 40.11
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#91 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1201 "Theramore Spies": ~9 kills, +1080 kill XP (estimate); level now 40.19
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#93 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-no-kill` complete 1273 "Questioning Reethe": no kill XP for objective 1 4980 "Paval Reethe": event objective
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#94 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1322 "The Black Shield": ~9 kills, +1710 kill XP (estimate); level now 40.21
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#98 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1177 "Hungry!": ~18 kills, +2160 kill XP (estimate); level now 40.25
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#102 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1206 "Jarl Needs Eyes": ~60 kills, +7200 kill XP (estimate); level now 40.46
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#107 id=h-38-dustwallow-marsh-field (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1168 "Army of the Black Dragon": ~30 kills, +7950 kill XP (estimate); level now 40.58
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#107 id=h-38-dustwallow-marsh-field (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1169 "Identifying the Brood": ~46 kills, +11822 kill XP (estimate); level now 40.71
-- [library FastesBoooy_Horde] h-41-arathi-badlands#9 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 1048 "Into The Scarlet Monastery": ~4 kills, +1677 kill XP (estimate); level now 41.04
-- [library FastesBoooy_Horde] h-41-arathi-badlands#16 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 566 "WANTED: Baron Vardus": ~2 kills, +442 kill XP (estimate); level now 41.10
-- [library FastesBoooy_Horde] h-41-arathi-badlands#17 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 507 "Lord Aliden Perenolde": ~1 kills, +250 kill XP (estimate); level now 41.10
-- [library FastesBoooy_Horde] h-41-arathi-badlands#19 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 518 "The Crown of Will": ~14 kills, +3444 kill XP (estimate); level now 41.19
-- [library FastesBoooy_Horde] h-41-arathi-badlands#37 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 664 "Drowned Sorrows": ~13 kills, +2272 kill XP (estimate); level now 41.37
-- [library FastesBoooy_Horde] h-41-arathi-badlands#52 id=h41-uldaman (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 2418 "Power Stones": ~24 kills, +5160 kill XP (estimate); level now 41.55
-- [library FastesBoooy_Horde] h-41-arathi-badlands#54 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 1108 "Indurium": ~15 kills, +5835 kill XP (estimate); level now 41.62
-- [library FastesBoooy_Horde] h-41-arathi-badlands#57 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 710 "Study of the Elements: Rock": ~15 kills, +2535 kill XP (estimate); level now 41.68
-- [library FastesBoooy_Horde] h-41-arathi-badlands#59 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 711 "Study of the Elements: Rock": ~5 kills, +970 kill XP (estimate); level now 41.72
-- [library FastesBoooy_Horde] h-41-arathi-badlands#66 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 782 "Broken Alliances": ~2 kills, +500 kill XP (estimate); level now 41.76
-- [library FastesBoooy_Horde] h-41-arathi-badlands#67 id=h-41-badlands-field-loop (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 1419 "Coyote Thieves": ~45 kills, +4815 kill XP (estimate); level now 41.81
-- [library FastesBoooy_Horde] h-41-arathi-badlands#67 id=h-41-badlands-field-loop (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 2258 "Badlands Reagent Run": ~23 kills, +2589 kill XP (estimate); level now 41.83
-- [library FastesBoooy_Horde] h-41-arathi-badlands#67 id=h-41-badlands-field-loop (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 703 "Barbecued Buzzard Wings": ~6 kills, +1800 kill XP (estimate); level now 41.85
-- [library FastesBoooy_Horde] h-41-arathi-badlands#68 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 2258 "Badlands Reagent Run": ~8 kills, +1552 kill XP (estimate); level now 41.87
-- [library FastesBoooy_Horde] h-41-arathi-badlands#68 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 712 "Study of the Elements: Rock": ~8 kills, +2200 kill XP (estimate); level now 41.89
-- [library FastesBoooy_Horde] h-41-arathi-badlands#77 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 4449 "Caught!": ~8 kills, +2080 kill XP (estimate); level now 43.96
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#9 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 584 "Bloodscalp Clan Heads": ~4 kills, +666 kill XP (estimate); level now 44.03
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#21 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 698 "Lack of Surplus": ~12 kills, +1368 kill XP (estimate); level now 44.07
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#23 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 1430 "Fresh Meat": ~15 kills, +3510 kill XP (estimate); level now 44.10
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#25 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 699 "Lack of Surplus": ~9 kills, +1611 kill XP (estimate); level now 44.14
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#32 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 1426 "Threat From the Sea": ~20 kills, +3850 kill XP (estimate); level now 44.33
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#33 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 1426 "Threat From the Sea": ~10 kills, +2340 kill XP (estimate); level now 44.35
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#37 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 1428 "Continued Threat": ~30 kills, +7050 kill XP (estimate); level now 44.49
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#41 id=h-44-stranglethorn-vale-field (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 572 "Mok'thardin's Enchantment": ~15 kills, +2310 kill XP (estimate); level now 44.57
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#41 id=h-44-stranglethorn-vale-field (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 196 "Raptor Mastery": ~10 kills, +1540 kill XP (estimate); level now 44.59
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#54 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 571 "Mok'thardin's Enchantment": ~2 kills, +308 kill XP (estimate); level now 44.66
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#54 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 606 "Scaring Shaky": ~8 kills, +1232 kill XP (estimate); level now 44.67
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#54 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 349 "Stranglethorn Fever": ~15 kills, +0 kill XP (estimate); level now 44.67
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#56 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 348 "Stranglethorn Fever": ~2 kills, +530 kill XP (estimate); level now 44.71
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#64 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 576 "Keep An Eye Out": ~2 kills, +308 kill XP (estimate); level now 44.83
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#64 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 587 "Up to Snuff": ~23 kills, +3542 kill XP (estimate); level now 44.86
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#65 id=h-44-yenniku (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 621 "Zanzil's Secret": ~18 kills, +4212 kill XP (estimate); level now 44.90
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#65 id=h-44-yenniku (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 609 "Voodoo Dues": ~6 kills, +1404 kill XP (estimate); level now 44.91
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#66 id=h45-venture-mine (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 600 "Venture Company Mining": ~15 kills, +2310 kill XP (estimate); level now 44.93
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#67 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 598 "Split Bone Necklace": ~38 kills, +4940 kill XP (estimate); level now 44.97
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#67 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 209 "Skullsplitter Tusks": ~27 kills, +3482 kill XP (estimate); level now 45.00
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#68 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 586 "Speaking with Gan'zulah": ~20 kills, +3956 kill XP (estimate); level now 45.04
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#73 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 193 "Panther Mastery": ~2 kills, +554 kill XP (estimate); level now 45.04
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#79 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 589 "The Singing Crystals": ~5 kills, +1060 kill XP (estimate); level now 45.21
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#80 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 573 "Mok'thardin's Enchantment": ~10 kills, +2120 kill XP (estimate); level now 45.23
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#80 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 617 "Akiris by the Bundle": ~15 kills, +3180 kill XP (estimate); level now 45.25
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#88 id=h46-pirate-camp (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 604 "The Bloodsail Buccaneers": ~10 kills, +1860 kill XP (estimate); level now 45.49
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#93 id=h46-bloodsail-ships (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-no-kill` complete 608 "The Bloodsail Buccaneers": no kill XP for objective 3 2546 "Fleet Master Firallon": service NPC (questgiver)
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#93 id=h46-bloodsail-ships (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 608 "The Bloodsail Buccaneers": ~2 kills, +553 kill XP (estimate); level now 45.97
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#19 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 379 "Slake That Thirst": ~8 kills, +1520 kill XP (estimate); level now 46.10
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#19 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 1707 "Water Pouch Bounty": ~8 kills, +1520 kill XP (estimate); level now 46.11
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#20 id=h-46-tanaris-field-loop (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 1690 "Wastewander Justice": ~20 kills, +2660 kill XP (estimate); level now 46.13
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#25 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 8366 "Southsea Shakedown": ~40 kills, +8640 kill XP (estimate); level now 46.20
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#25 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 8365 "Pirate Hats Ahoy!": ~30 kills, +6480 kill XP (estimate); level now 46.26
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#25 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2875 "WANTED: Andre Firebeard": ~2 kills, +490 kill XP (estimate); level now 46.26
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#27 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2781 "WANTED: Caliph Scorpidsting": ~2 kills, +550 kill XP (estimate); level now 46.26
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#38 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 1691 "More Wastewander Justice": ~24 kills, +4466 kill XP (estimate); level now 46.58
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#41 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 5863 "The Dunemaul Compound": ~21 kills, +5946 kill XP (estimate); level now 46.63
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#42 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2605 "The Thirsty Goblin": ~2 kills, +576 kill XP (estimate); level now 46.64
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#42 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 3362 "Thistleshrub Valley": ~16 kills, +4944 kill XP (estimate); level now 46.68
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#43 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 82 "Noxious Lair Investigation": ~8 kills, +2304 kill XP (estimate); level now 46.70
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#54 id=h48-tanaris-level-gate (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `level-grind` level 47: simulated level 46.94 is short by 7975 XP; ~29 same-level kills needed (estimate)
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#77 id=h-47-feralas-field-loop (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2973 "A New Cloak's Sheen": ~15 kills, +2895 kill XP (estimate); level now 47.21
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#78 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2862 "War on the Woodpaw": ~15 kills, +1680 kill XP (estimate); level now 47.22
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#80 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2975 "The Ogres of Feralas": ~25 kills, +3115 kill XP (estimate); level now 47.25
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#85 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2974 "A Grim Discovery": ~30 kills, +4290 kill XP (estimate); level now 47.39
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#86 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2863 "Alpha Strike": ~5 kills, +840 kill XP (estimate); level now 47.40
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#91 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 7730 "Zukk'ash Infestation": ~30 kills, +6600 kill XP (estimate); level now 47.54
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#91 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 7731 "Stinglasher": ~2 kills, +560 kill XP (estimate); level now 47.55
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#92 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-no-kill` complete 3520 "Screecher Spirits": no kill XP for objective 1 8612 "Screecher Spirit": talk objective
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#93 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2980 "The Ogres of Feralas": ~25 kills, +4450 kill XP (estimate); level now 47.58
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#93 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2979 "Dark Ceremony": ~2 kills, +440 kill XP (estimate); level now 47.58
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#97 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2822 "The Mark of Quality": ~15 kills, +2520 kill XP (estimate); level now 47.63
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#103 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 7734 "Improved Quality": ~15 kills, +3735 kill XP (estimate); level now 47.82
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#105 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 7003 "Zapped Giants": ~23 kills, +13524 kill XP (estimate); level now 47.92
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#105 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 7721 "Fuel for the Zapping": ~15 kills, +4410 kill XP (estimate); level now 47.96
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#107 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 3062 "Dark Heart": ~2 kills, +1254 kill XP (estimate); level now 48.03
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#108 id=h-46-tanaris-feralas-level-gate (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 3063 "Vengeance on the Northspring": ~16 kills, +4672 kill XP (estimate); level now 48.07
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#31 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7815 "Snapjaws, Mon!": ~15 kills, +4350 kill XP (estimate); level now 49.66
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#32 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7828 "Stalking the Stalkers": ~30 kills, +6030 kill XP (estimate); level now 49.70
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#33 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7816 "Gammerita, Mon!": ~2 kills, +1034 kill XP (estimate); level now 49.71
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#36 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7840 "Lard Lost His Lunch": ~2 kills, +580 kill XP (estimate); level now 49.74
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#37 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7844 "Cannibalistic Cousins": ~45 kills, +9000 kill XP (estimate); level now 49.81
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#38 id=h-50-the-hinterlands-field (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7829 "Hunt the Savages": ~20 kills, +4000 kill XP (estimate); level now 49.84
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#38 id=h-50-the-hinterlands-field (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7830 "Avenging the Fallen": ~2 kills, +456 kill XP (estimate); level now 49.84
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#43 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7841 "Message to the Wildhammer": ~60 kills, +9825 kill XP (estimate); level now 49.94
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#52 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7842 "Another Message to the Wildhammer": ~15 kills, +1170 kill XP (estimate); level now 50.25
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#55 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7862 "Job Opening: Guard Captain of Revantusk Village": ~80 kills, +38820 kill XP (estimate); level now 50.51
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#57 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7861 "Wanted: Vile Priestess Hexx and Her Minions": ~21 kills, +12419 kill XP (estimate); level now 50.60
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#59 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7846 "Recover the Key!": ~2 kills, +1238 kill XP (estimate); level now 50.64
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#76 id=h-50-kalaran-windblade (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-no-kill` complete 3441 "Divine Retribution": no kill XP for objective 1 8479 "Kalaran Windblade": talk objective
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#78 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7729 "JOB OPPORTUNITY: Culling the Competition": ~30 kills, +5460 kill XP (estimate); level now 50.95
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#79 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7723 "Curse These Fat Fingers": ~20 kills, +4700 kill XP (estimate); level now 50.98
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#79 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 3442 "The Flawless Flame": ~12 kills, +2172 kill XP (estimate); level now 51.00
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#80 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7727 "Incendosaurs? Whateverosaur is More Like It": ~20 kills, +4268 kill XP (estimate); level now 51.03
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#81 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7701 "WANTED: Overseer Maltorius": ~2 kills, +1074 kill XP (estimate); level now 51.03
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#82 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7728 "STOLEN: Smithing Tuyere and Lookout's Spyglass": ~4 kills, +688 kill XP (estimate); level now 51.04
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#83 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7724 "Fiery Menace!": ~20 kills, +4220 kill XP (estimate); level now 51.06
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#87 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 3443 "Forging the Shaft": ~12 kills, +1344 kill XP (estimate); level now 51.10
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#89 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 3452 "The Flame's Casing": ~2 kills, +738 kill XP (estimate); level now 51.14
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#94 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-no-kill` complete 3453 "The Torch of Retribution": no kill XP for objective 1 8479 "Kalaran Windblade": event objective
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#104 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 3906 "Disharmony of Flame": ~1 kills, +630 kill XP (estimate); level now 51.47
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#104 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 4081 "KILL ON SIGHT: Dark Iron Dwarves": ~30 kills, +15835 kill XP (estimate); level now 51.57
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#111 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 3822 "Krom'Grul": ~2 kills, +690 kill XP (estimate); level now 51.61
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#121 id=h-51-swamp-of-sorrows (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-no-kill` complete 2784 "Fall From Grace": no kill XP for objective 1 7572 "Fallen Hero of the Horde": talk objective
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#128 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 1445 "The Temple of Atal'Hakkar": ~30 kills, +8640 kill XP (estimate); level now 51.88
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#129 id=h-51-swamp-of-sorrows-2 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 2623 "The Swamp Talker": ~2 kills, +536 kill XP (estimate); level now 51.88
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#133 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 2581 "Snickerfang Jowls": ~10 kills, +1889 kill XP (estimate); level now 51.93
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#133 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 2583 "A Boar's Vitality": ~10 kills, +2227 kill XP (estimate); level now 51.95
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#133 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 2585 "The Decisive Striker": ~10 kills, +2314 kill XP (estimate); level now 51.96
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#133 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 2601 "The Basilisk's Bite": ~18 kills, +3312 kill XP (estimate); level now 51.98
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#133 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 2603 "Vulture's Vigor": ~18 kills, +3106 kill XP (estimate); level now 52.00
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#136 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 2521 "To Serve Kum'isha": ~2 kills, +260 kill XP (estimate); level now 52.01
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#136 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 3501 "Everything Counts In Large Amounts": ~2 kills, +260 kill XP (estimate); level now 52.01
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#12 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 5535 "Spiritual Unrest": ~12 kills, +1656 kill XP (estimate); level now 52.74
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#13 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 5536 "A Land Filled with Hatred": ~10 kills, +1364 kill XP (estimate); level now 52.75
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#20 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 3505 "Betrayed": ~20 kills, +5780 kill XP (estimate); level now 52.80
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#24 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 3506 "Betrayed": ~2 kills, +700 kill XP (estimate); level now 52.87
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#26 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 5534 "Kim'jael's "Missing" Equipment": ~2 kills, +546 kill XP (estimate); level now 52.88
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#46 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4300 "Bone-Bladed Weapons": ~12 kills, +1980 kill XP (estimate); level now 53.17
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#48 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4289 "The Apes of Un'Goro": ~9 kills, +2226 kill XP (estimate); level now 53.18
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#60 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4496 "Bungle in the Jungle": ~2 kills, +494 kill XP (estimate); level now 53.18
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#61 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4503 "Shizzle's Flyer": ~24 kills, +4560 kill XP (estimate); level now 53.21
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#61 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 3882 "Roll the Bones": ~12 kills, +6660 kill XP (estimate); level now 53.25
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#62 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4501 "Beware of Pterrordax": ~25 kills, +6625 kill XP (estimate); level now 53.29
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#63 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4145 "Larion and Muigin": ~20 kills, +4395 kill XP (estimate); level now 53.32
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#64 id=h-53-un-goro-crater (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4504 "Super Sticky": ~18 kills, +3924 kill XP (estimate); level now 53.34
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#69 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4291 "The Scent of Lar'korwi": ~3 kills, +570 kill XP (estimate); level now 53.42
-- h-53-azshara-ungoro-silithus#73 id=dru-gorishi-stings (Inserts.lua) `complete-kill-xp` complete 9052 "Bloodpetal Poison": ~12 kills, +2964 kill XP (estimate); level now 53.45
-- h-53-azshara-ungoro-silithus#73 id=dru-devilsaur (Inserts.lua) `complete-no-kill` complete 9051 "Toxic Test": no kill XP for objective 1 6498 "Devilsaur": interact objective
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#97 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4301 "The Mighty U'cha": ~2 kills, +682 kill XP (estimate); level now 53.84
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#99 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4292 "The Bait for Lar'korwi": ~2 kills, +712 kill XP (estimate); level now 53.85
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#113 id=h-54-silithus-field-loop (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 8277 "Deadly Desert Venom": ~24 kills, +7740 kill XP (estimate); level now 54.14
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#113 id=h-54-silithus-field-loop (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 8280 "Securing the Supply Lines": ~15 kills, +4950 kill XP (estimate); level now 54.16
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#119 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 8278 "Noggle's Last Hope": ~15 kills, +5430 kill XP (estimate); level now 54.87
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#120 id=h-54-sandy-cookbook (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 8281 "Stepping Up Security": ~20 kills, +7240 kill XP (estimate); level now 54.91
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#16 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5155 "Forces of Jaedenar": ~20 kills, +3820 kill XP (estimate); level now 55.09
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#26 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5156 "Verifying the Corruption": ~4 kills, +858 kill XP (estimate); level now 55.19
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#31 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5204 "Retribution of the Light": ~1 kills, +336 kill XP (estimate); level now 55.29
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#35 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 8460 "Timbermaw Ally": ~18 kills, +2688 kill XP (estimate); level now 55.39
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#36 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6162 "A Husband's Last Battle": ~2 kills, +402 kill XP (estimate); level now 55.39
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#40 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 8461 "Deadwood of the North": ~18 kills, +4812 kill XP (estimate); level now 55.46
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#45 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 4521 "Wild Guardians": ~15 kills, +4320 kill XP (estimate); level now 55.57
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#46 id=h-56-winterspring-field-loop (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5082 "Threat of the Winterfall": ~16 kills, +4360 kill XP (estimate); level now 55.59
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#51 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5086 "Toxic Horrors": ~5 kills, +1285 kill XP (estimate); level now 55.66
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#52 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 4102 "Cleansing Felwood": ~23 kills, +5244 kill XP (estimate); level now 55.69
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#54 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5087 "Winterfall Runners": ~2 kills, +704 kill XP (estimate); level now 55.72
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#61 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 4521 "Wild Guardians": ~15 kills, +4800 kill XP (estimate); level now 55.79
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#62 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5054 "Ursius of the Shardtooth": ~1 kills, +672 kill XP (estimate); level now 55.80
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#63 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 3783 "Are We There, Yeti?": ~15 kills, +4320 kill XP (estimate); level now 55.82
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#64 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 4809 "Chillwind Horns": ~12 kills, +3456 kill XP (estimate); level now 55.84
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#65 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5082 "Threat of the Winterfall": ~8 kills, +2560 kill XP (estimate); level now 55.85
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#65 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 8464 "Winterfall Activity": ~24 kills, +8064 kill XP (estimate); level now 55.90
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#71 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 977 "Are We There, Yeti?": ~3 kills, +1008 kill XP (estimate); level now 55.99
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#73 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5055 "Brumeran of the Chillwind": ~1 kills, +693 kill XP (estimate); level now 57.00
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#103 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5229 "Target: Felstone Field": ~2 kills, +414 kill XP (estimate); level now 57.33
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#105 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-no-kill` complete 5098 "All Along the Watchtowers": no kill XP for objective 1 10902 "Andorhal Tower One": event objective; 2 10903 "Andorhal Tower Two": event objective; 3 10904 "Andorhal Tower Three": event objective; 4 10905 "Andorhal Tower Four": event objective
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#109 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5231 "Target: Dalson's Tears": ~2 kills, +530 kill XP (estimate); level now 57.40
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#112 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5060 "Locked Away": ~2 kills, +594 kill XP (estimate); level now 57.44
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#115 id=h-57-termite-barrel (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6004 "Unfinished Business": ~8 kills, +1776 kill XP (estimate); level now 57.48
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#117 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6023 "Unfinished Business": ~1 kills, +297 kill XP (estimate); level now 57.51
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#118 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6023 "Unfinished Business": ~1 kills, +330 kill XP (estimate); level now 57.51
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#123 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 964 "Skeletal Fragments": ~23 kills, +3404 kill XP (estimate); level now 57.59
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#124 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 4971 "A Matter of Time": ~15 kills, +4455 kill XP (estimate); level now 57.62
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#132 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5233 "Target: Writhing Haunt": ~2 kills, +594 kill XP (estimate); level now 57.72
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#134 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 4984 "The Wildlife Suffers Too": ~8 kills, +1656 kill XP (estimate); level now 57.76
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#136 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 4985 "The Wildlife Suffers Too": ~8 kills, +2120 kill XP (estimate); level now 57.79
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#148 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5235 "Target: Gahrron's Withering": ~2 kills, +692 kill XP (estimate); level now 57.92
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#160 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5542 "Demon Dogs": ~20 kills, +3680 kill XP (estimate); level now 58.11
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#161 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5543 "Blood Tinged Skies": ~30 kills, +6330 kill XP (estimate); level now 58.14
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#162 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5544 "Carrion Grubbage": ~23 kills, +4853 kill XP (estimate); level now 58.17
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#167 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6042 "Un-Life's Little Annoyances": ~20 kills, +4780 kill XP (estimate); level now 58.20
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#169 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5542 "Demon Dogs": ~5 kills, +1195 kill XP (estimate); level now 58.20
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#179 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-no-kill` complete 5211 "Defenders of Darrowshire": no kill XP for objective 1 11064 "Darrowshire Spirit": talk objective
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#180 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5542 "Demon Dogs": ~5 kills, +1505 kill XP (estimate); level now 58.25
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#181 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6042 "Un-Life's Little Annoyances": ~10 kills, +3010 kill XP (estimate); level now 58.26
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#182 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6133 "The Ranger Lord's Behest": ~24 kills, +7896 kill XP (estimate); level now 58.30
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#190 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5251 "The Archivist": ~1 kills, +737 kill XP (estimate); level now 58.35
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#190 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5282 "The Restless Souls": ~15 kills, +0 kill XP (estimate); level now 58.35
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#193 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-no-kill` complete 5742 "Redemption": no kill XP for objective 1 1855 "Tirion Fordring": talk objective
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#196 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5781 "Of Forgotten Memories": ~2 kills, +602 kill XP (estimate); level now 58.57
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#197 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6021 "Zaeldarr the Outcast": ~2 kills, +422 kill XP (estimate); level now 58.57
+| h-22-hillsbrad#19 id=h22-sfk-vincent (Segments/Shared/22_Hillsbrad.lua) | `at-far-from-giver` | все 28 | turnin 1098 "Deathstalkers in Shadowfang": no quest ender spawns on uiMap 1421 |
+| h-24-barrens-stonetalon#84 (Segments/Shared/24_Barrens_Stonetalon.lua) | `at-far-from-giver` | все 28 | accept 6561 "Blackfathom Villainy": no quest giver spawns on uiMap 1440 |
+| h-27-ashenvale-needles#55 (Segments/Shared/27_Ashenvale_Needles.lua) | `at-far-from-giver` | все 28 | accept 1144 "Willix the Importer": no quest giver spawns on uiMap 1413 |
+| h-27-ashenvale-needles#57 (Segments/Shared/27_Ashenvale_Needles.lua) | `at-far-from-giver` | все 28 | turnin 1144 "Willix the Importer": no quest ender spawns on uiMap 1413 |
+| h-27-ashenvale-needles#120 id=h-27-ashenvale-needles-level-gate (Segments/Shared/27_Ashenvale_Needles.lua) | `level-grind` | все 28 | level 30 +67%: simulated level 30.17–30.36 is short by 14820–23790 XP; ~76–122 same-level kills needed (estimate) |
+| h-31-hillsbrad-arathi#56 id=h-31-hillsbrad-arathi-level-gate (Segments/Shared/31_Hillsbrad_Arathi.lua) | `level-grind` | все 28 | level 33 +43%: simulated level 32.42–32.48 is short by 53490–56770 XP; ~258–274 same-level kills needed (estimate) |
+| h-34-stranglethorn#50 id=h-34-stranglethorn-level-gate (Segments/Shared/34_Stranglethorn.lua) | `level-grind` | все 28 | level 35 +75%: simulated level 35.25–35.26 is short by 33220–33440 XP; ~151–152 same-level kills needed (estimate) |
+| h-37-desolace-dustwallow#36 id=h38-level-maraudine (Segments/Shared/37_Desolace_Dustwallow.lua) | `level-grind` | все 28 | level 37 +50%: simulated level 36.50–36.52 is short by 72600–74180 XP; ~319–326 same-level kills needed (estimate) |
+| h-37-desolace-dustwallow#63 id=h39-level-mannoroc (Segments/Shared/37_Desolace_Dustwallow.lua) | `level-grind` | все 28 | level 39 +78%: simulated level 37.82–37.83 is short by 160670–161830 XP; ~679–684 same-level kills needed (estimate) |
+| h-41-arathi-badlands#70 id=h-41-arathi-badlands-level-gate (Segments/Shared/41_Arathi_Badlands.lua) | `level-grind` | все 28 | level 43 +80%: simulated level 41.89–42.01 is short by 185235–196510 XP; ~720–765 same-level kills needed (estimate) |
+| h-44-swamp-stranglethorn#89 id=h-44-swamp-stranglethorn-level-gate (Segments/Shared/44_Swamp_Stranglethorn.lua) | `level-grind` | все 28 | level 45 +90%: simulated level 45.49 is short by 47790–48060 XP; ~177–178 same-level kills needed (estimate) |
+| h-46-tanaris-feralas#108 id=h-46-tanaris-feralas-level-gate (Segments/Shared/46_Tanaris_Feralas.lua) | `level-grind` | все 28 | level 49 +30%: simulated level 48.07 is short by 168595 XP; ~589 same-level kills needed (estimate) |
+| h-50-hinterlands-searing-steppes#139 id=h-50-hinterlands-searing-steppes-level-gate (Segments/Shared/50_Hinterlands_Searing_Steppes.lua) | `level-grind` | все 28 | level 52 +30%: simulated level 52.01–52.02 is short by 45140–46970 XP; ~148–154 same-level kills needed (estimate) |
+| h-53-azshara-ungoro-silithus#114 id=h55-silithus-field-grind (Segments/Shared/53_Azshara_Ungoro_Silithus.lua) | `level-grind` | все 28 | level 54 +74%: simulated level 54.08–54.16 is short by 100485–114030 XP; ~319–362 same-level kills needed (estimate) |
+| h-56-felwood-winterspring-plaguelands#72 id=h57-winterspring-grind (Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua) | `level-grind` | все 28 | level 57: simulated level 55.99 is short by 189770–189775 XP; ~584 same-level kills needed (estimate) |
+| h-56-felwood-winterspring-plaguelands#206 id=h-56-felwood-winterspring-plaguelands-level-gate (Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua) | `level-grind` | все 28 | level 59 +98%: simulated level 58.81 is short by 244220–244225 XP; ~720 same-level kills needed (estimate) |
+| h-18-stonetalon-ashenvale#92 id=h18-lvl-22 (Segments/Shared/18_Stonetalon_Ashenvale.lua) | `level-grind` | `orc-mage`, `orc-rogue`, `troll-mage` и ещё 2 | level 21 +85%: simulated level 21.64–21.65 is short by 5250–5400 XP; ~35–36 same-level kills needed (estimate) |
+| h-22-hillsbrad (Segments/Shared/22_Hillsbrad.lua) | `segment-level` | `orc-rogue`, `troll-rogue`, `undead-paladin` и ещё 5 | segment h-22-hillsbrad ends at simulated level 25.00–25.16; planned end level 24 |
+| h-15-barrens#7 id=h15-xr-arrive (Segments/Shared/15_Barrens.lua) | `db-override-unverified` | все 4 `tauren-*` | accept 844 "Plainstrider Menace" (exclusive with 854 "Journey to the Crossroads" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/shared.lua (source: Classic: Journey to the Crossroads (Thunder Bluff) is a breadcrumb, 844 stays available): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment) |
+| h-15-barrens#7 id=h15-xr-arrive (Segments/Shared/15_Barrens.lua) | `db-override-unverified` | все 4 `tauren-*` | accept 844 "Plainstrider Menace" (exclusive with 861 "The Hunter's Way" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/shared.lua (source: the DB chain 861 -> 860 (breadcrumbFor 844) -> 844; Classic quest chain The Hunter's Way): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment) |
+| sd-03-thunder-bluff#4 id=sd03-fly-org (Segments/Zephras/03_ThunderBluff.lua) | `fly-unknown-fp` | все 5 `skyborne-*` | fly Orgrimmar: flight point Orgrimmar was not learned before (no earlier fp step): a flight there is not offered |
+| h-12-orgrimmar-tirisfal (Segments/Shared/12_Orgrimmar_Tirisfal.lua) | `segment-level` | все 5 `skyborne-*` | segment h-12-orgrimmar-tirisfal ends at simulated level 14.09–14.27; planned end level 13 |
+| sd-01-zephras (Segments/Zephras/01_Zephras_1_9.lua) | `segment-level` | `skyborne-shaman` | segment sd-01-zephras ends at simulated level 10.08; planned end level 9 |
 
 </details>
 
-## horde-undead-paladin — Undead Paladin (Horde) 1-60
+## Пороги уровня на общих шагах
 
-Модуль `FastesBoooy_UndeadPaladin`, профиль: Scourge PALADIN Horde. Результат: **0 ERROR, 99 WARN, 385 INFO**.
+Шаги `level` общих сегментов и общих вставок: сколько убийств мобов своего уровня нужно до порога — минимум и максимум по маршрутам в обычном прогоне и максимум в худшем случае (шаги `optional` не выполнены; у необязательного порога «—»). Потолок — число из `ok = { ["level-grind"] = N }` шага: предупреждение `level-grind` (больше 30 убийств) принято, пока убийств не больше N.
 
-Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1900615 (из них оценено 94825; квестов с неизвестным опытом: 77), за убийства по целям 815322, гринд 1368910 (~4972 убийств); максимум квестов в журнале 23 из 40; принято 712, сдано 712, не сдано к концу 0.
-
-Гринд до порогов уровня (шаги `level`): ~4972 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 156 — и их квесты): ~6179. С попутными убийствами в пути на 15 % опыта квестов: ~3954 (худший случай ~5271).
-
-| порог уровня | шаг | убийств | худший случай | +15 % | худший +15 % |
-|---|---|---:|---:|---:|---:|
-| 2 | ud-01-deathknell#3 | 0 | 0 | 0 | 0 |
-| 3 +64% | ud-01-deathknell#11 id=ud01-xp-4 | 1 | 1 | 0 | 0 |
-| 10 | ud-02-tirisfal#69 id=ud02-train-10 | 0 | 0 | 0 | 0 |
-| 12 (необязательный) | ud-02-tirisfal#111 id=ud02-xp-12 | 0 | — | 0 | — |
-| 19 +88% | ud-05-stonetalon-ashenvale#44 id=ud05-lvl-pre20 | 0 | 0 | 0 | 0 |
-| 20 | ud-05-stonetalon-ashenvale#48 id=ud05-lvl-20 | 0 | 0 | 0 | 0 |
-| 21 | ud-05-stonetalon-ashenvale#77 id=ud05-lvl-21 | 0 | 3 | 0 | 0 |
-| 21 +85% | ud-05-stonetalon-ashenvale#82 id=ud05-lvl-grind | 74 | 107 | 0 | 14 |
-| 22 | ud-05-stonetalon-ashenvale#84 id=ud05-lvl-22 | 0 | 0 | 0 | 0 |
-| 23 +85% | h-22-hillsbrad#57 id=h-22-hillsbrad-level-gate | 0 | 49 | 0 | 25 |
-| 26 +84% | h-24-barrens-stonetalon#90 id=h-24-barrens-stonetalon-level-gate | 0 | 221 | 0 | 185 |
-| 29 | h-27-ashenvale-needles#117 | 0 | 0 | 0 | 0 |
-| 30 +67% | h-27-ashenvale-needles#120 id=h-27-ashenvale-needles-level-gate | 84 | 313 | 0 | 259 |
-| 33 +43% | h-31-hillsbrad-arathi#56 id=h-31-hillsbrad-arathi-level-gate | 274 | 326 | 139 | 291 |
-| 35 +75% | h-34-stranglethorn#50 id=h-34-stranglethorn-level-gate | 151 | 152 | 119 | 119 |
-| 37 +50% | h-37-desolace-dustwallow#36 id=h38-level-maraudine | 325 | 346 | 297 | 319 |
-| 39 +78% | h-37-desolace-dustwallow#63 id=h39-level-mannoroc | 684 | 683 | 672 | 672 |
-| 40 +25% | h-37-desolace-dustwallow#117 id=h-37-desolace-dustwallow-level-gate | 0 | 0 | 0 | 0 |
-| 43 +80% | h-41-arathi-badlands#70 id=h-41-arathi-badlands-level-gate | 764 | 918 | 695 | 864 |
-| 45 +90% | h-44-swamp-stranglethorn#89 id=h-44-swamp-stranglethorn-level-gate | 178 | 185 | 109 | 117 |
-| 47 (необязательный) | h-46-tanaris-feralas#54 id=h48-tanaris-level-gate | 28 | — | 0 | — |
-| 49 +30% | h-46-tanaris-feralas#108 id=h-46-tanaris-feralas-level-gate | 589 | 715 | 528 | 641 |
-| 52 +30% | h-50-hinterlands-searing-steppes#139 id=h-50-hinterlands-searing-steppes-level-gate | 154 | 308 | 47 | 201 |
-| 54 | h-53-azshara-ungoro-silithus#108 id=h55-silithus-grind | 0 | 23 | 0 | 0 |
-| 54 +74% | h-53-azshara-ungoro-silithus#114 id=h55-silithus-field-grind | 362 | 368 | 248 | 285 |
-| 55 | h-53-azshara-ungoro-silithus#127 id=h-53-azshara-ungoro-silithus-level-gate | 0 | 0 | 0 | 0 |
-| 57 | h-56-felwood-winterspring-plaguelands#72 id=h57-winterspring-grind | 584 | 604 | 511 | 534 |
-| 59 +98% | h-56-felwood-winterspring-plaguelands#206 id=h-56-felwood-winterspring-plaguelands-level-gate | 720 | 857 | 589 | 745 |
-
-| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (убийств) | журнал |
+| порог | шаг | маршруты | мин | макс | худший случай | потолок `ok` |
 |---|---|---|---:|---:|---:|---:|
-| `ud-01-deathknell` 1-6 Deathknell | 1–6 | 1.00 → 5.88 | 3715 | 3502 | 60 (1) | 4 |
-| `ud-02-tirisfal` 6-13 Tirisfal Glades | 6–13 | 5.88 → 12.78 | 28275 | 16367 | 0 (0) | 1 |
-| `ud-03-silverpine` 13-15 Silverpine Forest | 13–15 | 12.78 → 14.56 | 16145 | 4691 | 0 (0) | 1 |
-| `ud-04-barrens` 15-18 The Barrens | 15–18 | 14.56 → 17.99 | 39145 | 14376 | 0 (0) | 9 |
-| `ud-05-stonetalon-ashenvale` 18-22 Barrens, Stonetalon, Ashenvale | 18–22 | 17.99 → 22.06 | 47810 | 31956 | 11100 (74) | 1 |
-| `h-22-hillsbrad` 22-24 Hillsbrad Foothills (Tarren Mill) | 22–24 | 22.06 → 25.11 | 71605 | 18930 | 0 (0) | 4 |
-| `h-24-barrens-stonetalon` 24-27 Ratchet, Southern Barrens, Stonetalon | 24–27 | 25.11 → 27.51 | 65525 | 20996 | 0 (0) | 9 |
-| `h-27-ashenvale-needles` 27-31 Ashenvale, Skywatcher Plateau, Thousand Needles | 27–31 | 27.51 → 31.01 | 102715 | 33478 | 16380 (84) | 6 |
-| `h-31-hillsbrad-arathi` 31-34 Hillsbrad, Alterac Mountains, Arathi Highlands | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 56770 (274) | 4 |
-| `h-34-stranglethorn` 34-37 Stranglethorn Vale | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 33220 (151) | 1 |
-| `h-37-desolace-dustwallow` 37-41 Desolace and Dustwallow Marsh | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 235780 (1009) | 1 |
-| `h-41-arathi-badlands` 41-44 Arathi Highlands and Badlands | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 196250 (764) | 4 |
-| `h-44-swamp-stranglethorn` 44-46 Swamp of Sorrows and Stranglethorn Vale | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 48060 (178) | 4 |
-| `h-46-tanaris-feralas` 46-50 Tanaris and Feralas | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 176295 (617) | 9 |
-| `h-50-hinterlands-searing-steppes` 50-53 Hinterlands, Searing Gorge, Burning Steppes, Blasted Lands | 50–53 | 49.40 → 52.57 | 277710 | 153307 | 46970 (154) | 9 |
-| `h-53-azshara-ungoro-silithus` 53-56 Azshara, Tanaris, Un'Goro Crater, Silithus | 53–56 | 52.57 → 55.04 | 235560 | 68234 | 114030 (362) | 6 |
-| `h-56-felwood-winterspring-plaguelands` 56-60 Felwood, Winterspring, the Plaguelands | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 433995 (1304) | 0 |
+| 2 | dur-01-valley-of-trials#3 id=dur01-boars | все 6 `orc-*`, все 7 `troll-*` | 0 | 0 | 0 | — |
+| 2 | ud-01-deathknell#3 id=ud01-zombies | все 6 `undead-*` | 0 | 0 | 0 | — |
+| 2 | sd-01-zephras#5 id=sd01-level-2 | все 5 `skyborne-*` | 0 | 0 | 0 | — |
+| 3 | sd-01-zephras#18 id=sd01-level-3 | все 5 `skyborne-*` | 0 | 0 | 0 | — |
+| 3 | sd-01-zephras#10 id=sha-zep-level-3 | `skyborne-shaman` | 0 | 0 | 0 | — |
+| 3 +70% | ud-01-deathknell#8 id=ud01-xp-4 | все 6 `undead-*` | 0 | 2 | 2 | — |
+| 4 | dur-01-valley-of-trials#24 id=sha-dur-level-4 | `orc-shaman`, `troll-shaman` | 0 | 0 | 0 | — |
+| 4 | mul-01-camp-narache#11 id=mul01-lvl-4 | все 4 `tauren-*` | 0 | 1 | 1 | — |
+| 4 | sd-01-zephras#24 id=sd01-level-4 | все 5 `skyborne-*` | 0 | 0 | 0 | — |
+| 5 | dur-01-valley-of-trials#30 id=dur01-lvl-5 | все 6 `orc-*`, все 7 `troll-*` | 0 | 0 | 0 | — |
+| 6 | dur-02-durotar#10 id=dur02-lvl-6 | все 6 `orc-*`, все 7 `troll-*` | 0 | 0 | 0 | — |
+| 6 | mul-02-mulgore#4 id=mul02-lvl-6 | все 4 `tauren-*` | 0 | 0 | 0 | — |
+| 6 | ud-02-tirisfal#9 id=ud02-lvl-6 | все 6 `undead-*` | 0 | 0 | 0 | — |
+| 9 | dur-02-durotar#47 id=dur02-lvl-9 | все 6 `orc-*`, все 7 `troll-*` | 0 | 0 | 0 | — |
+| 10 | dur-02-durotar#54 id=dur02-lvl-10 | все 6 `orc-*`, все 7 `troll-*` | 0 | 9 | 9 | — |
+| 10 | mul-02-mulgore#51 id=mul02-lvl-10 | все 4 `tauren-*` | 0 | 0 | 0 | — |
+| 10 | ud-02-tirisfal#64 id=ud02-level-10 | все 6 `undead-*` | 0 | 0 | 0 | — |
+| 10 | sd-02-zephras#23 id=sd02-level-10 | все 5 `skyborne-*` | 0 | 0 | 0 | — |
+| 10 | sd-02-zephras#13 id=hun-zep-level-10 | `skyborne-hunter` | 0 | 0 | 0 | — |
+| 10 | sd-02-zephras#12 id=sha-zep-level-10 | `skyborne-shaman` | 0 | 0 | 0 | — |
+| 12 | h-13-silverpine#6 id=h13-lvl-12 | все 28 | 0 | 0 | 0 | — |
+| 12 | ud-02-tirisfal#96 id=ud02-lvl-12 | все 6 `undead-*` | 0 | 1 | 7 | — |
+| 13 +92% | h-13-silverpine#40 id=h13-lvl-14 | все 28 | 0 | 18 | 18 | — |
+| 18 | h-18-stonetalon-ashenvale#3 id=h18-lvl-18 | все 28 | 0 | 0 | 45 | — |
+| 19 +88% | h-18-stonetalon-ashenvale#46 id=h18-lvl-20 | все 28 | 0 | 0 | 0 | — |
+| 21 | h-18-stonetalon-ashenvale#86 id=h18-lvl-21 | все 28 | 0 | 0 | 0 | — |
+| 21 +85% | h-18-stonetalon-ashenvale#92 id=h18-lvl-22 | все 28 | 0 | 36 | 100 | 40 |
+| 23 +85% | h-22-hillsbrad#54 id=h-22-hillsbrad-level-gate | все 28 | 0 | 0 | 52 | — |
+| 26 +84% | h-24-barrens-stonetalon#90 id=h-24-barrens-stonetalon-level-gate | все 28 | 0 | 0 | 221 | — |
+| 29 | h-27-ashenvale-needles#117 | все 28 | 0 | 0 | 0 | — |
+| 30 +67% | h-27-ashenvale-needles#120 id=h-27-ashenvale-needles-level-gate | все 28 | 76 | 122 | 314 | 130 |
+| 33 +43% | h-31-hillsbrad-arathi#56 id=h-31-hillsbrad-arathi-level-gate | все 28 | 258 | 274 | 327 | 280 |
+| 35 +75% | h-34-stranglethorn#50 id=h-34-stranglethorn-level-gate | все 28 | 151 | 152 | 152 | 160 |
+| 37 +50% | h-37-desolace-dustwallow#36 id=h38-level-maraudine | все 28 | 319 | 326 | 346 | 330 |
+| 39 +78% | h-37-desolace-dustwallow#63 id=h39-level-mannoroc | все 28 | 679 | 684 | 684 | 690 |
+| 40 +25% | h-37-desolace-dustwallow#117 id=h-37-desolace-dustwallow-level-gate | все 28 | 0 | 0 | 0 | — |
+| 43 +80% | h-41-arathi-badlands#70 id=h-41-arathi-badlands-level-gate | все 28 | 720 | 765 | 919 | 770 |
+| 45 +90% | h-44-swamp-stranglethorn#89 id=h-44-swamp-stranglethorn-level-gate | все 28 | 177 | 178 | 185 | 180 |
+| 47 (необязательный) | h-46-tanaris-feralas#54 id=h48-tanaris-level-gate | все 28 | 12 | 29 | — | — |
+| 49 +30% | h-46-tanaris-feralas#108 id=h-46-tanaris-feralas-level-gate | все 28 | 589 | 589 | 715 | 590 |
+| 52 +30% | h-50-hinterlands-searing-steppes#139 id=h-50-hinterlands-searing-steppes-level-gate | все 28 | 148 | 154 | 308 | 160 |
+| 54 | h-53-azshara-ungoro-silithus#108 id=h55-silithus-grind | все 28 | 0 | 0 | 24 | — |
+| 54 +74% | h-53-azshara-ungoro-silithus#114 id=h55-silithus-field-grind | все 28 | 319 | 362 | 369 | 370 |
+| 55 | h-53-azshara-ungoro-silithus#127 id=h-53-azshara-ungoro-silithus-level-gate | все 28 | 0 | 0 | 0 | — |
+| 57 | h-56-felwood-winterspring-plaguelands#72 id=h57-winterspring-grind | все 28 | 584 | 584 | 605 | 590 |
+| 59 +98% | h-56-felwood-winterspring-plaguelands#206 id=h-56-felwood-winterspring-plaguelands-level-gate | все 28 | 720 | 720 | 857 | 720 |
 
-| уровень | где | код | сообщение |
-|---|---|---|---|
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#1 id=h-22-tb-start (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `step-no-profile` | step matches none of the route's profiles (Scourge PALADIN Horde): it is never shown |
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#4 id=h-22-tb-fly-xroads (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `step-no-profile` | step matches none of the route's profiles (Scourge PALADIN Horde): it is never shown |
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#5 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `step-no-profile` | step matches none of the route's profiles (Scourge PALADIN Horde): it is never shown |
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#6 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `step-no-profile` | step matches none of the route's profiles (Scourge PALADIN Horde): it is never shown |
-| WARN | ud-01-deathknell#5 id=ud01-98601 (Segments/01_Deathknell.lua) | `xp-unknown` | turnin 98601 "A Difficult Path": quest XP unknown in the DB (Forever-new quest?); estimated 40 (median of level-1 quests). Record the real value in game with /fb xp |
-| WARN | ud-01-deathknell#14 id=ud01-90902 (Segments/01_Deathknell.lua) | `xp-unknown` | turnin 90902 "Rediscovering the Light": quest XP unknown in the DB (Forever-new quest?); estimated 170 (median of level-2 quests). Record the real value in game with /fb xp |
-| WARN | ud-01-deathknell#22 (Segments/01_Deathknell.lua) | `xp-unknown` | turnin 91208 "Coming to Terms": quest XP unknown in the DB (Forever-new quest?); estimated 355 (median of level-4 quests). Record the real value in game with /fb xp |
-| WARN | ud-01-deathknell#22 (Segments/01_Deathknell.lua) | `xp-unknown` | turnin 98389 "A Light in the Darkness": quest XP unknown in the DB (Forever-new quest?); estimated 355 (median of level-4 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#6 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 86784 "Sticks and Bones": quest XP unknown in the DB (Forever-new quest?); estimated 625 (median of level-7 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#6 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 96656 "The Adventurer": quest XP unknown in the DB (Forever-new quest?); estimated 550 (median of level-6 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#8 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 96607 "The Great Outdoors": quest XP unknown in the DB (Forever-new quest?); estimated 550 (median of level-6 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#13 id=ud02-91209 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 91209 "Continue Your Training": quest XP unknown in the DB (Forever-new quest?); estimated 355 (median of level-4 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#17 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 96658 "Camping 101: Cooking": quest XP unknown in the DB (Forever-new quest?); estimated 550 (median of level-6 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#32 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 99141 "Patience": quest XP unknown in the DB (Forever-new quest?); estimated 550 (median of level-6 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#32 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 99134 "Discipline": quest XP unknown in the DB (Forever-new quest?); estimated 550 (median of level-6 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#34 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 99144 "Seeking Refuge": quest XP unknown in the DB (Forever-new quest?); estimated 625 (median of level-7 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#71 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 97558 "Hides for the Forsaken": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#72 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 96895 "The Argent Emissary": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#74 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 96897 "The Cult of the Damned": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#74 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 96898 "Remnants of War": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#86 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 99142 "Tomb Weed": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#89 id=ud02-91285 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 91282 "A Second Home": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#90 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 96899 "Bandarion Keep": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#92 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 96896 "A Righteous Cause": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#94 id=ud02-smasher (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 91285 "Murlocs at the Gates": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#98 id=ud02-91317 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 91294 "Touring the Grounds": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#107 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 99153 "The One That Got Away": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#108 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 99152 "As Above, So Below": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#109 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 91316 "Making Repairs": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#110 id=ud02-95803 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 91317 "The Tarnished": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#114 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 95314 "That Shadowvale Green Elixir": quest XP unknown in the DB (Forever-new quest?); estimated 420 (median of level-10 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#117 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 94427 "A Lesson in Divinity": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#118 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 94434 "A Lesson in Divinity": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#120 (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 98545 "Leonid's Letter": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | ud-02-tirisfal#121 id=ud02-end (Segments/02_Tirisfal.lua) | `xp-unknown` | turnin 95803 "A Token of Good Faith": quest XP unknown in the DB (Forever-new quest?); estimated 460 (median of level-12 quests). Record the real value in game with /fb xp |
-| WARN | ud-03-silverpine#32 (Segments/03_Silverpine.lua) | `xp-unknown` | turnin 91920 "Wild Eyes": quest XP unknown in the DB (Forever-new quest?); estimated 660 (median of level-11 quests). Record the real value in game with /fb xp |
-| WARN | ud-03-silverpine#49 (Segments/03_Silverpine.lua) | `xp-unknown` | turnin 97891 "Prompt Potion Runner": quest XP unknown in the DB (Forever-new quest?); estimated 875 (median of level-16 quests). Record the real value in game with /fb xp |
-| WARN | ud-04-barrens#32 (Segments/04_Barrens.lua) | `xp-unknown` | turnin 97253 "Parts and Pieces": quest XP unknown in the DB (Forever-new quest?); estimated 1050 (median of level-15 quests). Record the real value in game with /fb xp |
-| WARN | ud-04-barrens#61 (Segments/04_Barrens.lua) | `xp-unknown` | turnin 95494 "Bruised Pride and Lion Hides": quest XP unknown in the DB (Forever-new quest?); estimated 1350 (median of level-18 quests). Record the real value in game with /fb xp |
-| WARN | ud-04-barrens#61 (Segments/04_Barrens.lua) | `xp-unknown` | turnin 95507 "Vrang's Game": quest XP unknown in the DB (Forever-new quest?); estimated 1350 (median of level-18 quests). Record the real value in game with /fb xp |
-| WARN | ud-04-barrens#62 (Segments/04_Barrens.lua) | `xp-unknown` | turnin 95495 "The Hermit Tanner": quest XP unknown in the DB (Forever-new quest?); estimated 1350 (median of level-18 quests). Record the real value in game with /fb xp |
-| WARN | ud-04-barrens#64 (Segments/04_Barrens.lua) | `xp-unknown` | turnin 95621 "Trouble in the Valley": quest XP unknown in the DB (Forever-new quest?); estimated 1350 (median of level-18 quests). Record the real value in game with /fb xp |
-| WARN | ud-04-barrens#66 (Segments/04_Barrens.lua) | `xp-unknown` | turnin 95508 "Unwelcome Guests": quest XP unknown in the DB (Forever-new quest?); estimated 1350 (median of level-18 quests). Record the real value in game with /fb xp |
-| WARN | ud-04-barrens#92 (Segments/04_Barrens.lua) | `xp-unknown` | turnin 95774 "Her Name Is Olgra": quest XP unknown in the DB (Forever-new quest?); estimated 780 (median of level-20 quests). Record the real value in game with /fb xp |
-| WARN | ud-05-stonetalon-ashenvale#69 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) | `xp-unknown` | turnin 98251 "Never Coming Back": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
-| WARN | ud-05-stonetalon-ashenvale#71 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) | `xp-unknown` | turnin 98252 "A Void Path": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
-| WARN | ud-05-stonetalon-ashenvale#82 id=ud05-lvl-grind (Segments/05_Barrens_Stonetalon_Ashenvale.lua) | `level-grind` | level 21 +85%: simulated level 21.41 is short by 11100 XP; ~74 same-level kills needed (estimate) |
-| WARN | h-22-hillsbrad#20 id=pal-22-trevan (Inserts.lua) | `xp-unknown` | turnin 91858 "Diplomatic Incident": quest XP unknown in the DB (Forever-new quest?); estimated 1300 (median of level-22 quests). Record the real value in game with /fb xp |
-| WARN | h-22-hillsbrad#20 id=pal-22-baldren (Inserts.lua) | `xp-unknown` | turnin 91859 "A Curious Pair": quest XP unknown in the DB (Forever-new quest?); estimated 1300 (median of level-22 quests). Record the real value in game with /fb xp |
-| WARN | h-22-hillsbrad#20 id=pal-22-remains (Inserts.lua) | `xp-unknown` | turnin 91860 "A Grim Fate": quest XP unknown in the DB (Forever-new quest?); estimated 1300 (median of level-22 quests). Record the real value in game with /fb xp |
-| WARN | h-22-hillsbrad#20 id=pal-22-lumina-keep (Inserts.lua) | `xp-unknown` | turnin 91861 "Into Fenris Keep": quest XP unknown in the DB (Forever-new quest?); estimated 1300 (median of level-22 quests). Record the real value in game with /fb xp |
-| WARN | h-22-hillsbrad#20 id=pal-22-escort-start (Inserts.lua) | `xp-unknown` | turnin 91862 "Lumina Windsinger": quest XP unknown in the DB (Forever-new quest?); estimated 1300 (median of level-22 quests). Record the real value in game with /fb xp |
-| WARN | h-22-hillsbrad#20 id=pal-22-lumina (Inserts.lua) | `xp-unknown` | turnin 96204 "The Windshaper's Wrath": quest XP unknown in the DB (Forever-new quest?); estimated 1300 (median of level-22 quests). Record the real value in game with /fb xp |
-| WARN | h-22-hillsbrad#20 id=pal-22-debt (Inserts.lua) | `xp-unknown` | turnin 95034 "The Debt": quest XP unknown in the DB (Forever-new quest?); estimated 1950 (median of level-24 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#22 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `at-far-from-giver` | turnin 1098 "Deathstalkers in Shadowfang": no quest ender spawns on uiMap 1421 |
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#29 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `xp-unknown` | turnin 95883 "The Tortured Soul": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#30 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `xp-unknown` | turnin 95885 "The Offering of Blood": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad#58 id=h-22-deathstalker-masoj (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `xp-unknown` | turnin 98094 "Scout Support": quest XP unknown in the DB (Forever-new quest?); estimated 2000 (median of level-25 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-22-hillsbrad (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) | `segment-level` | segment h-22-hillsbrad ends at simulated level 25.11; planned end level 24 |
-| WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#28 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `xp-unknown` | turnin 98093 "Field to Clear": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#30 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `xp-unknown` | turnin 97250 "Wrongly Blamed, Justly Corrected": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-23 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#43 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `xp-unknown` | turnin 92706 "WANTED: Bruuz": quest XP unknown in the DB (Forever-new quest?); estimated 780 (median of level-20 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#46 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `xp-unknown` | turnin 97003 "Chol'aruk the Ravener": quest XP unknown in the DB (Forever-new quest?); estimated 1250 (median of level-21 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#84 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `at-far-from-giver` | accept 6561 "Blackfathom Villainy": no quest giver spawns on uiMap 1440 |
-| WARN | [library FastesBoooy_Horde] h-24-barrens-stonetalon#93 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) | `xp-unknown` | turnin 86576 "Bloodfury Trinkets": quest XP unknown in the DB (Forever-new quest?); estimated 2100 (median of level-26 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#3 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 97538 "Pigments for Paints": quest XP unknown in the DB (Forever-new quest?); estimated 2100 (median of level-26 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#17 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 6383 "The Ashenvale Hunt": quest XP unknown in the DB (Forever-new quest?); estimated 780 (median of level-20 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#47 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 96260 "Stronger than Steel": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-30 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#48 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 96241 "Talkin' bout Toxins, Mon": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-30 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#49 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 96259 "Defending the Dead": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-30 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#50 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 96261 "The Broodmother": quest XP unknown in the DB (Forever-new quest?); estimated 1250 (median of level-31 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#50 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 96294 "A Darker Truth": quest XP unknown in the DB (Forever-new quest?); estimated 1850 (median of level-30 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#55 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `at-far-from-giver` | accept 1144 "Willix the Importer": no quest giver spawns on uiMap 1413 |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#57 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `at-far-from-giver` | turnin 1144 "Willix the Importer": no quest ender spawns on uiMap 1413 |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#107 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 98069 "Stolen Freewind Supplies": quest XP unknown in the DB (Forever-new quest?); estimated 1250 (median of level-31 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#107 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `xp-unknown` | turnin 98070 "Stop the Screeching": quest XP unknown in the DB (Forever-new quest?); estimated 1250 (median of level-31 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-27-ashenvale-needles#120 id=h-27-ashenvale-needles-level-gate (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) | `level-grind` | level 30 +67%: simulated level 30.33 is short by 16380 XP; ~84 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-31-hillsbrad-arathi#56 id=h-31-hillsbrad-arathi-level-gate (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) | `level-grind` | level 33 +43%: simulated level 32.42 is short by 56770 XP; ~274 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-31-hillsbrad-arathi#71 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) | `xp-unknown` | turnin 97539 "Silky Sutures": quest XP unknown in the DB (Forever-new quest?); estimated 2800 (median of level-36 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-34-stranglethorn#50 id=h-34-stranglethorn-level-gate (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) | `level-grind` | level 35 +75%: simulated level 35.26 is short by 33220 XP; ~151 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-37-desolace-dustwallow#36 id=h38-level-maraudine (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) | `level-grind` | level 37 +50%: simulated level 36.50 is short by 73950 XP; ~325 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-37-desolace-dustwallow#63 id=h39-level-mannoroc (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) | `level-grind` | level 39 +78%: simulated level 37.82 is short by 161830 XP; ~684 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-37-desolace-dustwallow#72 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) | `xp-unknown` | turnin 93225 "Carved Centaur Totems": quest XP unknown in the DB (Forever-new quest?); estimated 2350 (median of level-40 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-41-arathi-badlands#70 id=h-41-arathi-badlands-level-gate (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) | `level-grind` | level 43 +80%: simulated level 41.89 is short by 196250 XP; ~764 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-44-swamp-stranglethorn#31 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) | `xp-unknown` | turnin 1422 "Threat From the Sea": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-44-swamp-stranglethorn#55 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) | `xp-unknown` | turnin 349 "Stranglethorn Fever": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-44-swamp-stranglethorn#89 id=h-44-swamp-stranglethorn-level-gate (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) | `level-grind` | level 45 +90%: simulated level 45.49 is short by 48060 XP; ~178 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-46-tanaris-feralas#108 id=h-46-tanaris-feralas-level-gate (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) | `level-grind` | level 49 +30%: simulated level 48.07 is short by 168595 XP; ~589 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#12 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) | `xp-unknown` | turnin 81949 "Legends of the Tidesages": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#139 id=h-50-hinterlands-searing-steppes-level-gate (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) | `level-grind` | level 52 +30%: simulated level 52.01 is short by 46970 XP; ~154 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#4 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) | `xp-unknown` | turnin 81954 "Venomous Journeys": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#4 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) | `xp-unknown` | turnin 81955 "A Mind of Metal": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#4 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) | `xp-unknown` | turnin 81953 "Stonewrought Design": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#4 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) | `xp-unknown` | turnin 81947 "Sanguine Sorcery": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#4 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) | `xp-unknown` | turnin 81956 "Conjurer's Codex": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#114 id=h55-silithus-field-grind (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) | `level-grind` | level 54 +74%: simulated level 54.09 is short by 114030 XP; ~362 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#72 id=h57-winterspring-grind (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) | `level-grind` | level 57: simulated level 55.99 is short by 189770 XP; ~584 same-level kills needed (estimate) |
-| WARN | [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#86 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) | `xp-unknown` | turnin 81952 "Everyday Etiquette": quest XP unknown in the DB (Forever-new quest?); estimated 3900 (median of level-45 quests). Record the real value in game with /fb xp |
-| WARN | [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#206 id=h-56-felwood-winterspring-plaguelands-level-gate (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) | `level-grind` | level 59 +98%: simulated level 58.81 is short by 244225 XP; ~720 same-level kills needed (estimate) |
+## Маршруты
 
-<details><summary>INFO (385)</summary>
+В разделе маршрута — только его собственные сообщения: шаги самого маршрута и вставок класса и расы (`AddInsert`, `AddLibraryInsert`). Сообщения о шагах общих сегментов — в разделе «Общие шаги».
 
-- ud-01-deathknell#3 (Segments/01_Deathknell.lua) `complete-kill-xp` complete 364 "The Mindless Ones": ~16 kills, +736 kill XP (estimate); level now 2.42
-- ud-01-deathknell#7 (Segments/01_Deathknell.lua) `complete-no-kill` complete 90902 "Rediscovering the Light": no kill XP for objective 1 259377 "Injured Deathguard": interact objective
-- ud-01-deathknell#8 (Segments/01_Deathknell.lua) `complete-kill-xp` complete 3901 "Rattling the Rattlecages": ~12 kills, +606 kill XP (estimate); level now 3.21
-- ud-01-deathknell#9 (Segments/01_Deathknell.lua) `complete-kill-xp` complete 376 "The Damned": ~18 kills, +594 kill XP (estimate); level now 3.63
-- ud-01-deathknell#11 id=ud01-xp-4 (Segments/01_Deathknell.lua) `level-grind` level 3 +64%: simulated level 3.63 is short by 60 XP; ~1 same-level kills needed (estimate)
-- ud-01-deathknell#19 id=ud01-91208 (Segments/01_Deathknell.lua) `complete-no-kill` complete 91208 "Coming to Terms": no kill XP for objective 1 246143 "Frightened Paladin": friendly NPC (faction 'H')
-- ud-01-deathknell#20 (Segments/01_Deathknell.lua) `complete-kill-xp` complete 380 "Night Web's Hollow": ~10 kills, +350 kill XP (estimate); level now 4.23
-- ud-01-deathknell#21 (Segments/01_Deathknell.lua) `complete-no-kill` complete 98389 "A Light in the Darkness": no kill XP for objective 1 271968 "Forsaken Adventurer": event objective
-- ud-01-deathknell#21 (Segments/01_Deathknell.lua) `complete-kill-xp` complete 380 "Night Web's Hollow": ~8 kills, +392 kill XP (estimate); level now 4.42
-- ud-01-deathknell#24 (Segments/01_Deathknell.lua) `complete-kill-xp` complete 381 "The Scarlet Crusade": ~18 kills, +684 kill XP (estimate); level now 5.30
-- ud-01-deathknell#29 (Segments/01_Deathknell.lua) `complete-kill-xp` complete 382 "The Red Messenger": ~2 kills, +140 kill XP (estimate); level now 5.64
-- ud-02-tirisfal#10 (Segments/02_Tirisfal.lua) `complete-no-kill` complete 99134 "Discipline": no kill XP for objective 1 1495 "Deathguard Linnea": interact objective
-- ud-02-tirisfal#13 id=ud02-91209 (Segments/02_Tirisfal.lua) `complete-no-kill` complete 91209 "Continue Your Training": no kill XP for objective 1 246152 "Shari Stilwell": interact objective
-- ud-02-tirisfal#17 (Segments/02_Tirisfal.lua) `complete-no-kill` complete 96658 "Camping 101: Cooking": no kill XP for objective 1 265944 "William Pickman": talk objective
-- ud-02-tirisfal#19 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 97558 "Hides for the Forsaken": ~26 kills, +1716 kill XP (estimate); level now 7.19
-- ud-02-tirisfal#20 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 367 "A New Plague": ~8 kills, +352 kill XP (estimate); level now 7.27
-- ud-02-tirisfal#21 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 404 "A Putrid Task": ~11 kills, +484 kill XP (estimate); level now 7.38
-- ud-02-tirisfal#23 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 427 "At War With The Scarlet Crusade": ~10 kills, +610 kill XP (estimate); level now 7.52
-- ud-02-tirisfal#43 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 375 "The Chill of Death": ~8 kills, +416 kill XP (estimate); level now 8.49
-- ud-02-tirisfal#45 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 358 "Graverobbers": ~25 kills, +1380 kill XP (estimate); level now 8.74
-- ud-02-tirisfal#46 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 398 "WANTED: Maggot Eye": ~2 kills, +194 kill XP (estimate); level now 8.78
-- ud-02-tirisfal#47 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 368 "A New Plague": ~8 kills, +544 kill XP (estimate); level now 8.88
-- ud-02-tirisfal#49 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 426 "The Mills Overrun": ~13 kills, +743 kill XP (estimate); level now 9.01
-- ud-02-tirisfal#50 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 362 "The Haunted Mills": ~2 kills, +180 kill XP (estimate); level now 9.04
-- ud-02-tirisfal#51 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 354 "Deaths in the Family": ~2 kills, +188 kill XP (estimate); level now 9.07
-- ud-02-tirisfal#52 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 354 "Deaths in the Family": ~2 kills, +188 kill XP (estimate); level now 9.10
-- ud-02-tirisfal#53 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 354 "Deaths in the Family": ~2 kills, +188 kill XP (estimate); level now 9.13
-- ud-02-tirisfal#65 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 374 "Proof of Demise": ~15 kills, +510 kill XP (estimate); level now 10.15
-- ud-02-tirisfal#66 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 370 "At War With The Scarlet Crusade": ~7 kills, +405 kill XP (estimate); level now 10.21
-- ud-02-tirisfal#73 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 96897 "The Cult of the Damned": ~16 kills, +1584 kill XP (estimate); level now 10.69
-- ud-02-tirisfal#73 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 96898 "Remnants of War": ~18 kills, +1782 kill XP (estimate); level now 10.92
-- ud-02-tirisfal#75 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 356 "Rear Guard Patrol": ~16 kills, +1176 kill XP (estimate); level now 11.17
-- ud-02-tirisfal#76 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 371 "At War With The Scarlet Crusade": ~6 kills, +425 kill XP (estimate); level now 11.22
-- ud-02-tirisfal#77 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 369 "A New Plague": ~6 kills, +390 kill XP (estimate); level now 11.27
-- ud-02-tirisfal#91 (Segments/02_Tirisfal.lua) `complete-no-objectives` complete 96896 "A Righteous Cause": the DB lists no objectives
-- ud-02-tirisfal#93 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 91285 "Murlocs at the Gates": ~16 kills, +1112 kill XP (estimate); level now 12.05
-- ud-02-tirisfal#95 id=ud02-91294 (Segments/02_Tirisfal.lua) `complete-no-kill` complete 91294 "Touring the Grounds": no kill XP for objective 1 246389 "Hilda the Breaker": talk objective
-- ud-02-tirisfal#96 (Segments/02_Tirisfal.lua) `complete-no-kill` complete 91294 "Touring the Grounds": no kill XP for objective 3 246394 "Ander Solliden": talk objective
-- ud-02-tirisfal#97 (Segments/02_Tirisfal.lua) `complete-no-kill` complete 91294 "Touring the Grounds": no kill XP for objective 2 246393 "Jorin Croge": talk objective
-- ud-02-tirisfal#98 id=ud02-91317 (Segments/02_Tirisfal.lua) `complete-no-kill` complete 91294 "Touring the Grounds": no kill XP for objective 4 246378 "Danitha Morr": talk objective
-- ud-02-tirisfal#101 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 91317 "The Tarnished": ~14 kills, +1008 kill XP (estimate); level now 12.28
-- ud-02-tirisfal#102 (Segments/02_Tirisfal.lua) `complete-kill-xp` complete 99152 "As Above, So Below": ~9 kills, +792 kill XP (estimate); level now 12.36
-- ud-03-silverpine#7 (Segments/03_Silverpine.lua) `complete-kill-xp` complete 429 "Wild Hearts": ~5 kills, +360 kill XP (estimate); level now 12.91
-- ud-03-silverpine#17 (Segments/03_Silverpine.lua) `complete-kill-xp` complete 447 "A Recipe For Death": ~18 kills, +1503 kill XP (estimate); level now 13.21
-- ud-03-silverpine#18 (Segments/03_Silverpine.lua) `complete-kill-xp` complete 421 "Prove Your Worth": ~5 kills, +300 kill XP (estimate); level now 13.23
-- ud-03-silverpine#23 (Segments/03_Silverpine.lua) `complete-kill-xp` complete 425 "Ivar the Foul": ~2 kills, +220 kill XP (estimate); level now 13.38
-- ud-03-silverpine#25 (Segments/03_Silverpine.lua) `complete-kill-xp` complete 91920 "Wild Eyes": ~5 kills, +460 kill XP (estimate); level now 13.48
-- ud-03-silverpine#26 (Segments/03_Silverpine.lua) `complete-kill-xp` complete 437 "The Dead Fields": ~2 kills, +230 kill XP (estimate); level now 13.50
-- ud-03-silverpine#33 (Segments/03_Silverpine.lua) `complete-kill-xp` complete 423 "Arugal's Folly": ~14 kills, +1378 kill XP (estimate); level now 13.85
-- ud-03-silverpine#36 (Segments/03_Silverpine.lua) `complete-kill-xp` complete 424 "Arugal's Folly": ~2 kills, +240 kill XP (estimate); level now 14.03
-- ud-04-barrens#12 (Segments/04_Barrens.lua) `complete-kill-xp` complete 869 "Raptor Thieves": ~18 kills, +1422 kill XP (estimate); level now 14.86
-- ud-04-barrens#13 (Segments/04_Barrens.lua) `complete-kill-xp` complete 844 "Plainstrider Menace": ~11 kills, +693 kill XP (estimate); level now 14.91
-- ud-04-barrens#14 (Segments/04_Barrens.lua) `complete-kill-xp` complete 871 "Disrupt the Attacks": ~19 kills, +957 kill XP (estimate); level now 14.99
-- ud-04-barrens#18 (Segments/04_Barrens.lua) `complete-kill-xp` complete 845 "The Zhevra": ~6 kills, +492 kill XP (estimate); level now 15.15
-- ud-04-barrens#20 (Segments/04_Barrens.lua) `complete-kill-xp` complete 872 "The Disruption Ends": ~18 kills, +1296 kill XP (estimate); level now 15.24
-- ud-04-barrens#28 (Segments/04_Barrens.lua) `complete-kill-xp` complete 887 "Southsea Freebooters": ~18 kills, +1284 kill XP (estimate); level now 15.36
-- ud-04-barrens#40 (Segments/04_Barrens.lua) `complete-kill-xp` complete 903 "Prowlers of the Barrens": ~11 kills, +1100 kill XP (estimate); level now 15.86
-- ud-04-barrens#41 (Segments/04_Barrens.lua) `complete-kill-xp` complete 855 "Centaur Bracers": ~23 kills, +1518 kill XP (estimate); level now 15.96
-- ud-04-barrens#43 (Segments/04_Barrens.lua) `complete-kill-xp` complete 850 "Kolkar Leaders": ~2 kills, +252 kill XP (estimate); level now 15.98
-- ud-04-barrens#48 (Segments/04_Barrens.lua) `complete-kill-xp` complete 881 "Echeyakee": ~2 kills, +250 kill XP (estimate); level now 16.16
-- ud-04-barrens#49 (Segments/04_Barrens.lua) `complete-kill-xp` complete 896 "Miner's Fortune": ~2 kills, +212 kill XP (estimate); level now 16.17
-- ud-04-barrens#51 (Segments/04_Barrens.lua) `complete-kill-xp` complete 858 "Ignition": ~2 kills, +274 kill XP (estimate); level now 16.19
-- ud-04-barrens#57 (Segments/04_Barrens.lua) `complete-kill-xp` complete 901 "Samophlange": ~2 kills, +250 kill XP (estimate); level now 16.37
-- ud-04-barrens#60 (Segments/04_Barrens.lua) `complete-kill-xp` complete 95494 "Bruised Pride and Lion Hides": ~9 kills, +954 kill XP (estimate); level now 16.47
-- ud-04-barrens#63 (Segments/04_Barrens.lua) `complete-kill-xp` complete 95621 "Trouble in the Valley": ~2 kills, +262 kill XP (estimate); level now 16.74
-- ud-04-barrens#65 (Segments/04_Barrens.lua) `complete-no-objectives` complete 95508 "Unwelcome Guests": the DB lists no objectives
-- ud-04-barrens#67 (Segments/04_Barrens.lua) `complete-kill-xp` complete 867 "Harpy Raiders": ~12 kills, +1068 kill XP (estimate); level now 16.98
-- ud-04-barrens#82 (Segments/04_Barrens.lua) `complete-kill-xp` complete 865 "Raptor Horns": ~8 kills, +1040 kill XP (estimate); level now 17.55
-- ud-04-barrens#83 (Segments/04_Barrens.lua) `complete-kill-xp` complete 851 "Verog the Dervish": ~2 kills, +272 kill XP (estimate); level now 17.56
-- ud-04-barrens#87 (Segments/04_Barrens.lua) `complete-kill-xp` complete 95774 "Her Name Is Olgra": ~6 kills, +780 kill XP (estimate); level now 17.61
-- ud-04-barrens#88 (Segments/04_Barrens.lua) `complete-no-kill` complete 4921 "Lost in Battle": no kill XP for objective 1 10668 "Beaten Corpse": talk objective
-- ud-05-stonetalon-ashenvale#12 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 821 "Chen's Empty Keg": ~18 kills, +956 kill XP (estimate); level now 18.16
-- ud-05-stonetalon-ashenvale#15 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 882 "Ishamuhale": ~2 kills, +282 kill XP (estimate); level now 18.23
-- ud-05-stonetalon-ashenvale#16 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 880 "Altered Beings": ~12 kills, +948 kill XP (estimate); level now 18.28
-- ud-05-stonetalon-ashenvale#20 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 878 "Tribes at War": ~30 kills, +3888 kill XP (estimate); level now 18.57
-- ud-05-stonetalon-ashenvale#20 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 899 "Consumed by Hatred": ~90 kills, +10095 kill XP (estimate); level now 19.08
-- ud-05-stonetalon-ashenvale#21 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 907 "Enraged Thunder Lizards": ~5 kills, +805 kill XP (estimate); level now 19.12
-- ud-05-stonetalon-ashenvale#23 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 5052 "Blood Shards of Agamaggan": ~2 kills, +200 kill XP (estimate); level now 19.21
-- ud-05-stonetalon-ashenvale#25 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 913 "Cry of the Thunderhawk": ~2 kills, +280 kill XP (estimate); level now 19.36
-- ud-05-stonetalon-ashenvale#30 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 852 "Hezrul Bloodmark": ~2 kills, +280 kill XP (estimate); level now 19.66
-- ud-05-stonetalon-ashenvale#33 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 6548 "Avenge My Village": ~14 kills, +686 kill XP (estimate); level now 19.80
-- ud-05-stonetalon-ashenvale#35 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 6629 "Kill Grundig Darkcloud": ~7 kills, +509 kill XP (estimate); level now 19.89
-- ud-05-stonetalon-ashenvale#40 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 6461 "Blood Feeders": ~17 kills, +1414 kill XP (estimate); level now 20.07
-- ud-05-stonetalon-ashenvale#43 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 1062 "Goblin Invaders": ~15 kills, +1635 kill XP (estimate); level now 20.16
-- ud-05-stonetalon-ashenvale#43 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 1093 "Super Reaper 6000": ~2 kills, +252 kill XP (estimate); level now 20.17
-- ud-05-stonetalon-ashenvale#63 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-no-kill` complete 1090 "Gerenzo's Orders": no kill XP for objective 1 4276 "Piznik": event objective
-- ud-05-stonetalon-ashenvale#68 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 98251 "Never Coming Back": ~12 kills, +1866 kill XP (estimate); level now 20.87
-- ud-05-stonetalon-ashenvale#70 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-no-objectives` complete 98252 "A Void Path": the DB lists no objectives
-- ud-05-stonetalon-ashenvale#77 id=ud05-lvl-21 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 6442 "Naga at the Zoram Strand": ~30 kills, +3900 kill XP (estimate); level now 21.20
-- ud-05-stonetalon-ashenvale#80 (Segments/05_Barrens_Stonetalon_Ashenvale.lua) `complete-kill-xp` complete 216 "Between a Rock and a Thistlefur": ~24 kills, +3960 kill XP (estimate); level now 21.41
-- [library FastesBoooy_Horde] h-22-hillsbrad#1 id=h-22-tb-start (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `step-skipped` step filtered out for Scourge PALADIN Horde (class/race/faction filter)
-- [library FastesBoooy_Horde] h-22-hillsbrad#4 id=h-22-tb-fly-xroads (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `step-skipped` step filtered out for Scourge PALADIN Horde (class/race/faction filter)
-- [library FastesBoooy_Horde] h-22-hillsbrad#5 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `step-skipped` step filtered out for Scourge PALADIN Horde (class/race/faction filter)
-- [library FastesBoooy_Horde] h-22-hillsbrad#6 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `step-skipped` step filtered out for Scourge PALADIN Horde (class/race/faction filter)
-- h-22-hillsbrad#20 id=pal-22-key (Inserts.lua) `complete-kill-xp` complete 91862 "Lumina Windsinger": ~2 kills, +164 kill XP (estimate); level now 22.95
-- h-22-hillsbrad#20 id=pal-22-escort (Inserts.lua) `complete-no-objectives` complete 96204 "The Windshaper's Wrath": the DB lists no objectives
-- [library FastesBoooy_Horde] h-22-hillsbrad#28 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 95883 "The Tortured Soul": ~2 kills, +204 kill XP (estimate); level now 23.60
-- [library FastesBoooy_Horde] h-22-hillsbrad#38 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 496 "Elixir of Suffering": ~17 kills, +2168 kill XP (estimate); level now 23.91
-- [library FastesBoooy_Horde] h-22-hillsbrad#39 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 501 "Elixir of Pain": ~15 kills, +2400 kill XP (estimate); level now 23.99
-- [library FastesBoooy_Horde] h-22-hillsbrad#40 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 567 "Dangerous!": ~2 kills, +352 kill XP (estimate); level now 24.00
-- [library FastesBoooy_Horde] h-22-hillsbrad#41 id=h-22-hillsbrad-foothills-field (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 527 "Battle of Hillsbrad": ~14 kills, +1917 kill XP (estimate); level now 24.06
-- [library FastesBoooy_Horde] h-22-hillsbrad#44 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 546 "Souvenirs of Death": ~45 kills, +6480 kill XP (estimate); level now 24.33
-- [library FastesBoooy_Horde] h-22-hillsbrad#45 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 549 "WANTED: Syndicate Personnel": ~20 kills, +1930 kill XP (estimate); level now 24.39
-- [library FastesBoooy_Horde] h-22-hillsbrad#45 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 1066 "Blood of Innocents": ~8 kills, +840 kill XP (estimate); level now 24.41
-- [library FastesBoooy_Horde] h-22-hillsbrad#49 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-kill-xp` complete 528 "Battle of Hillsbrad": ~15 kills, +2475 kill XP (estimate); level now 24.49
-- [library FastesBoooy_Horde] h-22-hillsbrad#56 (FastesBoooy_Horde/Segments/01_h-22-hillsbrad.lua) `complete-no-kill` complete 529 "Battle of Hillsbrad": no kill XP for objective 1 2404 "Blacksmith Verringtan": service NPC (repair, vendor); 2 2265 "Hillsbrad Apprentice Blacksmith": service NPC (questgiver, vendor)
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#7 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `quest-profession` accept 862 "Dig Rat Stew": requires Cooking 15 (profession); optional step
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#16 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 98093 "Field to Clear": ~14 kills, +1512 kill XP (estimate); level now 25.19
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#17 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 97250 "Wrongly Blamed, Justly Corrected": ~3 kills, +471 kill XP (estimate); level now 25.21
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#18 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 862 "Dig Rat Stew": ~12 kills, +0 kill XP (estimate); level now 25.21
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#19 id=h-24-the-barrens-field (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 843 "Gann's Reclamation": ~22 kills, +2246 kill XP (estimate); level now 25.27
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#22 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 846 "Revenge of Gann": ~27 kills, +3429 kill XP (estimate); level now 25.43
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#26 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 879 "Betrayal from Within": ~6 kills, +774 kill XP (estimate); level now 25.59
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#26 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 893 "Weapons of Choice": ~6 kills, +698 kill XP (estimate); level now 25.61
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#35 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 92706 "WANTED: Bruuz": ~2 kills, +296 kill XP (estimate); level now 25.89
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#37 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 873 "Isha Awak": ~2 kills, +374 kill XP (estimate); level now 25.91
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#39 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 891 "The Guns of Northwatch": ~18 kills, +196 kill XP (estimate); level now 26.00
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#44 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 97003 "Chol'aruk the Ravener": ~2 kills, +254 kill XP (estimate); level now 26.10
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#58 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 6284 "Arachnophobia": ~2 kills, +304 kill XP (estimate); level now 26.33
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#61 id=h-25-stonetalon-mountains-field (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 1096 "Gerenzo Wrenchwhistle": ~2 kills, +366 kill XP (estimate); level now 26.34
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#66 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 1087 "Cenarius' Legacy": ~12 kills, +1496 kill XP (estimate); level now 26.44
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#68 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 6393 "Elemental War": ~15 kills, +1680 kill XP (estimate); level now 26.48
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#69 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 86576 "Bloodfury Trinkets": ~23 kills, +2576 kill XP (estimate); level now 26.56
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#70 (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 6282 "Harpies Threaten": ~28 kills, +3696 kill XP (estimate); level now 26.66
-- [library FastesBoooy_Horde] h-24-barrens-stonetalon#90 id=h-24-barrens-stonetalon-level-gate (FastesBoooy_Horde/Segments/02_h-24-barrens-stonetalon.lua) `complete-kill-xp` complete 6283 "Bloodfury Bloodline": ~2 kills, +628 kill XP (estimate); level now 27.30
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#11 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 6503 "Ashenvale Outrunners": ~9 kills, +864 kill XP (estimate); level now 27.85
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#19 id=h-27-ashenvale-field-loop (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 6441 "Satyr Horns": ~24 kills, +4680 kill XP (estimate); level now 28.09
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#20 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1088 "Ordanus": ~2 kills, +388 kill XP (estimate); level now 28.10
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#22 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 25 "Stonetalon Standstill": ~12 kills, +1176 kill XP (estimate); level now 28.12
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#42 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 96260 "Stronger than Steel": ~5 kills, +925 kill XP (estimate); level now 28.61
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#43 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 96241 "Talkin' bout Toxins, Mon": ~8 kills, +1480 kill XP (estimate); level now 28.65
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#44 id=h-28-mulgore-skywatcher-plateau (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 96259 "Defending the Dead": ~15 kills, +2535 kill XP (estimate); level now 28.71
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#45 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 96261 "The Broodmother": ~1 kills, +407 kill XP (estimate); level now 28.72
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#69 id=h-28-thousand-needles-field (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 4841 "Pacify the Centaur": ~28 kills, +2486 kill XP (estimate); level now 29.20
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#73 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1153 "A New Ore Sample": ~2 kills, +330 kill XP (estimate); level now 29.21
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#81 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 98070 "Stop the Screeching": ~15 kills, +2770 kill XP (estimate); level now 29.44
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#82 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1150 "Test of Endurance": ~2 kills, +418 kill XP (estimate); level now 29.45
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#88 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1131 "Steelsnap": ~2 kills, +398 kill XP (estimate); level now 29.46
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#91 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 4966 "Protect Kanati Greycloud": ~1 kills, +143 kill XP (estimate, objective counts partly assumed); level now 29.59
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#94 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 5151 "Hypercapacitor Gizmo": ~2 kills, +798 kill XP (estimate); level now 29.66
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#101 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 5147 "WANTED: Arnak Grimtotem": ~2 kills, +380 kill XP (estimate); level now 29.74
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#115 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1175 "A Bump in the Road": ~26 kills, +5494 kill XP (estimate); level now 30.16
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#116 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1105 "Hardened Shells": ~14 kills, +2730 kill XP (estimate); level now 30.22
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#117 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1104 "Salt Flat Venom": ~9 kills, +2016 kill XP (estimate); level now 30.26
-- [library FastesBoooy_Horde] h-27-ashenvale-needles#119 (FastesBoooy_Horde/Segments/03_h-27-ashenvale-needles.lua) `complete-kill-xp` complete 1176 "Load Lightening": ~15 kills, +3060 kill XP (estimate); level now 30.33
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#17 id=h-31-hillsbrad-alterac-field (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 533 "Infiltration": ~2 kills, +420 kill XP (estimate); level now 31.17
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#18 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 552 "Helcular's Revenge": ~2 kills, +350 kill XP (estimate); level now 31.18
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#19 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 544 "Prison Break In": ~8 kills, +1778 kill XP (estimate); level now 31.21
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#19 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 556 "Stone Tokens": ~15 kills, +3000 kill XP (estimate); level now 31.27
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#20 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 532 "Battle of Hillsbrad": ~6 kills, +575 kill XP (estimate); level now 31.28
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#21 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 567 "Dangerous!": ~1 kills, +93 kill XP (estimate); level now 31.29
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#29 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 545 "Dalaran Patrols": ~14 kills, +3080 kill XP (estimate); level now 31.61
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#29 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 557 "Bracers of Binding": ~6 kills, +1320 kill XP (estimate); level now 31.64
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#30 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 539 "Battle of Hillsbrad": ~11 kills, +1105 kill XP (estimate); level now 31.66
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#31 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 567 "Dangerous!": ~1 kills, +153 kill XP (estimate); level now 31.66
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#38 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-no-kill` complete 503 "Gol'dir": no kill XP for objective 1 2316 "Gol'dir": event objective
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#38 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 503 "Gol'dir": ~2 kills, +480 kill XP (estimate); level now 31.87
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#44 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 676 "The Hammer May Fall": ~18 kills, +3790 kill XP (estimate); level now 32.13
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#45 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 1164 "To Steal From Thieves": ~6 kills, +1350 kill XP (estimate); level now 32.15
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#53 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 672 "Raising Spirits": ~15 kills, +2355 kill XP (estimate); level now 32.25
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#54 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 97539 "Silky Sutures": ~18 kills, +3690 kill XP (estimate); level now 32.31
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#55 id=h-31-arathi-highlands-field (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 677 "Call to Arms": ~28 kills, +6020 kill XP (estimate); level now 32.42
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#58 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 642 "The Princess Trapped": ~18 kills, +4158 kill XP (estimate); level now 33.50
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#64 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 701 "Guile of the Raptor": ~18 kills, +4338 kill XP (estimate); level now 33.73
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#64 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 678 "Call to Arms": ~14 kills, +3274 kill XP (estimate); level now 33.78
-- [library FastesBoooy_Horde] h-31-hillsbrad-arathi#66 (FastesBoooy_Horde/Segments/04_h-31-hillsbrad-arathi.lua) `complete-kill-xp` complete 671 "Foul Magics": ~15 kills, +2070 kill XP (estimate); level now 33.82
-- [library FastesBoooy_Horde] h-34-stranglethorn#22 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 581 "Hunt for Yenniku": ~14 kills, +2646 kill XP (estimate); level now 34.16
-- [library FastesBoooy_Horde] h-34-stranglethorn#22 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 189 "Bloodscalp Ears": ~23 kills, +4347 kill XP (estimate); level now 34.23
-- [library FastesBoooy_Horde] h-34-stranglethorn#22 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 596 "Bloody Bone Necklaces": ~38 kills, +7182 kill XP (estimate); level now 34.34
-- [library FastesBoooy_Horde] h-34-stranglethorn#27 id=h-34-stranglethorn-vale-field (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 185 "Tiger Mastery": ~10 kills, +1200 kill XP (estimate); level now 34.38
-- [library FastesBoooy_Horde] h-34-stranglethorn#27 id=h-34-stranglethorn-vale-field (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 190 "Panther Mastery": ~10 kills, +1200 kill XP (estimate); level now 34.40
-- [library FastesBoooy_Horde] h-34-stranglethorn#27 id=h-34-stranglethorn-vale-field (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 575 "Supply and Demand": ~3 kills, +360 kill XP (estimate); level now 34.41
-- [library FastesBoooy_Horde] h-34-stranglethorn#30 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 186 "Tiger Mastery": ~10 kills, +1640 kill XP (estimate); level now 34.48
-- [library FastesBoooy_Horde] h-34-stranglethorn#30 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 191 "Panther Mastery": ~10 kills, +1640 kill XP (estimate); level now 34.50
-- [library FastesBoooy_Horde] h-34-stranglethorn#31 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 194 "Raptor Mastery": ~10 kills, +1890 kill XP (estimate); level now 34.53
-- [library FastesBoooy_Horde] h-34-stranglethorn#31 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 605 "Singing Blue Shards": ~15 kills, +2115 kill XP (estimate); level now 34.57
-- [library FastesBoooy_Horde] h-34-stranglethorn#36 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 213 "Hostile Takeover": ~12 kills, +2700 kill XP (estimate); level now 34.67
-- [library FastesBoooy_Horde] h-34-stranglethorn#37 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 568 "The Defense of Grom'gol": ~15 kills, +3375 kill XP (estimate); level now 34.72
-- [library FastesBoooy_Horde] h-34-stranglethorn#37 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 195 "Raptor Mastery": ~10 kills, +2250 kill XP (estimate); level now 34.76
-- [library FastesBoooy_Horde] h-34-stranglethorn#38 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 187 "Tiger Mastery": ~10 kills, +2150 kill XP (estimate); level now 34.79
-- [library FastesBoooy_Horde] h-34-stranglethorn#41 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 188 "Tiger Mastery": ~2 kills, +494 kill XP (estimate); level now 34.86
-- [library FastesBoooy_Horde] h-34-stranglethorn#44 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 569 "The Defense of Grom'gol": ~15 kills, +3540 kill XP (estimate); level now 34.99
-- [library FastesBoooy_Horde] h-34-stranglethorn#45 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 192 "Panther Mastery": ~10 kills, +2435 kill XP (estimate); level now 35.03
-- [library FastesBoooy_Horde] h-34-stranglethorn#45 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 570 "Mok'thardin's Enchantment": ~14 kills, +3388 kill XP (estimate); level now 35.08
-- [library FastesBoooy_Horde] h-34-stranglethorn#49 (FastesBoooy_Horde/Segments/05_h-34-stranglethorn.lua) `complete-kill-xp` complete 582 "Headhunting": ~30 kills, +6930 kill XP (estimate); level now 35.26
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#22 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-no-kill` complete 5561 "Kodo Roundup": no kill XP for objective 1 4700 "Aged Kodo": interact objective
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#25 id=h37-thunder-axe (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1435 "The Burning of Spirits": ~23 kills, +2070 kill XP (estimate); level now 36.21
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#28 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1365 "Khan Dez'hepah": ~2 kills, +396 kill XP (estimate); level now 36.27
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#29 id=h-37-desolace-field-loop (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1434 "Befouled by Satyr": ~28 kills, +3220 kill XP (estimate); level now 36.32
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#29 id=h-37-desolace-field-loop (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1481 "The Corrupter": ~2 kills, +252 kill XP (estimate); level now 36.32
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#34 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1366 "Centaur Bounty": ~23 kills, +2070 kill XP (estimate); level now 36.47
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#35 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 93225 "Carved Centaur Totems": ~8 kills, +1888 kill XP (estimate); level now 36.50
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#46 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 6142 "Clam Bait": ~15 kills, +1380 kill XP (estimate); level now 37.52
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#46 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 6161 "Claim Rackmore's Treasure!": ~2 kills, +256 kill XP (estimate); level now 37.52
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#48 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 5741 "Sceptre of Light": ~2 kills, +256 kill XP (estimate); level now 37.53
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#49 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 5381 "Hand of Iruxos": ~2 kills, +460 kill XP (estimate); level now 37.53
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#51 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 6143 "Other Fish to Fry": ~19 kills, +2341 kill XP (estimate); level now 37.60
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#51 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1482 "The Corrupter": ~2 kills, +302 kill XP (estimate); level now 37.60
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#51 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 6161 "Claim Rackmore's Treasure!": ~2 kills, +214 kill XP (estimate); level now 37.60
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#52 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 6027 "Book of the Ancients": ~2 kills, +482 kill XP (estimate); level now 37.61
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#62 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 5581 "Portals of the Legion": ~4 kills, +964 kill XP (estimate, objective counts partly assumed); level now 37.82
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#64 id=h-37-warug (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 6134 "Ghost-o-plasm Round Up": ~12 kills, +2532 kill XP (estimate); level now 39.81
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#80 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 6626 "A Host of Evil": ~24 kills, +4320 kill XP (estimate); level now 40.11
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#91 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1201 "Theramore Spies": ~9 kills, +1080 kill XP (estimate); level now 40.19
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#93 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-no-kill` complete 1273 "Questioning Reethe": no kill XP for objective 1 4980 "Paval Reethe": event objective
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#94 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1322 "The Black Shield": ~9 kills, +1710 kill XP (estimate); level now 40.21
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#98 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1177 "Hungry!": ~18 kills, +2160 kill XP (estimate); level now 40.25
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#102 (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1206 "Jarl Needs Eyes": ~60 kills, +7200 kill XP (estimate); level now 40.47
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#107 id=h-38-dustwallow-marsh-field (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1168 "Army of the Black Dragon": ~30 kills, +7950 kill XP (estimate); level now 40.58
-- [library FastesBoooy_Horde] h-37-desolace-dustwallow#107 id=h-38-dustwallow-marsh-field (FastesBoooy_Horde/Segments/06_h-37-desolace-dustwallow.lua) `complete-kill-xp` complete 1169 "Identifying the Brood": ~46 kills, +11822 kill XP (estimate); level now 40.71
-- [library FastesBoooy_Horde] h-41-arathi-badlands#9 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 1048 "Into The Scarlet Monastery": ~4 kills, +1677 kill XP (estimate); level now 41.04
-- [library FastesBoooy_Horde] h-41-arathi-badlands#16 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 566 "WANTED: Baron Vardus": ~2 kills, +442 kill XP (estimate); level now 41.10
-- [library FastesBoooy_Horde] h-41-arathi-badlands#17 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 507 "Lord Aliden Perenolde": ~1 kills, +250 kill XP (estimate); level now 41.11
-- [library FastesBoooy_Horde] h-41-arathi-badlands#19 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 518 "The Crown of Will": ~14 kills, +3444 kill XP (estimate); level now 41.19
-- [library FastesBoooy_Horde] h-41-arathi-badlands#37 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 664 "Drowned Sorrows": ~13 kills, +2272 kill XP (estimate); level now 41.38
-- [library FastesBoooy_Horde] h-41-arathi-badlands#52 id=h41-uldaman (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 2418 "Power Stones": ~24 kills, +5160 kill XP (estimate); level now 41.55
-- [library FastesBoooy_Horde] h-41-arathi-badlands#54 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 1108 "Indurium": ~15 kills, +5835 kill XP (estimate); level now 41.62
-- [library FastesBoooy_Horde] h-41-arathi-badlands#57 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 710 "Study of the Elements: Rock": ~15 kills, +2535 kill XP (estimate); level now 41.68
-- [library FastesBoooy_Horde] h-41-arathi-badlands#59 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 711 "Study of the Elements: Rock": ~5 kills, +970 kill XP (estimate); level now 41.72
-- [library FastesBoooy_Horde] h-41-arathi-badlands#66 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 782 "Broken Alliances": ~2 kills, +500 kill XP (estimate); level now 41.76
-- [library FastesBoooy_Horde] h-41-arathi-badlands#67 id=h-41-badlands-field-loop (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 1419 "Coyote Thieves": ~45 kills, +4815 kill XP (estimate); level now 41.81
-- [library FastesBoooy_Horde] h-41-arathi-badlands#67 id=h-41-badlands-field-loop (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 2258 "Badlands Reagent Run": ~23 kills, +2589 kill XP (estimate); level now 41.84
-- [library FastesBoooy_Horde] h-41-arathi-badlands#67 id=h-41-badlands-field-loop (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 703 "Barbecued Buzzard Wings": ~6 kills, +1800 kill XP (estimate); level now 41.85
-- [library FastesBoooy_Horde] h-41-arathi-badlands#68 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 2258 "Badlands Reagent Run": ~8 kills, +1552 kill XP (estimate); level now 41.87
-- [library FastesBoooy_Horde] h-41-arathi-badlands#68 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 712 "Study of the Elements: Rock": ~8 kills, +2200 kill XP (estimate); level now 41.89
-- [library FastesBoooy_Horde] h-41-arathi-badlands#77 (FastesBoooy_Horde/Segments/07_h-41-arathi-badlands.lua) `complete-kill-xp` complete 4449 "Caught!": ~8 kills, +2080 kill XP (estimate); level now 43.96
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#9 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 584 "Bloodscalp Clan Heads": ~4 kills, +666 kill XP (estimate); level now 44.03
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#21 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 698 "Lack of Surplus": ~12 kills, +1368 kill XP (estimate); level now 44.06
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#23 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 1430 "Fresh Meat": ~15 kills, +3510 kill XP (estimate); level now 44.10
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#25 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 699 "Lack of Surplus": ~9 kills, +1611 kill XP (estimate); level now 44.14
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#32 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 1426 "Threat From the Sea": ~20 kills, +3850 kill XP (estimate); level now 44.33
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#33 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 1426 "Threat From the Sea": ~10 kills, +2340 kill XP (estimate); level now 44.35
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#37 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 1428 "Continued Threat": ~30 kills, +7050 kill XP (estimate); level now 44.49
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#41 id=h-44-stranglethorn-vale-field (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 572 "Mok'thardin's Enchantment": ~15 kills, +2310 kill XP (estimate); level now 44.57
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#41 id=h-44-stranglethorn-vale-field (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 196 "Raptor Mastery": ~10 kills, +1540 kill XP (estimate); level now 44.59
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#54 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 571 "Mok'thardin's Enchantment": ~2 kills, +308 kill XP (estimate); level now 44.66
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#54 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 606 "Scaring Shaky": ~8 kills, +1232 kill XP (estimate); level now 44.67
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#54 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 349 "Stranglethorn Fever": ~15 kills, +0 kill XP (estimate); level now 44.67
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#56 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 348 "Stranglethorn Fever": ~2 kills, +530 kill XP (estimate); level now 44.71
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#64 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 576 "Keep An Eye Out": ~2 kills, +308 kill XP (estimate); level now 44.83
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#64 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 587 "Up to Snuff": ~23 kills, +3542 kill XP (estimate); level now 44.86
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#65 id=h-44-yenniku (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 621 "Zanzil's Secret": ~18 kills, +4212 kill XP (estimate); level now 44.90
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#65 id=h-44-yenniku (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 609 "Voodoo Dues": ~6 kills, +1404 kill XP (estimate); level now 44.91
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#66 id=h45-venture-mine (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 600 "Venture Company Mining": ~15 kills, +2310 kill XP (estimate); level now 44.93
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#67 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 598 "Split Bone Necklace": ~38 kills, +4940 kill XP (estimate); level now 44.97
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#67 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 209 "Skullsplitter Tusks": ~27 kills, +3489 kill XP (estimate); level now 45.00
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#68 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 586 "Speaking with Gan'zulah": ~20 kills, +3956 kill XP (estimate); level now 45.04
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#73 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 193 "Panther Mastery": ~2 kills, +554 kill XP (estimate); level now 45.04
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#79 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 589 "The Singing Crystals": ~5 kills, +1060 kill XP (estimate); level now 45.21
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#80 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 573 "Mok'thardin's Enchantment": ~10 kills, +2120 kill XP (estimate); level now 45.22
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#80 (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 617 "Akiris by the Bundle": ~15 kills, +3180 kill XP (estimate); level now 45.25
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#88 id=h46-pirate-camp (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 604 "The Bloodsail Buccaneers": ~10 kills, +1860 kill XP (estimate); level now 45.49
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#93 id=h46-bloodsail-ships (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-no-kill` complete 608 "The Bloodsail Buccaneers": no kill XP for objective 3 2546 "Fleet Master Firallon": service NPC (questgiver)
-- [library FastesBoooy_Horde] h-44-swamp-stranglethorn#93 id=h46-bloodsail-ships (FastesBoooy_Horde/Segments/08_h-44-swamp-stranglethorn.lua) `complete-kill-xp` complete 608 "The Bloodsail Buccaneers": ~2 kills, +553 kill XP (estimate); level now 45.97
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#19 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 379 "Slake That Thirst": ~8 kills, +1520 kill XP (estimate); level now 46.10
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#19 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 1707 "Water Pouch Bounty": ~8 kills, +1520 kill XP (estimate); level now 46.11
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#20 id=h-46-tanaris-field-loop (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 1690 "Wastewander Justice": ~20 kills, +2660 kill XP (estimate); level now 46.13
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#25 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 8366 "Southsea Shakedown": ~40 kills, +8640 kill XP (estimate); level now 46.21
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#25 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 8365 "Pirate Hats Ahoy!": ~30 kills, +6480 kill XP (estimate); level now 46.26
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#25 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2875 "WANTED: Andre Firebeard": ~2 kills, +490 kill XP (estimate); level now 46.26
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#27 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2781 "WANTED: Caliph Scorpidsting": ~2 kills, +550 kill XP (estimate); level now 46.27
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#38 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 1691 "More Wastewander Justice": ~24 kills, +4466 kill XP (estimate); level now 46.59
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#41 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 5863 "The Dunemaul Compound": ~21 kills, +5946 kill XP (estimate); level now 46.63
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#42 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2605 "The Thirsty Goblin": ~2 kills, +576 kill XP (estimate); level now 46.64
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#42 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 3362 "Thistleshrub Valley": ~16 kills, +4944 kill XP (estimate); level now 46.68
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#43 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 82 "Noxious Lair Investigation": ~8 kills, +2304 kill XP (estimate); level now 46.70
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#54 id=h48-tanaris-level-gate (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `level-grind` level 47: simulated level 46.94 is short by 7700 XP; ~28 same-level kills needed (estimate)
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#77 id=h-47-feralas-field-loop (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2973 "A New Cloak's Sheen": ~15 kills, +2895 kill XP (estimate); level now 47.21
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#78 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2862 "War on the Woodpaw": ~15 kills, +1680 kill XP (estimate); level now 47.22
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#80 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2975 "The Ogres of Feralas": ~25 kills, +3115 kill XP (estimate); level now 47.24
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#85 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2974 "A Grim Discovery": ~30 kills, +4290 kill XP (estimate); level now 47.39
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#86 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2863 "Alpha Strike": ~5 kills, +840 kill XP (estimate); level now 47.40
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#91 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 7730 "Zukk'ash Infestation": ~30 kills, +6600 kill XP (estimate); level now 47.54
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#91 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 7731 "Stinglasher": ~2 kills, +560 kill XP (estimate); level now 47.55
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#92 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-no-kill` complete 3520 "Screecher Spirits": no kill XP for objective 1 8612 "Screecher Spirit": talk objective
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#93 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2980 "The Ogres of Feralas": ~25 kills, +4450 kill XP (estimate); level now 47.58
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#93 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2979 "Dark Ceremony": ~2 kills, +440 kill XP (estimate); level now 47.58
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#97 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 2822 "The Mark of Quality": ~15 kills, +2520 kill XP (estimate); level now 47.63
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#103 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 7734 "Improved Quality": ~15 kills, +3735 kill XP (estimate); level now 47.82
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#105 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 7003 "Zapped Giants": ~23 kills, +13524 kill XP (estimate); level now 47.92
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#105 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 7721 "Fuel for the Zapping": ~15 kills, +4410 kill XP (estimate); level now 47.96
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#107 (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 3062 "Dark Heart": ~2 kills, +1254 kill XP (estimate); level now 48.03
-- [library FastesBoooy_Horde] h-46-tanaris-feralas#108 id=h-46-tanaris-feralas-level-gate (FastesBoooy_Horde/Segments/09_h-46-tanaris-feralas.lua) `complete-kill-xp` complete 3063 "Vengeance on the Northspring": ~16 kills, +4672 kill XP (estimate); level now 48.07
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#31 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7815 "Snapjaws, Mon!": ~15 kills, +4350 kill XP (estimate); level now 49.66
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#32 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7828 "Stalking the Stalkers": ~30 kills, +6030 kill XP (estimate); level now 49.70
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#33 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7816 "Gammerita, Mon!": ~2 kills, +1034 kill XP (estimate); level now 49.71
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#36 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7840 "Lard Lost His Lunch": ~2 kills, +580 kill XP (estimate); level now 49.74
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#37 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7844 "Cannibalistic Cousins": ~45 kills, +9000 kill XP (estimate); level now 49.81
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#38 id=h-50-the-hinterlands-field (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7829 "Hunt the Savages": ~20 kills, +4000 kill XP (estimate); level now 49.84
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#38 id=h-50-the-hinterlands-field (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7830 "Avenging the Fallen": ~2 kills, +456 kill XP (estimate); level now 49.84
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#43 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7841 "Message to the Wildhammer": ~60 kills, +9825 kill XP (estimate); level now 49.94
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#52 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7842 "Another Message to the Wildhammer": ~15 kills, +1170 kill XP (estimate); level now 50.25
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#55 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7862 "Job Opening: Guard Captain of Revantusk Village": ~80 kills, +38820 kill XP (estimate); level now 50.51
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#57 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7861 "Wanted: Vile Priestess Hexx and Her Minions": ~21 kills, +12419 kill XP (estimate); level now 50.59
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#59 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7846 "Recover the Key!": ~2 kills, +1238 kill XP (estimate); level now 50.64
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#76 id=h-50-kalaran-windblade (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-no-kill` complete 3441 "Divine Retribution": no kill XP for objective 1 8479 "Kalaran Windblade": talk objective
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#78 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7729 "JOB OPPORTUNITY: Culling the Competition": ~30 kills, +5460 kill XP (estimate); level now 50.95
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#79 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7723 "Curse These Fat Fingers": ~20 kills, +4700 kill XP (estimate); level now 50.98
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#79 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 3442 "The Flawless Flame": ~12 kills, +2172 kill XP (estimate); level now 51.00
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#80 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7727 "Incendosaurs? Whateverosaur is More Like It": ~20 kills, +4268 kill XP (estimate); level now 51.03
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#81 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7701 "WANTED: Overseer Maltorius": ~2 kills, +1074 kill XP (estimate); level now 51.03
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#82 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7728 "STOLEN: Smithing Tuyere and Lookout's Spyglass": ~4 kills, +688 kill XP (estimate); level now 51.04
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#83 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 7724 "Fiery Menace!": ~20 kills, +4220 kill XP (estimate); level now 51.06
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#87 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 3443 "Forging the Shaft": ~12 kills, +1344 kill XP (estimate); level now 51.10
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#89 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 3452 "The Flame's Casing": ~2 kills, +738 kill XP (estimate); level now 51.13
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#94 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-no-kill` complete 3453 "The Torch of Retribution": no kill XP for objective 1 8479 "Kalaran Windblade": event objective
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#104 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 3906 "Disharmony of Flame": ~1 kills, +630 kill XP (estimate); level now 51.47
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#104 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 4081 "KILL ON SIGHT: Dark Iron Dwarves": ~30 kills, +15835 kill XP (estimate); level now 51.57
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#111 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 3822 "Krom'Grul": ~2 kills, +690 kill XP (estimate); level now 51.61
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#121 id=h-51-swamp-of-sorrows (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-no-kill` complete 2784 "Fall From Grace": no kill XP for objective 1 7572 "Fallen Hero of the Horde": talk objective
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#128 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 1445 "The Temple of Atal'Hakkar": ~30 kills, +8640 kill XP (estimate); level now 51.88
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#129 id=h-51-swamp-of-sorrows-2 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 2623 "The Swamp Talker": ~2 kills, +536 kill XP (estimate); level now 51.88
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#133 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 2581 "Snickerfang Jowls": ~10 kills, +1889 kill XP (estimate); level now 51.93
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#133 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 2583 "A Boar's Vitality": ~10 kills, +2227 kill XP (estimate); level now 51.95
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#133 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 2585 "The Decisive Striker": ~10 kills, +2314 kill XP (estimate); level now 51.96
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#133 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 2601 "The Basilisk's Bite": ~18 kills, +3312 kill XP (estimate); level now 51.98
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#133 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 2603 "Vulture's Vigor": ~18 kills, +3128 kill XP (estimate); level now 52.00
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#136 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 2521 "To Serve Kum'isha": ~2 kills, +260 kill XP (estimate); level now 52.01
-- [library FastesBoooy_Horde] h-50-hinterlands-searing-steppes#136 (FastesBoooy_Horde/Segments/10_h-50-hinterlands-searing-steppes.lua) `complete-kill-xp` complete 3501 "Everything Counts In Large Amounts": ~2 kills, +260 kill XP (estimate); level now 52.01
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#12 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 5535 "Spiritual Unrest": ~12 kills, +1656 kill XP (estimate); level now 52.74
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#13 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 5536 "A Land Filled with Hatred": ~10 kills, +1364 kill XP (estimate); level now 52.75
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#20 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 3505 "Betrayed": ~20 kills, +5780 kill XP (estimate); level now 52.80
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#24 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 3506 "Betrayed": ~2 kills, +700 kill XP (estimate); level now 52.87
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#26 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 5534 "Kim'jael's "Missing" Equipment": ~2 kills, +546 kill XP (estimate); level now 52.88
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#46 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4300 "Bone-Bladed Weapons": ~12 kills, +1980 kill XP (estimate); level now 53.16
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#48 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4289 "The Apes of Un'Goro": ~9 kills, +2226 kill XP (estimate); level now 53.18
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#60 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4496 "Bungle in the Jungle": ~2 kills, +494 kill XP (estimate); level now 53.18
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#61 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4503 "Shizzle's Flyer": ~24 kills, +4560 kill XP (estimate); level now 53.21
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#61 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 3882 "Roll the Bones": ~12 kills, +6660 kill XP (estimate); level now 53.25
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#62 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4501 "Beware of Pterrordax": ~25 kills, +6625 kill XP (estimate); level now 53.29
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#63 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4145 "Larion and Muigin": ~20 kills, +4395 kill XP (estimate); level now 53.31
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#64 id=h-53-un-goro-crater (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4504 "Super Sticky": ~18 kills, +3924 kill XP (estimate); level now 53.34
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#69 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4291 "The Scent of Lar'korwi": ~3 kills, +570 kill XP (estimate); level now 53.42
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#97 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4301 "The Mighty U'cha": ~2 kills, +682 kill XP (estimate); level now 53.79
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#99 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 4292 "The Bait for Lar'korwi": ~2 kills, +712 kill XP (estimate); level now 53.80
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#113 id=h-54-silithus-field-loop (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 8277 "Deadly Desert Venom": ~24 kills, +7740 kill XP (estimate); level now 54.06
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#113 id=h-54-silithus-field-loop (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 8280 "Securing the Supply Lines": ~15 kills, +4950 kill XP (estimate); level now 54.09
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#119 (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 8278 "Noggle's Last Hope": ~15 kills, +5430 kill XP (estimate); level now 54.87
-- [library FastesBoooy_Horde] h-53-azshara-ungoro-silithus#120 id=h-54-sandy-cookbook (FastesBoooy_Horde/Segments/11_h-53-azshara-ungoro-silithus.lua) `complete-kill-xp` complete 8281 "Stepping Up Security": ~20 kills, +7240 kill XP (estimate); level now 54.91
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#16 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5155 "Forces of Jaedenar": ~20 kills, +3820 kill XP (estimate); level now 55.09
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#26 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5156 "Verifying the Corruption": ~4 kills, +858 kill XP (estimate); level now 55.19
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#31 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5204 "Retribution of the Light": ~1 kills, +336 kill XP (estimate); level now 55.29
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#35 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 8460 "Timbermaw Ally": ~18 kills, +2688 kill XP (estimate); level now 55.39
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#36 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6162 "A Husband's Last Battle": ~2 kills, +402 kill XP (estimate); level now 55.39
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#40 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 8461 "Deadwood of the North": ~18 kills, +4812 kill XP (estimate); level now 55.46
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#45 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 4521 "Wild Guardians": ~15 kills, +4320 kill XP (estimate); level now 55.57
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#46 id=h-56-winterspring-field-loop (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5082 "Threat of the Winterfall": ~16 kills, +4360 kill XP (estimate); level now 55.59
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#51 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5086 "Toxic Horrors": ~5 kills, +1285 kill XP (estimate); level now 55.66
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#52 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 4102 "Cleansing Felwood": ~23 kills, +5244 kill XP (estimate); level now 55.69
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#54 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5087 "Winterfall Runners": ~2 kills, +704 kill XP (estimate); level now 55.72
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#61 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 4521 "Wild Guardians": ~15 kills, +4800 kill XP (estimate); level now 55.79
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#62 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5054 "Ursius of the Shardtooth": ~1 kills, +672 kill XP (estimate); level now 55.80
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#63 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 3783 "Are We There, Yeti?": ~15 kills, +4320 kill XP (estimate); level now 55.82
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#64 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 4809 "Chillwind Horns": ~12 kills, +3456 kill XP (estimate); level now 55.84
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#65 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5082 "Threat of the Winterfall": ~8 kills, +2560 kill XP (estimate); level now 55.85
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#65 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 8464 "Winterfall Activity": ~24 kills, +8064 kill XP (estimate); level now 55.90
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#71 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 977 "Are We There, Yeti?": ~3 kills, +1008 kill XP (estimate); level now 55.99
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#73 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5055 "Brumeran of the Chillwind": ~1 kills, +693 kill XP (estimate); level now 57.00
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#103 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5229 "Target: Felstone Field": ~2 kills, +414 kill XP (estimate); level now 57.33
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#105 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-no-kill` complete 5098 "All Along the Watchtowers": no kill XP for objective 1 10902 "Andorhal Tower One": event objective; 2 10903 "Andorhal Tower Two": event objective; 3 10904 "Andorhal Tower Three": event objective; 4 10905 "Andorhal Tower Four": event objective
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#109 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5231 "Target: Dalson's Tears": ~2 kills, +530 kill XP (estimate); level now 57.40
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#112 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5060 "Locked Away": ~2 kills, +594 kill XP (estimate); level now 57.44
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#115 id=h-57-termite-barrel (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6004 "Unfinished Business": ~8 kills, +1776 kill XP (estimate); level now 57.48
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#117 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6023 "Unfinished Business": ~1 kills, +297 kill XP (estimate); level now 57.51
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#118 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6023 "Unfinished Business": ~1 kills, +330 kill XP (estimate); level now 57.52
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#123 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 964 "Skeletal Fragments": ~23 kills, +3404 kill XP (estimate); level now 57.60
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#124 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 4971 "A Matter of Time": ~15 kills, +4455 kill XP (estimate); level now 57.62
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#132 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5233 "Target: Writhing Haunt": ~2 kills, +594 kill XP (estimate); level now 57.72
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#134 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 4984 "The Wildlife Suffers Too": ~8 kills, +1656 kill XP (estimate); level now 57.76
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#136 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 4985 "The Wildlife Suffers Too": ~8 kills, +2120 kill XP (estimate); level now 57.79
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#148 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5235 "Target: Gahrron's Withering": ~2 kills, +692 kill XP (estimate); level now 57.92
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#160 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5542 "Demon Dogs": ~20 kills, +3680 kill XP (estimate); level now 58.11
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#161 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5543 "Blood Tinged Skies": ~30 kills, +6330 kill XP (estimate); level now 58.14
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#162 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5544 "Carrion Grubbage": ~23 kills, +4853 kill XP (estimate); level now 58.17
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#167 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6042 "Un-Life's Little Annoyances": ~20 kills, +4780 kill XP (estimate); level now 58.20
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#169 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5542 "Demon Dogs": ~5 kills, +1195 kill XP (estimate); level now 58.20
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#179 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-no-kill` complete 5211 "Defenders of Darrowshire": no kill XP for objective 1 11064 "Darrowshire Spirit": talk objective
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#180 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5542 "Demon Dogs": ~5 kills, +1505 kill XP (estimate); level now 58.25
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#181 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6042 "Un-Life's Little Annoyances": ~10 kills, +3010 kill XP (estimate); level now 58.26
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#182 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6133 "The Ranger Lord's Behest": ~24 kills, +7896 kill XP (estimate); level now 58.30
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#190 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5251 "The Archivist": ~1 kills, +737 kill XP (estimate); level now 58.35
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#190 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5282 "The Restless Souls": ~15 kills, +0 kill XP (estimate); level now 58.35
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#193 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-no-kill` complete 5742 "Redemption": no kill XP for objective 1 1855 "Tirion Fordring": talk objective
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#196 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 5781 "Of Forgotten Memories": ~2 kills, +602 kill XP (estimate); level now 58.57
-- [library FastesBoooy_Horde] h-56-felwood-winterspring-plaguelands#197 (FastesBoooy_Horde/Segments/12_h-56-felwood-winterspring-plaguelands.lua) `complete-kill-xp` complete 6021 "Zaeldarr the Outcast": ~2 kills, +422 kill XP (estimate); level now 58.58
+### orc-hunter — Orc Hunter 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Orc HUNTER Horde. Результат: **0 ERROR, 0 WARN, 433 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1907650 (из них оценено 86545; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 814496, гринд 1362620 (~4944 убийств); максимум квестов в журнале 23 из 40; принято 703, сдано 703, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4944 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 168 — и их квесты): ~6207. С попутными убийствами в пути на 15 % опыта квестов: ~3943 (худший случай ~5288).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `dur-01-valley-of-trials` | 1–5 | 1.00 → 5.37 | 3635 | 2213 | 0 (0) | 2 |
+| `dur-02-durotar` | 5–11 | 5.37 → 11.36 | 20885 | 11005 | 7 (7) | 7 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 11.36 → 12.67 | 9425 | 2992 | 0 (0) | 4 |
+| `h-13-silverpine` | 13–15 | 12.67 → 14.33 | 14155 | 4771 | 0 (0) | 4 |
+| `h-15-barrens` | 15–18 | 14.33 → 18.15 | 45520 | 14083 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.15 → 22.04 | 51790 | 32243 | 23 (130) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.30 | 66380 | 21632 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.30 → 31.01 | 102715 | 34021 | 122 (313) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (327) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (151) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (919) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (184) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153307 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 241170 | 69149 | 341 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (433): `complete-kill-xp` 343, `complete-no-kill` 19, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `train-service` 2, `xp-unknown` 63.
+
+### orc-mage — Orc Mage 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Orc MAGE Horde. Результат: **0 ERROR, 0 WARN, 429 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899180 (из них оценено 86665; квестов с оценённым опытом: 65, 4.6 % опыта квестов), за убийства по целям 814532, гринд 1371190 (~4978 убийств); максимум квестов в журнале 23 из 40; принято 698, сдано 698, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4978 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 163 — и их квесты): ~6225. С попутными убийствами в пути на 15 % опыта квестов: ~3973 (худший случай ~5301).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `dur-01-valley-of-trials` | 1–5 | 1.00 → 5.37 | 3635 | 2213 | 0 (0) | 2 |
+| `dur-02-durotar` | 5–11 | 5.37 → 11.09 | 18365 | 11133 | 7 (7) | 6 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 11.09 → 12.39 | 9005 | 2992 | 0 (0) | 4 |
+| `h-13-silverpine` | 13–15 | 12.39 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.04 | 51790 | 32585 | 36 (145) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.30 | 66380 | 21632 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.30 → 31.01 | 102715 | 34015 | 122 (314) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (326) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (918) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277790 | 153285 | 154 (307) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.05 | 235560 | 68234 | 362 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.05 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (429): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 1, `xp-unknown` 65.
+
+### orc-rogue — Orc Rogue 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Orc ROGUE Horde. Результат: **0 ERROR, 0 WARN, 430 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1903560 (из них оценено 86545; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 814779, гринд 1366510 (~4954 убийств); максимум квестов в журнале 23 из 40; принято 702, сдано 702, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4954 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 168 — и их квесты): ~6187. С попутными убийствами в пути на 15 % опыта квестов: ~3947 (худший случай ~5259).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `dur-01-valley-of-trials` | 1–5 | 1.00 → 5.37 | 3635 | 2213 | 0 (0) | 2 |
+| `dur-02-durotar` | 5–11 | 5.37 → 11.09 | 18365 | 11133 | 7 (7) | 6 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 11.09 → 12.39 | 9005 | 2992 | 0 (0) | 4 |
+| `h-13-silverpine` | 13–15 | 12.39 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.04 | 51790 | 32585 | 36 (145) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 25.00 | 66315 | 20921 | 0 (13) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 25.00 → 27.44 | 66380 | 20996 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.44 → 31.01 | 102715 | 33550 | 98 (313) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (327) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1028) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (919) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (714) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153307 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 235560 | 68234 | 362 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (430): `complete-kill-xp` 343, `complete-no-kill` 17, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 2, `xp-unknown` 63.
+
+### orc-shaman — Orc Shaman 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Orc SHAMAN Horde. Результат: **0 ERROR, 0 WARN, 432 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1906710 (из них оценено 86545; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 812989, гринд 1365110 (~4937 убийств); максимум квестов в журнале 23 из 40; принято 709, сдано 709, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4937 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 171 — и их квесты): ~6183. С попутными убийствами в пути на 15 % опыта квестов: ~3946 (худший случай ~5269).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `dur-01-valley-of-trials` | 1–5 | 1.00 → 5.78 | 4620 | 2362 | 0 (0) | 2 |
+| `dur-02-durotar` | 5–11 | 5.78 → 11.10 | 18365 | 10766 | 0 (0) | 7 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 11.10 → 12.41 | 9005 | 2992 | 0 (0) | 5 |
+| `h-13-silverpine` | 13–15 | 12.41 → 14.14 | 14155 | 4987 | 0 (2) | 5 |
+| `h-15-barrens` | 15–18 | 14.14 → 18.23 | 49810 | 13868 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.23 → 22.04 | 52570 | 32060 | 8 (111) | 1 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 24.82 | 61855 | 19595 | 0 (52) | 5 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.33 | 67685 | 21447 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.33 → 31.01 | 102715 | 33862 | 117 (313) | 7 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (326) | 5 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 2 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 2 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (918) | 5 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 5 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170955 | 95081 | 616 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153331 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 235560 | 68234 | 362 (391) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+<details><summary>Принятые предупреждения, `ok` (1)</summary>
+
+- [library FastesBoooy_Guides] dur-01-valley-of-trials#24 id=sha-dur-1516 (Classes/Shaman.lua) `db-override-unverified` accept 1516 "Call of Earth": the prerequisite check passes only because of the unverified DB override in tools/overrides/shaman.lua (source: https://www.wowhead.com/classic/quest=1516): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
 
 </details>
+
+INFO (432): `complete-kill-xp` 346, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 2, `xp-unknown` 63.
+
+### orc-warlock — Orc Warlock 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Orc WARLOCK Horde. Результат: **0 ERROR, 0 WARN, 439 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1917320 (из них оценено 89055; квестов с оценённым опытом: 66, 4.6 % опыта квестов), за убийства по целям 815897, гринд 1351590 (~4897 убийств); максимум квестов в журнале 23 из 40; принято 712, сдано 712, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4897 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 177 — и их квесты): ~6199. С попутными убийствами в пути на 15 % опыта квестов: ~3892 (худший случай ~5276).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `dur-01-valley-of-trials` | 1–5 | 1.00 → 5.30 | 3575 | 2066 | 0 (0) | 2 |
+| `dur-02-durotar` | 5–11 | 5.30 → 11.09 | 18365 | 11213 | 9 (9) | 7 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 11.09 → 12.57 | 10755 | 2992 | 0 (0) | 4 |
+| `h-13-silverpine` | 13–15 | 12.57 → 14.26 | 14155 | 4901 | 0 (0) | 4 |
+| `h-15-barrens` | 15–18 | 14.26 → 18.11 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.11 → 22.04 | 51790 | 32320 | 26 (136) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 24.83 | 62010 | 19841 | 0 (48) | 5 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.83 → 27.32 | 66380 | 21800 | 0 (219) | 10 |
+| `h-27-ashenvale-needles` | 27–31 | 27.32 → 31.01 | 102715 | 33930 | 120 (313) | 7 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 67060 | 43399 | 273 (326) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.13 | 122745 | 56757 | 999 (1029) | 2 |
+| `h-41-arathi-badlands` | 41–44 | 41.13 → 44.02 | 69630 | 38097 | 720 (907) | 5 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 5 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 175055 | 95081 | 601 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153331 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 235560 | 68234 | 362 (391) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+<details><summary>Принятые предупреждения, `ok` (1)</summary>
+
+- [library FastesBoooy_Guides] h-46-tanaris-feralas#1 id=wlk-46-menara (Classes/Warlock.lua) `db-override-unverified` accept 4975 "The Completed Orb of Noh'Orahil" (exclusive with 4962 "Shard of a Felhound" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: original game (classes.md 5.5): Shard of a Felhound -> Orb of Noh'Orahil): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
+
+</details>
+
+INFO (439): `complete-kill-xp` 348, `complete-no-kill` 18, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `train-service` 1, `xp-unknown` 66.
+
+### orc-warrior — Orc Warrior 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Orc WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 433 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1911300 (из них оценено 86965; квестов с оценённым опытом: 64, 4.5 % опыта квестов), за убийства по целям 817019, гринд 1356395 (~4914 убийств); максимум квестов в журнале 23 из 40; принято 707, сдано 707, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4914 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 162 — и их квесты): ~6155. С попутными убийствами в пути на 15 % опыта квестов: ~3913 (худший случай ~5227).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `dur-01-valley-of-trials` | 1–5 | 1.00 → 5.37 | 3635 | 2213 | 0 (0) | 2 |
+| `dur-02-durotar` | 5–11 | 5.37 → 11.17 | 18450 | 11757 | 7 (7) | 7 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 11.17 → 12.46 | 9005 | 2992 | 0 (0) | 5 |
+| `h-13-silverpine` | 13–15 | 12.46 → 14.18 | 14155 | 4987 | 0 (0) | 5 |
+| `h-15-barrens` | 15–18 | 14.18 → 18.13 | 46990 | 14263 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.13 → 22.04 | 51790 | 32273 | 24 (133) | 1 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 24.82 | 61855 | 19595 | 0 (51) | 5 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.38 | 68865 | 22226 | 0 (202) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.38 → 31.01 | 102715 | 33746 | 108 (313) | 7 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 69960 | 43399 | 259 (311) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (918) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.60 | 282810 | 155248 | 148 (300) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.60 → 55.04 | 235560 | 68234 | 345 (378) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (433): `complete-kill-xp` 345, `complete-no-kill` 17, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `train-service` 1, `xp-unknown` 64.
+
+### troll-hunter — Troll Hunter 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Troll HUNTER Horde. Результат: **0 ERROR, 0 WARN, 433 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1907650 (из них оценено 86545; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 814496, гринд 1362620 (~4944 убийств); максимум квестов в журнале 23 из 40; принято 703, сдано 703, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4944 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 170 — и их квесты): ~6207. С попутными убийствами в пути на 15 % опыта квестов: ~3943 (худший случай ~5288).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `dur-01-valley-of-trials` | 1–5 | 1.00 → 5.37 | 3635 | 2213 | 0 (0) | 2 |
+| `dur-02-durotar` | 5–11 | 5.37 → 11.36 | 20885 | 11005 | 7 (7) | 7 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 11.36 → 12.67 | 9425 | 2992 | 0 (0) | 4 |
+| `h-13-silverpine` | 13–15 | 12.67 → 14.33 | 14155 | 4771 | 0 (0) | 4 |
+| `h-15-barrens` | 15–18 | 14.33 → 18.15 | 45520 | 14083 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.15 → 22.04 | 51790 | 32243 | 23 (130) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.30 | 66380 | 21632 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.30 → 31.01 | 102715 | 34021 | 122 (313) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (327) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (151) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (919) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (184) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153307 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 241170 | 69149 | 341 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (433): `complete-kill-xp` 343, `complete-no-kill` 19, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `train-service` 2, `xp-unknown` 63.
+
+### troll-mage — Troll Mage 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Troll MAGE Horde. Результат: **0 ERROR, 0 WARN, 428 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899180 (из них оценено 86625; квестов с оценённым опытом: 64, 4.6 % опыта квестов), за убийства по целям 814532, гринд 1371190 (~4978 убийств); максимум квестов в журнале 23 из 40; принято 698, сдано 698, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4978 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 165 — и их квесты): ~6225. С попутными убийствами в пути на 15 % опыта квестов: ~3973 (худший случай ~5301).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `dur-01-valley-of-trials` | 1–5 | 1.00 → 5.37 | 3635 | 2213 | 0 (0) | 2 |
+| `dur-02-durotar` | 5–11 | 5.37 → 11.09 | 18365 | 11133 | 7 (7) | 6 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 11.09 → 12.39 | 9005 | 2992 | 0 (0) | 4 |
+| `h-13-silverpine` | 13–15 | 12.39 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.04 | 51790 | 32585 | 36 (145) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.30 | 66380 | 21632 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.30 → 31.01 | 102715 | 34015 | 122 (314) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (326) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (918) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277790 | 153285 | 154 (307) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.05 | 235560 | 68234 | 362 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.05 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (428): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 1, `xp-unknown` 64.
+
+### troll-priest — Troll Priest 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Troll PRIEST Horde. Результат: **0 ERROR, 0 WARN, 429 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1905580 (из них оценено 86545; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 816121, гринд 1363140 (~4950 убийств); максимум квестов в журнале 23 из 40; принято 702, сдано 702, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4950 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 169 — и их квесты): ~6219. С попутными убийствами в пути на 15 % опыта квестов: ~3944 (худший случай ~5296).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `dur-01-valley-of-trials` | 1–5 | 1.00 → 5.37 | 3635 | 2213 | 0 (0) | 2 |
+| `dur-02-durotar` | 5–11 | 5.37 → 11.09 | 18635 | 11096 | 5 (5) | 7 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 11.09 → 12.40 | 9005 | 2992 | 0 (0) | 5 |
+| `h-13-silverpine` | 13–15 | 12.40 → 14.13 | 14155 | 4987 | 0 (3) | 5 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.04 | 45730 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.04 → 22.05 | 51790 | 32553 | 35 (143) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.05 → 24.83 | 62245 | 19547 | 0 (49) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.83 → 27.31 | 66380 | 21568 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 33962 | 121 (313) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.05 | 66900 | 43399 | 273 (327) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.05 → 36.06 | 46085 | 51482 | 152 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.01 | 110880 | 55325 | 1008 (1028) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.01 → 44.02 | 69630 | 38121 | 765 (919) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59796 | 177 (184) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 618 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153285 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 241170 | 70064 | 338 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (429): `complete-kill-xp` 343, `complete-no-kill` 17, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 1, `xp-unknown` 63.
+
+### troll-rogue — Troll Rogue 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Troll ROGUE Horde. Результат: **0 ERROR, 0 WARN, 430 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1903560 (из них оценено 86545; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 814779, гринд 1366510 (~4954 убийств); максимум квестов в журнале 23 из 40; принято 702, сдано 702, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4954 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 170 — и их квесты): ~6187. С попутными убийствами в пути на 15 % опыта квестов: ~3947 (худший случай ~5259).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `dur-01-valley-of-trials` | 1–5 | 1.00 → 5.37 | 3635 | 2213 | 0 (0) | 2 |
+| `dur-02-durotar` | 5–11 | 5.37 → 11.09 | 18365 | 11133 | 7 (7) | 6 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 11.09 → 12.39 | 9005 | 2992 | 0 (0) | 4 |
+| `h-13-silverpine` | 13–15 | 12.39 → 14.13 | 14155 | 4987 | 0 (3) | 4 |
+| `h-15-barrens` | 15–18 | 14.13 → 18.03 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.03 → 22.04 | 51790 | 32585 | 36 (145) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 25.00 | 66315 | 20921 | 0 (13) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 25.00 → 27.44 | 66380 | 20996 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.44 → 31.01 | 102715 | 33550 | 98 (313) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (327) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1028) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (919) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (714) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153307 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 235560 | 68234 | 362 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (430): `complete-kill-xp` 343, `complete-no-kill` 17, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 2, `xp-unknown` 63.
+
+### troll-shaman — Troll Shaman 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Troll SHAMAN Horde. Результат: **0 ERROR, 0 WARN, 432 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1906710 (из них оценено 86545; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 812989, гринд 1365110 (~4937 убийств); максимум квестов в журнале 23 из 40; принято 709, сдано 709, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4937 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 173 — и их квесты): ~6183. С попутными убийствами в пути на 15 % опыта квестов: ~3946 (худший случай ~5269).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `dur-01-valley-of-trials` | 1–5 | 1.00 → 5.78 | 4620 | 2362 | 0 (0) | 2 |
+| `dur-02-durotar` | 5–11 | 5.78 → 11.10 | 18365 | 10766 | 0 (0) | 7 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 11.10 → 12.41 | 9005 | 2992 | 0 (0) | 5 |
+| `h-13-silverpine` | 13–15 | 12.41 → 14.14 | 14155 | 4987 | 0 (2) | 5 |
+| `h-15-barrens` | 15–18 | 14.14 → 18.23 | 49810 | 13868 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.23 → 22.04 | 52570 | 32060 | 8 (111) | 1 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 24.82 | 61855 | 19595 | 0 (52) | 5 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.33 | 67685 | 21447 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.33 → 31.01 | 102715 | 33862 | 117 (313) | 7 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (326) | 5 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 2 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 2 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (918) | 5 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 5 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170955 | 95081 | 616 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153331 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 235560 | 68234 | 362 (391) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+<details><summary>Принятые предупреждения, `ok` (1)</summary>
+
+- [library FastesBoooy_Guides] dur-01-valley-of-trials#24 id=sha-dur-1516 (Classes/Shaman.lua) `db-override-unverified` accept 1516 "Call of Earth": the prerequisite check passes only because of the unverified DB override in tools/overrides/shaman.lua (source: https://www.wowhead.com/classic/quest=1516): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
+
+</details>
+
+INFO (432): `complete-kill-xp` 346, `complete-no-kill` 16, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 2, `xp-unknown` 63.
+
+### troll-warlock — Troll Warlock 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Troll WARLOCK Horde. Результат: **0 ERROR, 0 WARN, 440 INFO**; принято предупреждений (`ok`): 19; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1917320 (из них оценено 89095; квестов с оценённым опытом: 67, 4.7 % опыта квестов), за убийства по целям 815897, гринд 1351590 (~4897 убийств); максимум квестов в журнале 23 из 40; принято 712, сдано 712, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4897 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 177 — и их квесты): ~6199. С попутными убийствами в пути на 15 % опыта квестов: ~3892 (худший случай ~5276).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `dur-01-valley-of-trials` | 1–5 | 1.00 → 5.30 | 3575 | 2066 | 0 (0) | 2 |
+| `dur-02-durotar` | 5–11 | 5.30 → 11.09 | 18365 | 11213 | 9 (9) | 7 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 11.09 → 12.57 | 10755 | 2992 | 0 (0) | 4 |
+| `h-13-silverpine` | 13–15 | 12.57 → 14.26 | 14155 | 4901 | 0 (0) | 4 |
+| `h-15-barrens` | 15–18 | 14.26 → 18.11 | 45520 | 14376 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.11 → 22.04 | 51790 | 32320 | 26 (136) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 24.83 | 62010 | 19841 | 0 (48) | 5 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.83 → 27.32 | 66380 | 21800 | 0 (219) | 10 |
+| `h-27-ashenvale-needles` | 27–31 | 27.32 → 31.01 | 102715 | 33930 | 120 (313) | 7 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 67060 | 43399 | 273 (326) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.13 | 122745 | 56757 | 999 (1029) | 2 |
+| `h-41-arathi-badlands` | 41–44 | 41.13 → 44.02 | 69630 | 38097 | 720 (907) | 5 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 5 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 175055 | 95081 | 601 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153331 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 235560 | 68234 | 362 (391) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+<details><summary>Принятые предупреждения, `ok` (3)</summary>
+
+- [library FastesBoooy_Guides] h-12-orgrimmar-tirisfal#4 id=wlk-ganrul (Classes/Warlock.lua) `db-override-unverified` accept 1501 "Creature of the Void": the race check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: https://www.warcrafttavern.com/forever/guides/warlock-leveling/): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
+- [library FastesBoooy_Guides] h-12-orgrimmar-tirisfal#15 id=wlk-ganrul-2 (Classes/Warlock.lua) `db-override-unverified` accept 1504 "The Binding": the race check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: https://www.warcrafttavern.com/forever/guides/warlock-leveling/): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
+- [library FastesBoooy_Guides] h-46-tanaris-feralas#1 id=wlk-46-menara (Classes/Warlock.lua) `db-override-unverified` accept 4975 "The Completed Orb of Noh'Orahil" (exclusive with 4962 "Shard of a Felhound" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: original game (classes.md 5.5): Shard of a Felhound -> Orb of Noh'Orahil): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
+
+</details>
+
+INFO (440): `complete-kill-xp` 348, `complete-no-kill` 18, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `train-service` 1, `xp-unknown` 67.
+
+### troll-warrior — Troll Warrior 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Troll WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 433 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1911300 (из них оценено 86965; квестов с оценённым опытом: 64, 4.5 % опыта квестов), за убийства по целям 817019, гринд 1356395 (~4914 убийств); максимум квестов в журнале 23 из 40; принято 707, сдано 707, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4914 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 164 — и их квесты): ~6155. С попутными убийствами в пути на 15 % опыта квестов: ~3913 (худший случай ~5227).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `dur-01-valley-of-trials` | 1–5 | 1.00 → 5.37 | 3635 | 2213 | 0 (0) | 2 |
+| `dur-02-durotar` | 5–11 | 5.37 → 11.17 | 18450 | 11757 | 7 (7) | 7 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 11.17 → 12.46 | 9005 | 2992 | 0 (0) | 5 |
+| `h-13-silverpine` | 13–15 | 12.46 → 14.18 | 14155 | 4987 | 0 (0) | 5 |
+| `h-15-barrens` | 15–18 | 14.18 → 18.13 | 46990 | 14263 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.13 → 22.04 | 51790 | 32273 | 24 (133) | 1 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 24.82 | 61855 | 19595 | 0 (51) | 5 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.38 | 68865 | 22226 | 0 (202) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.38 → 31.01 | 102715 | 33746 | 108 (313) | 7 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 69960 | 43399 | 259 (311) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (918) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.60 | 282810 | 155248 | 148 (300) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.60 → 55.04 | 235560 | 68234 | 345 (378) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (433): `complete-kill-xp` 345, `complete-no-kill` 17, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `train-service` 1, `xp-unknown` 64.
+
+### tauren-druid — Tauren Druid 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Tauren DRUID Horde. Результат: **0 ERROR, 0 WARN, 435 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1916620 (из них оценено 89285; квестов с оценённым опытом: 67, 4.7 % опыта квестов), за убийства по целям 817081, гринд 1351210 (~4890 убийств); максимум квестов в журнале 23 из 40; принято 716, сдано 716, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4890 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 156 — и их квесты): ~6118. С попутными убийствами в пути на 15 % опыта квестов: ~3899 (худший случай ~5197).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `mul-01-camp-narache` | 1–6 | 1.00 → 6.03 | 3355 | 4338 | 0 (0) | 3 |
+| `mul-02-mulgore` | 6–12 | 6.03 → 11.55 | 22355 | 9975 | 0 (0) | 4 |
+| `mul-03-barrens-crossing` | 12–12 | 11.55 → 12.17 | 5660 | 0 | 0 (0) | 0 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 12.17 → 13.10 | 6630 | 2953 | 0 (0) | 1 |
+| `h-13-silverpine` | 13–15 | 13.10 → 14.65 | 14155 | 4457 | 0 (0) | 1 |
+| `h-15-barrens` | 15–18 | 14.65 → 18.15 | 41445 | 14038 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.15 → 22.06 | 55690 | 32243 | 0 (90) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.06 → 24.83 | 61855 | 19547 | 0 (52) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.83 → 27.31 | 66380 | 21568 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 33962 | 120 (313) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (326) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 152 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1008 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 765 (918) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59789 | 177 (185) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153331 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.05 | 246260 | 71198 | 319 (349) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.05 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (435): `complete-kill-xp` 343, `complete-no-kill` 20, `complete-no-objectives` 2, `level-grind` 1, `quest-profession` 1, `train-service` 1, `xp-unknown` 67.
+
+### tauren-hunter — Tauren Hunter 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Tauren HUNTER Horde. Результат: **0 ERROR, 0 WARN, 432 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1908920 (из них оценено 85385; квестов с оценённым опытом: 62, 4.5 % опыта квестов), за убийства по целям 814406, гринд 1361390 (~4933 убийств); максимум квестов в журнале 23 из 40; принято 709, сдано 709, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4933 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 165 — и их квесты): ~6180. С попутными убийствами в пути на 15 % опыта квестов: ~3937 (худший случай ~5265).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `mul-01-camp-narache` | 1–6 | 1.00 → 6.03 | 3355 | 4338 | 0 (0) | 3 |
+| `mul-02-mulgore` | 6–12 | 6.03 → 11.72 | 24075 | 9780 | 0 (0) | 4 |
+| `mul-03-barrens-crossing` | 12–12 | 11.72 → 12.28 | 5230 | 0 | 0 (0) | 0 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 12.28 → 13.18 | 6630 | 2797 | 0 (0) | 1 |
+| `h-13-silverpine` | 13–15 | 13.18 → 14.72 | 14155 | 4444 | 0 (0) | 1 |
+| `h-15-barrens` | 15–18 | 14.72 → 18.18 | 41445 | 13690 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.18 → 22.04 | 51790 | 32174 | 19 (110) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.30 | 66380 | 21632 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.30 → 31.01 | 102715 | 34015 | 122 (313) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (327) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (151) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (919) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (184) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153307 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 241170 | 69149 | 341 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (432): `complete-kill-xp` 343, `complete-no-kill` 20, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 2, `xp-unknown` 62.
+
+### tauren-shaman — Tauren Shaman 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Tauren SHAMAN Horde. Результат: **0 ERROR, 0 WARN, 432 INFO**; принято предупреждений (`ok`): 19; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1907890 (из них оценено 85385; квестов с оценённым опытом: 62, 4.5 % опыта квестов), за убийства по целям 812898, гринд 1364060 (~4930 убийств); максимум квестов в журнале 23 из 40; принято 715, сдано 715, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4930 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 168 — и их квесты): ~6167. С попутными убийствами в пути на 15 % опыта квестов: ~3940 (худший случай ~5250).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `mul-01-camp-narache` | 1–6 | 1.00 → 6.31 | 4250 | 4452 | 0 (0) | 3 |
+| `mul-02-mulgore` | 6–12 | 6.31 → 11.55 | 21555 | 9802 | 0 (0) | 4 |
+| `mul-03-barrens-crossing` | 12–12 | 11.55 → 12.57 | 9100 | 640 | 0 (0) | 0 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 12.57 → 13.43 | 6630 | 2550 | 0 (0) | 1 |
+| `h-13-silverpine` | 13–15 | 13.43 → 14.93 | 14155 | 4379 | 0 (0) | 1 |
+| `h-15-barrens` | 15–18 | 14.93 → 18.30 | 41445 | 13305 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.30 → 22.05 | 52570 | 31865 | 1 (97) | 1 |
+| `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 5 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.33 | 67685 | 21432 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.33 → 31.01 | 102715 | 33852 | 117 (313) | 7 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (327) | 5 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 2 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 2 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (918) | 5 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 5 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170955 | 95081 | 616 (714) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153307 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 235560 | 68234 | 362 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+<details><summary>Принятые предупреждения, `ok` (1)</summary>
+
+- [library FastesBoooy_Guides] mul-01-camp-narache#12 id=sha-mul-1519 (Classes/Shaman.lua) `db-override-unverified` accept 1519 "Call of Earth": the prerequisite check passes only because of the unverified DB override in tools/overrides/shaman.lua (source: https://www.wowhead.com/classic/quest=1519): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
+
+</details>
+
+INFO (432): `complete-kill-xp` 346, `complete-no-kill` 17, `complete-no-objectives` 2, `level-grind` 2, `quest-profession` 1, `train-service` 2, `xp-unknown` 62.
+
+### tauren-warrior — Tauren Warrior 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Tauren WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 433 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1912550 (из них оценено 85805; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 816835, гринд 1355415 (~4905 убийств); максимум квестов в журнале 23 из 40; принято 713, сдано 713, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4905 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 159 — и их квесты): ~6128. С попутными убийствами в пути на 15 % опыта квестов: ~3909 (худший случай ~5206).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `mul-01-camp-narache` | 1–6 | 1.00 → 6.04 | 3335 | 4338 | 1 (1) | 3 |
+| `mul-02-mulgore` | 6–12 | 6.04 → 11.46 | 21555 | 9975 | 0 (0) | 4 |
+| `mul-03-barrens-crossing` | 12–12 | 11.46 → 12.06 | 4895 | 456 | 0 (0) | 1 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 12.06 → 13.01 | 6630 | 2992 | 0 (0) | 2 |
+| `h-13-silverpine` | 13–15 | 13.01 → 14.58 | 14155 | 4603 | 0 (0) | 2 |
+| `h-15-barrens` | 15–18 | 14.58 → 18.17 | 42915 | 13800 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.17 → 22.05 | 51790 | 32198 | 21 (112) | 1 |
+| `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 5 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.38 | 68865 | 22211 | 0 (201) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.38 → 31.01 | 102715 | 33729 | 108 (314) | 7 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.05 | 69960 | 43399 | 258 (311) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.05 → 36.06 | 46085 | 51482 | 152 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.01 | 110880 | 55325 | 1008 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.01 → 44.02 | 69630 | 38121 | 765 (918) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59796 | 177 (185) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 618 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.60 | 282810 | 155226 | 148 (300) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.60 → 55.04 | 235560 | 68234 | 345 (378) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (433): `complete-kill-xp` 345, `complete-no-kill` 18, `complete-no-objectives` 2, `level-grind` 3, `quest-profession` 1, `train-service` 1, `xp-unknown` 63.
+
+### undead-mage — Undead Mage 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Scourge MAGE Horde. Результат: **0 ERROR, 0 WARN, 438 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1898895 (из них оценено 85160; квестов с оценённым опытом: 64, 4.5 % опыта квестов), за убийства по целям 815827, гринд 1370200 (~4973 убийств); максимум квестов в журнале 23 из 40; принято 706, сдано 706, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4973 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 162 — и их квесты): ~6208. С попутными убийствами в пути на 15 % опыта квестов: ~3971 (худший случай ~5288).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `ud-01-deathknell` | 1–6 | 1.00 → 5.75 | 3190 | 3579 | 2 (2) | 3 |
+| `ud-02-tirisfal` | 6–13 | 5.75 → 12.17 | 24365 | 14512 | 0 (6) | 1 |
+| `h-13-silverpine` | 13–15 | 12.17 → 14.22 | 16145 | 5052 | 12 (12) | 1 |
+| `h-15-barrens` | 15–18 | 14.22 → 18.14 | 46695 | 14192 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.14 → 22.05 | 51790 | 32273 | 24 (118) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.05 → 24.82 | 61855 | 19595 | 0 (51) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.31 | 66380 | 21616 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 34004 | 122 (314) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (326) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (918) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277790 | 153285 | 154 (307) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.05 | 235560 | 68234 | 362 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.05 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (438): `complete-kill-xp` 348, `complete-no-kill` 17, `complete-no-objectives` 3, `level-grind` 4, `quest-profession` 1, `train-service` 1, `xp-unknown` 64.
+
+### undead-paladin — Undead Paladin 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Scourge PALADIN Horde. Результат: **0 ERROR, 0 WARN, 465 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1912445 (из них оценено 100075; квестов с оценённым опытом: 82, 5.2 % опыта квестов), за убийства по целям 814089, гринд 1358320 (~4902 убийств); максимум квестов в журнале 23 из 40; принято 721, сдано 721, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4902 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 173 — и их квесты): ~6173. С попутными убийствами в пути на 15 % опыта квестов: ~3914 (худший случай ~5260).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `ud-01-deathknell` | 1–6 | 1.00 → 5.91 | 3715 | 3502 | 2 (2) | 4 |
+| `ud-02-tirisfal` | 6–13 | 5.91 → 12.79 | 28275 | 16340 | 0 (0) | 1 |
+| `h-13-silverpine` | 13–15 | 12.79 → 14.56 | 16145 | 4691 | 0 (0) | 1 |
+| `h-15-barrens` | 15–18 | 14.56 → 18.32 | 46695 | 13304 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.32 → 22.04 | 51790 | 31790 | 3 (101) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 25.10 | 71605 | 18962 | 0 (51) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 25.10 → 27.51 | 65825 | 20996 | 0 (221) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.51 → 31.01 | 102715 | 33478 | 84 (313) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (326) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (918) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153307 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 235560 | 68234 | 362 (391) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (465): `complete-kill-xp` 351, `complete-no-kill` 24, `complete-no-objectives` 4, `level-grind` 3, `quest-profession` 1, `xp-unknown` 82.
+
+### undead-priest — Undead Priest 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Scourge PRIEST Horde. Результат: **0 ERROR, 0 WARN, 440 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1904530 (из них оценено 85500; квестов с оценённым опытом: 64, 4.5 % опыта квестов), за убийства по целям 817474, гринд 1362800 (~4951 убийств); максимум квестов в журнале 23 из 40; принято 708, сдано 708, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4951 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 166 — и их квесты): ~6209. С попутными убийствами в пути на 15 % опыта квестов: ~3944 (худший случай ~5286).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `ud-01-deathknell` | 1–6 | 1.00 → 5.75 | 3190 | 3579 | 2 (2) | 3 |
+| `ud-02-tirisfal` | 6–13 | 5.75 → 12.14 | 24080 | 14486 | 0 (5) | 1 |
+| `h-13-silverpine` | 13–15 | 12.14 → 14.22 | 16145 | 5052 | 15 (16) | 1 |
+| `h-15-barrens` | 15–18 | 14.22 → 18.14 | 46695 | 14180 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.14 → 22.05 | 51790 | 32273 | 24 (118) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.05 → 24.83 | 62245 | 19547 | 0 (49) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.83 → 27.31 | 66380 | 21568 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.31 → 31.01 | 102715 | 33962 | 121 (313) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.05 | 66900 | 43399 | 273 (327) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.05 → 36.06 | 46085 | 51482 | 152 (151) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.01 | 110880 | 55325 | 1008 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.01 → 44.02 | 69630 | 38121 | 765 (919) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59796 | 178 (184) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153285 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 241170 | 70064 | 338 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (440): `complete-kill-xp` 349, `complete-no-kill` 18, `complete-no-objectives` 3, `level-grind` 4, `quest-profession` 1, `train-service` 1, `xp-unknown` 64.
+
+### undead-rogue — Undead Rogue 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Scourge ROGUE Horde. Результат: **0 ERROR, 0 WARN, 441 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1904610 (из них оценено 85080; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 815217, гринд 1365120 (~4948 убийств); максимум квестов в журнале 23 из 40; принято 713, сдано 713, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4948 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 168 — и их квесты): ~6165. С попутными убийствами в пути на 15 % опыта квестов: ~3938 (худший случай ~5237).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `ud-01-deathknell` | 1–6 | 1.00 → 5.75 | 3190 | 3579 | 2 (2) | 3 |
+| `ud-02-tirisfal` | 6–13 | 5.75 → 12.12 | 23650 | 14525 | 1 (7) | 2 |
+| `h-13-silverpine` | 13–15 | 12.12 → 14.38 | 18195 | 5052 | 18 (18) | 1 |
+| `h-15-barrens` | 15–18 | 14.38 → 18.21 | 46695 | 13469 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.21 → 22.05 | 51790 | 32132 | 16 (107) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.05 → 25.00 | 66315 | 20921 | 0 (13) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 25.00 → 27.44 | 66380 | 20996 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.44 → 31.01 | 102715 | 33546 | 98 (313) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.05 | 66900 | 43399 | 273 (327) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.05 → 36.06 | 46085 | 51482 | 152 (151) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.01 | 110880 | 55325 | 1008 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.01 → 44.02 | 69630 | 38121 | 765 (919) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59796 | 177 (184) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 618 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153285 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.05 | 235560 | 68234 | 362 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.05 → 60.00 | 427570 | 106274 | 1304 (1460) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (441): `complete-kill-xp` 349, `complete-no-kill` 18, `complete-no-objectives` 3, `level-grind` 5, `quest-profession` 1, `train-service` 2, `xp-unknown` 63.
+
+### undead-warlock — Undead Warlock 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Scourge WARLOCK Horde. Результат: **0 ERROR, 0 WARN, 447 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1916080 (из них оценено 87590; квестов с оценённым опытом: 66, 4.6 % опыта квестов), за убийства по целям 817142, гринд 1351615 (~4898 убийств); максимум квестов в журнале 23 из 40; принято 718, сдано 718, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4898 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 174 — и их квесты): ~6187. С попутными убийствами в пути на 15 % опыта квестов: ~3890 (худший случай ~5265).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `ud-01-deathknell` | 1–6 | 1.00 → 5.83 | 3380 | 3732 | 0 (0) | 3 |
+| `ud-02-tirisfal` | 6–13 | 5.83 → 12.12 | 23650 | 14494 | 0 (5) | 2 |
+| `h-13-silverpine` | 13–15 | 12.12 → 14.32 | 17405 | 5052 | 17 (18) | 1 |
+| `h-15-barrens` | 15–18 | 14.32 → 18.18 | 46695 | 13677 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.18 → 22.04 | 51790 | 32174 | 19 (110) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 24.83 | 62010 | 19841 | 0 (49) | 5 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.83 → 27.32 | 66380 | 21800 | 0 (218) | 10 |
+| `h-27-ashenvale-needles` | 27–31 | 27.32 → 31.01 | 102715 | 33930 | 120 (314) | 7 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 67060 | 43399 | 273 (325) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.13 | 122745 | 56757 | 998 (1029) | 2 |
+| `h-41-arathi-badlands` | 41–44 | 41.13 → 44.02 | 69630 | 38105 | 721 (907) | 5 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 5 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 175055 | 95081 | 601 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153307 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 235560 | 68234 | 362 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1460) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+<details><summary>Принятые предупреждения, `ok` (1)</summary>
+
+- [library FastesBoooy_Guides] h-46-tanaris-feralas#1 id=wlk-46-menara (Classes/Warlock.lua) `db-override-unverified` accept 4975 "The Completed Orb of Noh'Orahil" (exclusive with 4962 "Shard of a Felhound" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: original game (classes.md 5.5): Shard of a Felhound -> Orb of Noh'Orahil): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
+
+</details>
+
+INFO (447): `complete-kill-xp` 355, `complete-no-kill` 19, `complete-no-objectives` 3, `level-grind` 3, `quest-profession` 1, `xp-unknown` 66.
+
+### undead-warrior — Undead Warrior 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Scourge WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 440 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1912260 (из них оценено 85080; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 817341, гринд 1355160 (~4904 убийств); максимум квестов в журнале 23 из 40; принято 716, сдано 716, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4904 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 166 — и их квесты): ~6144. С попутными убийствами в пути на 15 % опыта квестов: ~3907 (худший случай ~5216).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `ud-01-deathknell` | 1–6 | 1.00 → 5.75 | 3190 | 3579 | 2 (2) | 3 |
+| `ud-02-tirisfal` | 6–13 | 5.75 → 12.34 | 26115 | 14479 | 0 (0) | 1 |
+| `h-13-silverpine` | 13–15 | 12.34 → 14.24 | 16145 | 4987 | 0 (16) | 1 |
+| `h-15-barrens` | 15–18 | 14.24 → 18.18 | 47745 | 13656 | 0 (0) | 13 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.18 → 22.04 | 51790 | 32162 | 19 (111) | 1 |
+| `h-22-hillsbrad` | 22–24 | 22.04 → 24.82 | 61855 | 19595 | 0 (51) | 5 |
+| `h-24-barrens-stonetalon` | 24–27 | 24.82 → 27.38 | 68865 | 22211 | 0 (202) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.38 → 31.01 | 102715 | 33729 | 108 (313) | 7 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.05 | 69960 | 43399 | 258 (312) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.05 → 36.06 | 46085 | 51487 | 152 (151) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.01 | 110880 | 55325 | 1008 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.01 → 44.02 | 69630 | 38121 | 765 (918) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59796 | 178 (185) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.60 | 282810 | 155226 | 148 (300) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.60 → 55.04 | 235560 | 68234 | 345 (378) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (440): `complete-kill-xp` 351, `complete-no-kill` 18, `complete-no-objectives` 3, `level-grind` 3, `quest-profession` 1, `train-service` 1, `xp-unknown` 63.
+
+### skyborne-druid — Skyborne Druid 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Skyborne DRUID Horde. Результат: **0 ERROR, 0 WARN, 513 INFO**; принято предупреждений (`ok`): 19; из них на общих шагах: 0 ERROR, 0 WARN, принято 19.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1924535 (из них оценено 120750; квестов с оценённым опытом: 125, 6.3 % опыта квестов), за убийства по целям 816584, гринд 1343820 (~4852 убийств); максимум квестов в журнале 23 из 40; принято 728, сдано 728, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4852 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 168 — и их квесты): ~6052. С попутными убийствами в пути на 15 % опыта квестов: ~3865 (худший случай ~5139).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `sd-01-zephras` | 1–9 | 1.00 → 9.95 | 16865 | 10397 | 0 (0) | 2 |
+| `sd-02-zephras` | 9–13 | 9.95 → 13.32 | 21255 | 9196 | 0 (0) | 2 |
+| `sd-03-thunder-bluff` | 13–13 | 13.32 → 13.35 | 420 | 0 | 0 (0) | 2 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 13.35 → 14.17 | 7310 | 2310 | 0 (0) | 4 |
+| `h-13-silverpine` | 13–15 | 14.17 → 15.55 | 14575 | 3978 | 0 (0) | 3 |
+| `h-15-barrens` | 15–18 | 15.55 → 18.75 | 42125 | 12584 | 0 (0) | 14 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.75 → 22.44 | 55510 | 31036 | 0 (24) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.44 → 25.12 | 61855 | 18760 | 0 (52) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 25.12 → 27.52 | 65525 | 20863 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.52 → 31.01 | 102715 | 33470 | 82 (313) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (326) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (918) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153307 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.05 | 246260 | 71198 | 319 (349) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.05 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (513): `complete-kill-xp` 353, `complete-no-kill` 29, `complete-no-objectives` 2, `hearth-unbound` 1, `level-grind` 1, `quest-profession` 1, `train-service` 1, `xp-unknown` 125.
+
+### skyborne-hunter — Skyborne Hunter 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Skyborne HUNTER Horde. Результат: **0 ERROR, 0 WARN, 510 INFO**; принято предупреждений (`ok`): 19; из них на общих шагах: 0 ERROR, 0 WARN, принято 19.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1916495 (из них оценено 116850; квестов с оценённым опытом: 120, 6.1 % опыта квестов), за убийства по целям 814752, гринд 1353470 (~4888 убийств); максимум квестов в журнале 23 из 40; принято 722, сдано 722, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4888 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 172 — и их квесты): ~6121. С попутными убийствами в пути на 15 % опыта квестов: ~3903 (худший случай ~5209).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `sd-01-zephras` | 1–9 | 1.00 → 9.95 | 16865 | 10397 | 0 (0) | 2 |
+| `sd-02-zephras` | 9–13 | 9.95 → 13.38 | 22095 | 9024 | 0 (0) | 1 |
+| `sd-03-thunder-bluff` | 13–13 | 13.38 → 13.38 | 0 | 0 | 0 (0) | 1 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 13.38 → 14.19 | 7310 | 2262 | 0 (0) | 3 |
+| `h-13-silverpine` | 13–15 | 14.19 → 15.53 | 14155 | 3950 | 0 (0) | 3 |
+| `h-15-barrens` | 15–18 | 15.53 → 18.74 | 42125 | 12584 | 0 (0) | 14 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.74 → 22.30 | 51860 | 31093 | 0 (51) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.30 → 25.02 | 61855 | 18971 | 0 (51) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 25.02 → 27.45 | 66225 | 20996 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.45 → 31.01 | 102715 | 33534 | 96 (314) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (326) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (918) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153307 | 154 (307) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 241170 | 69149 | 341 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (510): `complete-kill-xp` 352, `complete-no-kill` 31, `complete-no-objectives` 2, `hearth-unbound` 1, `level-grind` 1, `quest-profession` 1, `train-service` 2, `xp-unknown` 120.
+
+### skyborne-rogue — Skyborne Rogue 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Skyborne ROGUE Horde. Результат: **0 ERROR, 0 WARN, 504 INFO**; принято предупреждений (`ok`): 19; из них на общих шагах: 0 ERROR, 0 WARN, принято 19.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1912775 (из них оценено 115010; квестов с оценённым опытом: 116, 6.0 % опыта квестов), за убийства по целям 815871, гринд 1356190 (~4889 убийств); максимум квестов в журнале 23 из 40; принято 721, сдано 721, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4889 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 172 — и их квесты): ~6090. С попутными убийствами в пути на 15 % опыта квестов: ~3909 (худший случай ~5177).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `sd-01-zephras` | 1–9 | 1.00 → 9.95 | 16865 | 10397 | 0 (0) | 2 |
+| `sd-02-zephras` | 9–13 | 9.95 → 13.25 | 20415 | 9224 | 0 (0) | 1 |
+| `sd-03-thunder-bluff` | 13–13 | 13.25 → 13.25 | 0 | 0 | 0 (0) | 1 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 13.25 → 14.09 | 7310 | 2502 | 0 (0) | 3 |
+| `h-13-silverpine` | 13–15 | 14.09 → 15.45 | 14155 | 4006 | 0 (0) | 3 |
+| `h-15-barrens` | 15–18 | 15.45 → 18.68 | 42125 | 12654 | 0 (0) | 14 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.68 → 22.26 | 51860 | 31195 | 0 (58) | 0 |
+| `h-22-hillsbrad` | 22–24 | 22.26 → 25.16 | 66315 | 20550 | 0 (13) | 4 |
+| `h-24-barrens-stonetalon` | 24–27 | 25.16 → 27.55 | 65525 | 20863 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.55 → 31.01 | 102525 | 33454 | 76 (314) | 6 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (326) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (152) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.02 | 110880 | 55325 | 1009 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.02 → 44.02 | 69630 | 38121 | 764 (918) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (185) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (714) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153307 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 235560 | 68234 | 362 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (504): `complete-kill-xp` 352, `complete-no-kill` 29, `complete-no-objectives` 2, `hearth-unbound` 1, `level-grind` 1, `quest-profession` 1, `train-service` 2, `xp-unknown` 116.
+
+### skyborne-shaman — Skyborne Shaman 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Skyborne SHAMAN Horde. Результат: **0 ERROR, 0 WARN, 514 INFO**; принято предупреждений (`ok`): 20; из них на общих шагах: 0 ERROR, 0 WARN, принято 20.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1913885 (из них оценено 117915; квестов с оценённым опытом: 123, 6.2 % опыта квестов), за убийства по целям 813496, гринд 1357485 (~4896 убийств); максимум квестов в журнале 23 из 40; принято 727, сдано 727, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4896 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 175 — и их квесты): ~6118. С попутными убийствами в пути на 15 % опыта квестов: ~3916 (худший случай ~5203).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `sd-01-zephras` | 1–9 | 1.00 → 10.08 | 17930 | 10286 | 0 (0) | 2 |
+| `sd-02-zephras` | 9–13 | 10.08 → 13.48 | 22095 | 9278 | 0 (0) | 1 |
+| `sd-03-thunder-bluff` | 13–13 | 13.48 → 13.48 | 0 | 0 | 0 (0) | 1 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 13.48 → 14.27 | 7310 | 2142 | 0 (0) | 3 |
+| `h-13-silverpine` | 13–15 | 14.27 → 15.60 | 14155 | 3819 | 0 (0) | 3 |
+| `h-15-barrens` | 15–18 | 15.60 → 18.78 | 42125 | 12541 | 0 (0) | 14 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.78 → 22.36 | 52640 | 30978 | 0 (48) | 1 |
+| `h-22-hillsbrad` | 22–24 | 22.36 → 25.06 | 61855 | 18952 | 0 (51) | 5 |
+| `h-24-barrens-stonetalon` | 24–27 | 25.06 → 27.51 | 67130 | 20996 | 0 (220) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.51 → 31.01 | 102715 | 33478 | 84 (313) | 7 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.06 | 66900 | 43399 | 274 (327) | 5 |
+| `h-34-stranglethorn` | 34–37 | 34.06 → 36.06 | 46085 | 51482 | 151 (151) | 2 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.01 | 110880 | 55325 | 1008 (1029) | 2 |
+| `h-41-arathi-badlands` | 41–44 | 41.01 → 44.02 | 69630 | 38121 | 765 (919) | 5 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59803 | 178 (184) | 5 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170955 | 95081 | 616 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.57 | 277710 | 153307 | 154 (308) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.57 → 55.04 | 235560 | 68234 | 362 (392) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1461) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (514): `complete-kill-xp` 354, `complete-no-kill` 30, `complete-no-objectives` 2, `hearth-unbound` 1, `level-grind` 1, `quest-profession` 1, `train-service` 2, `xp-unknown` 123.
+
+### skyborne-warrior — Skyborne Warrior 1-60
+
+Модуль `FastesBoooy_Guides`, профиль: Skyborne WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 506 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
+
+Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1919715 (из них оценено 115590; квестов с оценённым опытом: 117, 6.0 % опыта квестов), за убийства по целям 816957, гринд 1348095 (~4862 убийств); максимум квестов в журнале 23 из 40; принято 723, сдано 723, не сдано к концу 0.
+
+Гринд до порогов уровня (шаги `level`): ~4862 убийств мобов своего уровня; худший случай (не выполнены шаги `optional = true` — 166 — и их квесты): ~6070. С попутными убийствами в пути на 15 % опыта квестов: ~3879 (худший случай ~5151).
+
+| сегмент | план | уровень (симуляция) | опыт квестов | опыт мобов | гринд (худший) | журнал |
+|---|---|---|---:|---:|---:|---:|
+| `sd-01-zephras` | 1–9 | 1.00 → 9.95 | 16865 | 10397 | 0 (0) | 2 |
+| `sd-02-zephras` | 9–13 | 9.95 → 13.30 | 20835 | 9368 | 0 (0) | 1 |
+| `sd-03-thunder-bluff` | 13–13 | 13.30 → 13.30 | 0 | 0 | 0 (0) | 1 |
+| `h-12-orgrimmar-tirisfal` | 12–13 | 13.30 → 14.13 | 7310 | 2406 | 0 (0) | 3 |
+| `h-13-silverpine` | 13–15 | 14.13 → 15.48 | 14155 | 4006 | 0 (0) | 3 |
+| `h-15-barrens` | 15–18 | 15.48 → 18.70 | 42125 | 12602 | 0 (0) | 14 |
+| `h-18-stonetalon-ashenvale` | 18–22 | 18.70 → 22.28 | 51860 | 31186 | 0 (55) | 1 |
+| `h-22-hillsbrad` | 22–24 | 22.28 → 25.00 | 61855 | 18971 | 0 (52) | 5 |
+| `h-24-barrens-stonetalon` | 24–27 | 25.00 → 27.50 | 68155 | 21588 | 0 (201) | 9 |
+| `h-27-ashenvale-needles` | 27–31 | 27.50 → 31.01 | 102715 | 33490 | 87 (313) | 7 |
+| `h-31-hillsbrad-arathi` | 31–34 | 31.01 → 34.05 | 69960 | 43399 | 258 (312) | 4 |
+| `h-34-stranglethorn` | 34–37 | 34.05 → 36.06 | 46085 | 51487 | 152 (151) | 1 |
+| `h-37-desolace-dustwallow` | 37–41 | 36.06 → 41.01 | 110880 | 55325 | 1008 (1029) | 1 |
+| `h-41-arathi-badlands` | 41–44 | 41.01 → 44.02 | 69630 | 38121 | 765 (919) | 4 |
+| `h-44-swamp-stranglethorn` | 44–46 | 44.02 → 46.01 | 120640 | 59796 | 178 (184) | 4 |
+| `h-46-tanaris-feralas` | 46–50 | 46.01 → 49.40 | 170705 | 95081 | 617 (715) | 9 |
+| `h-50-hinterlands-searing-steppes` | 50–53 | 49.40 → 52.60 | 282810 | 155226 | 148 (301) | 9 |
+| `h-53-azshara-ungoro-silithus` | 53–56 | 52.60 → 55.04 | 235560 | 68234 | 345 (378) | 6 |
+| `h-56-felwood-winterspring-plaguelands` | 56–60 | 55.04 → 60.00 | 427570 | 106274 | 1304 (1460) | 0 |
+
+Собственных ошибок и предупреждений нет.
+
+INFO (506): `complete-kill-xp` 354, `complete-no-kill` 29, `complete-no-objectives` 2, `hearth-unbound` 1, `level-grind` 1, `quest-profession` 1, `train-service` 1, `xp-unknown` 117.
+
+## INFO по кодам
+
+Справочные сообщения в отчёт не выводятся — только их число. Тексты: `lua5.1 tools/validate_routes.lua -v` или `--json FILE`.
+
+| код | всего | маршрутов | на маршрут (мин–макс) |
+|---|---:|---:|---:|
+| `complete-kill-xp` | 9722 | 28 | 342–355 |
+| `complete-no-kill` | 560 | 28 | 16–31 |
+| `complete-no-objectives` | 63 | 28 | 2–4 |
+| `hearth-unbound` | 5 | 5 | 1 |
+| `level-grind` | 67 | 28 | 1–5 |
+| `quest-profession` | 28 | 28 | 1 |
+| `train-service` | 38 | 26 | 1–2 |
+| `xp-unknown` | 2088 | 28 | 62–125 |
 
 ## Что подтверждается только в игре
 
@@ -1185,4 +1186,18 @@
 * **Метка Blizzard** (`C_Map.SetUserWaypoint` + `C_SuperTrack`) на картах Forever, где метки запрещены или карта не поддерживает их.
 * **SavedVariables после холодного перезапуска** ранних билдов Forever: прогресс восстанавливается по игре (журнал, сданные квесты, уровень), неизвестны только transient-шаги после последнего опорного шага.
 * **Секретные значения** (`issecretvalue` и т. п.) в ограниченных контекстах (подземелья, бой): аддон их не читает, но реальный набор ограничений Forever виден только в клиенте.
+
+### Принятые непроверенные поправки к БД
+
+Шаги, которые проходят проверку только благодаря поправке к БД с `verified = false` (`tools/overrides`) и приняты ключом `ok` (7). Каждую нужно подтвердить в клиенте Forever (комментарий `-- CONFIRM:` на шаге) и после этого поставить поправке `verified = true`:
+
+| где | маршруты | сообщение |
+|---|---|---|
+| dur-01-valley-of-trials#24 id=sha-dur-1516 (Classes/Shaman.lua) | `orc-shaman`, `troll-shaman` | accept 1516 "Call of Earth": the prerequisite check passes only because of the unverified DB override in tools/overrides/shaman.lua (source: https://www.wowhead.com/classic/quest=1516): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment) |
+| h-46-tanaris-feralas#1 id=wlk-46-menara (Classes/Warlock.lua) | все 3 `*-warlock` | accept 4975 "The Completed Orb of Noh'Orahil" (exclusive with 4962 "Shard of a Felhound" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: original game (classes.md 5.5): Shard of a Felhound -> Orb of Noh'Orahil): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment) |
+| h-12-orgrimmar-tirisfal#4 id=wlk-ganrul (Classes/Warlock.lua) | `troll-warlock` | accept 1501 "Creature of the Void": the race check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: https://www.warcrafttavern.com/forever/guides/warlock-leveling/): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment) |
+| h-12-orgrimmar-tirisfal#15 id=wlk-ganrul-2 (Classes/Warlock.lua) | `troll-warlock` | accept 1504 "The Binding": the race check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: https://www.warcrafttavern.com/forever/guides/warlock-leveling/): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment) |
+| h-15-barrens#7 id=h15-xr-arrive (Segments/Shared/15_Barrens.lua) | все 4 `tauren-*` | accept 844 "Plainstrider Menace" (exclusive with 854 "Journey to the Crossroads" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/shared.lua (source: Classic: Journey to the Crossroads (Thunder Bluff) is a breadcrumb, 844 stays available): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment) |
+| h-15-barrens#7 id=h15-xr-arrive (Segments/Shared/15_Barrens.lua) | все 4 `tauren-*` | accept 844 "Plainstrider Menace" (exclusive with 861 "The Hunter's Way" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/shared.lua (source: the DB chain 861 -> 860 (breadcrumbFor 844) -> 844; Classic quest chain The Hunter's Way): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment) |
+| mul-01-camp-narache#12 id=sha-mul-1519 (Classes/Shaman.lua) | `tauren-shaman` | accept 1519 "Call of Earth": the prerequisite check passes only because of the unverified DB override in tools/overrides/shaman.lua (source: https://www.wowhead.com/classic/quest=1519): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment) |
 

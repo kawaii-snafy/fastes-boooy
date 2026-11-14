@@ -39,6 +39,7 @@ Schema.STEP_FIELDS = {
     object = "id-list", note = "text", reward = "table", gossip = "number",
     use = "number", bg = "boolean", class = "token-list", race = "token-list",
     faction = "string", spells = "text-list", optional = "boolean",
+    ok = "code-list", -- acknowledged validator warnings (offline tools only; the engine ignores it)
 }
 
 Schema.CLASSES = {
@@ -53,11 +54,13 @@ Schema.ROUTE_FIELDS = {
     races = "token-list", classes = "token-list", levels = "table",
     author = "string", version = "string", default = "boolean",
     description = "text",
+    aliases = "token-list", -- former ids of the route (saved progress follows the rename, Core/Registry.lua)
 }
 
 Schema.SEGMENT_FIELDS = {
     id = "string", title = "text", levels = "table", steps = "table",
     zone = "string", order = "number",
+    ok = "code-list", -- acknowledged validator warnings about the segment (offline tools only)
 }
 
 -- Default arrival radius in yards for movement-type actions.
@@ -209,6 +212,100 @@ local function normIdList(v, key, where, errors)
     return out
 end
 
+--- Normalize the class / race / faction keys of a definition (a step, or the scope of a shared
+-- insert: Core/Compose.lua) into filters = { class = set, race = set, faction = "Horde" }.
+-- Class tokens and the faction are checked; race tokens only for their type (the raceFile
+-- names are client data: the offline tools check them against the DB snapshot).
+-- An empty list (`class = {}`) is an error: it would read as "no filter" (every class), the
+-- opposite of what an empty list says; the dimension is then left unfiltered (the caller may
+-- reject the definition: a shared insert does, Compose.AddLibraryInsert).
+-- @return filters, or nil when `def` has none of the three keys
+function Schema.NormalizeFilters(def, where, errors)
+    local filters
+    if def.class ~= nil then
+        local set = tokenSet(def.class)
+        if not set then
+            addErr(errors, where, "class is an empty list: name at least one class token, or leave the key out")
+        end
+        for tok in pairs(set or {}) do
+            if not Schema.CLASSES[tok] then addErr(errors, where, "unknown class token '%s'", tostring(tok)) end
+        end
+        filters = {}
+        filters.class = set
+    end
+    if def.race ~= nil then
+        local set = tokenSet(def.race)
+        if not set then
+            addErr(errors, where, "race is an empty list: name at least one race token, or leave the key out")
+        end
+        for tok in pairs(set or {}) do
+            if type(tok) ~= "string" then addErr(errors, where, "race tokens must be strings (UnitRace raceFile)") end
+        end
+        filters = filters or {}
+        filters.race = set
+    end
+    if def.faction ~= nil then
+        if not Schema.FACTIONS[def.faction] then addErr(errors, where, "faction must be Horde or Alliance") end
+        filters = filters or {}
+        filters.faction = def.faction
+    end
+    return filters
+end
+
+local function isCode(v)
+    return type(v) == "string" and v ~= "" and not v:find("[^a-z%-]")
+end
+
+--- Normalize the `ok` key of a step / segment: the validator warnings the author has
+-- acknowledged (tools/lib/validator.lua gives them their meaning; the engine ignores them).
+--   ok = "at-far-from-giver"                              one message code
+--   ok = { "at-far-from-giver", "quest-out-of-scope" }    several codes
+--   ok = { ["level-grind"] = 700 }                        a code with a ceiling (a number >= 0)
+--   ok = { "skip-ahead", ["level-grind"] = 90 }           both
+-- Only the shape is checked here (codes are [a-z-]+).
+-- @return { [code] = true | ceiling }, or nil when nothing valid was given
+function Schema.NormalizeOk(v, where, errors)
+    local out, any = {}, false
+    if isCode(v) then
+        out[v] = true
+        return out
+    end
+    if type(v) ~= "table" then
+        addErr(errors, where, "ok must be a message code ([a-z-]), a list of codes or { [code] = ceiling }")
+        return nil
+    end
+    local n = #v
+    for i = 1, n do
+        if isCode(v[i]) then
+            if out[v[i]] == nil then out[v[i]] = true end
+            any = true
+        else
+            addErr(errors, where, "ok[%d] is not a message code ([a-z-])", i)
+        end
+    end
+    local extra = {}
+    for k in pairs(v) do
+        if not (type(k) == "number" and k >= 1 and k <= n and floor(k) == k) then extra[#extra + 1] = k end
+    end
+    table.sort(extra, function(a, b) return tostring(a) < tostring(b) end)
+    for _, k in ipairs(extra) do
+        local ceiling = v[k]
+        if not isCode(k) then
+            addErr(errors, where, "ok has an invalid key %s (a message code is expected)", tostring(k))
+        elseif type(ceiling) ~= "number" or ceiling < 0 or ceiling ~= ceiling then
+            addErr(errors, where, "ok['%s'] must be a number >= 0 (the ceiling of the acknowledgement)", k)
+        else
+            out[k] = ceiling
+            any = true
+        end
+    end
+    if not any then
+        if n == 0 and #extra == 0 then addErr(errors, where, "ok is empty") end
+        return nil
+    end
+    return out
+end
+
 --- Normalize one step definition.
 -- @return normalized step (never nil; may be partial when errors were added)
 function Schema.NormalizeStep(def, where, errors)
@@ -339,29 +436,8 @@ function Schema.NormalizeStep(def, where, errors)
         end
         step.spells = list
     end
-    local filters
-    if def.class ~= nil then
-        local set = tokenSet(def.class)
-        for tok in pairs(set or {}) do
-            if not Schema.CLASSES[tok] then addErr(errors, where, "unknown class token '%s'", tostring(tok)) end
-        end
-        filters = {}
-        filters.class = set
-    end
-    if def.race ~= nil then
-        local set = tokenSet(def.race)
-        for tok in pairs(set or {}) do
-            if type(tok) ~= "string" then addErr(errors, where, "race tokens must be strings (UnitRace raceFile)") end
-        end
-        filters = filters or {}
-        filters.race = set
-    end
-    if def.faction ~= nil then
-        if not Schema.FACTIONS[def.faction] then addErr(errors, where, "faction must be Horde or Alliance") end
-        filters = filters or {}
-        filters.faction = def.faction
-    end
-    step.filters = filters
+    if def.ok ~= nil then step.ok = Schema.NormalizeOk(def.ok, where, errors) end
+    step.filters = Schema.NormalizeFilters(def, where, errors)
 
     -- derived properties
     local stateful, needsAt = false, false
@@ -429,8 +505,24 @@ function Schema.NormalizeRoute(def)
     for tok in pairs(classes or {}) do
         if not Schema.CLASSES[tok] then addErr(errors, where, "unknown class token '%s'", tostring(tok)) end
     end
+    -- former ids (a string or a list): same charset as the id; the route's own id is not an alias
+    local aliases
+    for i, a in ipairs(toList(def.aliases) or {}) do
+        if type(a) ~= "string" or a == "" or a:find("[^%w%-_]") then
+            addErr(errors, where, "aliases[%d] must be a route id ([A-Za-z0-9-_])", i)
+        elseif a == def.id then
+            addErr(errors, where, "alias '%s' is the id of the route itself", a)
+        else
+            aliases = aliases or {}
+            local dup = false
+            for _, b in ipairs(aliases) do
+                if b == a then dup = true end
+            end
+            if not dup then aliases[#aliases + 1] = a end
+        end
+    end
     local route = {
-        id = def.id, title = def.title, description = def.description,
+        id = def.id, title = def.title, description = def.description, aliases = aliases,
         faction = def.faction, races = tokenSet(def.races), classes = classes,
         levels = checkLevels(def.levels, where, errors),
         author = def.author, version = def.version, default = def.default and true or false,
@@ -465,12 +557,16 @@ function Schema.AddSegment(route, def)
         levels = checkLevels(def.levels, where, errors),
         first = #route.steps + 1, steps = {},
     }
+    if def.ok ~= nil then seg.ok = Schema.NormalizeOk(def.ok, where, errors) end
     for i, sdef in ipairs(type(def.steps) == "table" and def.steps or {}) do
         local swhere = format("%s step %d", where, i)
         local step = Schema.NormalizeStep(sdef, swhere, errors)
         step.segment = def.id
         step.segIndex = i
-        if not step.id then step.id = format("%s:%d", tostring(def.id), i) end
+        if not step.id then
+            step.id = format("%s:%d", tostring(def.id), i)
+            step.autoId = true -- positional id: shifts when a step is added, never an insert anchor (Core/Compose.lua)
+        end
         if route.stepById[step.id] then
             addErr(errors, swhere, "duplicate step id '%s'", step.id)
         else
@@ -495,6 +591,79 @@ function Schema.FiltersMatch(filters, player)
     if filters.race and not filters.race[player.race or ""] then return false end
     if filters.faction and filters.faction ~= player.faction then return false end
     return true
+end
+
+--- Can a step filter match ANY player of the route (route.classes / races / faction)?
+-- false = the step can never be shown on that route: Core/Compose.lua does not compose such a
+-- shared step (segment step or shared-insert step) into the route. A route dimension that is
+-- not restricted (no `classes`, no `races`, no `faction`) can match anything.
+-- @param filters normalized filters (step.filters) or nil
+function Schema.FiltersCanMatchRoute(filters, route)
+    if not filters then return true end
+    local function meets(set, allowed)
+        if not set or not allowed then return true end
+        for tok in pairs(set) do
+            if allowed[tok] then return true end
+        end
+        return false
+    end
+    if not meets(filters.class, route.classes) then return false end
+    if not meets(filters.race, route.races) then return false end
+    if filters.faction and route.faction and filters.faction ~= route.faction then return false end
+    return true
+end
+
+-- the keys of t: numbers ascending, then the rest by name (stable messages)
+local function sortedKeys(t)
+    local keys = {}
+    for k in pairs(t) do keys[#keys + 1] = k end
+    table.sort(keys, function(a, b)
+        local na, nb = type(a) == "number", type(b) == "number"
+        if na ~= nb then return na end
+        if na then return a < b end
+        return tostring(a) < tostring(b)
+    end)
+    return keys
+end
+
+--- Shape check of the data kinds the engine reads beyond names (AddLibraryData / AddRouteData).
+-- Today one kind: the class reward table `rewards = { CLASS = { [questID] = index } }` (class
+-- token of Schema.CLASSES, quest id and choice index positive integers). The data is merged as
+-- given; the engine ignores an invalid entry (Engine:GetRewardChoice), so a wrong entry costs a
+-- reward window the player has to answer, and this check makes it visible (the offline tools
+-- report it as an error of the file).
+-- @return the number of errors added
+function Schema.CheckData(data, where, errors)
+    local n0 = #errors
+    if type(data) ~= "table" then return 0 end
+    local rewards = data.rewards
+    if rewards ~= nil then
+        if type(rewards) ~= "table" then
+            addErr(errors, where, "rewards must be a table { CLASS = { [questID] = index } }")
+        else
+            for _, class in ipairs(sortedKeys(rewards)) do
+                local t = rewards[class]
+                local cw = format("rewards.%s", tostring(class))
+                if not Schema.CLASSES[class] then
+                    addErr(errors, where, "%s: unknown class token '%s'", cw, tostring(class))
+                end
+                if type(t) ~= "table" then
+                    addErr(errors, where, "%s must be a table { [questID] = index }", cw)
+                else
+                    for _, q in ipairs(sortedKeys(t)) do
+                        local idx = t[q]
+                        if not isPosInt(q) then
+                            addErr(errors, where, "%s: the key %s is not a quest id", cw, tostring(q))
+                        elseif not isPosInt(idx) then
+                            addErr(errors, where, "%s[%d]: the choice must be a positive integer (got %s)", cw, q,
+                                tostring(idx))
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return #errors - n0
 end
 
 --- Does a route apply to the given player?

@@ -754,7 +754,7 @@ describe("slash commands", function()
         assert.same({ "Unknown route 'nope'. Type /fb routes." }, slash("/fb route nope"))
         out = slash("/fastesboooy status")
         assert.same({
-            "FastesBoooy 0.3.1 (route API 1.1)",
+            "FastesBoooy 0.4.0 (route API 1.2)",
             "Route: Test route (test-route)",
             "Step 1/26: Accept: Rude Awakening",
             "Automation: on",
@@ -956,5 +956,201 @@ describe("slash commands", function()
         assert.same({ "Синхронизация по уровню: у вас 6 ур. — продолжаем с «4-5 Брилл» («1-4 Мертвый Звон» пройден по "
             .. "уровню). Вернуть: /fb sync undo" }, slash("/fb sync"))
         assert.same({ "Синхронизация по уровню отменена: маршрут продолжается с прежнего места." }, slash("/fb sync undo"))
+    end)
+end)
+
+-- One module with many routes (FastesBoooy_Guides; here the fixture FastesBoooy_TestGuides with three):
+-- the settings panel and /fb routes show the routes of the character and only COUNT the others.
+-- Composing a route of another class costs about 1.2 MB, so listing must never do it.
+describe("route list with many routes (mixed module)", function()
+    after_each(function() m:AssertClean() end)
+
+    local function composed()
+        local out = {}
+        for _, r in ipairs(ns.Registry.order) do
+            if ns.Registry:IsComposed(r) then out[#out + 1] = r.id end
+        end
+        return out
+    end
+
+    local function routeButtons()
+        local list = m:FindWidgets(function(w) return type(w) == "table" and w.route ~= nil end)
+        table.sort(list, function(a, b) return a:GetText() < b:GetText() end)
+        return list
+    end
+
+    it("the settings panel and /fb routes leave the routes of other characters uncomposed", function()
+        m, ns = H.boot({ guides = true, db = true, player = H.GUIDES_PLAYER["tg-orc-warrior"] })
+        assert.same({ "tg-orc-warrior" }, composed())
+        UI().Options:Open()
+        local panel = UI().Options:GetPanel()
+        local buttons = routeButtons()
+        assert.equal(1, #buttons, "one button: the route of this character")
+        assert.equal("tg-orc-warrior", buttons[1].route.id)
+        assert.equal("|cff40ff40Orc Warrior 1-3 (test)|r (active)", buttons[1]:GetText())
+        assert.is_true(has(texts(panel), "...and 2 more. Type /fb routes."))
+        m:Enter(buttons[1])
+        assert.same({ "Orc Warrior 1-3 (test)", "ID: tg-orc-warrior", "Levels 1-3", "Version: 0.0.1", "Steps: 9",
+            "Test route: the start zone of the race.", "Click to make this route active for this character." },
+            m:TooltipLines())
+        m:Leave(buttons[1])
+
+        assert.same({
+            "Installed routes:",
+            "* tg-orc-warrior - Orc Warrior 1-3 (test)",
+            "Other routes (other races and classes): 2. Type /fb routes all.",
+        }, slash("/fb routes"))
+        assert.same({
+            "Installed routes:",
+            "- tg-undead-paladin - Undead Paladin 1-3 (test)",
+            "* tg-orc-warrior - Orc Warrior 1-3 (test)",
+            "- tg-troll-mage - Troll Mage 1-3 (test)",
+        }, slash("/fb routes all"))
+        assert.same({ "tg-orc-warrior" }, composed(), "neither the panel nor the listings composed a route")
+        assert.equal(0, #ns.Registry.routes["tg-troll-mage"].steps)
+
+        -- a route chosen by hand for another race / class is shown too (first), with the character's own
+        assert.same({ "Route: Troll Mage 1-3 (test)" }, slash("/fb route tg-troll-mage"))
+        assert.same({ "tg-orc-warrior", "tg-troll-mage" }, composed(), "choosing a route composes it")
+        buttons = routeButtons()
+        assert.equal(2, #buttons)
+        assert.same({ "Orc Warrior 1-3 (test)", "|cff40ff40Troll Mage 1-3 (test)|r (active)" },
+            { buttons[1]:GetText(), buttons[2]:GetText() })
+        assert.is_true(has(texts(panel), "...and 1 more. Type /fb routes."))
+        assert.same({
+            "Installed routes:",
+            "* tg-troll-mage - Troll Mage 1-3 (test)",
+            "- tg-orc-warrior - Orc Warrior 1-3 (test)",
+            "Other routes (other races and classes): 1. Type /fb routes all.",
+        }, slash("/fb routes"))
+        assert.is_false(ns.Registry:IsComposed(ns.Registry.routes["tg-undead-paladin"]))
+        assert.same({}, ns.Registry.errors)
+    end)
+
+    it("the tooltip shows 'Steps: N' only for a composed route", function()
+        m, ns = H.boot({ guides = true, db = true, player = H.GUIDES_PLAYER["tg-troll-mage"] })
+        UI().Options:Open()
+        local b = routeButtons()[1]
+        m:Enter(b)
+        assert.is_true(has(m:TooltipLines(), "Steps: 10"))
+        m:Leave(b)
+        -- the same button on a route that is registered but not composed (it cannot happen through
+        -- the panel, which lists composed routes; the tooltip must not compose or count anyway)
+        local other = ns.Registry.routes["tg-undead-paladin"]
+        b.route = other
+        m:Enter(b)
+        local lines = m:TooltipLines()
+        m:Leave(b)
+        assert.equal("Undead Paladin 1-3 (test)", lines[1])
+        for _, l in ipairs(lines) do assert.is_nil(l:find("^Steps:"), l) end
+        assert.is_false(ns.Registry:IsComposed(other))
+    end)
+
+    it("a character no route matches: the panel and /fb routes say so and count the routes", function()
+        m, ns = H.boot({ guides = true, db = true, player = { race = "Tauren", class = "DRUID", mapID = 1412, x = 44, y = 77 } })
+        assert.is_nil(ns.Engine:GetRoute())
+        UI().Options:Open()
+        assert.equal(0, #routeButtons())
+        assert.is_true(has(texts(UI().Options:GetPanel()), "No route for this character (3 installed). Type /fb routes all."))
+        assert.same({
+            "No route for this character.",
+            "Other routes (other races and classes): 3. Type /fb routes all.",
+        }, slash("/fb routes"))
+        assert.equal(4, #slash("/fb routes all"))
+        for _, r in ipairs(ns.Registry.order) do assert.is_false(ns.Registry:IsComposed(r), r.id) end
+    end)
+
+    it("no route module at all: the hint names FastesBoooy_Guides (enUS, ruRU)", function()
+        m, ns = H.boot({ fixture = false })
+        UI().Options:Open()
+        assert.is_true(has(texts(UI().Options:GetPanel()),
+            "No routes installed. Enable the guides module (FastesBoooy_Guides) in the AddOns list."))
+        assert.same({ "No routes installed." }, slash("/fb routes"))
+        assert.same({ "No routes installed." }, slash("/fb routes all"))
+        m:AssertClean()
+        m, ns = H.boot({ fixture = false, locale = "ruRU" })
+        UI().Options:Open()
+        assert.is_true(has(texts(UI().Options:GetPanel()),
+            "Маршруты не установлены. Включите модуль гайдов (FastesBoooy_Guides) в списке модификаций."))
+    end)
+
+    it("ruRU: the listing of the character's routes and the count of the others", function()
+        m, ns = H.boot({ guides = true, db = true, locale = "ruRU", player = H.GUIDES_PLAYER["tg-orc-warrior"] })
+        assert.same({
+            "Установленные маршруты:",
+            "* tg-orc-warrior - Орк-воин 1-3 (тест)",
+            "Другие маршруты (других рас и классов): 2. Введите /fb routes all.",
+        }, slash("/fb routes"))
+        UI().Options:Open()
+        assert.is_true(has(texts(UI().Options:GetPanel()), "...и ещё 2. Введите /fb routes."))
+    end)
+end)
+
+-- Guide modules of core 0.3 and older (their content is part of FastesBoooy_Guides now): the hint to
+-- delete them is right only when FastesBoooy_Guides is installed as well.
+describe("obsolete guide modules", function()
+    after_each(function() m:AssertClean() end)
+
+    local function count(text)
+        local n = 0
+        for _, l in ipairs(H.chat(m)) do
+            if l:find(text, 1, true) then n = n + 1 end
+        end
+        return n
+    end
+
+    it("warns once at login when an old module folder is loaded next to FastesBoooy_Guides (enUS, ruRU)", function()
+        m, ns = H.boot({ setup = function(mm)
+            mm:RegisterAddOn("FastesBoooy_Guides", { Title = "new" })
+            mm:RegisterAddOn("FastesBoooy_Horde", { Title = "old" })
+            mm:RegisterAddOn("FastesBoooy_SkyborneDruid", { Title = "old" })
+            mm:RegisterAddOn("FastesBoooy_UndeadPaladin", { Title = "old, not loaded" }, false)
+        end })
+        assert.same({ "FastesBoooy_Horde", "FastesBoooy_SkyborneDruid" }, UI().Options:ObsoleteModules())
+        local line = "Delete the old folders FastesBoooy_Horde, FastesBoooy_SkyborneDruid from Interface\\AddOns: "
+            .. "their guides are now part of FastesBoooy_Guides."
+        assert.equal(1, count(line))
+        -- once per session: another PLAYER_LOGIN delivery does not repeat it
+        ns:DispatchEvent("PLAYER_LOGIN")
+        assert.equal(1, count(line))
+        m:AssertClean()
+
+        m, ns = H.boot({ locale = "ruRU", setup = function(mm)
+            mm:RegisterAddOn("FastesBoooy_UndeadPaladin", {})
+            mm:RegisterAddOn("FastesBoooy_Guides", {})
+        end })
+        assert.equal(1, count("Удалите старые папки FastesBoooy_UndeadPaladin из Interface\\AddOns: их гайды теперь "
+            .. "входят в FastesBoooy_Guides."))
+    end)
+
+    it("says nothing without them", function()
+        m, ns = H.boot({ setup = function(mm) mm:RegisterAddOn("FastesBoooy_Guides", {}) end })
+        assert.same({}, UI().Options:ObsoleteModules())
+        assert.equal(0, count("FastesBoooy_Guides"))
+        assert.is_false(ns.Compat.IsAddOnLoaded("FastesBoooy_Horde"))
+        assert.is_true(ns.Compat.IsAddOnLoaded("FastesBoooy_Guides"))
+        assert.is_true(ns.Compat.IsAddOnLoaded("FastesBoooy"))
+    end)
+
+    it("says nothing while FastesBoooy_Guides is not loaded: the old modules are the guides then", function()
+        -- a core updated on its own (and every state before the new module exists)
+        m, ns = H.boot({ setup = function(mm)
+            mm:RegisterAddOn("FastesBoooy_Horde", { Title = "old" })
+            mm:RegisterAddOn("FastesBoooy_UndeadPaladin", { Title = "old" })
+        end })
+        assert.is_true(ns.Compat.IsAddOnLoaded("FastesBoooy_Horde"))
+        assert.is_false(ns.Compat.IsAddOnLoaded("FastesBoooy_Guides"))
+        assert.same({}, UI().Options:ObsoleteModules())
+        assert.equal(0, count("FastesBoooy_Guides"))
+        ns:DispatchEvent("PLAYER_LOGIN")
+        assert.equal(0, count("FastesBoooy_Guides"))
+        m:AssertClean()
+        -- ... also when its folder is there but disabled
+        m, ns = H.boot({ setup = function(mm)
+            mm:RegisterAddOn("FastesBoooy_Horde", { Title = "old" })
+            mm:RegisterAddOn("FastesBoooy_Guides", { Title = "disabled" }, false)
+        end })
+        assert.same({}, UI().Options:ObsoleteModules())
+        assert.equal(0, count("FastesBoooy_Guides"))
     end)
 end)

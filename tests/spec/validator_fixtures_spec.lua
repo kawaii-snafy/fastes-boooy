@@ -250,7 +250,8 @@ describe("validator fixtures", function()
         assert.are.equal(1, codes(r, "ERROR")["level-too-low"])        -- 2x the estimate is still not enough
         assert.matches("estimated quest XP", messagesWith(r, "level-too-low")[1].msg)
         assert.are.equal(1, codes(r, "WARN")["level-too-low-estimated"]) -- reachable optimistically
-        assert.are.equal(2, codes(r, "WARN")["xp-unknown"])
+        assert.are.equal(2, codes(r, "INFO")["xp-unknown"]) -- an estimate is no warning
+        assert.is_nil(codes(r, "WARN")["xp-unknown"])
         assert.is_true(r.summary.endLevelOptimistic > r.summary.endLevel)
         -- a generous optimism factor turns both into warnings
         local r2 = V.NewRun(db, schema, route, profile, { unknownXpOptimism = 12 }):execute()

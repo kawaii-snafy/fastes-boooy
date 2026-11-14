@@ -89,8 +89,10 @@ shift, ctrl, alt, guid` } (raceID / classID / faction derived; Skyborne = 95 All
 
 * `Mock.parseToc(path)` → `{ meta, metaLower, files, dir }` (`##` directives, comments, CRLF,
   backslashes, `[AllowLoadGameType ...]` / `[ExcludeLoadGameType ...]`, `[Family]`/`[Game]`).
-* `Mock.loadAddon(m, tocPath [, addonName])` runs every file with `loadfile` + `setfenv(m.env)` and
+* `Mock.loadAddon(m, tocPath [, addonName [, opts]])` runs every file with `loadfile` + `setfenv(m.env)` and
   `(addonName, ns)` varargs; returns `ns`. XML files raise. `## LoadSavedVariablesFirst: 1` honoured.
+  `opts.skip = { ["Classes/Mage.lua"] = true }` leaves TOC files out (the file filter of the offline tools,
+  `--skip` / `--keep`); `m.addons[name].skipped` lists them.
 * `Mock.boot(m, addons [, { reload = true }])`: per addon (name of a loaded addon, or
   `{ toc = path, name = ... }` to load now) apply SavedVariables + `ADDON_LOADED(name, false)`; then
   `PLAYER_LOGIN`, `PLAYER_ENTERING_WORLD(not reload, reload)`, `QUEST_LOG_UPDATE`, `BAG_UPDATE_DELAYED`.

@@ -1,17 +1,21 @@
 -- FastesBoooy / Core / Compose.lua
 --
--- Shared library segments and class inserts (route format API v1, see
--- docs/ROUTE_FORMAT.md "Общие сегменты и вставки").
+-- Shared ("library") segments, shared inserts and per-route inserts (route format API v1,
+-- see docs/ROUTE_FORMAT.md "Общие сегменты и вставки").
 -- PURE Lua 5.1: no WoW API calls. Loaded by the addon (TOC, after Core/Schema.lua,
 -- receiving the addon namespace) and by the offline tools (tools/lib/route_loader.lua
 -- runs it with the same `ns` as Schema.lua), so a route is composed identically in
 -- game, in the validator, the simulator and gen_route_data.
 --
---   library module:  FastesBoooy.AddLibrarySegment({ id = "h-...", title, zone, levels, steps })
+--   shared content:  FastesBoooy.AddLibrarySegment({ id = "h-...", title, zone, levels, steps })
 --                    FastesBoooy.AddLibraryData({ quests = {...}, npcs = {...}, places = {...} })
---   route module:    FastesBoooy.UseSegments("<routeId>", { "h-...", "h-...", ... })
+--                    FastesBoooy.AddLibraryInsert({ after = "<stepId>" | before = "<stepId>",
+--                                                   class = , race = , faction = , steps = { ... } })
+--   per route:       FastesBoooy.UseSegments("<routeId>", { "h-...", "h-...", ... })
 --                    FastesBoooy.AddInsert("<routeId>", { after = "<stepId>" | before = "<stepId>",
 --                                                         steps = { ... } })
+-- ("library" and "shared" mean the same thing. One addon may register shared content and any
+-- number of routes; the core has no notion of a module.)
 --
 -- Model. A route that calls UseSegments / AddInsert becomes "composed": its own
 -- segments (AddSegment) are kept in route.own (same shape as a route: segments /
@@ -20,16 +24,33 @@
 --   1. the own segments in AddSegment order (except those named in a UseSegments list),
 --   2. then the UseSegments entries in call order: a library segment (per-route copies
 --      of its normalized steps), or one of the route's own segments (moved there),
---   3. then the inserts, in call order: the steps of an insert go right after
---      (`after`) / before (`before`) the anchor step -- after the steps of earlier
---      inserts at the same anchor, so several inserts at one anchor keep call order.
---      Inserted steps belong to the anchor's segment; an anchor may be an own step, a
---      library step or a step of another insert; default id "<anchorId>+<n>".
+--   3. then the inserts: first the SHARED inserts (AddLibraryInsert) in registration
+--      order, then the route's own (AddInsert) in call order. The steps of an insert go
+--      right after (`after`) / before (`before`) the anchor step -- after the steps of
+--      earlier inserts at the same anchor, so several inserts at one anchor keep that
+--      order. Inserted steps belong to the anchor's segment; an anchor may be an own
+--      step, a library step or a step of another insert; default id of a per-route
+--      insert step "<anchorId>+<n>" (shared steps always have explicit ids and do not
+--      advance n). An insert may be listed before the insert that supplies its anchor
+--      (a forward reference): it is applied as soon as the anchor exists, before every
+--      insert listed after it, so the order at one anchor is still the order above.
+-- Scope. A shared step (a step of a library segment or of a shared insert) whose class /
+-- race / faction filters cannot match the route (Schema.FiltersCanMatchRoute: disjoint
+-- with route.classes / races / faction) is NOT composed into that route. So a filtered
+-- step is an anchor only in the routes its filter can match, a shared insert anchored on
+-- it lands only there, and a class file never shows up in the routes of other classes.
+-- A route without `classes` / `races` keeps every step (the engine filters by player).
+-- A library segment none of whose steps can match the route is left out of it altogether.
+-- A shared insert applies to every route with a UseSegments list whose composed steps
+-- contain the anchor; a route without the anchor is not an error.
+-- Known ordering quirk: an insert anchored on the LAST step of an earlier insert at
+-- anchor X lands behind the later inserts at X (their position is "after the tail of X").
 -- Build is deterministic and idempotent (callers re-run it when an input changes).
 -- Errors are reported where they arise and only once: step format errors of library
--- segments by AddLibrarySegment, of inserts by AddInsert; composition errors (unknown
--- library segment, unknown anchor, step / segment ids that collide only after
--- composition) by Build. A route without UseSegments / AddInsert is never touched.
+-- segments by AddLibrarySegment, of inserts by AddInsert / AddLibraryInsert; composition
+-- errors (unknown shared segment, unknown anchor of a per-route insert, a positional
+-- anchor of a shared insert, step / segment ids that collide only after composition) by
+-- Build. A route without UseSegments / AddInsert is never touched.
 
 local _, ns = ...
 ns = ns or {}
@@ -38,9 +59,10 @@ local Compose = {}
 ns.Compose = Compose
 
 local type, pairs, ipairs, tostring, next = type, pairs, ipairs, tostring, next
-local format, tinsert = string.format, table.insert
+local format, tinsert, tremove = string.format, table.insert, table.remove
 
 local INSERT_KEYS = { after = true, before = true, steps = true }
+local SHARED_INSERT_KEYS = { after = true, before = true, steps = true, class = true, race = true, faction = true }
 
 local function addErr(errors, where, msg, ...)
     errors[#errors + 1] = where .. ": " .. format(msg, ...)
@@ -83,11 +105,12 @@ end
 
 --- A new, empty library store (one per client / per offline load).
 -- lib.segments[id] = normalized segment, lib.order = segments in registration order,
--- lib.data = merged AddLibraryData tables. lib.scratch is a route-shaped accumulator:
--- every library step id is unique across all library segments (they get combined).
+-- lib.data = merged AddLibraryData tables, lib.inserts = shared inserts in registration
+-- order (AddLibraryInsert). lib.scratch is a route-shaped accumulator: every library step
+-- id is unique across all library segments and shared inserts (they get combined).
 function Compose.NewLibrary()
     return {
-        segments = {}, order = {}, data = {}, revision = 0,
+        segments = {}, order = {}, data = {}, revision = 0, inserts = {},
         scratch = { segments = {}, steps = {}, stepById = {}, segmentById = {} },
     }
 end
@@ -188,40 +211,48 @@ function Compose.AddUses(route, ids, source)
     return n, errors
 end
 
---- Record an insert: { after = "<stepId>" | before = "<stepId>", steps = { ... } }.
--- The steps are normalized now (format errors are reported here, once).
--- @return insert record or nil, errors (strings "insert after 'x' step 2: ...")
-function Compose.AddInsert(route, def, source)
-    local Schema = ns.Schema
-    local errors = {}
+-- The common part of an insert definition (AddInsert / AddLibraryInsert).
+-- @return side, anchor, where -- or nil (the error was added)
+local function parseInsert(def, keys, errors)
     if type(def) ~= "table" then
         addErr(errors, "insert", "insert definition must be a table")
-        return nil, errors
+        return nil
     end
     local side, anchor
     if def.after ~= nil and def.before ~= nil then
         addErr(errors, "insert", "give either `after` or `before`, not both")
-        return nil, errors
+        return nil
     elseif def.after ~= nil then
         side, anchor = "after", def.after
     elseif def.before ~= nil then
         side, anchor = "before", def.before
     else
         addErr(errors, "insert", "`after = \"<stepId>\"` or `before = \"<stepId>\"` is required")
-        return nil, errors
+        return nil
     end
     local where = format("insert %s '%s'", side, tostring(anchor))
     if type(anchor) ~= "string" or anchor == "" then
         addErr(errors, where, "the anchor must be a step id (string)")
-        return nil, errors
+        return nil
     end
     for k in pairs(def) do
-        if not INSERT_KEYS[k] then addErr(errors, where, "unknown key '%s'", tostring(k)) end
+        if not keys[k] then addErr(errors, where, "unknown key '%s'", tostring(k)) end
     end
     if type(def.steps) ~= "table" or #def.steps == 0 then
         addErr(errors, where, "steps must be a non-empty list")
-        return nil, errors
+        return nil
     end
+    return side, anchor, where
+end
+
+--- Record an insert: { after = "<stepId>" | before = "<stepId>", steps = { ... } }.
+-- The steps are normalized now (format errors are reported here, once).
+-- @return insert record or nil, errors (strings "insert after 'x' step 2: ...")
+function Compose.AddInsert(route, def, source)
+    local Schema = ns.Schema
+    local errors = {}
+    local side, anchor, where = parseInsert(def, INSERT_KEYS, errors)
+    if not side then return nil, errors end
     local steps = {}
     for i, sdef in ipairs(def.steps) do
         local step = Schema.NormalizeStep(sdef, format("%s step %d", where, i), errors)
@@ -238,6 +269,74 @@ function Compose.AddInsert(route, def, source)
     return ins, errors
 end
 
+--- Register a SHARED insert: { after = "<stepId>" | before = "<stepId>", class = , race = ,
+-- faction = , steps = { ... } }. It is applied to every route that uses library segments and
+-- whose composed steps contain the anchor (Compose.Build).
+--   * class / race / faction of the insert are the default filters of its steps; a step's own
+--     key replaces the insert's key for that step. A step whose filters cannot match a route
+--     is not composed into that route.
+--   * every step needs an explicit id, unique among all library segment steps and shared-insert
+--     steps (one namespace: lib.scratch.stepById). With a missing or duplicate id, or an empty
+--     scope list (`class = {}` / `race = {}`), the WHOLE insert is rejected; other format errors
+--     are reported and the insert is kept.
+--   * the steps are templates: each route composes its own copies (route.libCopies), tagged
+--     inserted / shared / library / file / anchor / insertSide.
+-- @param source optional { module = "<addon>", file = "<path>" } (offline tools), as for
+--        AddLibrarySegment
+-- @return insert record { side, anchor, steps, scope, n, source, shared = true, applied = {} }
+--         (applied[routeId] = true once Build placed it in that route) or nil, errors (strings)
+function Compose.AddLibraryInsert(lib, def, source)
+    local Schema = ns.Schema
+    local errors = {}
+    local side, anchor, where = parseInsert(def, SHARED_INSERT_KEYS, errors)
+    if not side then return nil, errors end
+    local scope = Schema.NormalizeFilters(def, where, errors)
+    -- an empty scope list (`class = {}`) would leave the insert unscoped, i.e. in every route of the
+    -- other dimensions: rejected as a whole (Schema reported it)
+    if (def.class ~= nil and not (scope and scope.class)) or (def.race ~= nil and not (scope and scope.race)) then
+        addErr(errors, where, "the insert is rejected: an empty scope list would apply it to every route")
+        return nil, errors
+    end
+    local tag = (source and source.module) or true
+    local file = source and source.file or nil
+    local steps, ok, seen = {}, true, {}
+    for i, sdef in ipairs(def.steps) do
+        local swhere = format("%s step %d", where, i)
+        local step = Schema.NormalizeStep(sdef, swhere, errors)
+        if not step.id then
+            addErr(errors, swhere, "an explicit id is required in a shared insert")
+            ok = false
+        elseif lib.scratch.stepById[step.id] or seen[step.id] then
+            addErr(errors, swhere, "duplicate step id '%s'", step.id)
+            ok = false
+        else
+            seen[step.id] = true
+        end
+        if scope then
+            -- the insert's scope is the default of each filter dimension the step does not set
+            local f = step.filters or {}
+            if f.class == nil then f.class = scope.class end
+            if f.race == nil then f.race = scope.race end
+            if f.faction == nil then f.faction = scope.faction end
+            step.filters = f
+        end
+        step.explicitId = step.id
+        step.inserted, step.shared = true, true
+        step.anchor, step.insertSide = anchor, side
+        step.insertSource = source
+        step.library = tag
+        step.file = file
+        steps[#steps + 1] = step
+    end
+    if not ok then return nil, errors end
+    for _, step in ipairs(steps) do lib.scratch.stepById[step.id] = step end
+    local ins = { side = side, anchor = anchor, steps = steps, scope = scope, n = #lib.inserts + 1, source = source,
+        shared = true, applied = {} }
+    lib.inserts[#lib.inserts + 1] = ins
+    lib.revision = lib.revision + 1
+    return ins, errors
+end
+
 ---------------------------------------------------------------------------
 -- composition
 ---------------------------------------------------------------------------
@@ -250,26 +349,38 @@ local function indexOf(list, v)
 end
 
 local function kindOf(step)
-    if step.inserted then return format("insert %s '%s'", tostring(step.insertSide), tostring(step.anchor)) end
+    if step.inserted then
+        return format("%sinsert %s '%s'", step.shared and "shared " or "", tostring(step.insertSide),
+            tostring(step.anchor))
+    end
     if step.library then return format("library segment %s", tostring(step.segment)) end
     return format("segment %s", tostring(step.segment))
 end
 
--- the per-route copy of a library segment entry (copies cached per route: stable identity)
-local function libraryEntry(route, libSeg, source)
+-- the per-route copy of a shared step template (cached per route: stable identity across
+-- recompositions; route.libCopies[template] = copy)
+local function libraryCopy(route, template)
     local cache = route.libCopies
     if not cache then
         cache = {}
         route.libCopies = cache
     end
+    local c = cache[template]
+    if not c then
+        c = shallowCopy(template)
+        cache[template] = c
+    end
+    return c
+end
+
+-- the per-route copy of a library segment entry: the steps whose filters can match the route
+-- (a step of another race / class / faction is not composed; ids were assigned at
+-- AddLibrarySegment, so the positional ids of the other steps are the same in every route)
+local function libraryEntry(route, libSeg, source)
+    local canMatch = ns.Schema.FiltersCanMatchRoute
     local steps = {}
-    for i, t in ipairs(libSeg.steps) do
-        local c = cache[t]
-        if not c then
-            c = shallowCopy(t)
-            cache[t] = c
-        end
-        steps[i] = c
+    for _, t in ipairs(libSeg.steps) do
+        if canMatch(t.filters, route) then steps[#steps + 1] = libraryCopy(route, t) end
     end
     return { seg = libSeg, steps = steps, source = source, library = true }
 end
@@ -319,13 +430,14 @@ function Compose.Build(route, lib)
             elseif l then
                 entries[#entries + 1] = libraryEntry(route, l, u.source)
             else
-                err(u.source, "UseSegments: unknown library segment '%s' (is the library module loaded first? "
-                    .. "list it in the TOC: ## Dependencies: FastesBoooy, <library module>)", u.id)
+                err(u.source, "UseSegments: unknown shared segment '%s' (is its file listed in the TOC before "
+                    .. "Route.lua?)", u.id)
             end
         end
     end
 
-    -- 2. inserts (call order; an anchor may be a step of an insert resolved earlier)
+    -- 2. inserts: the shared ones (registration order), then the route's own (call order); an
+    --    anchor may be a step of another insert, listed earlier or later
     local home = {} -- [stepId] = entry of the first step with this id
     for _, e in ipairs(entries) do
         for _, s in ipairs(e.steps) do
@@ -333,49 +445,94 @@ function Compose.Build(route, lib)
         end
     end
     local pending = {}
-    for i, ins in ipairs(route.inserts) do pending[i] = ins end
-    local tail, count = {}, {}
-    local progress = true
-    while progress and #pending > 0 do
-        progress = false
-        local rest = {}
-        for _, ins in ipairs(pending) do
-            local e = home[ins.anchor]
-            if not e then
-                rest[#rest + 1] = ins
-            else
-                progress = true
-                local anchorStep
-                for _, s in ipairs(e.steps) do
-                    if s.id == ins.anchor then anchorStep = s break end
+    if lib and #route.uses > 0 then
+        -- per route: the template steps that can match the route (see libraryEntry); they are copied
+        -- when the anchor is found (an insert of another start zone costs this route nothing)
+        local canMatch = ns.Schema.FiltersCanMatchRoute
+        for _, tmpl in ipairs(lib.inserts) do
+            local templates
+            for _, t in ipairs(tmpl.steps) do
+                if canMatch(t.filters, route) then
+                    templates = templates or {}
+                    templates[#templates + 1] = t
                 end
-                local pos = indexOf(e.steps, anchorStep)
-                if ins.side == "after" then
-                    pos = indexOf(e.steps, tail[ins.anchor] or anchorStep) + 1
-                end
-                for _, s in ipairs(ins.steps) do
-                    count[ins.anchor] = (count[ins.anchor] or 0) + 1
-                    s.id = s.explicitId or format("%s+%d", ins.anchor, count[ins.anchor])
-                    s.segment = anchorStep.segment
-                    s.segIndex = anchorStep.segIndex
-                    s.insertSide = ins.side
-                    tinsert(e.steps, pos, s)
-                    pos = pos + 1
-                    if home[s.id] == nil then home[s.id] = e end
-                end
-                if ins.side == "after" then tail[ins.anchor] = e.steps[pos - 1] end
+            end
+            if templates then
+                pending[#pending + 1] = { side = tmpl.side, anchor = tmpl.anchor, templates = templates,
+                    source = tmpl.source, shared = tmpl }
             end
         end
-        pending = rest
+    end
+    for _, ins in ipairs(route.inserts) do pending[#pending + 1] = ins end
+    -- The inserts are applied in that order. One whose anchor does not exist yet (a step of an
+    -- insert further down the list: a class file anchored on a step of a race file) waits; as
+    -- soon as a step with that id is placed the scan starts again at the top, so the waiting
+    -- insert is applied before every later one and the order at one anchor stays the order of
+    -- the list.
+    local tail, count = {}, {}
+    local waiting = {} -- [anchor id] = true: an insert further up the list waits for this step
+    local i = 1
+    while pending[i] do
+        local ins = pending[i]
+        local e = home[ins.anchor]
+        if not e then
+            waiting[ins.anchor] = true
+            i = i + 1
+        else
+            tremove(pending, i)
+            local anchorStep
+            for _, s in ipairs(e.steps) do
+                if s.id == ins.anchor then anchorStep = s break end
+            end
+            local pos = indexOf(e.steps, anchorStep)
+            if ins.side == "after" then
+                pos = indexOf(e.steps, tail[ins.anchor] or anchorStep) + 1
+            end
+            if ins.shared then
+                ins.steps = {}
+                for k, t in ipairs(ins.templates) do ins.steps[k] = libraryCopy(route, t) end
+                ins.shared.applied[route.id] = true -- (offline tools: an insert applied to no route)
+                if anchorStep.autoId then
+                    err(ins.source, "AddLibraryInsert: anchor '%s' is a positional step id: give the anchor step "
+                        .. "an explicit id", ins.anchor)
+                end
+            end
+            local woke = false
+            for _, s in ipairs(ins.steps) do
+                -- n counts the per-route insert steps at the anchor (with or without an id of
+                -- their own); shared steps have explicit ids and do not shift "<anchor>+<n>"
+                if not ins.shared then count[ins.anchor] = (count[ins.anchor] or 0) + 1 end
+                s.id = s.explicitId or format("%s+%d", ins.anchor, count[ins.anchor])
+                s.segment = anchorStep.segment
+                s.segIndex = anchorStep.segIndex
+                s.insertSide = ins.side
+                tinsert(e.steps, pos, s)
+                pos = pos + 1
+                if home[s.id] == nil then
+                    home[s.id] = e
+                    if waiting[s.id] then woke = true end
+                end
+            end
+            if ins.side == "after" then tail[ins.anchor] = e.steps[pos - 1] end
+            if woke then i = 1 end
+        end
     end
     for _, ins in ipairs(pending) do
-        err(ins.source, "AddInsert: unknown anchor step '%s' (insert %s '%s' ignored)", ins.anchor, ins.side,
-            ins.anchor)
+        -- a shared insert whose anchor is not in this route does not apply to it (no error)
+        if not ins.shared then
+            err(ins.source, "AddInsert: unknown anchor step '%s' (insert %s '%s' ignored)", ins.anchor, ins.side,
+                ins.anchor)
+        end
     end
 
     -- 3. flatten, index, ids
     local segments, steps, byId, segById = {}, {}, {}, {}
+    -- (a library segment none of whose steps can match the route leaves no empty segment behind)
+    local kept = {}
     for _, e in ipairs(entries) do
+        if #e.steps > 0 or not e.library then kept[#kept + 1] = e end
+    end
+    for _, e in ipairs(kept) do
         local seg = shallowCopy(e.seg)
         seg.steps = e.steps
         seg.first = #steps + 1

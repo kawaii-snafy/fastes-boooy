@@ -14,6 +14,8 @@
 --   DB.QuestXp(db, baseXp, questLevel, playerLevel)
 --   DB.MobXp(db, playerLevel, mobLevel, rank)
 --   DB.AddXp(db, state, amount)          -- state = {level=, xp=}; returns levels gained
+--   DB.ApplyOverrides(db, "tools/overrides")  -- the DB override layer (corrections of single quests /
+--                                             NPCs, see below); DB.Load itself applies none
 
 local DB = {}
 
@@ -173,8 +175,9 @@ function DB.QuestBrief(db, id)
     end
     local b = db.questIndex and db.questIndex[id]
     if b then
+        local ov = db._overrides
         return { name = b[1], level = b[2], reqLevel = b[3], races = b[4], classes = b[5],
-                 zone = b[6], full = false }
+                 zone = b[6], full = false, xp = ov and ov.indexXp[id] or nil }
     end
     return nil
 end
@@ -346,6 +349,400 @@ function DB.LevelValue(db, state)
     local need = DB.XpToLevel(db, state.level)
     if need <= 0 then return state.level end
     return state.level + state.xp / need
+end
+
+---------------------------------------------------------------------------
+-- DB override layer (tools/overrides/*.lua)
+---------------------------------------------------------------------------
+-- Corrections of single quests / NPCs of the snapshot, kept outside tools/data so that they survive
+-- `make db`. One file per owner (tools/overrides/<name>.lua), each one `return { quests = {...},
+-- npcs = {...} }`:
+--
+--   return {
+--       quests = {
+--           [861] = { exclusive = { remove = { 844 } }, source = "in game 2026-11-12", verified = false },
+--           [4641] = { xp = 85, races = { add = { "Troll" } }, source = "https://...", verified = true },
+--       },
+--       npcs = { [3153] = { sub = "Warrior Trainer", source = "in game 2026-11-12", verified = true } },
+--   }
+--
+-- Quest fields: xp = <number>; races = { add = { raceFile, ... } }; classes = { add = { CLASS, ... } };
+-- exclusive / preSingle / preGroup = { add = { ids }, remove = { ids } }; breadcrumbFor = <id> | false.
+-- NPC fields: sub = "<sub name>". Every entry needs `source` (a URL or "in game YYYY-MM-DD");
+-- `verified` (default false) says whether the value was confirmed in the Forever client.
+-- A quest outside the snapshot (questIndex only) takes xp, races and classes.
+--
+-- Rules:
+--   * DB.Load applies nothing (specs keep their pinned numbers); the command lines call
+--     DB.ApplyOverrides (and take --no-overrides).
+--   * DB.Prepare runs first: the XP median per quest level is that of the SNAPSHOT, so an XP value for
+--     one quest never moves the estimate of another quest.
+--   * The files are read in a fixed order (shared.lua first, then the owner files in alphabetical
+--     order), each in an empty environment under pcall. A file that does not load or has a format
+--     error is ignored as a whole and reported (report.errors: one entry per file).
+--   * A quest / NPC id may appear in one file only: the later file is the one in error. shared.lua is
+--     read first, so an owner file that repeats one of its ids is the file that is ignored.
+--   * `exclusive = { remove = { B } }` on quest A removes the pair in both directions (exclusive groups
+--     are symmetric in game but often listed on one side only in the data).
+-- db._overrides = { quests = { [id] = rec }, npcs = { [id] = rec }, exclRemoved = { [a] = { [b] = rec } },
+--                   indexXp = { [id] = xp }, files = { name... } } with
+-- rec = { id, file = "<name>.lua", owner = "<name>", source, verified, fields = { [field] = true },
+--         orig = { the values before the override } } -- the validator asks it whether a step passes a
+-- check only because of an unverified override (WARN db-override-unverified).
+
+local QUEST_LIST_FIELDS = { exclusive = true, preSingle = true, preGroup = true }
+local QUEST_MASK_FIELDS = { races = true, classes = true }
+local QUEST_KEYS = { xp = true, races = true, classes = true, exclusive = true, preSingle = true, preGroup = true,
+                     breadcrumbFor = true, source = true, verified = true }
+local NPC_KEYS = { sub = true, source = true, verified = true }
+local INDEX_FIELDS = { xp = true, races = true, classes = true }
+
+local function isId(v)
+    return type(v) == "number" and v > 0 and v % 1 == 0
+end
+
+local function sortedIds(t)
+    local out = {}
+    for k in pairs(t) do out[#out + 1] = k end
+    table.sort(out, function(a, b)
+        if type(a) == type(b) then return a < b end
+        return type(a) == "number"
+    end)
+    return out
+end
+
+local function listOf(v, check)
+    if type(v) ~= "table" then return false end
+    local n = #v
+    for k in pairs(v) do
+        if type(k) ~= "number" or k < 1 or k > n or k % 1 ~= 0 then return false end
+    end
+    for i = 1, n do
+        if not check(v[i]) then return false end
+    end
+    return true
+end
+
+local function copyList(t)
+    local out = {}
+    for i, v in ipairs(t or {}) do out[i] = v end
+    return out
+end
+
+local function without(list, id)
+    local out = {}
+    for _, v in ipairs(list or {}) do
+        if v ~= id then out[#out + 1] = v end
+    end
+    return out
+end
+
+local function has(list, id)
+    for _, v in ipairs(list or {}) do
+        if v == id then return true end
+    end
+    return false
+end
+
+--- Does the override file `owner` ("warrior", "durotar", "orc"; "shared" owns everything) own the
+-- module file `file` ("Classes/Warrior.lua", "Segments/Durotar/01.lua", "Races/Orc.lua")? A file is
+-- owned when its base name (without .lua) or one of its directories equals the name, without
+-- regard to case.
+function DB.OverrideOwns(owner, file)
+    owner = tostring(owner):lower()
+    if owner == "shared" then return true end
+    for comp in tostring(file or ""):gsub("\\", "/"):gmatch("[^/]+") do
+        if comp:gsub("%.lua$", ""):lower() == owner then return true end
+    end
+    return false
+end
+
+-- format errors of one override file (strings); {} when it is well-formed
+local function checkOverrideFile(db, data, ov)
+    local errs = {}
+    local function err(msg, ...) errs[#errs + 1] = msg:format(...) end
+    if type(data) ~= "table" then
+        err("the file must return a table { quests = {...}, npcs = {...} }")
+        return errs
+    end
+    for k in pairs(data) do
+        if k ~= "quests" and k ~= "npcs" then err("unknown key '%s' (quests, npcs)", tostring(k)) end
+    end
+    local function common(kind, id, e, keys, prev)
+        if not isId(id) then
+            err("%s: the key %s is not an id", kind, tostring(id))
+            return false
+        end
+        local where = ("%s %d"):format(kind, id)
+        if type(e) ~= "table" then
+            err("%s: the entry must be a table", where)
+            return false
+        end
+        if prev then
+            err("%s is already overridden by %s (an id may appear in one file only)", where, prev.file)
+        end
+        for k in pairs(e) do
+            if not keys[k] then err("%s: unknown key '%s'", where, tostring(k)) end
+        end
+        if type(e.source) ~= "string" or e.source:match("^%s*$") then
+            err("%s: `source` is required (a URL or 'in game YYYY-MM-DD')", where)
+        end
+        if e.verified ~= nil and type(e.verified) ~= "boolean" then err("%s: `verified` must be true or false", where) end
+        return where
+    end
+    if data.quests ~= nil and type(data.quests) ~= "table" then err("`quests` must be a table { [id] = {...} }") end
+    if data.npcs ~= nil and type(data.npcs) ~= "table" then err("`npcs` must be a table { [id] = {...} }") end
+    for _, id in ipairs(sortedIds(type(data.quests) == "table" and data.quests or {})) do
+        local e = data.quests[id]
+        local where = common("quest", id, e, QUEST_KEYS, ov.quests[id])
+        if where then
+            local full = db.quests[id] ~= nil
+            if not full and not (db.questIndex and db.questIndex[id]) then
+                err("%s does not exist in the Forever DB", where)
+            end
+            local n = 0
+            for k in pairs(e) do
+                if k ~= "source" and k ~= "verified" then
+                    n = n + 1
+                    if not full and not INDEX_FIELDS[k] then
+                        err("%s is outside the DB snapshot: only xp, races and classes can be overridden (not %s)",
+                            where, tostring(k))
+                    end
+                end
+            end
+            if n == 0 then err("%s: nothing is overridden", where) end
+            if e.xp ~= nil and not (type(e.xp) == "number" and e.xp > 0) then err("%s: xp must be a number > 0", where) end
+            for field in pairs(QUEST_MASK_FIELDS) do
+                local v = e[field]
+                if v ~= nil then
+                    local known = field == "races" and db.enums.raceFileToBit or db.enums.classes
+                    local okShape = type(v) == "table" and v.add ~= nil
+                    for k in pairs(type(v) == "table" and v or {}) do
+                        if k ~= "add" then okShape = false end
+                    end
+                    if not okShape or not listOf(v.add, function(t) return type(t) == "string" end) or #v.add == 0 then
+                        err("%s: %s must be { add = { \"<token>\", ... } }", where, field)
+                    else
+                        for _, tok in ipairs(v.add) do
+                            if known[tok] == nil then
+                                err("%s: %s.add: unknown %s '%s'", where, field,
+                                    field == "races" and "raceFile" or "class token", tok)
+                            end
+                        end
+                    end
+                end
+            end
+            for field in pairs(QUEST_LIST_FIELDS) do
+                local v = e[field]
+                if v ~= nil then
+                    local okShape = type(v) == "table" and (v.add ~= nil or v.remove ~= nil)
+                    for k in pairs(type(v) == "table" and v or {}) do
+                        if k ~= "add" and k ~= "remove" then okShape = false end
+                    end
+                    if not okShape or (v.add ~= nil and not listOf(v.add, isId))
+                        or (v.remove ~= nil and not listOf(v.remove, isId)) then
+                        err("%s: %s must be { add = { ids }, remove = { ids } } (one of the two is enough)", where, field)
+                    end
+                end
+            end
+            if e.breadcrumbFor ~= nil and e.breadcrumbFor ~= false and not isId(e.breadcrumbFor) then
+                err("%s: breadcrumbFor must be a quest id or false", where)
+            end
+        end
+    end
+    for _, id in ipairs(sortedIds(type(data.npcs) == "table" and data.npcs or {})) do
+        local e = data.npcs[id]
+        local where = common("npc", id, e, NPC_KEYS, ov.npcs[id])
+        if where then
+            if not db.npcs[id] then err("%s is not in the DB snapshot", where) end
+            if type(e.sub) ~= "string" then err("%s: `sub` (the sub name, a string) is required", where) end
+        end
+    end
+    return errs
+end
+
+-- mask of the tokens added to a race / class mask (0 = "all" stays "all")
+local function addMask(db, field, mask, tokens)
+    if not mask or mask == 0 then return mask end
+    local out = mask
+    for _, tok in ipairs(tokens) do
+        local bit
+        if field == "classes" then
+            bit = db.enums.classes[tok]
+        else
+            bit = db.enums.raceFileToBit[tok]
+            if type(bit) == "table" then
+                -- a raceFile of both factions (Skyborne): the side(s) the quest already has
+                local side = DB.Side(db, mask)
+                local both = 0
+                if side:find("H", 1, true) then both = DB.MaskOr(both, bit.Horde or 0) end
+                if side:find("A", 1, true) then both = DB.MaskOr(both, bit.Alliance or 0) end
+                bit = both
+            end
+        end
+        out = DB.MaskOr(out, bit or 0)
+    end
+    return out
+end
+
+local function applyQuestOverride(db, ov, id, e, rec)
+    local q = db.quests[id]
+    if not q then
+        -- a quest outside the snapshot: { name, level, reqLevel, races, classes, zone }
+        local b = db.questIndex[id]
+        rec.orig = { races = b[4], classes = b[5] }
+        if e.xp then ov.indexXp[id] = e.xp end
+        if e.races or e.classes then
+            local nb = {}
+            for i = 1, 6 do nb[i] = b[i] end
+            if e.races then nb[4] = addMask(db, "races", b[4], e.races.add) end
+            if e.classes then nb[5] = addMask(db, "classes", b[5], e.classes.add) end
+            db.questIndex[id] = nb
+        end
+        return
+    end
+    rec.orig = { xp = q.xp, xpSrc = q.xpSrc, races = q.races, classes = q.classes, exclusive = copyList(q.exclusive),
+                 preSingle = copyList(q.preSingle), preGroup = copyList(q.preGroup), breadcrumbFor = q.breadcrumbFor }
+    if e.xp then q.xp, q.xpSrc = e.xp, "override" end
+    if e.races then q.races = addMask(db, "races", q.races, e.races.add) end
+    if e.classes then q.classes = addMask(db, "classes", q.classes, e.classes.add) end
+    for field in pairs(QUEST_LIST_FIELDS) do
+        local v = e[field]
+        if v then
+            local list = copyList(q[field])
+            for _, x in ipairs(v.remove or {}) do
+                list = without(list, x)
+                if field == "exclusive" then
+                    -- the pair, both directions
+                    local other = db.quests[x]
+                    if other and has(other.exclusive, id) then
+                        local l = without(other.exclusive, id)
+                        other.exclusive = #l > 0 and l or nil
+                    end
+                    ov.exclRemoved[id] = ov.exclRemoved[id] or {}
+                    ov.exclRemoved[id][x] = rec
+                    ov.exclRemoved[x] = ov.exclRemoved[x] or {}
+                    ov.exclRemoved[x][id] = rec
+                end
+            end
+            for _, x in ipairs(v.add or {}) do
+                if not has(list, x) then list[#list + 1] = x end
+            end
+            q[field] = #list > 0 and list or nil
+        end
+    end
+    if e.breadcrumbFor ~= nil then
+        local old, new = q.breadcrumbFor, e.breadcrumbFor or nil
+        if old and db.quests[old] then
+            local l = without(db.quests[old].breadcrumbs, id)
+            db.quests[old].breadcrumbs = #l > 0 and l or nil
+        end
+        q.breadcrumbFor = new
+        if new and db.quests[new] and not has(db.quests[new].breadcrumbs, id) then
+            local l = copyList(db.quests[new].breadcrumbs)
+            l[#l + 1] = id
+            db.quests[new].breadcrumbs = l
+        end
+    end
+end
+
+--- The default override directory of a repository root: "<root>/tools/overrides", without the
+-- "tools/.." a tool's own location puts into the root ("tools/../tools/overrides" -> "tools/overrides").
+function DB.OverridesDir(root)
+    local dir = tostring(root or ".") .. "/tools/overrides"
+    dir = dir:gsub("^%./", "")
+    local n
+    repeat
+        dir, n = dir:gsub("[^/%.][^/]*/%.%./", "", 1)
+    until n == 0
+    return dir
+end
+
+--- The *.lua files of an override directory in the order they are applied ({} when the directory
+-- does not exist): shared.lua first, then the owner files in alphabetical order. An id may appear in
+-- one file only and the later file is the one in error, so an owner file that repeats an id of
+-- shared.lua is ignored itself; it never knocks out the file every route depends on.
+function DB.OverrideFiles(dir)
+    local out = {}
+    local p = io.popen('ls -1 "' .. tostring(dir):gsub('"', '\\"') .. '" 2>/dev/null')
+    if not p then return out end
+    for name in p:lines() do
+        if name:match("%.lua$") then out[#out + 1] = name end
+    end
+    p:close()
+    local function isShared(name) return name:lower() == "shared.lua" end
+    table.sort(out, function(a, b)
+        if isShared(a) ~= isShared(b) then return isShared(a) end
+        return a < b
+    end)
+    return out
+end
+
+--- Apply the override files of `dir` to a loaded snapshot (see the section header).
+-- @return report { dir, files = { { file, owner, quests = n, npcs = n } } (applied),
+--                  errors = { { file = "<dir>/<name>.lua", name = "<name>.lua", msg = "..." } } (ignored files) }
+function DB.ApplyOverrides(db, dir)
+    DB.Prepare(db) -- the XP medians are those of the snapshot
+    local ov = db._overrides or { quests = {}, npcs = {}, exclRemoved = {}, indexXp = {}, files = {} }
+    db._overrides = ov
+    local report = { dir = dir, files = {}, errors = {} }
+    for _, name in ipairs(DB.OverrideFiles(dir)) do
+        local path = dir .. "/" .. name
+        local function ignore(msg)
+            report.errors[#report.errors + 1] = { file = path, name = name, msg = msg }
+        end
+        local chunk, lerr = loadfile(path)
+        if not chunk then
+            ignore("load error: " .. tostring(lerr))
+        else
+            setfenv(chunk, {})
+            local ok, data = pcall(chunk)
+            if not ok then
+                ignore("runtime error: " .. tostring(data))
+            else
+                local errs = checkOverrideFile(db, data, ov)
+                if #errs > 0 then
+                    ignore(errs[1] .. (#errs > 1 and (" (and %d more)"):format(#errs - 1) or ""))
+                else
+                    local owner = name:gsub("%.lua$", ""):lower()
+                    local nq, nn = 0, 0
+                    for _, id in ipairs(sortedIds(data.quests or {})) do
+                        local e = data.quests[id]
+                        local rec = { id = id, file = name, owner = owner, source = e.source,
+                                      verified = e.verified == true, fields = {} }
+                        for k in pairs(e) do
+                            if k ~= "source" and k ~= "verified" then rec.fields[k] = true end
+                        end
+                        applyQuestOverride(db, ov, id, e, rec)
+                        ov.quests[id] = rec
+                        nq = nq + 1
+                    end
+                    for _, id in ipairs(sortedIds(data.npcs or {})) do
+                        local e = data.npcs[id]
+                        local n = db.npcs[id]
+                        ov.npcs[id] = { id = id, file = name, owner = owner, source = e.source,
+                                        verified = e.verified == true, fields = { sub = true }, orig = { sub = n.sub } }
+                        n.sub = e.sub
+                        nn = nn + 1
+                    end
+                    ov.files[#ov.files + 1] = name
+                    report.files[#report.files + 1] = { file = name, owner = owner, quests = nq, npcs = nn }
+                end
+            end
+        end
+    end
+    -- the reverse exclusive index follows the corrected lists
+    local rev = {}
+    for a, q in pairs(db.quests) do
+        for _, b in ipairs(q.exclusive or {}) do
+            local t = rev[b] or {}
+            rev[b] = t
+            t[#t + 1] = a
+        end
+    end
+    for _, t in pairs(rev) do table.sort(t) end
+    db._exclusiveOf = rev
+    return report
 end
 
 return DB

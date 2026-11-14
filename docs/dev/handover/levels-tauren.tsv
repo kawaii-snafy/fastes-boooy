@@ -1,0 +1,868 @@
+id	segment	level	worst	anchor	file	actions
+mul01-start	mul-01-camp-narache	1.00	1.00	-	Segments/Mulgore/01_CampNarache.lua	accept 747, accept 752
+mul01-striders-bg	mul-01-camp-narache	1.00	1.00	-	Segments/Mulgore/01_CampNarache.lua	complete 747
+mul01-greatmother	mul-01-camp-narache	2.65	2.65	-	Segments/Mulgore/01_CampNarache.lua	turnin 752, accept 753
+mul01-pitcher	mul-01-camp-narache	2.75	2.75	-	Segments/Mulgore/01_CampNarache.lua	complete 753
+mul01-striders	mul-01-camp-narache	2.75	2.75	-	Segments/Mulgore/01_CampNarache.lua	complete 747
+mul01-chief-1	mul-01-camp-narache	2.75	2.75	-	Segments/Mulgore/01_CampNarache.lua	turnin 753, accept 755
+mul01-hunt	mul-01-camp-narache	3.02	3.02	-	Segments/Mulgore/01_CampNarache.lua	turnin 747, accept 750
+mul01-cougars	mul-01-camp-narache	3.14	3.14	-	Segments/Mulgore/01_CampNarache.lua	complete 750
+mul01-graytongue	mul-01-camp-narache	3.78	3.78	-	Segments/Mulgore/01_CampNarache.lua	turnin 755, accept 757, accept 95805
+mul01-antur	mul-01-camp-narache	3.96	3.96	-	Segments/Mulgore/01_CampNarache.lua	accept 1656
+mul01-lvl-4	mul-01-camp-narache	3.96	3.96	-	Segments/Mulgore/01_CampNarache.lua	level 4
+mul01-ravine	mul-01-camp-narache	4.00	4.00	-	Segments/Mulgore/01_CampNarache.lua	turnin 750, accept 780, accept 3376
+mul01-boars-bg	mul-01-camp-narache	4.12	4.12	-	Segments/Mulgore/01_CampNarache.lua	complete 780
+mul01-belts	mul-01-camp-narache	4.86	4.86	-	Segments/Mulgore/01_CampNarache.lua	complete 757
+mul01-sharptusk	mul-01-camp-narache	5.17	5.17	-	Segments/Mulgore/01_CampNarache.lua	complete 3376
+mul01-map	mul-01-camp-narache	5.22	5.22	-	Segments/Mulgore/01_CampNarache.lua	accept 781
+mul01-boars	mul-01-camp-narache	5.22	5.22	-	Segments/Mulgore/01_CampNarache.lua	complete 780
+mul01-fire	mul-01-camp-narache	5.22	5.22	-	Segments/Mulgore/01_CampNarache.lua	turnin 95805
+mul01-grull-3	mul-01-camp-narache	5.34	5.34	-	Segments/Mulgore/01_CampNarache.lua	turnin 780
+mul01-windfeather	mul-01-camp-narache	5.50	5.50	-	Segments/Mulgore/01_CampNarache.lua	turnin 3376
+mul01-leave	mul-01-camp-narache	5.74	5.74	-	Segments/Mulgore/01_CampNarache.lua	turnin 757, turnin 781, accept 763, accept 96659
+mul02-kaga	mul-02-mulgore	6.03	6.03	-	Segments/Mulgore/02_Mulgore.lua	turnin 96659, accept 96605
+mul02-campfire	mul-02-mulgore	6.18	6.18	-	Segments/Mulgore/02_Mulgore.lua	complete 96605
+mul02-kaga-2	mul-02-mulgore	6.18	6.18	-	Segments/Mulgore/02_Mulgore.lua	turnin 96605, accept 96661
+mul02-lvl-6	mul-02-mulgore	6.33	6.33	-	Segments/Mulgore/02_Mulgore.lua	level 6
+mul02-inn	mul-02-mulgore	6.33	6.33	-	Segments/Mulgore/02_Mulgore.lua	turnin 1656, sethearth Bloodhoof Village
+mul02-ruul	mul-02-mulgore	6.36	6.36	-	Segments/Mulgore/02_Mulgore.lua	accept 743
+mul02-baine-1	mul-02-mulgore	6.36	6.36	-	Segments/Mulgore/02_Mulgore.lua	turnin 763, accept 767, accept 745, accept 746
+mul02-wildrunner	mul-02-mulgore	6.46	6.46	-	Segments/Mulgore/02_Mulgore.lua	accept 99079
+mul02-mull-1	mul-02-mulgore	6.46	6.46	-	Segments/Mulgore/02_Mulgore.lua	accept 748
+mul02-krang	mul-02-mulgore	6.46	6.46	-	Segments/Mulgore/02_Mulgore.lua	turnin 99108, accept 99108, complete 99108
+mul02-bh-1	mul-02-mulgore	6.61	6.61	-	Segments/Mulgore/02_Mulgore.lua	accept 761
+mul02-zarlman	mul-02-mulgore	6.61	6.61	-	Segments/Mulgore/02_Mulgore.lua	turnin 767, accept 771
+mul02-maur	mul-02-mulgore	6.62	6.62	-	Segments/Mulgore/02_Mulgore.lua	accept 766
+mul02-pyall	mul-02-mulgore	6.62	6.62	-	Segments/Mulgore/02_Mulgore.lua	turnin 96661, complete 96661
+mul02-yaw	mul-02-mulgore	6.78	6.78	-	Segments/Mulgore/02_Mulgore.lua	accept 96130
+mul02-ahab	mul-02-mulgore	6.78	6.78	-	Segments/Mulgore/02_Mulgore.lua	accept 99411
+mul02-west-bg	mul-02-mulgore	6.78	6.78	-	Segments/Mulgore/02_Mulgore.lua	complete 748, complete 761
+mul02-mazz-bg	mul-02-mulgore	7.11	7.11	-	Segments/Mulgore/02_Mulgore.lua	complete 766
+mul02-chakuyak	mul-02-mulgore	7.19	7.19	-	Segments/Mulgore/02_Mulgore.lua	complete 96130
+mul02-palemane	mul-02-mulgore	7.21	7.21	-	Segments/Mulgore/02_Mulgore.lua	complete 745
+mul02-perith	mul-02-mulgore	7.51	7.51	-	Segments/Mulgore/02_Mulgore.lua	accept 98430
+mul02-escort	mul-02-mulgore	7.51	7.51	-	Segments/Mulgore/02_Mulgore.lua	complete 98430
+mul02-west	mul-02-mulgore	7.51	7.51	-	Segments/Mulgore/02_Mulgore.lua	complete 748, complete 761
+mul02-kyle	mul-02-mulgore	7.51	7.51	-	Segments/Mulgore/02_Mulgore.lua	complete 99411
+mul02-yaw-2	mul-02-mulgore	7.51	7.51	-	Segments/Mulgore/02_Mulgore.lua	turnin 96130
+mul02-ahab-2	mul-02-mulgore	7.58	7.58	-	Segments/Mulgore/02_Mulgore.lua	turnin 99411
+mul02-baine-2	mul-02-mulgore	7.72	7.72	-	Segments/Mulgore/02_Mulgore.lua	turnin 745
+mul02-mull-2	mul-02-mulgore	7.84	7.84	-	Segments/Mulgore/02_Mulgore.lua	turnin 748, accept 754
+mul02-bh-2	mul-02-mulgore	7.94	7.94	-	Segments/Mulgore/02_Mulgore.lua	turnin 761
+mul02-winterhoof	mul-02-mulgore	8.08	8.08	-	Segments/Mulgore/02_Mulgore.lua	complete 754
+mul02-wellstones	mul-02-mulgore	8.08	8.08	-	Segments/Mulgore/02_Mulgore.lua	complete 771
+mul02-harpies	mul-02-mulgore	8.08	8.08	-	Segments/Mulgore/02_Mulgore.lua	complete 743
+mul02-malah	mul-02-mulgore	8.23	8.23	-	Segments/Mulgore/02_Mulgore.lua	turnin 99079, accept 99081
+mul02-morin	mul-02-mulgore	8.37	8.37	-	Segments/Mulgore/02_Mulgore.lua	accept 749
+mul02-ruul-2	mul-02-mulgore	8.37	8.37	-	Segments/Mulgore/02_Mulgore.lua	turnin 743
+mul02-wildrunner-2	mul-02-mulgore	8.50	8.50	-	Segments/Mulgore/02_Mulgore.lua	turnin 99081, accept 99101
+mul02-baine-3	mul-02-mulgore	8.65	8.65	-	Segments/Mulgore/02_Mulgore.lua	turnin 99101, accept 99080
+mul02-bh-3	mul-02-mulgore	8.79	8.79	-	Segments/Mulgore/02_Mulgore.lua	turnin 754, accept 756
+mul02-zarlman-2	mul-02-mulgore	8.89	8.89	-	Segments/Mulgore/02_Mulgore.lua	turnin 771, accept 772
+mul02-claws-bg	mul-02-mulgore	9.01	9.01	-	Segments/Mulgore/02_Mulgore.lua	complete 756, complete 766
+mul02-crate	mul-02-mulgore	9.17	9.17	-	Segments/Mulgore/02_Mulgore.lua	turnin 749, accept 751
+mul02-claws	mul-02-mulgore	9.26	9.26	-	Segments/Mulgore/02_Mulgore.lua	complete 756, complete 766
+mul02-morin-2	mul-02-mulgore	9.26	9.26	-	Segments/Mulgore/02_Mulgore.lua	turnin 751, accept 764, accept 765
+mul02-venture	mul-02-mulgore	9.34	9.34	-	Segments/Mulgore/02_Mulgore.lua	complete 764
+mul02-fizsprocket	mul-02-mulgore	9.57	9.57	-	Segments/Mulgore/02_Mulgore.lua	complete 765
+mul02-plans	mul-02-mulgore	9.61	9.61	-	Segments/Mulgore/02_Mulgore.lua	accept 98424
+mul02-notes	mul-02-mulgore	9.61	9.61	-	Segments/Mulgore/02_Mulgore.lua	complete 98424
+mul02-notes-2	mul-02-mulgore	9.61	9.61	-	Segments/Mulgore/02_Mulgore.lua	complete 98424
+mul02-galak	mul-02-mulgore	9.61	9.61	-	Segments/Mulgore/02_Mulgore.lua	complete 99080
+mul02-morin-3	mul-02-mulgore	9.76	9.76	-	Segments/Mulgore/02_Mulgore.lua	turnin 764, turnin 765, turnin 98424
+mul02-lvl-10	mul-02-mulgore	10.05	10.05	-	Segments/Mulgore/02_Mulgore.lua	level 10
+mul02-baine-4	mul-02-mulgore	10.05	10.05	-	Segments/Mulgore/02_Mulgore.lua	turnin 99080, accept 99082
+mul02-bh-4	mul-02-mulgore	10.14	10.14	-	Segments/Mulgore/02_Mulgore.lua	turnin 756, accept 758
+mul02-maur-2	mul-02-mulgore	10.22	10.22	-	Segments/Mulgore/02_Mulgore.lua	turnin 766
+mul02-thunderhorn	mul-02-mulgore	10.31	10.31	-	Segments/Mulgore/02_Mulgore.lua	complete 758
+mul02-forge	mul-02-mulgore	10.31	10.31	-	Segments/Mulgore/02_Mulgore.lua	complete 746
+mul02-wiserunner	mul-02-mulgore	10.31	10.31	-	Segments/Mulgore/02_Mulgore.lua	turnin 772, accept 773
+mul02-baine-5	mul-02-mulgore	10.37	10.37	-	Segments/Mulgore/02_Mulgore.lua	turnin 746
+mul02-mull-5	mul-02-mulgore	10.47	10.47	-	Segments/Mulgore/02_Mulgore.lua	turnin 758, accept 759
+mul02-bh-5	mul-02-mulgore	10.56	10.56	-	Segments/Mulgore/02_Mulgore.lua	accept 861
+mul02-north-bg	mul-02-mulgore	10.56	10.56	-	Segments/Mulgore/02_Mulgore.lua	complete 759, complete 861
+mul02-raintotem	mul-02-mulgore	10.74	10.74	-	Segments/Mulgore/02_Mulgore.lua	accept 833
+mul02-interlopers	mul-02-mulgore	10.74	10.74	-	Segments/Mulgore/02_Mulgore.lua	complete 833
+mul02-spirit	mul-02-mulgore	10.82	10.82	-	Segments/Mulgore/02_Mulgore.lua	turnin 773, accept 775
+mul02-raintotem-2	mul-02-mulgore	10.94	10.94	-	Segments/Mulgore/02_Mulgore.lua	turnin 833
+mul02-north	mul-02-mulgore	11.02	11.02	-	Segments/Mulgore/02_Mulgore.lua	complete 759, complete 861
+mul02-hearth	mul-02-mulgore	11.02	11.02	-	Segments/Mulgore/02_Mulgore.lua	hearth Bloodhoof Village
+mul02-bh-6	mul-02-mulgore	11.02	11.02	-	Segments/Mulgore/02_Mulgore.lua	turnin 759, accept 760
+mul02-tb-lift	mul-02-mulgore	11.11	11.11	-	Segments/Mulgore/02_Mulgore.lua	go
+mul02-tb	mul-02-mulgore	11.11	11.11	-	Segments/Mulgore/02_Mulgore.lua	turnin 775, turnin 98430, turnin 99082, accept 776
+mul02-fp-tb	mul-02-mulgore	11.32	11.32	-	Segments/Mulgore/02_Mulgore.lua	fp Thunder Bluff
+mul02-wildmane	mul-02-mulgore	11.32	11.32	-	Segments/Mulgore/02_Mulgore.lua	complete 760
+mul02-arrachea	mul-02-mulgore	11.32	11.32	-	Segments/Mulgore/02_Mulgore.lua	complete 776
+mul02-end	mul-02-mulgore	11.34	11.34	-	Segments/Mulgore/02_Mulgore.lua	turnin 760, accept 98435
+mul03-exit	mul-03-barrens-crossing	11.46	11.46	-	Segments/Mulgore/03_BarrensCrossing.lua	go
+mul03-taurajo	mul-03-barrens-crossing	11.46	11.46	-	Segments/Mulgore/03_BarrensCrossing.lua	fp Camp Taurajo
+mul03-kirge	mul-03-barrens-crossing	11.46	11.46	-	Segments/Mulgore/03_BarrensCrossing.lua	accept 854
+mul03-thork	mul-03-barrens-crossing	11.46	11.46	-	Segments/Mulgore/03_BarrensCrossing.lua	turnin 854
+mul03-jahan	mul-03-barrens-crossing	11.48	11.48	-	Segments/Mulgore/03_BarrensCrossing.lua	accept 6361
+mul03-fp-xroads	mul-03-barrens-crossing	11.48	11.48	-	Segments/Mulgore/03_BarrensCrossing.lua	turnin 6361, accept 6362, fp The Crossroads
+mul03-fly-tb	mul-03-barrens-crossing	11.51	11.51	-	Segments/Mulgore/03_BarrensCrossing.lua	fly Thunder Bluff
+mul03-ahanu	mul-03-barrens-crossing	11.51	11.51	-	Segments/Mulgore/03_BarrensCrossing.lua	turnin 6362, accept 6363
+mul03-cairne	mul-03-barrens-crossing	11.55	11.55	-	Segments/Mulgore/03_BarrensCrossing.lua	turnin 776
+mul03-melor	mul-03-barrens-crossing	11.70	11.70	-	Segments/Mulgore/03_BarrensCrossing.lua	turnin 861, accept 860
+mul03-hamuul	mul-03-barrens-crossing	11.79	11.79	-	Segments/Mulgore/03_BarrensCrossing.lua	turnin 98435, accept 886
+mul03-tal	mul-03-barrens-crossing	11.84	11.84	-	Segments/Mulgore/03_BarrensCrossing.lua	turnin 6363, accept 6364
+mul03-fly-xroads	mul-03-barrens-crossing	11.87	11.87	-	Segments/Mulgore/03_BarrensCrossing.lua	fly The Crossroads
+mul03-jahan-2	mul-03-barrens-crossing	11.87	11.87	-	Segments/Mulgore/03_BarrensCrossing.lua	turnin 6364
+mul03-xroads	mul-03-barrens-crossing	11.98	11.98	-	Segments/Mulgore/03_BarrensCrossing.lua	turnin 860, turnin 886
+mul03-far-watch	mul-03-barrens-crossing	12.00	12.00	-	Segments/Mulgore/03_BarrensCrossing.lua	go
+mul03-org-gate	mul-03-barrens-crossing	12.00	12.00	-	Segments/Mulgore/03_BarrensCrossing.lua	go
+h12-fp-org	h-12-orgrimmar-tirisfal	12.00	12.00	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	fp Orgrimmar
+h12-sethearth-org	h-12-orgrimmar-tirisfal	12.00	12.00	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	sethearth Orgrimmar
+h12-thatog	h-12-orgrimmar-tirisfal	12.00	12.00	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	accept 97246
+h12-borstan	h-12-orgrimmar-tirisfal	12.00	12.00	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	turnin 97246, accept 97249
+h12-korgeld	h-12-orgrimmar-tirisfal	12.11	12.11	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	accept 97242
+h12-cattails	h-12-orgrimmar-tirisfal	12.11	12.11	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	complete 97242
+h12-korgeld-2	h-12-orgrimmar-tirisfal	12.11	12.11	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	turnin 97242
+h12-yelmak	h-12-orgrimmar-tirisfal	12.21	12.21	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	accept 97275
+h12-whuut	h-12-orgrimmar-tirisfal	12.21	12.21	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	turnin 97275
+h12-wisdom	h-12-orgrimmar-tirisfal	12.32	12.32	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	turnin 97249
+h12-boulders-accept	h-12-orgrimmar-tirisfal	12.42	12.42	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	accept 97326
+h12-boulders	h-12-orgrimmar-tirisfal	12.42	12.42	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	complete 97326
+h12-boulders-turnin	h-12-orgrimmar-tirisfal	12.42	12.42	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	turnin 97326
+h12-org-end	h-12-orgrimmar-tirisfal	12.52	12.42	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	go
+h12-zeppelin	h-12-orgrimmar-tirisfal	12.52	12.42	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	go
+h12-tirisfal	h-12-orgrimmar-tirisfal	12.52	12.42	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	go
+h12-brill	h-12-orgrimmar-tirisfal	12.52	12.42	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	accept 96895
+h12-johaan	h-12-orgrimmar-tirisfal	12.52	12.42	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	accept 445
+h12-hadric	h-12-orgrimmar-tirisfal	12.52	12.42	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	turnin 96895, accept 96897, accept 96898
+h12-cult-camp	h-12-orgrimmar-tirisfal	12.57	12.46	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	complete 96897, complete 96898
+h12-hadric-2	h-12-orgrimmar-tirisfal	12.86	12.76	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	turnin 96897, turnin 96898
+h12-fp-uc	h-12-orgrimmar-tirisfal	12.96	12.85	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	fp Undercity
+h12-sewers	h-12-orgrimmar-tirisfal	12.96	12.85	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	go
+h12-end	h-12-orgrimmar-tirisfal	12.96	12.85	-	Segments/Shared/12_Orgrimmar_Tirisfal.lua	go
+h13-erland	h-13-silverpine	12.96	12.85	-	Segments/Shared/13_Silverpine.lua	accept 435
+h13-escort	h-13-silverpine	12.96	12.85	-	Segments/Shared/13_Silverpine.lua	complete 435
+h13-rane	h-13-silverpine	12.96	12.85	-	Segments/Shared/13_Silverpine.lua	turnin 435, accept 429, accept 449
+h13-murloc-eyes	h-13-silverpine	13.04	12.94	-	Segments/Shared/13_Silverpine.lua	collect 730
+h13-worg-hearts	h-13-silverpine	13.04	12.94	-	Segments/Shared/13_Silverpine.lua	complete 429
+h13-lvl-12	h-13-silverpine	13.06	12.97	-	Segments/Shared/13_Silverpine.lua	level 12
+h13-go-sepulcher	h-13-silverpine	13.06	12.97	-	Segments/Shared/13_Silverpine.lua	go
+h13-dalar	h-13-silverpine	13.06	12.97	-	Segments/Shared/13_Silverpine.lua	accept 421
+h13-vendor	h-13-silverpine	13.06	12.97	-	Segments/Shared/13_Silverpine.lua	vendor
+h13-allister	h-13-silverpine	13.06	12.97	-	Segments/Shared/13_Silverpine.lua	accept 477
+h13-hadrec	h-13-silverpine	13.06	12.97	-	Segments/Shared/13_Silverpine.lua	turnin 449, accept 3221, accept 437
+h13-renferrel	h-13-silverpine	13.10	13.02	-	Segments/Shared/13_Silverpine.lua	turnin 445, turnin 3221, turnin 429, accept 1359, accept 447, accept 430
+h13-fp-sepulcher	h-13-silverpine	13.20	13.12	-	Segments/Shared/13_Silverpine.lua	fp The Sepulcher
+h13-bear-hearts	h-13-silverpine	13.20	13.12	-	Segments/Shared/13_Silverpine.lua	complete 447
+h13-whitescalps	h-13-silverpine	13.34	13.25	-	Segments/Shared/13_Silverpine.lua	complete 421
+h13-dalar-2	h-13-silverpine	13.36	13.28	-	Segments/Shared/13_Silverpine.lua	turnin 421, accept 422
+h13-spellbooks	h-13-silverpine	13.44	13.35	-	Segments/Shared/13_Silverpine.lua	complete 422
+h13-quinn	h-13-silverpine	13.44	13.35	-	Segments/Shared/13_Silverpine.lua	turnin 430, accept 91920
+h13-rane-425	h-13-silverpine	13.49	13.41	-	Segments/Shared/13_Silverpine.lua	accept 425
+h13-ivar	h-13-silverpine	13.49	13.41	-	Segments/Shared/13_Silverpine.lua	complete 425
+h13-rane-425-done	h-13-silverpine	13.51	13.43	-	Segments/Shared/13_Silverpine.lua	turnin 425
+h13-wild-eyes	h-13-silverpine	13.57	13.49	-	Segments/Shared/13_Silverpine.lua	complete 91920
+h13-dead-field	h-13-silverpine	13.61	13.53	-	Segments/Shared/13_Silverpine.lua	complete 437
+h13-spiders	h-13-silverpine	13.63	13.55	-	Segments/Shared/13_Silverpine.lua	complete 447
+h13-bears	h-13-silverpine	13.63	13.55	-	Segments/Shared/13_Silverpine.lua	complete 447
+h13-dalar-3	h-13-silverpine	13.63	13.55	-	Segments/Shared/13_Silverpine.lua	turnin 422, accept 423
+h13-vendor-2	h-13-silverpine	13.71	13.62	-	Segments/Shared/13_Silverpine.lua	vendor
+h13-hadrec-2	h-13-silverpine	13.71	13.62	-	Segments/Shared/13_Silverpine.lua	turnin 437, accept 438
+h13-renferrel-2	h-13-silverpine	13.79	13.71	-	Segments/Shared/13_Silverpine.lua	turnin 91920
+h13-shackles	h-13-silverpine	13.85	13.77	-	Segments/Shared/13_Silverpine.lua	complete 423
+h13-dalar-4	h-13-silverpine	13.97	13.89	-	Segments/Shared/13_Silverpine.lua	turnin 423, accept 424
+h13-ferry	h-13-silverpine	14.05	13.97	-	Segments/Shared/13_Silverpine.lua	turnin 438, accept 439
+h13-grimson	h-13-silverpine	14.12	14.04	-	Segments/Shared/13_Silverpine.lua	complete 424
+h13-dalaran-crate	h-13-silverpine	14.14	14.06	-	Segments/Shared/13_Silverpine.lua	turnin 477, accept 478
+h13-allister-2	h-13-silverpine	14.21	14.14	-	Segments/Shared/13_Silverpine.lua	turnin 478, accept 481
+h13-dalar-5	h-13-silverpine	14.27	14.20	-	Segments/Shared/13_Silverpine.lua	turnin 424, turnin 481, accept 482
+h13-allister-3	h-13-silverpine	14.36	14.28	-	Segments/Shared/13_Silverpine.lua	turnin 482
+h13-sepulcher-5	h-13-silverpine	14.37	14.29	-	Segments/Shared/13_Silverpine.lua	turnin 439
+h13-lvl-14	h-13-silverpine	14.39	14.32	-	Segments/Shared/13_Silverpine.lua	level 13
+h13-fly-uc	h-13-silverpine	14.39	14.32	-	Segments/Shared/13_Silverpine.lua	fly Undercity
+h13-uc-arrive	h-13-silverpine	14.39	14.32	-	Segments/Shared/13_Silverpine.lua	go
+h13-luca	h-13-silverpine	14.39	14.32	-	Segments/Shared/13_Silverpine.lua	accept 97891
+h13-felben	h-13-silverpine	14.39	14.32	-	Segments/Shared/13_Silverpine.lua	turnin 97891
+h13-faranell	h-13-silverpine	14.46	14.38	-	Segments/Shared/13_Silverpine.lua	turnin 447
+h13-uc-end	h-13-silverpine	14.53	14.45	-	Segments/Shared/13_Silverpine.lua	turnin 1359, accept 1358
+h13-hearth-org	h-13-silverpine	14.54	14.46	-	Segments/Shared/13_Silverpine.lua	hearth Orgrimmar
+h15-org	h-15-barrens	14.54	14.46	-	Segments/Shared/15_Barrens.lua	go
+h15-start	h-15-barrens	14.54	14.46	-	Segments/Shared/15_Barrens.lua	go
+h15-razor-hill	h-15-barrens	14.54	14.46	-	Segments/Shared/15_Barrens.lua	accept 840
+h15-far-watch	h-15-barrens	14.54	14.46	-	Segments/Shared/15_Barrens.lua	turnin 840, accept 842
+h15-xr-arrive	h-15-barrens	14.57	14.50	-	Segments/Shared/15_Barrens.lua	turnin 842, accept 844
+h15-tonga	h-15-barrens	14.64	14.57	-	Segments/Shared/15_Barrens.lua	accept 870
+h15-xr-thork	h-15-barrens	14.64	14.57	-	Segments/Shared/15_Barrens.lua	accept 871, accept 5041, accept 867
+h15-helbrim	h-15-barrens	14.64	14.57	-	Segments/Shared/15_Barrens.lua	turnin 1358, accept 1492, accept 848
+h15-gazrog	h-15-barrens	14.72	14.65	-	Segments/Shared/15_Barrens.lua	accept 869
+h15-sethearth-xroads	h-15-barrens	14.72	14.65	-	Segments/Shared/15_Barrens.lua	sethearth The Crossroads
+h15-raptor-heads	h-15-barrens	14.72	14.65	-	Segments/Shared/15_Barrens.lua	complete 869
+h15-beaks-bg	h-15-barrens	14.84	14.76	-	Segments/Shared/15_Barrens.lua	complete 844
+h15-thorn-hill	h-15-barrens	14.89	14.81	-	Segments/Shared/15_Barrens.lua	complete 871
+h15-beaks	h-15-barrens	14.96	14.89	-	Segments/Shared/15_Barrens.lua	complete 844
+h15-xr-2-sergra	h-15-barrens	14.96	14.89	-	Segments/Shared/15_Barrens.lua	turnin 844, accept 845
+h15-xr-2	h-15-barrens	15.03	14.96	-	Segments/Shared/15_Barrens.lua	turnin 871, accept 872
+h15-hooves-bg	h-15-barrens	15.09	15.02	-	Segments/Shared/15_Barrens.lua	complete 845
+h15-keg	h-15-barrens	15.13	15.06	-	Segments/Shared/15_Barrens.lua	collect 4926
+h15-far-camp	h-15-barrens	15.13	15.06	-	Segments/Shared/15_Barrens.lua	complete 872, complete 5041
+h15-hooves	h-15-barrens	15.22	15.15	-	Segments/Shared/15_Barrens.lua	complete 845, complete 872
+h15-wrenix	h-15-barrens	15.22	15.15	-	Segments/Shared/15_Barrens.lua	accept 97253
+h15-gazlowe	h-15-barrens	15.22	15.15	-	Segments/Shared/15_Barrens.lua	accept 887
+h15-wanted	h-15-barrens	15.22	15.15	-	Segments/Shared/15_Barrens.lua	accept 895
+h15-sputtervalve	h-15-barrens	15.22	15.15	-	Segments/Shared/15_Barrens.lua	accept 894
+h15-dizzywig	h-15-barrens	15.22	15.15	-	Segments/Shared/15_Barrens.lua	turnin 1492
+h15-dizzywig-896	h-15-barrens	15.25	15.18	-	Segments/Shared/15_Barrens.lua	accept 896
+h15-fp-ratchet	h-15-barrens	15.25	15.18	-	Segments/Shared/15_Barrens.lua	fp Ratchet
+h15-pirates-bg	h-15-barrens	15.25	15.18	-	Segments/Shared/15_Barrens.lua	complete 887
+h15-parts	h-15-barrens	15.34	15.27	-	Segments/Shared/15_Barrens.lua	complete 97253
+h15-longshore	h-15-barrens	15.34	15.27	-	Segments/Shared/15_Barrens.lua	complete 895
+h15-pirates	h-15-barrens	15.34	15.27	-	Segments/Shared/15_Barrens.lua	complete 887
+h15-wrenix-2	h-15-barrens	15.34	15.27	-	Segments/Shared/15_Barrens.lua	turnin 97253
+h15-gazlowe-2	h-15-barrens	15.41	15.34	-	Segments/Shared/15_Barrens.lua	turnin 887, turnin 895, accept 890
+h15-dizzywig-2	h-15-barrens	15.54	15.47	-	Segments/Shared/15_Barrens.lua	turnin 890, accept 892
+h15-ratchet-2	h-15-barrens	15.55	15.48	-	Segments/Shared/15_Barrens.lua	turnin 892, accept 888
+h15-fly-xroads	h-15-barrens	15.55	15.49	-	Segments/Shared/15_Barrens.lua	fly The Crossroads
+h15-xr-3-thork	h-15-barrens	15.55	15.49	-	Segments/Shared/15_Barrens.lua	turnin 872, turnin 5041
+h15-xr-3	h-15-barrens	15.70	15.63	-	Segments/Shared/15_Barrens.lua	turnin 845, accept 903
+h15-regthar	h-15-barrens	15.76	15.69	-	Segments/Shared/15_Barrens.lua	accept 850, accept 855
+h15-claws-bg	h-15-barrens	15.76	15.69	-	Segments/Shared/15_Barrens.lua	complete 903
+h15-bracers-bg	h-15-barrens	15.83	15.77	-	Segments/Shared/15_Barrens.lua	complete 855
+h15-spores-bg	h-15-barrens	15.94	15.87	-	Segments/Shared/15_Barrens.lua	complete 848
+h15-barak	h-15-barrens	15.94	15.87	-	Segments/Shared/15_Barrens.lua	complete 850
+h15-forgotten-pools	h-15-barrens	15.96	15.89	-	Segments/Shared/15_Barrens.lua	complete 870, complete 903
+h15-regthar-2	h-15-barrens	15.96	15.89	-	Segments/Shared/15_Barrens.lua	turnin 850, accept 851
+h15-xr-tonga-877	h-15-barrens	16.02	15.95	-	Segments/Shared/15_Barrens.lua	turnin 870, accept 877
+h15-xr-sergra-881	h-15-barrens	16.06	16.00	-	Segments/Shared/15_Barrens.lua	turnin 903, accept 881
+h15-echeyakee	h-15-barrens	16.12	16.06	-	Segments/Shared/15_Barrens.lua	complete 881
+h15-mine	h-15-barrens	16.14	16.08	-	Segments/Shared/15_Barrens.lua	complete 896
+h15-sludge-fen	h-15-barrens	16.15	16.08	-	Segments/Shared/15_Barrens.lua	accept 858
+h15-lugwizzle	h-15-barrens	16.15	16.08	-	Segments/Shared/15_Barrens.lua	complete 858
+h15-shredder	h-15-barrens	16.17	16.09	-	Segments/Shared/15_Barrens.lua	turnin 858, accept 863
+h15-escape	h-15-barrens	16.25	16.18	-	Segments/Shared/15_Barrens.lua	complete 863
+h15-console	h-15-barrens	16.25	16.18	-	Segments/Shared/15_Barrens.lua	turnin 894, accept 900
+h15-valves	h-15-barrens	16.30	16.23	-	Segments/Shared/15_Barrens.lua	complete 900
+h15-console-2	h-15-barrens	16.30	16.23	-	Segments/Shared/15_Barrens.lua	turnin 900, accept 901
+h15-sniggles	h-15-barrens	16.33	16.26	-	Segments/Shared/15_Barrens.lua	complete 901
+h15-console-3	h-15-barrens	16.35	16.27	-	Segments/Shared/15_Barrens.lua	turnin 901, accept 902
+h15-vrang	h-15-barrens	16.39	16.32	-	Segments/Shared/15_Barrens.lua	accept 95494, accept 95507
+h15-vrang-hunt	h-15-barrens	16.39	16.32	-	Segments/Shared/15_Barrens.lua	complete 95494, complete 95507
+h15-vrang-2	h-15-barrens	16.45	16.38	-	Segments/Shared/15_Barrens.lua	turnin 95494, turnin 95507, accept 95495
+h15-walton	h-15-barrens	16.62	16.55	-	Segments/Shared/15_Barrens.lua	turnin 95495, accept 95621
+h15-adamore	h-15-barrens	16.71	16.63	-	Segments/Shared/15_Barrens.lua	complete 95621
+h15-walton-2	h-15-barrens	16.72	16.65	-	Segments/Shared/15_Barrens.lua	turnin 95621, accept 95508
+h15-walton-scene	h-15-barrens	16.81	16.73	-	Segments/Shared/15_Barrens.lua	complete 95508
+h15-walton-3	h-15-barrens	16.81	16.73	-	Segments/Shared/15_Barrens.lua	turnin 95508
+h15-harpies	h-15-barrens	16.89	16.82	-	Segments/Shared/15_Barrens.lua	complete 867
+h15-hearth-xroads	h-15-barrens	16.96	16.88	-	Segments/Shared/15_Barrens.lua	hearth The Crossroads
+h15-xr-4-gazrog	h-15-barrens	16.96	16.88	-	Segments/Shared/15_Barrens.lua	turnin 869, accept 3281
+h15-xr-4-darsok	h-15-barrens	17.01	16.94	-	Segments/Shared/15_Barrens.lua	turnin 867, accept 875
+h15-xr-4-sergra	h-15-barrens	17.07	17.00	-	Segments/Shared/15_Barrens.lua	turnin 881, accept 905
+h15-xr-4	h-15-barrens	17.15	17.09	-	Segments/Shared/15_Barrens.lua	accept 4921, accept 95774, accept 899
+h15-fly-ratchet	h-15-barrens	17.15	17.09	-	Segments/Shared/15_Barrens.lua	fly Ratchet
+h15-ratchet-3-sputtervalve	h-15-barrens	17.15	17.09	-	Segments/Shared/15_Barrens.lua	turnin 902, turnin 863, accept 1483
+h15-ratchet-3	h-15-barrens	17.32	17.25	-	Segments/Shared/15_Barrens.lua	accept 865, accept 1069
+h15-dizzywig-896-turnin	h-15-barrens	17.32	17.25	-	Segments/Shared/15_Barrens.lua	turnin 896
+h15-keg-start	h-15-barrens	17.41	17.25	-	Segments/Shared/15_Barrens.lua	accept 819
+h15-drohn	h-15-barrens	17.41	17.25	-	Segments/Shared/15_Barrens.lua	turnin 819, accept 821
+h15-crate-1	h-15-barrens	17.47	17.25	-	Segments/Shared/15_Barrens.lua	complete 888
+h15-crate-2	h-15-barrens	17.47	17.25	-	Segments/Shared/15_Barrens.lua	complete 888
+h15-silver	h-15-barrens	17.47	17.25	-	Segments/Shared/15_Barrens.lua	complete 3281
+h15-horns-bg	h-15-barrens	17.47	17.25	-	Segments/Shared/15_Barrens.lua	complete 865
+h15-stagnant-oasis	h-15-barrens	17.53	17.31	-	Segments/Shared/15_Barrens.lua	complete 877, complete 848
+h15-verog	h-15-barrens	17.53	17.31	-	Segments/Shared/15_Barrens.lua	complete 851
+h15-nests	h-15-barrens	17.55	17.32	-	Segments/Shared/15_Barrens.lua	complete 905
+h15-horns	h-15-barrens	17.55	17.32	-	Segments/Shared/15_Barrens.lua	complete 865
+h15-lakota	h-15-barrens	17.55	17.32	-	Segments/Shared/15_Barrens.lua	accept 883
+h15-raiders	h-15-barrens	17.55	17.32	-	Segments/Shared/15_Barrens.lua	complete 95774
+h15-corpse	h-15-barrens	17.59	17.37	-	Segments/Shared/15_Barrens.lua	complete 4921
+h15-sethearth-taurajo	h-15-barrens	17.59	17.37	-	Segments/Shared/15_Barrens.lua	sethearth Camp Taurajo
+h15-lakota-turnin	h-15-barrens	17.59	17.37	-	Segments/Shared/15_Barrens.lua	turnin 883
+h15-mangletooth	h-15-barrens	17.66	17.37	-	Segments/Shared/15_Barrens.lua	accept 878
+h15-fly-xroads-2	h-15-barrens	17.66	17.37	-	Segments/Shared/15_Barrens.lua	fly The Crossroads
+h15-xr-5-mankrik	h-15-barrens	17.66	17.37	-	Segments/Shared/15_Barrens.lua	turnin 4921, turnin 95774
+h15-xr-5-tonga	h-15-barrens	17.77	17.48	-	Segments/Shared/15_Barrens.lua	turnin 877, accept 880
+h15-xr-5-sergra	h-15-barrens	17.84	17.54	-	Segments/Shared/15_Barrens.lua	turnin 905, accept 3261
+h15-xr-5	h-15-barrens	17.91	17.61	-	Segments/Shared/15_Barrens.lua	turnin 3281
+h15-regthar-3	h-15-barrens	17.98	17.69	-	Segments/Shared/15_Barrens.lua	turnin 851, accept 852
+h15-end	h-15-barrens	18.04	17.74	-	Segments/Shared/15_Barrens.lua	turnin 848, accept 853
+h18-fly-taurajo	h-18-stonetalon-ashenvale	18.09	17.80	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	fly Camp Taurajo
+h18-jorn	h-18-stonetalon-ashenvale	18.09	17.80	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 3261, accept 882
+h18-lvl-18	h-18-stonetalon-ashenvale	18.10	17.81	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	level 18
+h18-fly-tb-1	h-18-stonetalon-ashenvale	18.10	18.00	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	fly Thunder Bluff
+h18-go-pools	h-18-stonetalon-ashenvale	18.10	18.00	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	go
+h18-tb-zamah	h-18-stonetalon-ashenvale	18.10	18.00	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 853
+h18-tb-1	h-18-stonetalon-ashenvale	18.14	18.04	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	go
+h18-fly-ratchet	h-18-stonetalon-ashenvale	18.14	18.04	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	fly Ratchet
+h18-mebok	h-18-stonetalon-ashenvale	18.14	18.04	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 865
+h18-keg-items	h-18-stonetalon-ashenvale	18.21	18.11	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 821
+h18-ratchet	h-18-stonetalon-ashenvale	18.26	18.11	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 888
+h18-carcass	h-18-stonetalon-ashenvale	18.32	18.17	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	collect 10338
+h18-ishamuhale	h-18-stonetalon-ashenvale	18.32	18.17	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 882
+h18-shells	h-18-stonetalon-ashenvale	18.33	18.19	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 880
+h18-hearth-taurajo	h-18-stonetalon-ashenvale	18.38	18.24	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	hearth Camp Taurajo
+h18-jorn-2	h-18-stonetalon-ashenvale	18.38	18.24	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 882, accept 907
+h18-bristleback	h-18-stonetalon-ashenvale	18.47	18.33	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 878, complete 899
+h18-stormsnouts	h-18-stonetalon-ashenvale	19.16	19.05	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 907
+h18-mangletooth	h-18-stonetalon-ashenvale	19.20	19.09	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 878, accept 5052
+h18-blood-shard	h-18-stonetalon-ashenvale	19.28	19.16	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 5052, complete 5052
+h18-jorn-3	h-18-stonetalon-ashenvale	19.35	19.23	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 907, accept 913
+h18-owatanka	h-18-stonetalon-ashenvale	19.43	19.31	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	accept 884
+h18-cloudscraper	h-18-stonetalon-ashenvale	19.43	19.31	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 913
+h18-owatanka-turnin	h-18-stonetalon-ashenvale	19.44	19.33	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 884
+h18-taurajo-end	h-18-stonetalon-ashenvale	19.51	19.33	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 913
+h18-fly-xroads	h-18-stonetalon-ashenvale	19.60	19.42	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	fly The Crossroads
+h18-xr	h-18-stonetalon-ashenvale	19.60	19.42	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 899, turnin 880, accept 1489
+h18-lushwater	h-18-stonetalon-ashenvale	19.75	19.56	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 852, complete 855
+h18-regthar	h-18-stonetalon-ashenvale	19.76	19.58	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 852, turnin 855
+h18-harpy-lieutenants	h-18-stonetalon-ashenvale	19.87	19.69	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 875
+h18-border	h-18-stonetalon-ashenvale	19.90	19.72	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	accept 1062, accept 6548
+h18-grimtotem	h-18-stonetalon-ashenvale	19.90	19.72	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 6548
+h18-makaba	h-18-stonetalon-ashenvale	19.94	19.75	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 6548, accept 6629
+h18-grundig	h-18-stonetalon-ashenvale	20.00	19.82	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 6629
+h18-kaya	h-18-stonetalon-ashenvale	20.02	19.84	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	accept 6523
+h18-kaya-escort	h-18-stonetalon-ashenvale	20.02	19.84	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 6523
+h18-makaba-2	h-18-stonetalon-ashenvale	20.02	19.84	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 6629, turnin 6523, accept 6401
+h18-xenzilla	h-18-stonetalon-ashenvale	20.14	19.97	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	accept 6461
+h18-creepers-bg	h-18-stonetalon-ashenvale	20.14	19.97	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 6461
+h18-ziz	h-18-stonetalon-ashenvale	20.20	20.03	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 1483, accept 1093
+h18-eggs-bg	h-18-stonetalon-ashenvale	20.22	20.05	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 1069
+h18-windshear	h-18-stonetalon-ashenvale	20.22	20.05	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 1062, complete 1093
+h18-lvl-20	h-18-stonetalon-ashenvale	20.30	20.13	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	level 19
+h18-venomspitters	h-18-stonetalon-ashenvale	20.30	20.13	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 1069, complete 6461
+h18-ziz-2	h-18-stonetalon-ashenvale	20.30	20.13	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 1093, accept 1094
+h18-go-sunrock	h-18-stonetalon-ashenvale	20.37	20.20	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	go
+h18-tsunaman	h-18-stonetalon-ashenvale	20.37	20.20	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	accept 6562
+h18-tammra	h-18-stonetalon-ashenvale	20.37	20.20	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 6401
+h18-fp-sunrock	h-18-stonetalon-ashenvale	20.41	20.25	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	fp Sun Rock Retreat
+h18-fly-tb	h-18-stonetalon-ashenvale	20.41	20.25	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	fly Thunder Bluff
+h18-sethearth-tb	h-18-stonetalon-ashenvale	20.41	20.25	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	sethearth Thunder Bluff
+h18-go-elder-rise	h-18-stonetalon-ashenvale	20.41	20.25	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	go
+h18-hamuul	h-18-stonetalon-ashenvale	20.41	20.25	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 1489, accept 1490
+h18-tb-2	h-18-stonetalon-ashenvale	20.42	20.26	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 1490
+h18-fly-ratchet-2	h-18-stonetalon-ashenvale	20.43	20.26	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	fly Ratchet
+h18-drohn	h-18-stonetalon-ashenvale	20.43	20.26	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 821
+h18-sputtervalve	h-18-stonetalon-ashenvale	20.49	20.26	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 1094, accept 1095
+h18-mebok-eggs	h-18-stonetalon-ashenvale	20.52	20.30	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 1069
+h18-fly-xroads-2	h-18-stonetalon-ashenvale	20.61	20.38	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	fly The Crossroads
+h18-xr-darsok	h-18-stonetalon-ashenvale	20.61	20.38	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 875
+h18-seereth	h-18-stonetalon-ashenvale	20.66	20.43	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 1062, accept 1063
+h18-xenzilla-2	h-18-stonetalon-ashenvale	20.72	20.49	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 6461
+h18-piznik-go	h-18-stonetalon-ashenvale	20.78	20.56	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	go
+h18-piznik	h-18-stonetalon-ashenvale	20.78	20.56	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	accept 1090
+h18-piznik-defend	h-18-stonetalon-ashenvale	20.78	20.56	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 1090
+h18-piznik-ore	h-18-stonetalon-ashenvale	20.78	20.56	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 1090, accept 1092
+h18-ziz-ore	h-18-stonetalon-ashenvale	20.88	20.56	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 1092
+h18-ziz-3	h-18-stonetalon-ashenvale	20.93	20.56	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 1095
+h18-talondeep	h-18-stonetalon-ashenvale	20.98	20.60	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	go
+h18-vaxug	h-18-stonetalon-ashenvale	20.98	20.60	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	accept 98251
+h18-vaxug-hunt	h-18-stonetalon-ashenvale	20.98	20.60	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 98251
+h18-vaxug-2	h-18-stonetalon-ashenvale	21.05	20.69	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 98251, accept 98252
+h18-eye-walk	h-18-stonetalon-ashenvale	21.13	20.76	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 98252
+h18-eye	h-18-stonetalon-ashenvale	21.13	20.76	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 98252
+h18-go-astranaar	h-18-stonetalon-ashenvale	21.20	20.84	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	go
+h18-go-zoram	h-18-stonetalon-ashenvale	21.20	20.84	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	go
+h18-jeneu	h-18-stonetalon-ashenvale	21.20	20.84	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 6562
+h18-zoram-quests	h-18-stonetalon-ashenvale	21.22	20.86	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	accept 6442, accept 6462
+h18-fp-zoram	h-18-stonetalon-ashenvale	21.22	20.86	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	fp Zoram'gar Outpost
+h18-vorsha	h-18-stonetalon-ashenvale	21.22	20.86	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	accept 6641
+h18-vorsha-escort	h-18-stonetalon-ashenvale	21.22	20.86	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 6641
+h18-naga	h-18-stonetalon-ashenvale	21.22	20.86	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 6442
+h18-lvl-21	h-18-stonetalon-ashenvale	21.37	21.04	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	level 21
+h18-marukai	h-18-stonetalon-ashenvale	21.37	21.04	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 6442
+h18-vorsha-turnin	h-18-stonetalon-ashenvale	21.43	21.10	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 6641
+h18-karang	h-18-stonetalon-ashenvale	21.52	21.10	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	accept 216
+h18-thistlefur	h-18-stonetalon-ashenvale	21.52	21.10	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 216
+h18-troll-charms	h-18-stonetalon-ashenvale	21.68	21.26	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	complete 6462
+h18-lvl-22	h-18-stonetalon-ashenvale	21.68	21.26	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	level 21
+h18-karang-2	h-18-stonetalon-ashenvale	21.85	21.85	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 216
+h18-mitsuwa	h-18-stonetalon-ashenvale	21.93	21.93	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 6462
+h18-hearth-tb	h-18-stonetalon-ashenvale	22.01	22.01	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	hearth Thunder Bluff
+h18-tb-3	h-18-stonetalon-ashenvale	22.01	22.01	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 1063, accept 1064
+h18-go-pools-3	h-18-stonetalon-ashenvale	22.03	22.03	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	go
+h18-end	h-18-stonetalon-ashenvale	22.03	22.03	-	Segments/Shared/18_Stonetalon_Ashenvale.lua	turnin 1064
+h-22-tb-start	h-22-hillsbrad	22.04	22.04	-	Segments/Shared/22_Hillsbrad.lua	accept 1065
+h-22-tb-fly	h-22-hillsbrad	22.04	22.04	-	Segments/Shared/22_Hillsbrad.lua	go
+h-22-tb-fly-org	h-22-hillsbrad	22.04	22.04	-	Segments/Shared/22_Hillsbrad.lua	fly Orgrimmar
+h-22-org-fp	h-22-hillsbrad	22.04	22.04	-	Segments/Shared/22_Hillsbrad.lua	fp Orgrimmar
+h-22-zeppelin-uc	h-22-hillsbrad	22.04	22.04	-	Segments/Shared/22_Hillsbrad.lua	go
+h-22-uc-arrive	h-22-hillsbrad	22.04	22.04	-	Segments/Shared/22_Hillsbrad.lua	go
+h22-rol-morbin	h-22-hillsbrad	22.04	22.04	-	Segments/Shared/22_Hillsbrad.lua	accept 92421
+h22-rol-griffs	h-22-hillsbrad	22.04	22.04	-	Segments/Shared/22_Hillsbrad.lua	accept 95216
+h22-rol-dungeon	h-22-hillsbrad	22.04	22.04	-	Segments/Shared/22_Hillsbrad.lua	complete 92421, complete 95216
+h22-rol-items	h-22-hillsbrad	22.04	22.04	-	Segments/Shared/22_Hillsbrad.lua	accept 95204, accept 97288
+h22-rol-apothecarium	h-22-hillsbrad	22.04	22.04	-	Segments/Shared/22_Hillsbrad.lua	turnin 97288, turnin 95216
+h22-rol-morbin-2	h-22-hillsbrad	22.37	22.04	-	Segments/Shared/22_Hillsbrad.lua	turnin 92421
+h22-rol-oran	h-22-hillsbrad	22.54	22.04	-	Segments/Shared/22_Hillsbrad.lua	turnin 95204
+h22-book-of-ur	h-22-hillsbrad	22.74	22.04	-	Segments/Shared/22_Hillsbrad.lua	accept 1013
+h22-uc-garrett	h-22-hillsbrad	22.74	22.04	-	Segments/Shared/22_Hillsbrad.lua	go
+h-22-uc-fly	h-22-hillsbrad	22.74	22.04	-	Segments/Shared/22_Hillsbrad.lua	fly The Sepulcher
+h-22-the-sepulcher-apothecary	h-22-hillsbrad	22.74	22.04	-	Segments/Shared/22_Hillsbrad.lua	accept 493
+h22-sfk-accept	h-22-hillsbrad	22.74	22.04	-	Segments/Shared/22_Hillsbrad.lua	accept 1098, accept 1014
+h22-sfk-vincent	h-22-hillsbrad	22.74	22.04	-	Segments/Shared/22_Hillsbrad.lua	turnin 1098
+h22-sfk-book	h-22-hillsbrad	22.94	22.04	-	Segments/Shared/22_Hillsbrad.lua	complete 1013
+h22-sfk-arugal	h-22-hillsbrad	22.94	22.04	-	Segments/Shared/22_Hillsbrad.lua	complete 1014
+h22-sfk-dalar	h-22-hillsbrad	22.94	22.04	-	Segments/Shared/22_Hillsbrad.lua	turnin 1014
+h22-go-ambermill	h-22-hillsbrad	23.24	22.04	-	Segments/Shared/22_Hillsbrad.lua	go
+h-22-offering-stone	h-22-hillsbrad	23.24	22.04	-	Segments/Shared/22_Hillsbrad.lua	accept 95883
+h22-tortured-soul	h-22-hillsbrad	23.24	22.04	-	Segments/Shared/22_Hillsbrad.lua	complete 95883
+h22-offering-stone-2	h-22-hillsbrad	23.25	22.05	-	Segments/Shared/22_Hillsbrad.lua	turnin 95883, accept 95885
+h22-offering-stone-3	h-22-hillsbrad	23.31	22.12	-	Segments/Shared/22_Hillsbrad.lua	turnin 95885
+h22-go-hillsbrad	h-22-hillsbrad	23.37	22.19	-	Segments/Shared/22_Hillsbrad.lua	go
+h-22-hillsbrad-west-deathstalker	h-22-hillsbrad	23.37	22.19	-	Segments/Shared/22_Hillsbrad.lua	accept 494
+h-22-tarrenmill-arrive	h-22-hillsbrad	23.37	22.19	-	Segments/Shared/22_Hillsbrad.lua	fp Tarren Mill
+h22-lydon	h-22-hillsbrad	23.37	22.19	-	Segments/Shared/22_Hillsbrad.lua	turnin 1065, turnin 493, accept 496, accept 501, accept 1066
+h22-darthalia	h-22-hillsbrad	23.46	22.28	-	Segments/Shared/22_Hillsbrad.lua	turnin 494, accept 527
+h22-posters	h-22-hillsbrad	23.48	22.31	-	Segments/Shared/22_Hillsbrad.lua	accept 549, accept 567
+h22-krusk	h-22-hillsbrad	23.48	22.31	-	Segments/Shared/22_Hillsbrad.lua	accept 498
+h22-bears-bg	h-22-hillsbrad	23.48	22.31	-	Segments/Shared/22_Hillsbrad.lua	complete 496
+h22-lions-bg	h-22-hillsbrad	23.56	22.40	-	Segments/Shared/22_Hillsbrad.lua	complete 501
+h22-dangerous-bg	h-22-hillsbrad	23.64	22.48	-	Segments/Shared/22_Hillsbrad.lua	complete 567
+h-22-hillsbrad-foothills-field	h-22-hillsbrad	23.65	22.50	-	Segments/Shared/22_Hillsbrad.lua	complete 527
+h22-darthalia-2	h-22-hillsbrad	23.72	22.58	-	Segments/Shared/22_Hillsbrad.lua	turnin 527, accept 528
+h22-samsa	h-22-hillsbrad	23.79	22.65	-	Segments/Shared/22_Hillsbrad.lua	accept 546
+h22-skulls-bg	h-22-hillsbrad	23.79	22.65	-	Segments/Shared/22_Hillsbrad.lua	complete 546
+h22-durnholde	h-22-hillsbrad	24.03	22.92	-	Segments/Shared/22_Hillsbrad.lua	complete 549, complete 1066
+h22-togthar	h-22-hillsbrad	24.12	23.04	-	Segments/Shared/22_Hillsbrad.lua	complete 498
+h22-drull	h-22-hillsbrad	24.12	23.04	-	Segments/Shared/22_Hillsbrad.lua	complete 498
+h22-go-fields	h-22-hillsbrad	24.12	23.04	-	Segments/Shared/22_Hillsbrad.lua	go
+h22-peasants	h-22-hillsbrad	24.12	23.04	-	Segments/Shared/22_Hillsbrad.lua	complete 528
+h22-lydon-2	h-22-hillsbrad	24.19	23.13	-	Segments/Shared/22_Hillsbrad.lua	turnin 496, turnin 501, turnin 1066, accept 499, accept 502, accept 1067
+h22-umpi	h-22-hillsbrad	24.32	23.26	-	Segments/Shared/22_Hillsbrad.lua	turnin 499
+h22-darthalia-3	h-22-hillsbrad	24.38	23.32	-	Segments/Shared/22_Hillsbrad.lua	turnin 528, turnin 549, accept 529
+h22-scout-support	h-22-hillsbrad	24.49	23.45	-	Segments/Shared/22_Hillsbrad.lua	accept 98094
+h22-krusk-2	h-22-hillsbrad	24.49	23.45	-	Segments/Shared/22_Hillsbrad.lua	turnin 498
+h-22-stanley	h-22-hillsbrad	24.56	23.52	-	Segments/Shared/22_Hillsbrad.lua	turnin 502
+h22-smithy	h-22-hillsbrad	24.61	23.57	-	Segments/Shared/22_Hillsbrad.lua	complete 529
+h-22-hillsbrad-level-gate	h-22-hillsbrad	24.61	23.57	-	Segments/Shared/22_Hillsbrad.lua	complete 529, complete 546, level 23
+h-22-deathstalker-masoj	h-22-hillsbrad	24.61	23.85	-	Segments/Shared/22_Hillsbrad.lua	turnin 98094
+h22-samsa-2	h-22-hillsbrad	24.67	23.85	-	Segments/Shared/22_Hillsbrad.lua	turnin 546
+h-24-tarrenmill-end	h-22-hillsbrad	24.75	23.94	-	Segments/Shared/22_Hillsbrad.lua	turnin 529, accept 532
+h-24-tb-hearth	h-22-hillsbrad	24.82	24.01	-	Segments/Shared/22_Hillsbrad.lua	hearth Thunder Bluff
+h-24-tb-arrive	h-24-barrens-stonetalon	24.82	24.01	-	Segments/Shared/24_Barrens_Stonetalon.lua	turnin 1067, accept 1086
+h-24-tb-fly	h-24-barrens-stonetalon	24.86	24.05	-	Segments/Shared/24_Barrens_Stonetalon.lua	fly The Crossroads
+h-24-the-crossroads	h-24-barrens-stonetalon	24.86	24.05	-	Segments/Shared/24_Barrens_Stonetalon.lua	accept 868
+h-24-fly-taurajo	h-24-barrens-stonetalon	24.86	24.05	-	Segments/Shared/24_Barrens_Stonetalon.lua	fly Camp Taurajo
+h-24-camp-taurajo	h-24-barrens-stonetalon	24.86	24.05	-	Segments/Shared/24_Barrens_Stonetalon.lua	accept 879
+h-24-gann-stonespire	h-24-barrens-stonetalon	24.86	24.05	-	Segments/Shared/24_Barrens_Stonetalon.lua	accept 843
+h-24-the-barrens-field	h-24-barrens-stonetalon	24.93	24.11	-	Segments/Shared/24_Barrens_Stonetalon.lua	complete 843
+h-24-feegly-the-exiled	h-24-barrens-stonetalon	25.01	24.19	-	Segments/Shared/24_Barrens_Stonetalon.lua	accept 857
+h-25-fly-ratchet	h-24-barrens-stonetalon	25.62	24.80	-	Segments/Shared/24_Barrens_Stonetalon.lua	fly Ratchet
+h-24-ratchet-arrive	h-24-barrens-stonetalon	25.62	24.80	-	Segments/Shared/24_Barrens_Stonetalon.lua	accept 891
+h-25-the-crossroads-flight	h-24-barrens-stonetalon	26.10	25.22	-	Segments/Shared/24_Barrens_Stonetalon.lua	fly Sun Rock Retreat
+h-26-sunrock-arrive	h-24-barrens-stonetalon	26.10	25.22	-	Segments/Shared/24_Barrens_Stonetalon.lua	accept 1087
+h-25-sun-rock-retreat	h-24-barrens-stonetalon	26.10	25.22	-	Segments/Shared/24_Barrens_Stonetalon.lua	accept 6301
+h-25-windshear-crag-ziz	h-24-barrens-stonetalon	26.10	25.22	-	Segments/Shared/24_Barrens_Stonetalon.lua	accept 1096
+h-25-stonetalon-mountains-field	h-24-barrens-stonetalon	26.11	25.22	-	Segments/Shared/24_Barrens_Stonetalon.lua	complete 1096
+h25-rebirth-seeds	h-24-barrens-stonetalon	26.18	25.29	-	Segments/Shared/24_Barrens_Stonetalon.lua	complete 6301
+h-25-sun-rock-retreat-2	h-24-barrens-stonetalon	26.54	25.67	-	Segments/Shared/24_Barrens_Stonetalon.lua	accept 5881
+h25-rebirth-turnin	h-24-barrens-stonetalon	26.58	25.71	-	Segments/Shared/24_Barrens_Stonetalon.lua	turnin 6301
+h-26-bfd-fly	h-24-barrens-stonetalon	26.62	25.75	-	Segments/Shared/24_Barrens_Stonetalon.lua	fly Zoram'gar Outpost
+h-26-bfd-fly-back	h-24-barrens-stonetalon	27.08	25.75	-	Segments/Shared/24_Barrens_Stonetalon.lua	fly Sun Rock Retreat
+h-24-barrens-stonetalon-level-gate	h-24-barrens-stonetalon	27.08	25.75	-	Segments/Shared/24_Barrens_Stonetalon.lua	complete 6283, level 26
+h-27-sunrock-end	h-24-barrens-stonetalon	27.25	27.01	-	Segments/Shared/24_Barrens_Stonetalon.lua	turnin 6283
+h-27-hearth-tb	h-27-ashenvale-needles	27.30	27.07	-	Segments/Shared/27_Ashenvale_Needles.lua	hearth Thunder Bluff
+h-27-tb-arrive	h-27-ashenvale-needles	27.30	27.07	-	Segments/Shared/27_Ashenvale_Needles.lua	turnin 1086
+h27-tb-97538	h-27-ashenvale-needles	27.36	27.12	-	Segments/Shared/27_Ashenvale_Needles.lua	turnin 97538
+h27-tb-6561	h-27-ashenvale-needles	27.42	27.18	-	Segments/Shared/27_Ashenvale_Needles.lua	turnin 6561
+h-27-thunder-bluff-flight	h-27-ashenvale-needles	27.62	27.18	-	Segments/Shared/27_Ashenvale_Needles.lua	fly The Crossroads
+h-27-torek	h-27-ashenvale-needles	27.62	27.18	-	Segments/Shared/27_Ashenvale_Needles.lua	accept 6544
+h-27-splintertree-arrive	h-27-ashenvale-needles	27.69	27.25	-	Segments/Shared/27_Ashenvale_Needles.lua	fp Splintertree Post
+h-27-ashenvale-field-loop	h-27-ashenvale-needles	27.77	27.33	-	Segments/Shared/27_Ashenvale_Needles.lua	complete 6441
+h-28-splintertree-end	h-27-ashenvale-needles	28.21	27.77	-	Segments/Shared/27_Ashenvale_Needles.lua	turnin 247
+h28-fly-sunrock	h-27-ashenvale-needles	28.29	27.85	-	Segments/Shared/27_Ashenvale_Needles.lua	fly Sun Rock Retreat
+h-28-hearth-tb	h-27-ashenvale-needles	28.34	27.91	-	Segments/Shared/27_Ashenvale_Needles.lua	hearth Thunder Bluff
+h-28-tb-arrive	h-27-ashenvale-needles	28.34	27.91	-	Segments/Shared/27_Ashenvale_Needles.lua	turnin 1195, accept 1196
+h-28-skywatcher	h-27-ashenvale-needles	28.40	27.97	-	Segments/Shared/27_Ashenvale_Needles.lua	accept 96259
+h-28-mulgore-skywatcher-plateau	h-27-ashenvale-needles	28.46	28.03	-	Segments/Shared/27_Ashenvale_Needles.lua	complete 96259
+h28-skywatcher-96260	h-27-ashenvale-needles	28.53	28.10	-	Segments/Shared/27_Ashenvale_Needles.lua	turnin 96260
+h28-skywatcher-96241	h-27-ashenvale-needles	28.58	28.14	-	Segments/Shared/27_Ashenvale_Needles.lua	turnin 96241
+h28-skywatcher-96259	h-27-ashenvale-needles	28.62	28.19	-	Segments/Shared/27_Ashenvale_Needles.lua	turnin 96259
+h28-skywatcher-96261	h-27-ashenvale-needles	28.67	28.23	-	Segments/Shared/27_Ashenvale_Needles.lua	turnin 96261, turnin 96294
+h-28-thunder-bluff	h-27-ashenvale-needles	28.74	28.23	-	Segments/Shared/27_Ashenvale_Needles.lua	go
+h-28-thunder-bluff-flight	h-27-ashenvale-needles	28.74	28.23	-	Segments/Shared/27_Ashenvale_Needles.lua	fly Camp Taurajo
+h-29-greatlift-arrive	h-27-ashenvale-needles	28.92	28.23	-	Segments/Shared/27_Ashenvale_Needles.lua	turnin 5881
+h-28-freewind-post	h-27-ashenvale-needles	28.94	28.26	-	Segments/Shared/27_Ashenvale_Needles.lua	fp Freewind Post
+h-28-thousand-needles-field	h-27-ashenvale-needles	28.97	28.28	-	Segments/Shared/27_Ashenvale_Needles.lua	complete 4841
+h-28-dorn-plainstalker	h-27-ashenvale-needles	29.04	28.36	-	Segments/Shared/27_Ashenvale_Needles.lua	accept 1149
+h-28-pao-ka-swiftmountain	h-27-ashenvale-needles	29.28	28.63	-	Segments/Shared/27_Ashenvale_Needles.lua	accept 4770
+h-28-whitereach-post	h-27-ashenvale-needles	29.29	28.64	-	Segments/Shared/27_Ashenvale_Needles.lua	turnin 4770, turnin 4865, accept 5062
+h-28-lakota-windsong	h-27-ashenvale-needles	29.57	28.73	-	Segments/Shared/27_Ashenvale_Needles.lua	accept 4904
+h-27-ashenvale-needles-level-gate	h-27-ashenvale-needles	30.17	29.36	-	Segments/Shared/27_Ashenvale_Needles.lua	complete 1175, level 30
+h-31-flats-end	h-27-ashenvale-needles	30.85	30.86	-	Segments/Shared/27_Ashenvale_Needles.lua	turnin 1175
+h-31-tb-hearth	h-27-ashenvale-needles	30.91	30.91	-	Segments/Shared/27_Ashenvale_Needles.lua	hearth Thunder Bluff
+h30-tb-1131	h-27-ashenvale-needles	30.91	30.91	-	Segments/Shared/27_Ashenvale_Needles.lua	turnin 1131
+h-31-tb-end	h-27-ashenvale-needles	30.96	30.96	-	Segments/Shared/27_Ashenvale_Needles.lua	turnin 5062
+h-31-tb-fly	h-31-hillsbrad-arathi	31.01	31.01	-	Segments/Shared/31_Hillsbrad_Arathi.lua	go
+h31-fly-taurajo	h-31-hillsbrad-arathi	31.01	31.01	-	Segments/Shared/31_Hillsbrad_Arathi.lua	fly Camp Taurajo
+h-31-org	h-31-hillsbrad-arathi	31.05	31.06	-	Segments/Shared/31_Hillsbrad_Arathi.lua	fly Orgrimmar
+h31-tirisfal-arrive	h-31-hillsbrad-arathi	31.05	31.06	-	Segments/Shared/31_Hillsbrad_Arathi.lua	go
+h31-uc-1013	h-31-hillsbrad-arathi	31.05	31.06	-	Segments/Shared/31_Hillsbrad_Arathi.lua	turnin 1013
+h-31-uc-arrive	h-31-hillsbrad-arathi	31.16	31.06	-	Segments/Shared/31_Hillsbrad_Arathi.lua	accept 1164
+h-31-undercity-flight-master	h-31-hillsbrad-arathi	31.16	31.06	-	Segments/Shared/31_Hillsbrad_Arathi.lua	fly Tarren Mill
+h-31-tarrenmill-arrive	h-31-hillsbrad-arathi	31.16	31.06	-	Segments/Shared/31_Hillsbrad_Arathi.lua	sethearth Tarren Mill
+h-31-hillsbrad-alterac-field	h-31-hillsbrad-arathi	31.16	31.06	-	Segments/Shared/31_Hillsbrad_Arathi.lua	complete 533
+h-31-helcular-s-grave	h-31-hillsbrad-arathi	31.66	31.55	-	Segments/Shared/31_Hillsbrad_Arathi.lua	turnin 553
+h-31-gol-dir	h-31-hillsbrad-arathi	31.87	31.76	-	Segments/Shared/31_Hillsbrad_Arathi.lua	turnin 503, accept 506
+h-33-tarrenmill-end	h-31-hillsbrad-arathi	31.97	31.76	-	Segments/Shared/31_Hillsbrad_Arathi.lua	turnin 539, turnin 567
+h-31-tarren-mill	h-31-hillsbrad-arathi	32.06	31.85	-	Segments/Shared/31_Hillsbrad_Arathi.lua	go
+h-31-shards-of-myzrael	h-31-hillsbrad-arathi	32.15	31.95	-	Segments/Shared/31_Hillsbrad_Arathi.lua	accept 642
+h-33-hammerfall-arrive	h-31-hillsbrad-arathi	32.15	31.95	-	Segments/Shared/31_Hillsbrad_Arathi.lua	fp Hammerfall
+h32-sethearth-hammerfall	h-31-hillsbrad-arathi	32.15	31.95	-	Segments/Shared/31_Hillsbrad_Arathi.lua	sethearth Hammerfall
+h-31-arathi-highlands-field	h-31-hillsbrad-arathi	32.31	32.12	-	Segments/Shared/31_Hillsbrad_Arathi.lua	complete 677
+h-31-hillsbrad-arathi-level-gate	h-31-hillsbrad-arathi	32.42	32.23	-	Segments/Shared/31_Hillsbrad_Arathi.lua	level 33
+h-31-iridescent-shards	h-31-hillsbrad-arathi	33.50	33.50	-	Segments/Shared/31_Hillsbrad_Arathi.lua	turnin 642
+h-31-stone-of-inner	h-31-hillsbrad-arathi	33.78	33.78	-	Segments/Shared/31_Hillsbrad_Arathi.lua	go
+h33-hearth-hammerfall	h-31-hillsbrad-arathi	33.82	33.81	-	Segments/Shared/31_Hillsbrad_Arathi.lua	hearth Hammerfall
+h-34-hammerfall-end	h-31-hillsbrad-arathi	34.01	34.01	-	Segments/Shared/31_Hillsbrad_Arathi.lua	turnin 847
+h34-fly-uc	h-34-stranglethorn	34.06	34.05	-	Segments/Shared/34_Stranglethorn.lua	fly Undercity
+h-34-uc-arrive	h-34-stranglethorn	34.06	34.05	-	Segments/Shared/34_Stranglethorn.lua	turnin 1164
+h34-faranell	h-34-stranglethorn	34.10	34.10	-	Segments/Shared/34_Stranglethorn.lua	turnin 513
+h34-uc-exit	h-34-stranglethorn	34.12	34.11	-	Segments/Shared/34_Stranglethorn.lua	go
+h-34-tirisfal-zeppelin-to	h-34-stranglethorn	34.12	34.11	-	Segments/Shared/34_Stranglethorn.lua	go
+h-34-gromgol-arrive	h-34-stranglethorn	34.12	34.11	-	Segments/Shared/34_Stranglethorn.lua	go
+h34-fp-gromgol	h-34-stranglethorn	34.12	34.11	-	Segments/Shared/34_Stranglethorn.lua	fp Grom'gol Base Camp
+h34-sethearth-gromgol	h-34-stranglethorn	34.12	34.11	-	Segments/Shared/34_Stranglethorn.lua	sethearth Grom'gol Base Camp
+h34-road-south	h-34-stranglethorn	34.12	34.11	-	Segments/Shared/34_Stranglethorn.lua	go
+h34-road-arena	h-34-stranglethorn	34.12	34.11	-	Segments/Shared/34_Stranglethorn.lua	go
+h34-bb-tunnel	h-34-stranglethorn	34.12	34.11	-	Segments/Shared/34_Stranglethorn.lua	go
+h-34-booty-bay	h-34-stranglethorn	34.12	34.11	-	Segments/Shared/34_Stranglethorn.lua	accept 575
+h34-fp-bootybay	h-34-stranglethorn	34.12	34.11	-	Segments/Shared/34_Stranglethorn.lua	fp Booty Bay
+h34-hearth-gromgol-1	h-34-stranglethorn	34.12	34.11	-	Segments/Shared/34_Stranglethorn.lua	fly Grom'gol Base Camp
+h-34-nesingwary-s-expedition	h-34-stranglethorn	34.34	34.34	-	Segments/Shared/34_Stranglethorn.lua	accept 583, complete 201
+h-34-stranglethorn-vale-field	h-34-stranglethorn	34.37	34.36	-	Segments/Shared/34_Stranglethorn.lua	complete 185, complete 190, complete 575
+h34-gromgol-568	h-34-stranglethorn	34.86	34.86	-	Segments/Shared/34_Stranglethorn.lua	turnin 568, accept 569
+h34-gromgol-581	h-34-stranglethorn	34.90	34.90	-	Segments/Shared/34_Stranglethorn.lua	turnin 581, accept 582
+h34-gromgol-569	h-34-stranglethorn	35.08	35.08	-	Segments/Shared/34_Stranglethorn.lua	turnin 569
+h34-gromgol-570	h-34-stranglethorn	35.12	35.12	-	Segments/Shared/34_Stranglethorn.lua	turnin 570
+h-34-stranglethorn-level-gate	h-34-stranglethorn	35.26	35.25	-	Segments/Shared/34_Stranglethorn.lua	level 35
+h34-hearth-gromgol-2	h-34-stranglethorn	35.83	35.83	-	Segments/Shared/34_Stranglethorn.lua	hearth Grom'gol Base Camp
+h35-gromgol-582	h-34-stranglethorn	35.83	35.83	-	Segments/Shared/34_Stranglethorn.lua	turnin 582
+h36-gromgol-end	h-34-stranglethorn	35.86	35.86	-	Segments/Shared/34_Stranglethorn.lua	turnin 596, turnin 629
+h34-fly-bootybay	h-34-stranglethorn	35.93	35.93	-	Segments/Shared/34_Stranglethorn.lua	fly Booty Bay
+h35-bootybay-201	h-34-stranglethorn	35.93	35.93	-	Segments/Shared/34_Stranglethorn.lua	turnin 201
+h35-bootybay-189	h-34-stranglethorn	35.93	35.94	-	Segments/Shared/34_Stranglethorn.lua	turnin 189, turnin 213
+h35-bootybay-605	h-34-stranglethorn	36.01	36.01	-	Segments/Shared/34_Stranglethorn.lua	turnin 605
+h-37-bootybay-end	h-34-stranglethorn	36.04	36.05	-	Segments/Shared/34_Stranglethorn.lua	turnin 575
+h37-fly-gromgol	h-37-desolace-dustwallow	36.06	36.06	-	Segments/Shared/37_Desolace_Dustwallow.lua	fly Grom'gol Base Camp
+h-37-grom-gol-zeppelin	h-37-desolace-dustwallow	36.06	36.06	-	Segments/Shared/37_Desolace_Dustwallow.lua	go
+h37-durotar-arrive	h-37-desolace-dustwallow	36.06	36.06	-	Segments/Shared/37_Desolace_Dustwallow.lua	go
+h-37-orgrimmar	h-37-desolace-dustwallow	36.06	36.06	-	Segments/Shared/37_Desolace_Dustwallow.lua	go
+h-37-org-arrive	h-37-desolace-dustwallow	36.06	36.06	-	Segments/Shared/37_Desolace_Dustwallow.lua	accept 1431
+h-37-orgrimmar-keldran	h-37-desolace-dustwallow	36.06	36.06	-	Segments/Shared/37_Desolace_Dustwallow.lua	turnin 1431, accept 1432
+h-37-orgrimmar-flight-master	h-37-desolace-dustwallow	36.07	36.07	-	Segments/Shared/37_Desolace_Dustwallow.lua	fly Sun Rock Retreat
+h37-sunrock-west	h-37-desolace-dustwallow	36.07	36.07	-	Segments/Shared/37_Desolace_Dustwallow.lua	go
+h37-charred-vale	h-37-desolace-dustwallow	36.07	36.07	-	Segments/Shared/37_Desolace_Dustwallow.lua	go
+h37-desolace-north	h-37-desolace-dustwallow	36.07	36.07	-	Segments/Shared/37_Desolace_Dustwallow.lua	go
+h-37-cork-gizelton-bibbly	h-37-desolace-dustwallow	36.07	36.07	-	Segments/Shared/37_Desolace_Dustwallow.lua	accept 5501
+h-37-ghostwalker-arrive	h-37-desolace-dustwallow	36.07	36.07	-	Segments/Shared/37_Desolace_Dustwallow.lua	turnin 1432, accept 1433, accept 1434
+h-37-kolkar-guests	h-37-desolace-dustwallow	36.09	36.09	-	Segments/Shared/37_Desolace_Dustwallow.lua	accept 1365
+h-37-smeed-scrabble	h-37-desolace-dustwallow	36.09	36.09	-	Segments/Shared/37_Desolace_Dustwallow.lua	accept 5561
+h37-thunder-axe	h-37-desolace-dustwallow	36.18	36.15	-	Segments/Shared/37_Desolace_Dustwallow.lua	complete 1435
+h-37-desolace-field-loop	h-37-desolace-dustwallow	36.27	36.24	-	Segments/Shared/37_Desolace_Dustwallow.lua	complete 1434, complete 1481
+h-37-hornizz-brimbuzzle	h-37-desolace-dustwallow	36.44	36.41	-	Segments/Shared/37_Desolace_Dustwallow.lua	accept 6134
+h38-level-maraudine	h-37-desolace-dustwallow	36.50	36.44	-	Segments/Shared/37_Desolace_Dustwallow.lua	level 37
+h38-melizza	h-37-desolace-dustwallow	37.50	37.50	-	Segments/Shared/37_Desolace_Dustwallow.lua	accept 6132, complete 6132
+h38-sethearth-shadowprey	h-37-desolace-dustwallow	37.50	37.50	-	Segments/Shared/37_Desolace_Dustwallow.lua	sethearth Shadowprey Village
+h-37-shadowprey-village	h-37-desolace-dustwallow	37.50	37.50	-	Segments/Shared/37_Desolace_Dustwallow.lua	accept 5381
+h38-fp-shadowprey	h-37-desolace-dustwallow	37.50	37.50	-	Segments/Shared/37_Desolace_Dustwallow.lua	fp Shadowprey Village
+h38-coast-north	h-37-desolace-dustwallow	37.50	37.50	-	Segments/Shared/37_Desolace_Dustwallow.lua	go
+h-37-rackmore-s-log	h-37-desolace-dustwallow	37.50	37.50	-	Segments/Shared/37_Desolace_Dustwallow.lua	accept 6161
+h-37-azore-aldamort	h-37-desolace-dustwallow	37.52	37.52	-	Segments/Shared/37_Desolace_Dustwallow.lua	accept 5741
+h-37-rackmore-s-chest	h-37-desolace-dustwallow	37.61	37.61	-	Segments/Shared/37_Desolace_Dustwallow.lua	turnin 6161
+h38-hearth-shadowprey	h-37-desolace-dustwallow	37.69	37.70	-	Segments/Shared/37_Desolace_Dustwallow.lua	hearth Shadowprey Village
+h-37-rigger-gizelton	h-37-desolace-dustwallow	37.80	37.81	-	Segments/Shared/37_Desolace_Dustwallow.lua	go
+h39-level-mannoroc	h-37-desolace-dustwallow	37.82	37.82	-	Segments/Shared/37_Desolace_Dustwallow.lua	level 39
+h-37-warug	h-37-desolace-dustwallow	39.78	39.78	-	Segments/Shared/37_Desolace_Dustwallow.lua	complete 6134
+h40-spices	h-37-desolace-dustwallow	39.90	39.86	-	Segments/Shared/37_Desolace_Dustwallow.lua	vendor
+h40-hearth-shadowprey	h-37-desolace-dustwallow	40.00	39.94	-	Segments/Shared/37_Desolace_Dustwallow.lua	hearth Shadowprey Village
+h-40-shadowprey-end	h-37-desolace-dustwallow	40.00	39.94	-	Segments/Shared/37_Desolace_Dustwallow.lua	turnin 5581
+h40-fly-org	h-37-desolace-dustwallow	40.04	39.98	-	Segments/Shared/37_Desolace_Dustwallow.lua	fly Orgrimmar
+h40-sethearth-org	h-37-desolace-dustwallow	40.04	39.98	-	Segments/Shared/37_Desolace_Dustwallow.lua	sethearth Orgrimmar
+h-40-org-arrive	h-37-desolace-dustwallow	40.04	39.98	-	Segments/Shared/37_Desolace_Dustwallow.lua	turnin 1436
+tau-40-fly-tb	h-37-desolace-dustwallow	40.06	40.01	h-40-org-arrive	Races/Tauren.lua	fly Thunder Bluff
+tau-40-bloodhoof	h-37-desolace-dustwallow	40.06	40.01	h-40-org-arrive	Races/Tauren.lua	go
+tau-40-riding	h-37-desolace-dustwallow	40.06	40.01	h-40-org-arrive	Races/Tauren.lua	train
+tau-40-kodo	h-37-desolace-dustwallow	40.06	40.01	h-40-org-arrive	Races/Tauren.lua	vendor
+tau-40-tb	h-37-desolace-dustwallow	40.06	40.01	h-40-org-arrive	Races/Tauren.lua	go
+tau-40-fly-taurajo	h-37-desolace-dustwallow	40.06	40.01	h-40-org-arrive	Races/Tauren.lua	fly Camp Taurajo
+h-38-orgrimmar-flight-master	h-37-desolace-dustwallow	40.06	40.01	-	Segments/Shared/37_Desolace_Dustwallow.lua	fly Camp Taurajo
+h40-rfd-host	h-37-desolace-dustwallow	40.06	40.01	-	Segments/Shared/37_Desolace_Dustwallow.lua	accept 6626
+h-40-brackenwall-arrive	h-37-desolace-dustwallow	40.15	40.01	-	Segments/Shared/37_Desolace_Dustwallow.lua	accept 1251, accept 1268, accept 1269
+h-38-mudcrush-durtfeet	h-37-desolace-dustwallow	40.15	40.01	-	Segments/Shared/37_Desolace_Dustwallow.lua	accept 1177
+h-38-brackenwall-village	h-37-desolace-dustwallow	40.15	40.01	-	Segments/Shared/37_Desolace_Dustwallow.lua	fp Brackenwall Village
+h-38-ogron	h-37-desolace-dustwallow	40.19	40.05	-	Segments/Shared/37_Desolace_Dustwallow.lua	accept 1273
+h-38-swamp-eye-jarl	h-37-desolace-dustwallow	40.21	40.07	-	Segments/Shared/37_Desolace_Dustwallow.lua	turnin 1218, accept 1218, complete 1218
+h40-theramore-docks	h-37-desolace-dustwallow	40.50	40.36	-	Segments/Shared/37_Desolace_Dustwallow.lua	complete 1202
+h-38-dustwallow-marsh-field	h-37-desolace-dustwallow	40.50	40.36	-	Segments/Shared/37_Desolace_Dustwallow.lua	complete 1168, complete 1169
+h-37-desolace-dustwallow-level-gate	h-37-desolace-dustwallow	40.96	40.83	-	Segments/Shared/37_Desolace_Dustwallow.lua	level 40
+h-41-brackenwall-end	h-37-desolace-dustwallow	40.96	40.83	-	Segments/Shared/37_Desolace_Dustwallow.lua	turnin 1172
+h41-hearth-org	h-41-arathi-badlands	41.02	40.88	-	Segments/Shared/41_Arathi_Badlands.lua	hearth Orgrimmar
+h41-zeppelin-uc	h-41-arathi-badlands	41.02	40.88	-	Segments/Shared/41_Arathi_Badlands.lua	go
+h-41-uc-arrive	h-41-arathi-badlands	41.02	40.88	-	Segments/Shared/41_Arathi_Badlands.lua	go
+h41-uc-232	h-41-arathi-badlands	41.02	40.88	-	Segments/Shared/41_Arathi_Badlands.lua	turnin 232, accept 238
+h41-uc-238	h-41-arathi-badlands	41.02	40.88	-	Segments/Shared/41_Arathi_Badlands.lua	turnin 238, accept 243
+h41-sharlindra	h-41-arathi-badlands	41.02	40.89	-	Segments/Shared/41_Arathi_Badlands.lua	accept 495
+h41-sm-accept	h-41-arathi-badlands	41.02	40.89	-	Segments/Shared/41_Arathi_Badlands.lua	accept 1048
+h41-uc-1048	h-41-arathi-badlands	41.04	40.89	-	Segments/Shared/41_Arathi_Badlands.lua	turnin 1048
+h-41-undercity-flight-master	h-41-arathi-badlands	41.10	40.89	-	Segments/Shared/41_Arathi_Badlands.lua	fly Tarren Mill
+h41-fly-hammerfall	h-41-arathi-badlands	41.28	40.93	-	Segments/Shared/41_Arathi_Badlands.lua	fly Hammerfall
+h-41-hammerfall-arrive	h-41-arathi-badlands	41.28	40.93	-	Segments/Shared/41_Arathi_Badlands.lua	go
+h41-iridescent-shards	h-41-arathi-badlands	41.28	40.93	-	Segments/Shared/41_Arathi_Badlands.lua	accept 651
+h41-arathi-center	h-41-arathi-badlands	41.28	40.93	-	Segments/Shared/41_Arathi_Badlands.lua	complete 651
+h-41-stone-of-inner	h-41-arathi-badlands	41.28	40.93	-	Segments/Shared/41_Arathi_Badlands.lua	turnin 651
+h-41-keystone	h-41-arathi-badlands	41.31	40.96	-	Segments/Shared/41_Arathi_Badlands.lua	go
+h-41-faldir-s-cove	h-41-arathi-badlands	41.31	40.96	-	Segments/Shared/41_Arathi_Badlands.lua	accept 663
+h-41-trollbane-s-tomb	h-41-arathi-badlands	41.31	40.96	-	Segments/Shared/41_Arathi_Badlands.lua	turnin 663
+h-41-arathi-highlands-field	h-41-arathi-badlands	41.38	41.03	-	Segments/Shared/41_Arathi_Badlands.lua	complete 662
+h-41-hammerfall	h-41-arathi-badlands	41.48	41.13	-	Segments/Shared/41_Arathi_Badlands.lua	turnin 668, accept 669
+h-42-arathi-end	h-41-arathi-badlands	41.50	41.15	-	Segments/Shared/41_Arathi_Badlands.lua	go
+h41-wetlands	h-41-arathi-badlands	41.50	41.15	-	Segments/Shared/41_Arathi_Badlands.lua	go
+h41-dun-algaz	h-41-arathi-badlands	41.50	41.15	-	Segments/Shared/41_Arathi_Badlands.lua	go
+h41-loch-modan	h-41-arathi-badlands	41.50	41.15	-	Segments/Shared/41_Arathi_Badlands.lua	go
+h41-badlands-pass	h-41-arathi-badlands	41.50	41.15	-	Segments/Shared/41_Arathi_Badlands.lua	go
+h-41-rigglefuzz-martek	h-41-arathi-badlands	41.50	41.15	-	Segments/Shared/41_Arathi_Badlands.lua	accept 703
+h41-uldaman	h-41-arathi-badlands	41.50	41.15	-	Segments/Shared/41_Arathi_Badlands.lua	complete 2418
+h-41-lotwil-veriatus-lucien	h-41-arathi-badlands	41.66	41.25	-	Segments/Shared/41_Arathi_Badlands.lua	accept 710
+h-42-kargath-arrive	h-41-arathi-badlands	41.72	41.32	-	Segments/Shared/41_Arathi_Badlands.lua	fp Kargath
+h42-sethearth-kargath	h-41-arathi-badlands	41.72	41.32	-	Segments/Shared/41_Arathi_Badlands.lua	sethearth Kargath
+h-41-badlands-field-loop	h-41-arathi-badlands	41.76	41.36	-	Segments/Shared/41_Arathi_Badlands.lua	complete 1419, complete 2258, complete 703
+h-41-arathi-badlands-level-gate	h-41-arathi-badlands	41.89	41.49	-	Segments/Shared/41_Arathi_Badlands.lua	level 43
+h-41-theldurin-the-lost	h-41-arathi-badlands	43.80	43.80	-	Segments/Shared/41_Arathi_Badlands.lua	turnin 703
+h43-caught	h-41-arathi-badlands	43.94	43.92	-	Segments/Shared/41_Arathi_Badlands.lua	accept 4449
+h-44-kargath-end	h-41-arathi-badlands	43.99	43.98	-	Segments/Shared/41_Arathi_Badlands.lua	turnin 2258
+h-44-uc-arrive	h-44-swamp-stranglethorn	44.02	44.00	-	Segments/Shared/44_Swamp_Stranglethorn.lua	fly Undercity
+h44-uc-exit	h-44-swamp-stranglethorn	44.02	44.00	-	Segments/Shared/44_Swamp_Stranglethorn.lua	go
+h44-zeppelin-gromgol	h-44-swamp-stranglethorn	44.02	44.00	-	Segments/Shared/44_Swamp_Stranglethorn.lua	go
+h-44-gromgol-arrive	h-44-swamp-stranglethorn	44.02	44.00	-	Segments/Shared/44_Swamp_Stranglethorn.lua	go
+h44-sethearth-gromgol	h-44-swamp-stranglethorn	44.02	44.00	-	Segments/Shared/44_Swamp_Stranglethorn.lua	sethearth Grom'gol Base Camp
+h-44-nesingwary-s-expedition	h-44-swamp-stranglethorn	44.03	44.01	-	Segments/Shared/44_Swamp_Stranglethorn.lua	accept 196
+h44-duskwood-darkshire	h-44-swamp-stranglethorn	44.03	44.01	-	Segments/Shared/44_Swamp_Stranglethorn.lua	go
+h44-deadwind-road	h-44-swamp-stranglethorn	44.03	44.01	-	Segments/Shared/44_Swamp_Stranglethorn.lua	go
+h-44-magtoor	h-44-swamp-stranglethorn	44.03	44.01	-	Segments/Shared/44_Swamp_Stranglethorn.lua	go
+h-44-stonard-flight-master	h-44-swamp-stranglethorn	44.03	44.01	-	Segments/Shared/44_Swamp_Stranglethorn.lua	fp Stonard
+h-44-stonard-arrive	h-44-swamp-stranglethorn	44.03	44.01	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 1420
+h-44-swamp-of-sorrows	h-44-swamp-stranglethorn	44.06	44.05	-	Segments/Shared/44_Swamp_Stranglethorn.lua	complete 1424
+h-44-tok-kar-katar	h-44-swamp-stranglethorn	44.10	44.08	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 698, accept 699
+h-44-galen-goodward	h-44-swamp-stranglethorn	44.14	44.12	-	Segments/Shared/44_Swamp_Stranglethorn.lua	accept 1393, complete 1393
+h-44-galen-s-strongbox	h-44-swamp-stranglethorn	44.14	44.12	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 1393
+h44-stonard-1424	h-44-swamp-stranglethorn	44.16	44.14	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 1424, accept 1429
+h-45-stonard-end	h-44-swamp-stranglethorn	44.20	44.18	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 1430
+h44-tok-kar-2	h-44-swamp-stranglethorn	44.23	44.21	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 699, accept 1422
+h44-hearth-gromgol	h-44-swamp-stranglethorn	44.52	44.50	-	Segments/Shared/44_Swamp_Stranglethorn.lua	hearth Grom'gol Base Camp
+h-45-gromgol	h-44-swamp-stranglethorn	44.52	44.50	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 584, accept 585, accept 586
+h-44-stranglethorn-vale-field	h-44-swamp-stranglethorn	44.55	44.53	-	Segments/Shared/44_Swamp_Stranglethorn.lua	complete 572, complete 196
+h44-gromgol-572	h-44-swamp-stranglethorn	44.59	44.57	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 572, accept 571
+h44-fly-bootybay	h-44-swamp-stranglethorn	44.61	44.59	-	Segments/Shared/44_Swamp_Stranglethorn.lua	fly Booty Bay
+h44-sethearth-bootybay	h-44-swamp-stranglethorn	44.61	44.59	-	Segments/Shared/44_Swamp_Stranglethorn.lua	sethearth Booty Bay
+h-44-booty-bay	h-44-swamp-stranglethorn	44.61	44.59	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 669
+h-44-bloodsail-correspondence	h-44-swamp-stranglethorn	44.64	44.62	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 595, accept 597
+h45-mistvale	h-44-swamp-stranglethorn	44.66	44.64	-	Segments/Shared/44_Swamp_Stranglethorn.lua	accept 349
+h44-bootybay-606	h-44-swamp-stranglethorn	44.71	44.69	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 606, accept 607
+h45-bootybay-2	h-44-swamp-stranglethorn	44.72	44.70	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 607, accept 609
+h44-bootybay-348	h-44-swamp-stranglethorn	44.74	44.72	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 348
+h44-bootybay-597	h-44-swamp-stranglethorn	44.79	44.78	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 597, accept 599
+h44-bootybay-599	h-44-swamp-stranglethorn	44.82	44.80	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 599, accept 604
+h-44-yenniku	h-44-swamp-stranglethorn	44.86	44.84	-	Segments/Shared/44_Swamp_Stranglethorn.lua	complete 621, complete 609
+h45-venture-mine	h-44-swamp-stranglethorn	44.91	44.89	-	Segments/Shared/44_Swamp_Stranglethorn.lua	complete 600
+h45-nesingwary-2	h-44-swamp-stranglethorn	45.04	45.03	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 196
+h45-gromgol-2	h-44-swamp-stranglethorn	45.09	45.07	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 585, turnin 586, accept 588
+h45-gromgol-588	h-44-swamp-stranglethorn	45.14	45.13	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 588, turnin 598, accept 589
+h45-gromgol-571	h-44-swamp-stranglethorn	45.18	45.16	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 571, accept 573
+h45-gromgol-573	h-44-swamp-stranglethorn	45.25	45.24	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 573
+h45-gromgol-589	h-44-swamp-stranglethorn	45.29	45.28	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 589
+h44-hearth-bootybay	h-44-swamp-stranglethorn	45.32	45.31	-	Segments/Shared/44_Swamp_Stranglethorn.lua	hearth Booty Bay
+h46-bootybay-3	h-44-swamp-stranglethorn	45.32	45.31	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 209
+h45-bootybay-600	h-44-swamp-stranglethorn	45.35	45.34	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 600, turnin 621
+h45-bootybay-617	h-44-swamp-stranglethorn	45.41	45.40	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 617
+h45-bootybay-609	h-44-swamp-stranglethorn	45.44	45.43	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 609
+h46-pirate-camp	h-44-swamp-stranglethorn	45.48	45.46	-	Segments/Shared/44_Swamp_Stranglethorn.lua	complete 604, complete 576, complete 587
+h-44-swamp-stranglethorn-level-gate	h-44-swamp-stranglethorn	45.49	45.48	-	Segments/Shared/44_Swamp_Stranglethorn.lua	level 45
+h45-bootybay-576	h-44-swamp-stranglethorn	45.90	45.90	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 576
+h45-bootybay-587	h-44-swamp-stranglethorn	45.92	45.92	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 587
+h45-bootybay-604	h-44-swamp-stranglethorn	45.94	45.94	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 604, accept 608
+h46-bloodsail-ships	h-44-swamp-stranglethorn	45.97	45.97	-	Segments/Shared/44_Swamp_Stranglethorn.lua	complete 608
+h45-bootybay-608	h-44-swamp-stranglethorn	45.97	45.97	-	Segments/Shared/44_Swamp_Stranglethorn.lua	turnin 608
+h-46-bootybay-end	h-44-swamp-stranglethorn	46.01	46.01	-	Segments/Shared/44_Swamp_Stranglethorn.lua	go
+h46-ratchet-fm	h-46-tanaris-feralas	46.01	46.01	-	Segments/Shared/46_Tanaris_Feralas.lua	go
+h46-fly-freewind	h-46-tanaris-feralas	46.01	46.01	-	Segments/Shared/46_Tanaris_Feralas.lua	fly Freewind Post
+h46-shimmering-flats	h-46-tanaris-feralas	46.01	46.01	-	Segments/Shared/46_Tanaris_Feralas.lua	go
+h-46-gadgetzan-arrive	h-46-tanaris-feralas	46.04	46.04	-	Segments/Shared/46_Tanaris_Feralas.lua	fp Gadgetzan
+h46-gadgetzan-hearth	h-46-tanaris-feralas	46.04	46.04	-	Segments/Shared/46_Tanaris_Feralas.lua	sethearth Gadgetzan
+h-46-tanaris-field-loop	h-46-tanaris-feralas	46.11	46.11	-	Segments/Shared/46_Tanaris_Feralas.lua	complete 1690
+h-46-steamwheedle-port	h-46-tanaris-feralas	46.13	46.13	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 2872, accept 2873
+h-46-marvon-rivetseeker	h-46-tanaris-feralas	46.59	46.55	-	Segments/Shared/46_Tanaris_Feralas.lua	accept 3161
+h47-tanaris-hearth	h-46-tanaris-feralas	46.70	46.66	-	Segments/Shared/46_Tanaris_Feralas.lua	hearth Gadgetzan
+h48-tanaris-level-gate	h-46-tanaris-feralas	46.94	46.90	-	Segments/Shared/46_Tanaris_Feralas.lua	level 47
+h-46-homing-robot-oox	h-46-tanaris-feralas	47.00	46.90	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 351
+h48-zf-divino	h-46-tanaris-feralas	47.07	46.94	-	Segments/Shared/46_Tanaris_Feralas.lua	accept 2768
+h-48-gadgetzan-end	h-46-tanaris-feralas	47.18	46.94	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 113, accept 32
+h-46-gadgetzan-flight-master	h-46-tanaris-feralas	47.18	46.94	-	Segments/Shared/46_Tanaris_Feralas.lua	fly Freewind Post
+h48-whitereach	h-46-tanaris-feralas	47.18	46.94	-	Segments/Shared/46_Tanaris_Feralas.lua	go
+h48-feralas-entry	h-46-tanaris-feralas	47.18	46.94	-	Segments/Shared/46_Tanaris_Feralas.lua	go
+h-48-mojache-arrive	h-46-tanaris-feralas	47.18	46.94	-	Segments/Shared/46_Tanaris_Feralas.lua	fp Camp Mojache
+h48-mojache-hearth	h-46-tanaris-feralas	47.18	46.94	-	Segments/Shared/46_Tanaris_Feralas.lua	sethearth Camp Mojache
+h-47-feralas-field-loop	h-46-tanaris-feralas	47.18	46.94	-	Segments/Shared/46_Tanaris_Feralas.lua	complete 2973
+h47-mojache-2987	h-46-tanaris-feralas	47.24	47.01	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 2987
+h47-mojache-2975	h-46-tanaris-feralas	47.27	47.04	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 2975, turnin 2978, accept 2980, accept 2979
+h47-mojache-2973	h-46-tanaris-feralas	47.31	47.07	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 2973, accept 2974
+h47-mojache-2862	h-46-tanaris-feralas	47.34	47.10	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 2862, accept 2863
+h47-mojache-2863	h-46-tanaris-feralas	47.40	47.16	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 2863, accept 2902
+h47-mojache-2974	h-46-tanaris-feralas	47.42	47.18	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 2974, accept 2976
+h-47-woodpaw-battle-map	h-46-tanaris-feralas	47.45	47.21	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 2902, accept 2903
+h47-mojache-2903	h-46-tanaris-feralas	47.46	47.23	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 2903, accept 7730, accept 7731
+h47-mojache-7730	h-46-tanaris-feralas	47.63	47.37	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 7730, turnin 7731, accept 7732
+h47-mojache-2822	h-46-tanaris-feralas	47.70	47.43	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 2822, accept 7734
+h47-mojache-2980	h-46-tanaris-feralas	47.73	47.46	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 2980, turnin 2979, accept 3002
+h-47-zorbin-fandazzle	h-46-tanaris-feralas	47.82	47.55	-	Segments/Shared/46_Tanaris_Feralas.lua	accept 7003, accept 7721
+h-46-tanaris-feralas-level-gate	h-46-tanaris-feralas	48.03	47.76	-	Segments/Shared/46_Tanaris_Feralas.lua	complete 3063, level 49
+h50-mojache-hearth	h-46-tanaris-feralas	49.30	49.30	-	Segments/Shared/46_Tanaris_Feralas.lua	hearth Camp Mojache
+h49-mojache-7734	h-46-tanaris-feralas	49.30	49.30	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 7734
+h49-mojache-3062	h-46-tanaris-feralas	49.33	49.33	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 3062
+h-50-mojache-end	h-46-tanaris-feralas	49.37	49.33	-	Segments/Shared/46_Tanaris_Feralas.lua	turnin 3063
+h50-fly-org	h-50-hinterlands-searing-steppes	49.40	49.36	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	fly Orgrimmar
+h-50-org-arrive	h-50-hinterlands-searing-steppes	49.40	49.36	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 3002
+h49-org-3121	h-50-hinterlands-searing-steppes	49.41	49.37	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 3121
+h49-org-7732	h-50-hinterlands-searing-steppes	49.43	49.39	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 32, turnin 7732
+h49-org-649	h-50-hinterlands-searing-steppes	49.50	49.46	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 649, accept 650
+h49-org-2976	h-50-hinterlands-searing-steppes	49.50	49.46	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 2976, accept 3504
+h50-zeppelin-uc	h-50-hinterlands-searing-steppes	49.53	49.49	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	go
+h49-tirisfal-arrive	h-50-hinterlands-searing-steppes	49.53	49.49	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	go
+h-50-uc-arrive	h-50-hinterlands-searing-steppes	49.53	49.49	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	accept 2995
+h50-owen-thadd	h-50-hinterlands-searing-steppes	49.53	49.49	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 81949, accept 81949, complete 81949
+h49-uc-864	h-50-hinterlands-searing-steppes	49.56	49.52	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 864
+h50-fly-tarrenmill	h-50-hinterlands-searing-steppes	49.60	49.56	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	fly Tarren Mill
+h50-hinterlands-pass	h-50-hinterlands-searing-steppes	49.60	49.56	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	go
+h-50-gilveradin-sunchaser	h-50-hinterlands-searing-steppes	49.60	49.56	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 650, accept 77
+h-50-rin-ji	h-50-hinterlands-searing-steppes	49.63	49.59	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	accept 2742
+h50-honey-ripples	h-50-hinterlands-searing-steppes	49.63	49.59	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	complete 77
+h-50-revantusk-arrive	h-50-hinterlands-searing-steppes	49.63	49.59	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	fp Revantusk Village
+h50-revantusk-hearth	h-50-hinterlands-searing-steppes	49.63	49.59	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	accept 7840, sethearth Revantusk Village
+h-50-rin-ji-s	h-50-hinterlands-searing-steppes	49.71	49.67	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 2742, accept 2782
+h-50-the-hinterlands-field	h-50-hinterlands-searing-steppes	49.81	49.77	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	complete 7829, complete 7830
+h-50-atal-ai-exile	h-50-hinterlands-searing-steppes	49.84	49.80	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 1429, accept 1444
+h50-hearth-revantusk	h-50-hinterlands-searing-steppes	49.97	49.93	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	hearth Revantusk Village
+h-50-elder-torntusk	h-50-hinterlands-searing-steppes	50.59	50.56	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 7845, accept 7846
+h-51-revantusk-end	h-50-hinterlands-searing-steppes	50.75	50.72	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 7847, turnin 7850, turnin 7861, turnin 7862
+h51-fly-kargath	h-50-hinterlands-searing-steppes	50.91	50.87	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	fly Kargath
+h51-kargath-hearth	h-50-hinterlands-searing-steppes	50.91	50.87	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	sethearth Kargath
+h-51-kargath	h-50-hinterlands-searing-steppes	50.91	50.87	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	accept 3821
+h-50-wooden-outhouse	h-50-hinterlands-searing-steppes	50.91	50.87	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	go
+h-51-thoriumpoint-arrive	h-50-hinterlands-searing-steppes	50.91	50.87	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	fp Thorium Point
+h-50-kalaran-windblade	h-50-hinterlands-searing-steppes	50.91	50.87	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 3441, accept 3441, complete 3441
+h-50-searing-gorge-field	h-50-hinterlands-searing-steppes	51.06	51.03	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	complete 7723, complete 3442
+h-52-thoriumpoint-end	h-50-hinterlands-searing-steppes	51.25	51.22	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 7723, turnin 7724, turnin 7727
+h-50-nilith-lokrav	h-50-hinterlands-searing-steppes	51.46	51.43	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	go
+h52-burning-steppes-road	h-50-hinterlands-searing-steppes	51.57	51.43	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	go
+h-52-flamecrest-arrive	h-50-hinterlands-searing-steppes	51.57	51.43	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	fp Flame Crest
+h-51-sha-ni-proudtusk	h-50-hinterlands-searing-steppes	51.57	51.43	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 3821, accept 3822
+h-51-burning-steppes-field	h-50-hinterlands-searing-steppes	51.61	51.47	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	complete 4726
+h52-hearth-kargath	h-50-hinterlands-searing-steppes	51.65	51.51	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	hearth Kargath
+h-51-kargath-2	h-50-hinterlands-searing-steppes	51.65	51.51	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 3822
+h52-fly-stonard	h-50-hinterlands-searing-steppes	51.79	51.55	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	fly Stonard
+h-51-swamp-of-sorrows	h-50-hinterlands-searing-steppes	51.79	51.55	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 2784, accept 2784, complete 2784
+h-51-stonard	h-50-hinterlands-searing-steppes	51.79	51.55	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 2621, accept 2622
+h51-stonard-1444	h-50-hinterlands-searing-steppes	51.80	51.56	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 1444
+h51-stonard-2622	h-50-hinterlands-searing-steppes	51.82	51.57	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 2622, accept 2623
+h-51-swamp-of-sorrows-2	h-50-hinterlands-searing-steppes	51.88	51.58	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	complete 2623
+h-51-swamp-of-sorrows-3	h-50-hinterlands-searing-steppes	51.88	51.58	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 2623
+h-52-blastedlands-arrive	h-50-hinterlands-searing-steppes	51.92	51.62	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	accept 2581, accept 2583, accept 2585
+h-51-kum-isha-the	h-50-hinterlands-searing-steppes	52.00	51.71	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	accept 2521, accept 3501
+h-51-blasted-lands-field	h-50-hinterlands-searing-steppes	52.01	51.71	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	collect 8391, collect 8393
+h-50-hinterlands-searing-steppes-level-gate	h-50-hinterlands-searing-steppes	52.01	51.71	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	complete 2581, complete 2583, complete 2585, complete 2601, complete 2603, collect 8391, collect 8392, collect 8393, collect 8394, collect 8396, level 52
+h-53-blastedlands-end	h-50-hinterlands-searing-steppes	52.48	52.48	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 2601, turnin 2603
+h52-stonard-1445	h-50-hinterlands-searing-steppes	52.53	52.54	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	turnin 1445
+h-51-stonard-2	h-50-hinterlands-searing-steppes	52.57	52.54	-	Segments/Shared/50_Hinterlands_Searing_Steppes.lua	hearth Kargath
+h53-fly-uc	h-53-azshara-ungoro-silithus	52.57	52.54	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	fly Undercity
+h52-uc-2995	h-53-azshara-ungoro-silithus	52.57	52.54	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 2995, turnin 2782, accept 8273
+h52-uc-8273	h-53-azshara-ungoro-silithus	52.60	52.57	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 8273
+h52-uc-81954	h-53-azshara-ungoro-silithus	52.63	52.60	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 81954, turnin 81955, turnin 81953, turnin 81947, turnin 81956, accept 81954, accept 81955, accept 81953, accept 81947, accept 81956, complete 81954, complete 81955, complete 81953, complete 81947, complete 81956
+h53-zeppelin-org	h-53-azshara-ungoro-silithus	52.70	52.67	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	go
+h-53-org-arrive	h-53-azshara-ungoro-silithus	52.70	52.67	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 81
+h53-org-hearth	h-53-azshara-ungoro-silithus	52.73	52.70	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	sethearth Orgrimmar
+h53-fly-splintertree	h-53-azshara-ungoro-silithus	52.73	52.70	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	fly Splintertree Post
+h-53-loh-atu	h-53-azshara-ungoro-silithus	52.73	52.70	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	accept 5535, accept 5536
+h-53-azshara-arrive	h-53-azshara-ungoro-silithus	52.75	52.71	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	fp Valormok
+h-53-kim-jael	h-53-azshara-ungoro-silithus	52.77	52.73	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	accept 3601
+h-53-kaldorei-tome-of	h-53-azshara-ungoro-silithus	52.84	52.81	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 3505, accept 3506
+h-53-azshara-field-loop	h-53-azshara-ungoro-silithus	52.87	52.84	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	complete 3517
+h-53-archmage-xylem	h-53-azshara-ungoro-silithus	52.98	52.94	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 3561, accept 3565
+h-54-azshara-end	h-53-azshara-ungoro-silithus	52.99	52.96	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 3565
+h54-hearth-org	h-53-azshara-ungoro-silithus	53.05	53.03	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	hearth Orgrimmar
+h53-org-3507	h-53-azshara-ungoro-silithus	53.05	53.03	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 3507
+h53-org-3541	h-53-azshara-ungoro-silithus	53.10	53.07	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 3541
+h-54-gadgetzan	h-53-azshara-ungoro-silithus	53.11	53.08	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	fly Gadgetzan
+h54-gadgetzan-hearth	h-53-azshara-ungoro-silithus	53.11	53.08	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	sethearth Gadgetzan
+h-53-steamwheedle-port	h-53-azshara-ungoro-silithus	53.15	53.12	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 3520
+h-53-torwa-pathfinder	h-53-azshara-ungoro-silithus	53.15	53.12	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	accept 4289, accept 4290
+h-54-marshal-arrive	h-53-azshara-ungoro-silithus	53.18	53.14	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	fp Marshal's Refuge
+h-53-un-goro-crater	h-53-azshara-ungoro-silithus	53.31	53.28	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	complete 4504
+h-53-a-me-01	h-53-azshara-ungoro-silithus	53.34	53.30	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 4243
+h54-torwa-2	h-53-azshara-ungoro-silithus	53.35	53.32	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 4289, turnin 4290, accept 4291, accept 4301
+h-53-wrecked-raft-small	h-53-azshara-ungoro-silithus	53.42	53.39	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	accept 3844
+h54-torwa-3	h-53-azshara-ungoro-silithus	53.43	53.39	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 4291, accept 4292
+h-53-krakle	h-53-azshara-ungoro-silithus	53.46	53.43	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	accept 974
+h-53-ringo	h-53-azshara-ungoro-silithus	53.49	53.46	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 4492, accept 4491, complete 4492
+h55-torwa-end	h-53-azshara-ungoro-silithus	53.80	53.74	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 4292, turnin 4301
+h55-hearth-gadgetzan	h-53-azshara-ungoro-silithus	53.87	53.82	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	hearth Gadgetzan
+h53-fly-marshal	h-53-azshara-ungoro-silithus	53.94	53.88	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	fly Marshal's Refuge
+h-55-marshal-end	h-53-azshara-ungoro-silithus	53.94	53.88	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 4285, turnin 4287, turnin 4288, turnin 4321, accept 4321
+h55-silithus-path	h-53-azshara-ungoro-silithus	54.01	53.96	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	go
+h55-silithus-grind	h-53-azshara-ungoro-silithus	54.01	53.96	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	level 54
+h-55-cenarionhold-arrive	h-53-azshara-ungoro-silithus	54.01	54.00	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	fp Cenarion Hold
+h-54-silithus-field-loop	h-53-azshara-ungoro-silithus	54.01	54.00	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	complete 8277, complete 8280
+h55-silithus-field-grind	h-53-azshara-ungoro-silithus	54.09	54.07	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	level 54
+h-54-sandy-cookbook	h-53-azshara-ungoro-silithus	54.87	54.87	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	complete 8281
+h-54-hermit-ortell	h-53-azshara-ungoro-silithus	54.91	54.91	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 8285
+h-53-azshara-ungoro-silithus-level-gate	h-53-azshara-ungoro-silithus	55.01	55.01	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	level 55
+h-56-cenarionhold-end	h-53-azshara-ungoro-silithus	55.01	55.01	-	Segments/Shared/53_Azshara_Ungoro_Silithus.lua	turnin 8282
+h56-hearth-gadgetzan	h-56-felwood-winterspring-plaguelands	55.04	55.04	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	hearth Gadgetzan
+h56-fly-org	h-56-felwood-winterspring-plaguelands	55.04	55.04	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	fly Orgrimmar
+h-56-org-arrive	h-56-felwood-winterspring-plaguelands	55.04	55.04	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 4300
+h56-sethearth-org	h-56-felwood-winterspring-plaguelands	55.07	55.07	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	sethearth Orgrimmar
+h56-fly-splintertree	h-56-felwood-winterspring-plaguelands	55.07	55.07	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	fly Splintertree Post
+h56-felwood-road	h-56-felwood-winterspring-plaguelands	55.07	55.07	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	go
+h-56-emerald-sanctuary	h-56-felwood-winterspring-plaguelands	55.07	55.07	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	accept 5155
+h-56-bloodvenom-arrive	h-56-felwood-winterspring-plaguelands	55.07	55.07	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	fp Bloodvenom Post
+h56-shadowhold-entrance	h-56-felwood-winterspring-plaguelands	55.07	55.07	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	go
+h-56-captured-arko-narin	h-56-felwood-winterspring-plaguelands	55.09	55.09	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 5202, accept 5203
+h-56-felwood-field-loop	h-56-felwood-winterspring-plaguelands	55.13	55.12	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	complete 5155
+h-56-remains-of-trey	h-56-felwood-winterspring-plaguelands	55.29	55.29	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 5204, accept 5385
+h-57-bloodvenom-end	h-56-felwood-winterspring-plaguelands	55.41	55.41	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 6162
+h-56-timbermaw-hold	h-56-felwood-winterspring-plaguelands	55.43	55.43	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 8462, accept 8461
+h-56-kernda	h-56-felwood-winterspring-plaguelands	55.50	55.50	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	go
+h-56-donova-snowden	h-56-felwood-winterspring-plaguelands	55.50	55.50	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 980, turnin 3908, accept 4842, accept 5082
+h-56-winterspring-field-loop	h-56-felwood-winterspring-plaguelands	55.57	55.57	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	complete 5082
+h-56-deadwood-cauldron	h-56-felwood-winterspring-plaguelands	55.61	55.61	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 5084, accept 5085
+h-57-everlook-arrive	h-56-felwood-winterspring-plaguelands	55.75	55.75	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	fp Everlook
+h57-winterspring-grind	h-56-felwood-winterspring-plaguelands	55.99	55.95	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	level 57
+h-58-everlook-end	h-56-felwood-winterspring-plaguelands	57.00	57.00	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 977
+h58-timbermaw-back	h-56-felwood-winterspring-plaguelands	57.15	57.12	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	go
+h-58-bloodvenom-return	h-56-felwood-winterspring-plaguelands	57.15	57.12	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 4521
+h-58-org-arrive	h-56-felwood-winterspring-plaguelands	57.21	57.17	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	hearth Orgrimmar
+h58-zeppelin-uc	h-56-felwood-winterspring-plaguelands	57.21	57.17	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	go
+h57-tirisfal-arrive	h-56-felwood-winterspring-plaguelands	57.21	57.17	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	go
+h-58-uc-arrive	h-56-felwood-winterspring-plaguelands	57.21	57.17	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	sethearth Undercity
+h57-uc-81952	h-56-felwood-winterspring-plaguelands	57.21	57.17	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 81952, accept 81952, complete 81952
+h57-uc-3542	h-56-felwood-winterspring-plaguelands	57.21	57.18	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 3542
+h57-uc-3568	h-56-felwood-winterspring-plaguelands	57.23	57.19	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 3568, accept 3569
+h57-uc-3569	h-56-felwood-winterspring-plaguelands	57.24	57.20	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 3569
+h57-uc-3570	h-56-felwood-winterspring-plaguelands	57.24	57.20	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 3570
+h-58-bulwark-arrive	h-56-felwood-winterspring-plaguelands	57.27	57.23	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 6029, accept 5405
+h-57-western-plaguelands-field	h-56-felwood-winterspring-plaguelands	57.28	57.25	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	complete 5096
+h-57-felstone-field-cauldron	h-56-felwood-winterspring-plaguelands	57.33	57.29	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 5229, accept 5230
+h-57-dalson-s-tears	h-56-felwood-winterspring-plaguelands	57.41	57.37	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 5231, accept 5232
+h-57-dalson-s-farm	h-56-felwood-winterspring-plaguelands	57.43	57.40	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	accept 5060
+h-57-kirsta-deepshadow	h-56-felwood-winterspring-plaguelands	57.47	57.44	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	accept 6004
+h-57-termite-barrel	h-56-felwood-winterspring-plaguelands	57.47	57.44	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	complete 6004
+h-57-chromie	h-56-felwood-winterspring-plaguelands	57.58	57.54	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	accept 4971
+h-57-mulgris-deepriver	h-56-felwood-winterspring-plaguelands	57.72	57.68	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	accept 4984
+h-57-writhing-haunt-cauldron	h-56-felwood-winterspring-plaguelands	57.72	57.68	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 5233, accept 5234
+h-57-marlene-redpath	h-56-felwood-winterspring-plaguelands	57.81	57.77	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	accept 5142
+h-58-pamela-redpath	h-56-felwood-winterspring-plaguelands	57.81	57.77	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 5142, accept 5149
+h-57-gahrron-s-withering	h-56-felwood-winterspring-plaguelands	57.92	57.89	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 5235, accept 5236
+h59-hearth-uc	h-56-felwood-winterspring-plaguelands	57.96	57.92	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	hearth Undercity
+h57-uc-5023	h-56-felwood-winterspring-plaguelands	57.96	57.92	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 5023, accept 5049
+h57-uc-5049	h-56-felwood-winterspring-plaguelands	57.97	57.93	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 5049, accept 5050
+h-59-wpl-end	h-56-felwood-winterspring-plaguelands	58.01	57.97	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 5238
+h-58-tirion-fordring	h-56-felwood-winterspring-plaguelands	58.09	58.06	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	accept 5542, accept 5543, accept 5544
+h-58-nathanos-blightcaller	h-56-felwood-winterspring-plaguelands	58.17	58.13	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 5961, accept 6022, accept 6042, accept 6133
+h-58-eastern-plaguelands-field	h-56-felwood-winterspring-plaguelands	58.17	58.14	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	complete 5543
+h-59-lightshope-arrive	h-56-felwood-winterspring-plaguelands	58.20	58.17	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	fp Light's Hope Chapel
+h-58-augustus-the-touched	h-56-felwood-winterspring-plaguelands	58.30	58.27	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	accept 6164
+h-56-felwood-winterspring-plaguelands-level-gate	h-56-felwood-winterspring-plaguelands	58.81	58.58	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	level 59
+h-60-end	h-56-felwood-winterspring-plaguelands	59.98	59.98	-	Segments/Shared/56_Felwood_Winterspring_Plaguelands.lua	turnin 6021

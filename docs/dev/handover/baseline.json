@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "grindUntil": "h-18-stonetalon-ashenvale",
+    "routes": 28,
+    "source": "tools/validate_routes.lua --write-baseline"
+  },
+  "races": {
+    "Orc": {
+      "grindKills": 4980,
+      "grindKillsUntil": 45,
+      "grindKillsUntilWorst": 157,
+      "grindKillsWorst": 6227,
+      "routes": [
+        "orc-hunter",
+        "orc-mage",
+        "orc-rogue",
+        "orc-shaman",
+        "orc-warlock",
+        "orc-warrior"
+      ]
+    },
+    "Scourge": {
+      "grindKills": 4982,
+      "grindKillsUntil": 47,
+      "grindKillsUntilWorst": 147,
+      "grindKillsWorst": 6217,
+      "routes": [
+        "undead-mage",
+        "undead-paladin",
+        "undead-priest",
+        "undead-rogue",
+        "undead-warlock",
+        "undead-warrior"
+      ]
+    },
+    "Skyborne": {
+      "grindKills": 4914,
+      "grindKillsUntil": 0,
+      "grindKillsUntilWorst": 59,
+      "grindKillsWorst": 6129,
+      "routes": [
+        "skyborne-druid",
+        "skyborne-hunter",
+        "skyborne-rogue",
+        "skyborne-shaman",
+        "skyborne-warrior"
+      ]
+    },
+    "Tauren": {
+      "grindKills": 4965,
+      "grindKillsUntil": 30,
+      "grindKillsUntilWorst": 127,
+      "grindKillsWorst": 6197,
+      "routes": [
+        "tauren-druid",
+        "tauren-hunter",
+        "tauren-shaman",
+        "tauren-warrior"
+      ]
+    },
+    "Troll": {
+      "grindKills": 4980,
+      "grindKillsUntil": 45,
+      "grindKillsUntilWorst": 157,
+      "grindKillsWorst": 6227,
+      "routes": [
+        "troll-hunter",
+        "troll-mage",
+        "troll-priest",
+        "troll-rogue",
+        "troll-shaman",
+        "troll-warlock",
+        "troll-warrior"
+      ]
+    }
+  }
+}
