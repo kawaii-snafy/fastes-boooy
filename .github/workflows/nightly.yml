@@ -1,8 +1,8 @@
-# FastesBoooy nightly: the "player ahead of the route" runs for EVERY route (make simulate-sync-full).
+# AdventureAtlas nightly: the "player ahead of the route" runs for EVERY route (make simulate-sync-full).
 #
 # CI (ci.yml) runs them for SYNC_ROUTES only: one route per race with different classes. That subset
 # is sound for a push -- from the merge point on all routes share the same segments -- and this job
-# covers the rest: every start zone with every class file. With the 28 routes of FastesBoooy_Guides
+# covers the rest: every start zone with every class file. With the 28 routes of AdventureAtlas_Guides
 # it is 28 x 8 runs, about 18 min on 4 vCPUs (docs/dev/PLAN.md A.7).
 name: Nightly
 

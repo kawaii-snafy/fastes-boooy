@@ -1,9 +1,9 @@
 # Скайборн: стартовая зона и шаги расы
 
-Файлы: [`Segments/Zephras/01_Zephras_1_9.lua`](../../addons/FastesBoooy_Guides/Segments/Zephras/01_Zephras_1_9.lua)
-(`sd-01-zephras`), [`02_Zephras_9_13.lua`](../../addons/FastesBoooy_Guides/Segments/Zephras/02_Zephras_9_13.lua)
-(`sd-02-zephras`), [`03_ThunderBluff.lua`](../../addons/FastesBoooy_Guides/Segments/Zephras/03_ThunderBluff.lua)
-(`sd-03-thunder-bluff`), [`Races/Skyborne.lua`](../../addons/FastesBoooy_Guides/Races/Skyborne.lua) (шаги расы на общем
+Файлы: [`Segments/Zephras/01_Zephras_1_9.lua`](../../addons/AdventureAtlas_Guides/Segments/Zephras/01_Zephras_1_9.lua)
+(`sd-01-zephras`), [`02_Zephras_9_13.lua`](../../addons/AdventureAtlas_Guides/Segments/Zephras/02_Zephras_9_13.lua)
+(`sd-02-zephras`), [`03_ThunderBluff.lua`](../../addons/AdventureAtlas_Guides/Segments/Zephras/03_ThunderBluff.lua)
+(`sd-03-thunder-bluff`), [`Races/Skyborne.lua`](../../addons/AdventureAtlas_Guides/Races/Skyborne.lua) (шаги расы на общем
 пути). Гайды: `skyborne-druid`, `skyborne-hunter`, `skyborne-rogue`, `skyborne-shaman`, `skyborne-warrior`. Общий путь
 с 12-го уровня — [shared-path.md](shared-path.md); шаги друида — [class-druid.md](class-druid.md). Числа — вывод
 валидатора на момент написания; свежие — в [docs/VALIDATION.md](../VALIDATION.md).
@@ -280,7 +280,7 @@ RestedXP берёт, мы нет: «Camping 101» для профессий (г�
 ## 10. Все шаги стартовой зоны (базовый профиль)
 
 Шаг, уровень перед шагом (обычно, худший случай), действия. Команда:
-`lua5.1 tools/validate_routes.lua --route skyborne-shaman --levels addons/FastesBoooy_Guides`.
+`lua5.1 tools/validate_routes.lua --route skyborne-shaman --levels addons/AdventureAtlas_Guides`.
 
 ```
 sd01-start              1.00   1.00  accept 92460
@@ -434,7 +434,7 @@ sd03-fly-org           13.24  13.18  fly Orgrimmar
 
 ## 11. Что проверить в игре
 
-* Опыт квестов острова (`/fb xp`): от него зависят все уровни 1–13.
+* Опыт квестов острова (`/aa xp`): от него зависят все уровни 1–13.
 * **Полёт Громовой Утёс → Оргриммар на 13-м** (`sd03-fly-org`) без точки полёта Оргриммара: в БД нет стартовых точек
   полёта скайборнов; эталон RestedXP летит так. Шаг `h12-fp-org` у Дораса учит точку в любом случае.
 * **94489** для класса без лечащего заклинания (§8).
@@ -449,7 +449,7 @@ sd03-fly-org           13.24  13.18  fly Orgrimmar
 ## 12. Как перепроверить
 
 ```
-G=addons/FastesBoooy_Guides
+G=addons/AdventureAtlas_Guides
 lua5.1 tools/validate_routes.lua -q --strict --end-level --summary --route 'skyborne-*' $G
 lua5.1 tools/validate_routes.lua --route skyborne-shaman --levels $G
 lua5.1 tools/validate_routes.lua --route skyborne-shaman --write-state state.json --until h-12-orgrimmar-tirisfal $G

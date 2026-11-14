@@ -22,12 +22,12 @@
 -- The DB overrides of tools/overrides/*.lua are applied to the snapshot (tools/lib/fbdb.lua) unless
 -- --no-overrides is given.
 --
--- Run from the repository root. For every route module (addons/FastesBoooy_*/ with a
--- TOC; plus tests/fixtures/core/FastesBoooy_*/ with --fixtures; or the directories given)
+-- Run from the repository root. For every route module (addons/AdventureAtlas_*/ with a
+-- TOC; plus tests/fixtures/core/AdventureAtlas_*/ with --fixtures; or the directories given)
 -- and every race x class profile of each route, a fresh strict mock client
 -- (tests/mocks/wow.lua) is built with a matching player (Skyborne: raceID 96 Horde /
--- 95 Alliance), the core addon (addons/FastesBoooy), the module's FastesBoooy_*
--- dependencies (## Dependencies, e.g. a shared library module FastesBoooy_<Lib>: loaded first,
+-- 95 Alliance), the core addon (addons/AdventureAtlas), the module's AdventureAtlas_*
+-- dependencies (## Dependencies, e.g. a shared library module AdventureAtlas_<Lib>: loaded first,
 -- like the client) and the module are loaded and booted, and the (composed) route is
 -- played step by step doing exactly what the current step asks for through the client API
 -- of the mock. Library modules (AddLibrarySegment, no route) are not simulated on their
@@ -77,8 +77,8 @@
 -- Start state / harness (tools/lib/harness.lua): --state FILE starts the character from a state
 -- (level / XP, quests turned in, quest log with done objectives, hearthstone bind point, position,
 -- flight paths) instead of a fresh character; --harness DIR plays a synthetic route of one
--- --profile that only uses the --segments of the library module DIR (FastesBoooy.RegisterRoute +
--- FastesBoooy.UseSegments through the addon's public API, like a route module would);
+-- --profile that only uses the --segments of the library module DIR (AdventureAtlas.RegisterRoute +
+-- AdventureAtlas.UseSegments through the addon's public API, like a route module would);
 -- --write-state FILE writes the game state at the end (exactly one simulation). The mock gives
 -- quest XP only (no kill XP): levels of a simulator end state lag behind the validator's.
 --
@@ -120,7 +120,7 @@ local Glob = require("lib.glob")
 local format = string.format
 local floor, ceil, max = math.floor, math.ceil, math.max
 
-local CORE_TOC = "addons/FastesBoooy/FastesBoooy.toc"
+local CORE_TOC = "addons/AdventureAtlas/AdventureAtlas.toc"
 local DB_FILE = "tools/data/forever_db.lua"
 local OVERRIDES_DIR = "tools/overrides"
 local FLIGHT_TIME = 30
@@ -139,7 +139,7 @@ local DEFAULT_RACE = { Horde = "Scourge", Alliance = "Human" }
 
 local USAGE = [[
 usage: lua5.1 tools/simulate_routes.lua [options] [module-dir ...]
-  --fixtures       also simulate tests/fixtures/core/FastesBoooy_*/ modules
+  --fixtures       also simulate tests/fixtures/core/AdventureAtlas_*/ modules
   --route ID[,ID...]  only these route ids; `*` is a wildcard ('orc-*,troll-mage'); repeatable
                    (the lists add up); every entry must match a route
   --skip GLOB      do not load the TOC files matching GLOB (repeatable; `*` wildcard, matched
@@ -459,7 +459,7 @@ end
 -- The reward choice the automation must take for quest q, resolved from the OFFLINE route the way
 -- the engine resolves it (Engine:GetRewardChoice): a step-level `reward` of the profile's steps
 -- first -- the step that turns the quest in, else the first step that names it -- then the class
--- reward table route.data.rewards[<class>][<quest>] (FastesBoooy.AddLibraryData{ rewards = ... }).
+-- reward table route.data.rewards[<class>][<quest>] (AdventureAtlas.AddLibraryData{ rewards = ... }).
 -- @return index | nil, "step <id>" | "class table <CLASS>"
 local function expectedReward(S, q)
     local cache = S.rewardWant
@@ -1104,7 +1104,7 @@ end
 local function bootMock(S, m)
     local ns = Mock.loadAddon(m, CORE_TOC)
     local name = Loader.basename(S.module.dir)
-    local boot = { "FastesBoooy" }
+    local boot = { "AdventureAtlas" }
     for _, dep in ipairs(S.module.deps or {}) do -- dependencies first (Loader order)
         Mock.loadAddon(m, dep.toc, dep.name)
         boot[#boot + 1] = dep.name
@@ -1117,7 +1117,7 @@ local function bootMock(S, m)
         -- the harness route: registered through the public API right after the library, like a
         -- route module whose TOC depends on it
         m:_top(function()
-            local api = rawget(m.env, "FastesBoooy")
+            local api = rawget(m.env, "AdventureAtlas")
             api.RegisterRoute(h.def)
             api.UseSegments(h.def.id, h.segments)
         end)

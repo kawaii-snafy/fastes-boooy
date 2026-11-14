@@ -267,7 +267,7 @@ describe("step descriptions", function()
             mm.questCache[363] = nil
             mm:DefineQuest(999, { title = "Late Title", uncached = true })
         end })
-        H.Mock.boot(m, { "FastesBoooy", H.FIXTURE_NAME })   -- no frame has run yet: nothing loaded
+        H.Mock.boot(m, { "AdventureAtlas", H.FIXTURE_NAME })  -- no frame has run yet: nothing loaded
         assert.equal("Грубое пробуждение", S():QuestTitle(363), "route data title")
         assert.equal("Задание №999", S():QuestTitle(999))
         local loaded = H.record(ns, "QUEST_DATA_LOADED")

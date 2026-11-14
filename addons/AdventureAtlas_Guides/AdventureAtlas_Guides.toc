@@ -1,0 +1,49 @@
+## Interface: 16001
+## Title: Adventure Atlas: Guides
+## Notes: Speed leveling guides 1-60 for Adventure Atlas: one guide per race and class, picked automatically for your character.
+## Notes-ruRU: Скоростные гайды прокачки 1-60 для Adventure Atlas: по одному на каждую расу и класс, выбирается автоматически под персонажа.
+## Dependencies: AdventureAtlas
+## Version: 0.5.0
+
+Data.lua
+Segments\Tirisfal\01_Deathknell.lua
+Segments\Tirisfal\02_Tirisfal.lua
+Segments\Zephras\01_Zephras_1_9.lua
+Segments\Zephras\02_Zephras_9_13.lua
+Segments\Zephras\03_ThunderBluff.lua
+Segments\Durotar\01_ValleyOfTrials.lua
+Segments\Durotar\02_Durotar.lua
+Segments\Mulgore\01_CampNarache.lua
+Segments\Mulgore\02_Mulgore.lua
+Segments\Mulgore\03_BarrensCrossing.lua
+Segments\Shared\12_Orgrimmar_Tirisfal.lua
+Segments\Shared\13_Silverpine.lua
+Segments\Shared\15_Barrens.lua
+Segments\Shared\18_Stonetalon_Ashenvale.lua
+Segments\Shared\22_Hillsbrad.lua
+Segments\Shared\24_Barrens_Stonetalon.lua
+Segments\Shared\27_Ashenvale_Needles.lua
+Segments\Shared\31_Hillsbrad_Arathi.lua
+Segments\Shared\34_Stranglethorn.lua
+Segments\Shared\37_Desolace_Dustwallow.lua
+Segments\Shared\41_Arathi_Badlands.lua
+Segments\Shared\44_Swamp_Stranglethorn.lua
+Segments\Shared\46_Tanaris_Feralas.lua
+Segments\Shared\50_Hinterlands_Searing_Steppes.lua
+Segments\Shared\53_Azshara_Ungoro_Silithus.lua
+Segments\Shared\56_Felwood_Winterspring_Plaguelands.lua
+Classes\Druid.lua
+Classes\Hunter.lua
+Classes\Mage.lua
+Classes\Paladin.lua
+Classes\Priest.lua
+Classes\Rogue.lua
+Classes\Shaman.lua
+Classes\Warlock.lua
+Classes\Warrior.lua
+Races\Orc.lua
+Races\Scourge.lua
+Races\Skyborne.lua
+Races\Tauren.lua
+Races\Troll.lua
+Route.lua

@@ -1,5 +1,5 @@
 #!/usr/bin/env lua5.1
--- tools/validate_routes.lua -- offline validator for FastesBoooy route modules.
+-- tools/validate_routes.lua -- offline validator for AdventureAtlas route modules.
 --
 --   lua5.1 tools/validate_routes.lua [options] [module-dir ...]
 --   lua5.1 tools/validate_routes.lua --help

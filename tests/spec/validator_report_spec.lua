@@ -443,42 +443,42 @@ describe("validator Markdown report (tools/lib/report.lua)", function()
         local AT_MORDO, AT_SARVIS = "{ 1420, 30.2, 71.7 }", "{ 1420, 30.8, 66.2 }"
 
         setup(function()
-            dir = root .. "/FastesBoooy_RpGuides"
-            write("FastesBoooy_RpGuides/FastesBoooy_RpGuides.toc", "## Interface: 16001\n## Dependencies: FastesBoooy\n"
+            dir = root .. "/AdventureAtlas_RpGuides"
+            write("AdventureAtlas_RpGuides/AdventureAtlas_RpGuides.toc", "## Interface: 16001\n## Dependencies: AdventureAtlas\n"
                 .. "Segments/A.lua\nSegments/B.lua\nSegments/Tail.lua\nClasses/Paladin.lua\nClasses/Warrior.lua\nRoute.lua\n")
             -- two start chains (both take 363 from Mordo; B also has a level gate that needs kills) ...
-            write("FastesBoooy_RpGuides/Segments/A.lua", ([[
-FastesBoooy.AddLibrarySegment({ id = "rp-start-a", title = "A", levels = { 1, 1 }, steps = {
+            write("AdventureAtlas_RpGuides/Segments/A.lua", ([[
+AdventureAtlas.AddLibrarySegment({ id = "rp-start-a", title = "A", levels = { 1, 1 }, steps = {
     { id = "rp-a-363", accept = 363, npc = 1568, at = %s },
 } })
 ]]):format(AT_MORDO))
-            write("FastesBoooy_RpGuides/Segments/B.lua", ([[
-FastesBoooy.AddLibrarySegment({ id = "rp-start-b", title = "B", levels = { 1, 2 }, steps = {
+            write("AdventureAtlas_RpGuides/Segments/B.lua", ([[
+AdventureAtlas.AddLibrarySegment({ id = "rp-start-b", title = "B", levels = { 1, 2 }, steps = {
     { id = "rp-b-363", accept = 363, npc = 1568, at = %s },
     { id = "rp-b-gate", level = { 1, 0.5 } },
 } })
 ]]):format(AT_MORDO))
             -- ... and the common tail: a turn-in without a complete step (WARN turnin-no-complete on the
             -- shared path) and a gate acknowledged with a ceiling (WARN level-grind, accepted)
-            write("FastesBoooy_RpGuides/Segments/Tail.lua", ([[
-FastesBoooy.AddLibrarySegment({ id = "rp-tail", title = { en = "Tail" }, levels = { 1, 5 }, steps = {
+            write("AdventureAtlas_RpGuides/Segments/Tail.lua", ([[
+AdventureAtlas.AddLibrarySegment({ id = "rp-tail", title = { en = "Tail" }, levels = { 1, 5 }, steps = {
     { id = "rp-364", turnin = 363, accept = 364, npc = 1569, at = %s },
     { id = "rp-364-in", turnin = 364, npc = 1569, at = %s },
     { id = "rp-gate", level = { 4, 0.5 }, ok = { ["level-grind"] = 9000 } }, -- the fixture has no quests left
 } })
 ]]):format(AT_SARVIS, AT_SARVIS))
             -- class files: a train step without an NPC (WARN train-no-npc), a class gate
-            write("FastesBoooy_RpGuides/Classes/Paladin.lua", [[
-FastesBoooy.AddLibraryInsert({ after = "rp-364", class = "PALADIN", steps = {
+            write("AdventureAtlas_RpGuides/Classes/Paladin.lua", [[
+AdventureAtlas.AddLibraryInsert({ after = "rp-364", class = "PALADIN", steps = {
     { id = "rp-pal-train", train = true },
 } })
 ]])
-            write("FastesBoooy_RpGuides/Classes/Warrior.lua", [[
-FastesBoooy.AddLibraryInsert({ after = "rp-364-in", class = "WARRIOR", steps = {
+            write("AdventureAtlas_RpGuides/Classes/Warrior.lua", [[
+AdventureAtlas.AddLibraryInsert({ after = "rp-364-in", class = "WARRIOR", steps = {
     { id = "rp-war-gate", level = 2 },
 } })
 ]])
-            write("FastesBoooy_RpGuides/Route.lua", [[
+            write("AdventureAtlas_RpGuides/Route.lua", [[
 local CHAINS = {
     { "rp-undead-paladin", "PALADIN", { "rp-start-a", "rp-tail" } },
     { "rp-undead-warrior", "WARRIOR", { "rp-start-b", "rp-tail" } },
@@ -486,9 +486,9 @@ local CHAINS = {
 }
 for i = 1, #CHAINS do
     local c = CHAINS[i]
-    FastesBoooy.RegisterRoute({ api = 1, id = c[1], title = { en = "Report " .. c[2] }, faction = "Horde",
+    AdventureAtlas.RegisterRoute({ api = 1, id = c[1], title = { en = "Report " .. c[2] }, faction = "Horde",
         races = { "Scourge" }, classes = { c[2] }, levels = { 1, 5 } })
-    FastesBoooy.UseSegments(c[1], c[3])
+    AdventureAtlas.UseSegments(c[1], c[3])
 end
 ]])
         end)
@@ -496,7 +496,7 @@ end
         it("the results carry what the report needs: inserted, the gate fields, the segment's library", function()
             local res = V.ValidateModule(dir, { db = db, schema = schema })
             assert.same({}, res.loadErrors)
-            assert.equal("(shared FastesBoooy_RpGuides)", res.results[1].route)
+            assert.equal("(shared AdventureAtlas_RpGuides)", res.results[1].route)
             local pal, war = res.results[2], res.results[3]
             assert.equal("rp-undead-paladin", pal.route)
             local function find(r, code, stepId)
@@ -518,10 +518,10 @@ end
             for _, g in ipairs(war.summary.gates) do gates[g.stepId] = g end
             assert.equal(9000, gates["rp-gate"].okCeiling)
             assert.is_nil(gates["rp-gate"].inserted)
-            assert.equal("FastesBoooy_RpGuides", gates["rp-gate"].library)
+            assert.equal("AdventureAtlas_RpGuides", gates["rp-gate"].library)
             assert.is_true(gates["rp-war-gate"].inserted)
             assert.is_nil(gates["rp-war-gate"].okCeiling)
-            assert.equal("FastesBoooy_RpGuides", war.segments[1].library)
+            assert.equal("AdventureAtlas_RpGuides", war.segments[1].library)
             assert.is_true(find(war, "level-grind", "rp-gate").accepted)
         end)
 
@@ -559,7 +559,7 @@ end
             assert.matches("\n| 2 | rp%-tail#%d+ id=rp%-war%-gate | `rp%-undead%-warrior` | ", s)
             -- route sections: the class step's warning only in the paladin's section
             local pal = routeSection(m, "rp-undead-paladin")
-            assert.matches("\n| WARN | %[library FastesBoooy_RpGuides%] rp%-tail#%d+ id=rp%-pal%-train "
+            assert.matches("\n| WARN | %[library AdventureAtlas_RpGuides%] rp%-tail#%d+ id=rp%-pal%-train "
                 .. "%(Classes/Paladin%.lua%) | `train%-no%-npc` | ", pal)
             hasNot(pal, "turnin-no-complete")
             has(routeSection(m, "rp-undead-mage"), "Собственных ошибок и предупреждений нет.")
@@ -593,7 +593,7 @@ end
             local all = { V.ValidateModule(H.LIB_DIR, { db = db, schema = schema, module = lib }),
                           V.ValidateModule(H.COMPOSED_DIR, { db = db, schema = schema }) }
             local md = markdown(all)
-            has(section(md, "Модули и общие проверки"), "### Библиотека FastesBoooy_TestLib")
+            has(section(md, "Модули и общие проверки"), "### Библиотека AdventureAtlas_TestLib")
             local s = section(md, "Сравнение путей")
             has(s, "| `tl-deathknell` ")
             has(md, "\n### test-composed — ")
@@ -605,7 +605,7 @@ end
         it("the Guides fixture: three clean routes, two start chains without a common tail", function()
             local md = markdown({ V.ValidateModule(H.GUIDES_DIR, { db = db, schema = schema }) })
             has(md, "**Итого: 0 ERROR, 0 WARN, ")
-            has(section(md, "Модули и общие проверки"), "### Общая часть модуля FastesBoooy_TestGuides")
+            has(section(md, "Модули и общие проверки"), "### Общая часть модуля AdventureAtlas_TestGuides")
             local s = section(md, "Сравнение путей")
             has(s, "Общего хвоста у маршрутов нет")
             has(s, "| `tg-ud-01-deathknell` | `tg-undead-paladin` | ")

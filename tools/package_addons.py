@@ -2,7 +2,7 @@
 """Package every addon directory under addons/ into dist/<Name>-<Version>.zip.
 
 The version comes from the addon's TOC (``## Version: x.y.z``). The archive holds the
-addon folder at its root (``FastesBoooy/FastesBoooy.toc``, ...), as WoW expects when the
+addon folder at its root (``AdventureAtlas/AdventureAtlas.toc``, ...), as WoW expects when the
 zip is extracted into ``Interface/AddOns``. Archives are reproducible: entries are sorted,
 timestamps are fixed (1980-01-01) and permissions normalized. Dotfiles and editor
 leftovers are skipped.

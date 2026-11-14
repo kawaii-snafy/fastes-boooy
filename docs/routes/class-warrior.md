@@ -1,6 +1,6 @@
 # Воин: шаги класса
 
-Файл: [`Classes/Warrior.lua`](../../addons/FastesBoooy_Guides/Classes/Warrior.lua) — 48 вставок, 86 шагов
+Файл: [`Classes/Warrior.lua`](../../addons/AdventureAtlas_Guides/Classes/Warrior.lua) — 48 вставок, 86 шагов
 (9 необязательных), все с областью `class = "WARRIOR"` и id `war-…` (ниже 12-го — `war-dur-…`, `war-mul-…`,
 `war-tir-…`, `war-zep-…` с областью расы). Гайды: `orc-warrior`, `troll-warrior`, `tauren-warrior`, `undead-warrior`,
 `skyborne-warrior`. Путь, по которому идут все классы: стартовые зоны — [race-orc.md](race-orc.md),
@@ -88,7 +88,7 @@ Sorek, Zel'mak; Громовой Утёс, Вершина Охотников —
 ## 3. Все вставки по порядку
 
 Якорь, шаг, действия и уровень — как их видит валидатор (`lua5.1 tools/validate_routes.lua --route <race>-warrior
---levels --skip 'Classes/*' --keep Classes/Warrior.lua addons/FastesBoooy_Guides`).
+--levels --skip 'Classes/*' --keep Classes/Warrior.lua addons/AdventureAtlas_Guides`).
 
 **Дуротар (орк, тролль; у тролля письмо `war-dur-letter-troll` 3065 и `war-dur-frang-troll`, остальное то же)**
 
@@ -317,7 +317,7 @@ Ren (новое задание Forever, опыт неизвестен; пись�
 ## 9. Что проверить в игре
 
 * Что 94003 даёт скайборну Оборонительную стойку и может ли скайборн взять 1498 (`research/classes.md` §8.4, вопрос 6).
-* Опыт 92532, 94003 и 1498 (`/fb xp`; поправка — в `tools/overrides/warrior.lua`).
+* Опыт 92532, 94003 и 1498 (`/aa xp`; поправка — в `tools/overrides/warrior.lua`).
 * Списки заклинаний тренера по уровням в Forever (особенно 20: Победный раж / Мощный удар) и цены.
 * Таланты Forever для двуручного Оружия (§4).
 * Индексы наград 1503 и 1822 — тогда можно завести таблицу наград воина.
@@ -325,7 +325,7 @@ Ren (новое задание Forever, опыт неизвестен; пись�
 ## 10. Как перепроверить
 
 ```
-G=addons/FastesBoooy_Guides
+G=addons/AdventureAtlas_Guides
 luacheck --config .luacheckrc $G/Classes/Warrior.lua tools/overrides/warrior.lua
 lua5.1 tools/validate_routes.lua -q --strict --end-level --summary --baseline docs/dev/handover/baseline.json \
     --route "*-warrior" --skip 'Classes/*' --keep "Classes/Warrior.lua" --own "Classes/Warrior.lua" $G

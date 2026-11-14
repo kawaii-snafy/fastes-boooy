@@ -1,6 +1,6 @@
 # Охотник: шаги класса
 
-Файл: [`Classes/Hunter.lua`](../../addons/FastesBoooy_Guides/Classes/Hunter.lua) — 35 вставок, 65 шагов
+Файл: [`Classes/Hunter.lua`](../../addons/AdventureAtlas_Guides/Classes/Hunter.lua) — 35 вставок, 65 шагов
 (10 необязательных), все с областью `class = "HUNTER"` и id `hun-…`. Гайды: `orc-hunter`, `troll-hunter`,
 `tauren-hunter`, `skyborne-hunter` (названия гайдов — «Орк-охотник 1-60» и т. д.). Путь, по которому идут все классы: стартовые зоны —
 [race-orc.md](race-orc.md) (Дуротар, его же проходит тролль: [race-troll.md](race-troll.md)),
@@ -274,7 +274,7 @@
 ## 10. Как перепроверить
 
 ```
-G=addons/FastesBoooy_Guides
+G=addons/AdventureAtlas_Guides
 luacheck --config .luacheckrc $G/Classes/Hunter.lua tools/overrides/hunter.lua
 lua5.1 tools/validate_routes.lua -q --strict --end-level --summary --baseline docs/dev/handover/baseline.json \
     --route "*-hunter" --skip 'Classes/*' --keep "Classes/Hunter.lua" --own "Classes/Hunter.lua" $G

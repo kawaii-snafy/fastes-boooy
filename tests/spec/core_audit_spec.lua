@@ -18,9 +18,9 @@ local function boot(segments, opts)
     opts = opts or {}
     opts.fixture = false
     m, ns = H.new(opts)
-    route(m.env.FastesBoooy, segments)
+    route(m.env.AdventureAtlas, segments)
     if opts.before then opts.before() end
-    Mock.boot(m, { "FastesBoooy" })
+    Mock.boot(m, { "AdventureAtlas" })
     if opts.after then opts.after() end
     H.settle(m)
 end
@@ -98,19 +98,19 @@ describe("core audit", function()
         local log
         boot(segments, {
             player = { level = 8 },
-            savedVariables = { FastesBoooyDB = { settings = { levelSync = "auto", skipGray = false } } },
+            savedVariables = { AdventureAtlasDB = { settings = { levelSync = "auto", skipGray = false } } },
             before = function()
                 m:_addToLog(364)
                 m:_addToLog(3901)
                 log, m.questLog = m.questLog, {} -- fresh login: the log is not readable yet
             end,
             after = function()
-                assert.is_nil(m.env.FastesBoooyCharDB.syncFloor, "nothing saved from the empty log")
+                assert.is_nil(m.env.AdventureAtlasCharDB.syncFloor, "nothing saved from the empty log")
                 m.questLog = log
                 m:Fire("QUEST_LOG_UPDATE")
             end,
         })
-        assert.is_nil(m.env.FastesBoooyCharDB.syncFloor)
+        assert.is_nil(m.env.AdventureAtlasCharDB.syncFloor)
         assert.equal("c364", H.cur(ns))
         assert.same({}, ns.Engine:GetDroppedQuests())
     end)
@@ -126,11 +126,11 @@ describe("core audit", function()
         }
         boot(segments, {
             player = { level = 8 },
-            savedVariables = { FastesBoooyDB = { settings = { levelSync = "auto", skipGray = false } } },
+            savedVariables = { AdventureAtlasDB = { settings = { levelSync = "auto", skipGray = false } } },
         })
         m:Advance(4)
         H.settle(m)
-        assert.is_table(m.env.FastesBoooyCharDB.syncFloor)
+        assert.is_table(m.env.AdventureAtlasCharDB.syncFloor)
         assert.equal("a380", H.cur(ns))
     end)
 

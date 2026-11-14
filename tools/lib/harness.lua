@@ -1,18 +1,18 @@
 -- tools/lib/harness.lua -- start states and harness routes for the offline tools (Lua 5.1).
 --
--- Lets a PART of the shared segments of a module (FastesBoooy.AddLibrarySegment: a library module,
--- or a module that also registers routes such as FastesBoooy_Guides) be validated
+-- Lets a PART of the shared segments of a module (AdventureAtlas.AddLibrarySegment: a library module,
+-- or a module that also registers routes such as AdventureAtlas_Guides) be validated
 -- (tools/validate_routes.lua) and simulated (tools/simulate_routes.lua) from an explicit
 -- character state, so the segments can be written and checked in parallel:
 --
---   lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Guides --segments h-a,h-b \
+--   lua5.1 tools/validate_routes.lua --harness addons/AdventureAtlas_Guides --segments h-a,h-b \
 --          --profile race=Scourge,class=PALADIN,faction=Horde --state start.json --write-state end.json
 --
 -- Harness route: a synthetic route registered for exactly one profile
 --   { api = 1, id = "harness-<Library>", faction, races = { race }, classes = { class } }
--- that only uses the listed shared segments (FastesBoooy.UseSegments, composed by the real
+-- that only uses the listed shared segments (AdventureAtlas.UseSegments, composed by the real
 -- Core/Compose.lua) -- no own segments, no per-route inserts. The module's SHARED inserts
--- (FastesBoooy.AddLibraryInsert) apply to it like to every route that contains their anchor, and
+-- (AdventureAtlas.AddLibraryInsert) apply to it like to every route that contains their anchor, and
 -- shared steps whose class / race / faction filter cannot match the profile are not composed.
 --
 -- Start state (JSON; the same format is written by --write-state, so runs can be chained):
@@ -353,7 +353,7 @@ Harness.SOURCE = "<harness>" -- file name of the harness route's registrations i
 
 --- Route id of the harness route of a library module: "harness-<Name>" ([A-Za-z0-9-_]).
 function Harness.RouteId(libName)
-    return "harness-" .. tostring(libName):gsub("^FastesBoooy_", ""):gsub("[^%w%-_]", "-")
+    return "harness-" .. tostring(libName):gsub("^AdventureAtlas_", ""):gsub("[^%w%-_]", "-")
 end
 
 --- The RegisterRoute definition of a harness route.
@@ -368,10 +368,10 @@ end
 
 --- Load a module with shared segments and compose the harness route (real Core/Schema.lua +
 -- Core/Compose.lua). The module may be a library module or a mixed module that also registers routes
--- (FastesBoooy_Guides): the harness route uses the module's shared part. The module's shared inserts
+-- (AdventureAtlas_Guides): the harness route uses the module's shared part. The module's shared inserts
 -- (AddLibraryInsert) whose anchors are in the harness route apply to it like to every route, and
 -- shared steps that cannot match the harness profile are not composed (Compose.Build).
--- @param libDir module directory (e.g. addons/FastesBoooy_Guides)
+-- @param libDir module directory (e.g. addons/AdventureAtlas_Guides)
 -- @param opts { schema = Schema (required), profile = { race, class, faction } (Harness.Profile),
 --               segments = { ids } | nil (nil: every shared segment of the module, TOC order),
 --               skipGlobs / keepGlobs = the file filter (Loader.LoadModule) }

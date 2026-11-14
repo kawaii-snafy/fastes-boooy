@@ -29,8 +29,8 @@ describe("luacheck forever std", function()
         return
     end
 
-    local CORE = "addons/FastesBoooy/Core/LintProbe.lua"
-    local ROUTE = "addons/FastesBoooy_Probe/Segments/01.lua"
+    local CORE = "addons/AdventureAtlas/Core/LintProbe.lua"
+    local ROUTE = "addons/AdventureAtlas_Probe/Segments/01.lua"
 
     it("accepts real Forever APIs, widgets, enums and the addon globals", function()
         local code, out = luacheck([[
@@ -49,11 +49,11 @@ local proj = WOW_PROJECT_ID
 local secret = issecretvalue
 local s = strsplit(",", "a,b")
 local t = Enum.QuestTagType
-SLASH_FASTESBOOOY1 = "/fb"
-SlashCmdList.FASTESBOOOY = function() end
-FastesBoooy = ns
-FastesBoooyDB = FastesBoooyDB or {}
-FastesBoooyCharDB = FastesBoooyCharDB or {}
+SLASH_ADVENTUREATLAS1 = "/aa"
+SlashCmdList.ADVENTUREATLAS = function() end
+AdventureAtlas = ns
+AdventureAtlasDB = AdventureAtlasDB or {}
+AdventureAtlasCharDB = AdventureAtlasCharDB or {}
 return info, n, done, count, mapID, font, level, raceFile, proj, secret, s, t
 ]], CORE)
         assert.are.equal(0, code, out)
@@ -82,51 +82,51 @@ return a, b, c, d, e, f, g, h
         assert.matches("W113.-io", out)
     end)
 
-    it("route modules may only read FastesBoooy", function()
-        local code = luacheck('FastesBoooy.AddSegment("r", { id = "s", title = "t", steps = {} })\n', ROUTE)
+    it("route modules may only read AdventureAtlas", function()
+        local code = luacheck('AdventureAtlas.AddSegment("r", { id = "s", title = "t", steps = {} })\n', ROUTE)
         assert.are.equal(0, code)
-        local bad, out = luacheck('local x = C_QuestLog.GetInfo(1)\nFastesBoooyDB = {}\nreturn x\n', ROUTE)
+        local bad, out = luacheck('local x = C_QuestLog.GetInfo(1)\nAdventureAtlasDB = {}\nreturn x\n', ROUTE)
         assert.are.equal(1, bad)
         assert.matches("C_QuestLog", out)
-        assert.matches("FastesBoooyDB", out)
+        assert.matches("AdventureAtlasDB", out)
     end)
 
     it("route modules: the shared-insert API and the pure Lua base are known; writes and other globals are not", function()
         -- the shape of a Route.lua that registers its routes from a table, and of a class file
         local code, out = luacheck([[
-if not FastesBoooy.AddLibraryInsert then return end
+if not AdventureAtlas.AddLibraryInsert then return end
 local _, ns = ...
 local list = { "a", "b" }
 for i, id in ipairs(list) do
-    FastesBoooy.RegisterRoute({ api = 1, id = id .. tostring(i), title = string.format("%s %d", id, math.floor(i)) })
+    AdventureAtlas.RegisterRoute({ api = 1, id = id .. tostring(i), title = string.format("%s %d", id, math.floor(i)) })
 end
 for k, v in pairs(ns) do
     if type(v) == "table" and next(v) ~= nil then
-        FastesBoooy.AddLibraryInsert({ after = k, steps = { unpack(v) } })
+        AdventureAtlas.AddLibraryInsert({ after = k, steps = { unpack(v) } })
     end
 end
-FastesBoooy.AddLibraryData({ rewards = { DRUID = { [tonumber("92461")] = select(1, 1) } } })
+AdventureAtlas.AddLibraryData({ rewards = { DRUID = { [tonumber("92461")] = select(1, 1) } } })
 return table.concat(list, ",")
-]], "addons/FastesBoooy_Probe/Classes/Druid.lua")
+]], "addons/AdventureAtlas_Probe/Classes/Druid.lua")
         assert.are.equal(0, code, out)
         -- still errors: writes to the base, WoW API, SavedVariables, a global of the module's own, io / os / print,
-        -- a function FastesBoooy does not have
+        -- a function AdventureAtlas does not have
         local bad
         bad, out = luacheck([[
 ipairs = nil
 string.extra = 1
 local t = C_Timer.After
-FastesBoooyCharDB = {}
+AdventureAtlasCharDB = {}
 MyGlobal = 1
 print(os.time(), io.open("x"), t)
-FastesBoooy.AddLibraryInsrt({})
-FastesBoooy.AddLibraryInsert = nil
-]], "tests/fixtures/core/FastesBoooy_Probe/Route.lua")
+AdventureAtlas.AddLibraryInsrt({})
+AdventureAtlas.AddLibraryInsert = nil
+]], "tests/fixtures/core/AdventureAtlas_Probe/Route.lua")
         assert.are.equal(1, bad)
         assert.matches("W121.-ipairs", out)
         assert.matches("W122.-extra", out)
         assert.matches("W113.-C_Timer", out)
-        assert.matches("W111.-FastesBoooyCharDB", out)
+        assert.matches("W111.-AdventureAtlasCharDB", out)
         assert.matches("W111.-MyGlobal", out)
         assert.matches("W113.-print", out)
         assert.matches("W113.-'os'", out)
@@ -146,19 +146,19 @@ return {
 }
 ]], "tools/overrides/shared.lua")
         assert.are.equal(0, code, out)
-        -- the file is loaded in an empty environment: not even the Lua base, no FastesBoooy, no global of its own
+        -- the file is loaded in an empty environment: not even the Lua base, no AdventureAtlas, no global of its own
         local bad
         bad, out = luacheck([[
 local ids = { 1, 2 }
 for _, id in ipairs(ids) do Count = (Count or 0) + id end
-return { quests = { [tonumber("363")] = { xp = math.floor(85.5), source = tostring(FastesBoooy) } } }
+return { quests = { [tonumber("363")] = { xp = math.floor(85.5), source = tostring(AdventureAtlas) } } }
 ]], "tools/overrides/warrior.lua")
         assert.are.equal(1, bad)
         assert.matches("W113.-ipairs", out)
         assert.matches("W111.-Count", out)
         assert.matches("W113.-tonumber", out)
         assert.matches("W113.-math", out)
-        assert.matches("W113.-FastesBoooy", out)
+        assert.matches("W113.-AdventureAtlas", out)
         -- the other tools keep plain Lua 5.1
         code, out = luacheck("local t = {}\nfor _, v in ipairs(t) do print(tostring(v)) end\n", "tools/lib/probe.lua")
         assert.are.equal(0, code, out)

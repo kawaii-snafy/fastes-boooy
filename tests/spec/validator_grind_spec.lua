@@ -273,7 +273,7 @@ describe("validator grind report and skip-ahead", function()
         end)
 
         it("the clean fixture: grind report present, still 0 errors and 0 warnings", function()
-            local res = V.ValidateModule("tests/fixtures/validator/FastesBoooy_FxClean", { db = db, schema = schema })
+            local res = V.ValidateModule("tests/fixtures/validator/AdventureAtlas_FxClean", { db = db, schema = schema })
             local r = res.results[1]
             assert.are.equal(0, r.counts.ERROR)
             assert.are.equal(0, r.counts.WARN)

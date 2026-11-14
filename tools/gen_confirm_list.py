@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """tools/gen_confirm_list.py -- the "confirm in game" list of the guides module (docs/dev/PLAN.md D.6 step 5).
 
-Collects every `-- CONFIRM` comment of addons/FastesBoooy_Guides (segments, race files, class files) with the
+Collects every `-- CONFIRM` comment of addons/AdventureAtlas_Guides (segments, race files, class files) with the
 step id it belongs to (the step on the comment line, or the first step after a comment block) and prints
 docs/routes/confirm-in-game.md (Russian frame, the comment text as written):
 
@@ -9,7 +9,7 @@ docs/routes/confirm-in-game.md (Russian frame, the comment text as written):
 """
 import os, re, sys
 root = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
-G = os.path.join(root, "addons/FastesBoooy_Guides")
+G = os.path.join(root, "addons/AdventureAtlas_Guides")
 order = []
 for sub in ("Segments/Durotar", "Segments/Mulgore", "Segments/Tirisfal", "Segments/Zephras", "Segments/Shared", "Races", "Classes"):
     d = os.path.join(G, sub)
@@ -89,7 +89,7 @@ for rel in order:
         out.append((rel, items))
 n = sum(len(x[1]) for x in out)
 print("# Что подтверждается только в игре (`-- CONFIRM`)\n")
-print("Сгенерировано из комментариев `-- CONFIRM` модуля `addons/FastesBoooy_Guides` (фаза R, %d пунктов). Текст пунктов —" % n)
+print("Сгенерировано из комментариев `-- CONFIRM` модуля `addons/AdventureAtlas_Guides` (фаза R, %d пунктов). Текст пунктов —" % n)
 print("комментарии кода как есть (английский). Подтвердили пункт в игре — уберите `CONFIRM` из комментария (и, если пункт")
 print("держится на поправке БД, поставьте ей `verified = true` в `tools/overrides/*.lua`); не подтвердился — исправьте шаг.")
 print("Пересобрать список: `python3 -I tools/gen_confirm_list.py > docs/routes/confirm-in-game.md`.\n")

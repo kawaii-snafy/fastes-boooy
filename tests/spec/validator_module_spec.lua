@@ -1,5 +1,5 @@
 -- Validator on a MIXED module (shared segments + shared inserts + routes, the shape of
--- FastesBoooy_Guides), docs/dev/PLAN.md A.6.1 / A.6.2:
+-- AdventureAtlas_Guides), docs/dev/PLAN.md A.6.1 / A.6.2:
 --   * the checks on the shared TEMPLATES (tools/lib/module_checks.lua): unknown-race-token,
 --     insert-anchor-unknown, insert-unapplied, shared-step-unused, insert-scope-wider-than-anchor,
 --     shared-unused; which modules get them; step-no-profile only for a route's own steps;
@@ -12,7 +12,7 @@
 --     counts);
 --   * --harness on a mixed module (validator and simulator).
 -- The modules are written to a temporary directory: real Forever quests of Deathknell and the Valley
--- of Trials, as in tests/fixtures/core/FastesBoooy_TestGuides.
+-- of Trials, as in tests/fixtures/core/AdventureAtlas_TestGuides.
 
 local DB = require("lib.fbdb")
 local Loader = require("lib.route_loader")
@@ -47,7 +47,7 @@ local SIMULATE = "lua5.1 tools/simulate_routes.lua --no-overrides "
 local FILES = {
     ["Segments/Tirisfal.lua"] = [[
 local _, ns = ...
-FastesBoooy.AddLibrarySegment({ id = "mx-ud", title = "Deathknell", zone = "Tirisfal Glades", levels = { 1, 2 }, steps = {
+AdventureAtlas.AddLibrarySegment({ id = "mx-ud", title = "Deathknell", zone = "Tirisfal Glades", levels = { 1, 2 }, steps = {
     { id = "mx-ud-363", accept = 363, npc = 1568, at = { 1420, 30.2, 71.7 } },
     { id = "mx-ud-364", turnin = 363, accept = 364, npc = 1569, at = { 1420, 30.8, 66.2 } },
     { id = "mx-ud-zombies", complete = 364, at = { 1420, 32.5, 63.5 } },
@@ -58,7 +58,7 @@ ns.zones.Scourge = { "mx-ud" }
 ]],
     ["Segments/Durotar.lua"] = [[
 local _, ns = ...
-FastesBoooy.AddLibrarySegment({ id = "mx-dur", title = "Valley of Trials", zone = "Durotar", levels = { 1, 2 }, steps = {
+AdventureAtlas.AddLibrarySegment({ id = "mx-dur", title = "Valley of Trials", zone = "Durotar", levels = { 1, 2 }, steps = {
     { id = "mx-dur-4641", accept = 4641, npc = 10176, at = { 1411, 43.3, 68.5 } },
     { id = "mx-dur-788", turnin = 4641, accept = 788, npc = 3143, at = { 1411, 42.1, 68.3 } },
     { id = "mx-dur-boars", complete = 788, at = { 1411, 45.2, 66.9 } },
@@ -69,17 +69,17 @@ ns.zones = ns.zones or {}
 ns.zones.Orc = { "mx-dur" }
 ]],
     ["Classes/Paladin.lua"] = [[
-FastesBoooy.AddLibraryInsert({ after = "mx-ud-364-in", class = "PALADIN", steps = {
+AdventureAtlas.AddLibraryInsert({ after = "mx-ud-364-in", class = "PALADIN", steps = {
     { id = "mx-pal-train", train = true, npc = 244808, at = { 1420, 31.1, 66.4 } },
 } })
 ]],
     ["Classes/Warrior.lua"] = [[
-FastesBoooy.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", steps = {
+AdventureAtlas.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", steps = {
     { id = "mx-war-train", train = true, npc = 3153, at = { 1411, 42.9, 69.4 } },
 } })
 ]],
     ["Races/Orc.lua"] = [[
-FastesBoooy.AddLibraryInsert({ after = "mx-dur-orc-only", race = "Orc", steps = {
+AdventureAtlas.AddLibraryInsert({ after = "mx-dur-orc-only", race = "Orc", steps = {
     { id = "mx-orc-vendor", vendor = true, npc = 3158, at = { 1411, 42.6, 67.3 } },
 } })
 ]],
@@ -90,9 +90,9 @@ for i = 1, #ROUTES do
     local r = ROUTES[i]
     local zone = ns.zones and ns.zones[r[2]]
     if zone then
-        FastesBoooy.RegisterRoute({ api = 1, id = r[1], title = r[1], faction = "Horde", races = { r[2] },
+        AdventureAtlas.RegisterRoute({ api = 1, id = r[1], title = r[1], faction = "Horde", races = { r[2] },
             classes = { r[3] }, levels = { 1, 2 } })
-        FastesBoooy.UseSegments(r[1], zone)
+        AdventureAtlas.UseSegments(r[1], zone)
     end
 end
 ]=],
@@ -106,8 +106,8 @@ local counter = 0
 -- (a string replaces the file, a table { append = "..." } adds to it)
 local function module(changes)
     counter = counter + 1
-    local name = "FastesBoooy_Mx" .. counter
-    local toc = { "## Interface: 16001", "## Dependencies: FastesBoooy" }
+    local name = "AdventureAtlas_Mx" .. counter
+    local toc = { "## Interface: 16001", "## Dependencies: AdventureAtlas" }
     for _, path in ipairs(ORDER) do
         toc[#toc + 1] = (path:gsub("/", "\\"))
         local text = FILES[path]
@@ -218,7 +218,7 @@ describe("validator on a mixed module", function()
 
         it("unknown-race-token: a template step with race = \"Undead\" is composed nowhere and still reported", function()
             local dir = module({ ["Segments/Tirisfal.lua"] = { append = [[
-FastesBoooy.AddLibrarySegment({ id = "mx-ud-2", title = "More", steps = {
+AdventureAtlas.AddLibrarySegment({ id = "mx-ud-2", title = "More", steps = {
     { id = "mx-ud-bad-race", race = "Undead", go = true, at = { 1420, 30.2, 71.7 } },
     { id = "mx-ud-ok", go = true, at = { 1420, 30.2, 71.7 } },
 } })
@@ -242,11 +242,11 @@ ns.zones.Scourge[2] = "mx-ud-2"
 
         it("unknown-race-token: the scope of an insert once, a step's own race filter per step", function()
             local dir = module({ ["Classes/Warrior.lua"] = { append = [[
-FastesBoooy.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", race = "Orcs", steps = {
+AdventureAtlas.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", race = "Orcs", steps = {
     { id = "mx-war-a", go = true, at = { 1411, 42.6, 69.0 } },
     { id = "mx-war-b", go = true, at = { 1411, 42.6, 69.0 } },
 } })
-FastesBoooy.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", steps = {
+AdventureAtlas.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", steps = {
     { id = "mx-war-c", race = "Trol", go = true, at = { 1411, 42.6, 69.0 } },
 } })
 ]] } })
@@ -263,7 +263,7 @@ FastesBoooy.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", steps
 
         it("insert-anchor-unknown: a misspelled anchor", function()
             local dir = module({ ["Classes/Paladin.lua"] = { append = [[
-FastesBoooy.AddLibraryInsert({ after = "mx-ud-364-inn", class = "PALADIN", steps = {
+AdventureAtlas.AddLibraryInsert({ after = "mx-ud-364-inn", class = "PALADIN", steps = {
     { id = "mx-pal-x", go = true, at = { 1420, 30.2, 71.7 } },
     { id = "mx-pal-y", go = true, at = { 1420, 30.2, 71.7 } },
 } })
@@ -277,7 +277,7 @@ FastesBoooy.AddLibraryInsert({ after = "mx-ud-364-inn", class = "PALADIN", steps
 
         it("insert-anchor-unknown under --skip: an error for own files, a note for the others", function()
             local changes = { ["Classes/Paladin.lua"] = { append = [[
-FastesBoooy.AddLibraryInsert({ after = "mx-nowhere", class = "PALADIN", steps = {
+AdventureAtlas.AddLibraryInsert({ after = "mx-nowhere", class = "PALADIN", steps = {
     { id = "mx-pal-x", go = true, at = { 1420, 30.2, 71.7 } },
 } })
 ]] } }
@@ -310,11 +310,11 @@ FastesBoooy.AddLibraryInsert({ after = "mx-nowhere", class = "PALADIN", steps = 
             -- the command line: exit status and the printed note
             local code, out = run(VALIDATE .. "-q --strict --skip 'Races/*' --own Classes/Warrior.lua " .. dir)
             assert.equal(0, code, out)
-            assert.matches("  note  %[library FastesBoooy_Mx%d+%] id=mx%-pal%-x %(Classes/Paladin.lua%) %[insert%-anchor%-unknown%] "
+            assert.matches("  note  %[library AdventureAtlas_Mx%d+%] id=mx%-pal%-x %(Classes/Paladin.lua%) %[insert%-anchor%-unknown%] "
                 .. "shared insert after 'mx%-nowhere'.- %-%- not counted: partial load", out)
             code, out = run(VALIDATE .. "-q --skip 'Races/*' --own Classes/Paladin.lua " .. dir)
             assert.equal(1, code, out)
-            assert.matches("%(shared FastesBoooy_Mx%d+%) %[shared: 2 segment%(s%), 3 insert%(s%), 12 step%(s%)%]: 1 error%(s%)", out)
+            assert.matches("%(shared AdventureAtlas_Mx%d+%) %[shared: 2 segment%(s%), 3 insert%(s%), 12 step%(s%)%]: 1 error%(s%)", out)
             code = run(VALIDATE .. "-q --skip 'Races/*' " .. dir)
             assert.equal(1, code)
         end)
@@ -322,7 +322,7 @@ FastesBoooy.AddLibraryInsert({ after = "mx-nowhere", class = "PALADIN", steps = 
         it("insert-unapplied: the anchor exists, routes match the scope, none of them has the anchor", function()
             local dir = module({ ["Races/Orc.lua"] = { append = [[
 -- an anchor of the other start zone
-FastesBoooy.AddLibraryInsert({ after = "mx-ud-364-in", race = "Orc", steps = {
+AdventureAtlas.AddLibraryInsert({ after = "mx-ud-364-in", race = "Orc", steps = {
     { id = "mx-orc-lost", go = true, at = { 1420, 30.2, 71.7 } },
 } })
 ]] } })
@@ -335,7 +335,7 @@ FastesBoooy.AddLibraryInsert({ after = "mx-ud-364-in", race = "Orc", steps = {
         it("shared-step-unused: a template step no loaded route composes", function()
             local dir = module({
                 ["Segments/Durotar.lua"] = { append = [[
-FastesBoooy.AddLibrarySegment({ id = "mx-dur-2", title = "More", steps = {
+AdventureAtlas.AddLibrarySegment({ id = "mx-dur-2", title = "More", steps = {
     { id = "mx-dur-druid", class = "DRUID", go = true, at = { 1411, 42.6, 69.0 } },
     { id = "mx-dur-all", go = true, at = { 1411, 42.6, 69.0 } },
 } })
@@ -343,12 +343,12 @@ ns.zones.Orc[2] = "mx-dur-2"
 ]] },
                 ["Classes/Warrior.lua"] = { append = [[
 -- one step of the insert is for a race without a warrior route
-FastesBoooy.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", steps = {
+AdventureAtlas.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", steps = {
     { id = "mx-war-troll", race = "Troll", go = true, at = { 1411, 42.6, 69.0 } },
     { id = "mx-war-any", go = true, at = { 1411, 42.6, 69.0 } },
 } })
 -- a whole insert for a class that has no route here
-FastesBoooy.AddLibraryInsert({ after = "mx-dur-788-in", class = "MAGE", steps = {
+AdventureAtlas.AddLibraryInsert({ after = "mx-dur-788-in", class = "MAGE", steps = {
     { id = "mx-mage-1", go = true, at = { 1411, 42.6, 69.0 } },
     { id = "mx-mage-2", go = true, at = { 1411, 42.6, 69.0 } },
 } })
@@ -374,7 +374,7 @@ FastesBoooy.AddLibraryInsert({ after = "mx-dur-788-in", class = "MAGE", steps = 
         it("insert-scope-wider-than-anchor: an insert on a filtered anchor states the anchor's scope", function()
             local dir = module({ ["Classes/Warrior.lua"] = { append = [[
 -- the anchor is race = "Orc": the insert must say so too
-FastesBoooy.AddLibraryInsert({ after = "mx-dur-orc-only", class = "WARRIOR", steps = {
+AdventureAtlas.AddLibraryInsert({ after = "mx-dur-orc-only", class = "WARRIOR", steps = {
     { id = "mx-war-wide", go = true, at = { 1411, 42.6, 69.0 } },
     { id = "mx-war-fine", race = "Orc", go = true, at = { 1411, 42.6, 69.0 } },
 } })
@@ -391,7 +391,7 @@ FastesBoooy.AddLibraryInsert({ after = "mx-dur-orc-only", class = "WARRIOR", ste
 
         it("shared-unused: a shared segment no route uses; only on a full load; `ok` on the segment accepts it", function()
             local extra = [[
-FastesBoooy.AddLibrarySegment({ id = "mx-spare", title = "Spare", %s steps = {
+AdventureAtlas.AddLibrarySegment({ id = "mx-spare", title = "Spare", %s steps = {
     { id = "mx-spare-1", go = true, at = { 1420, 30.2, 71.7 } },
 } })
 ]]
@@ -415,7 +415,7 @@ FastesBoooy.AddLibrarySegment({ id = "mx-spare", title = "Spare", %s steps = {
 
         it("ok-needs-ceiling: level-grind in `ok` of a template step without a ceiling", function()
             local dir = module({ ["Segments/Tirisfal.lua"] = { append = [[
-FastesBoooy.AddLibrarySegment({ id = "mx-ud-2", title = "More", steps = {
+AdventureAtlas.AddLibrarySegment({ id = "mx-ud-2", title = "More", steps = {
     { id = "mx-ud-gate", level = 2, ok = "level-grind" },
     { id = "mx-ud-gate-2", level = 2, ok = { ["level-grind"] = 50 } },
 } })
@@ -429,7 +429,7 @@ ns.zones.Scourge[2] = "mx-ud-2"
 
         it("ok-needs-ceiling is an ERROR in any file, also on a partial load: it depends on no other file", function()
             local dir = module({ ["Segments/Durotar.lua"] = { append = [[
-FastesBoooy.AddLibrarySegment({ id = "mx-dur-2", title = "More", steps = {
+AdventureAtlas.AddLibrarySegment({ id = "mx-dur-2", title = "More", steps = {
     { id = "mx-dur-gate", level = 2, ok = "level-grind" },
 } })
 ns.zones.Orc[2] = "mx-dur-2"
@@ -450,7 +450,7 @@ ns.zones.Orc[2] = "mx-dur-2"
 
         it("ok-needs-ceiling: a plain level-grind in `ok` of a shared segment (it would do nothing there)", function()
             local dir = module({ ["Segments/Tirisfal.lua"] = { append = [[
-FastesBoooy.AddLibrarySegment({ id = "mx-ud-2", title = "More", levels = { 1, 2 },
+AdventureAtlas.AddLibrarySegment({ id = "mx-ud-2", title = "More", levels = { 1, 2 },
     ok = { "segment-level", "level-grind" }, steps = {
     { id = "mx-ud-more", go = true, at = { 1420, 30.2, 71.7 } },
 } })
@@ -464,7 +464,7 @@ ns.zones.Scourge[2] = "mx-ud-2"
             for i = 2, #res.results do assert.same({}, with(res.results[i], "ok-needs-ceiling")) end
             -- a route's own segment: reported in the route (V.RouteChecks)
             local mixed = module({ ["Route.lua"] = { append = [[
-FastesBoooy.AddSegment("mx-orc-warrior", { id = "mx-own", title = "Own", ok = "level-grind", steps = {
+AdventureAtlas.AddSegment("mx-orc-warrior", { id = "mx-own", title = "Own", ok = "level-grind", steps = {
     { id = "mx-own-1", go = true, at = { 1411, 42.6, 69.0 } },
 } })
 ]] } })
@@ -479,7 +479,7 @@ FastesBoooy.AddSegment("mx-orc-warrior", { id = "mx-own", title = "Own", ok = "l
 
         it("run with --route as well, over every route of the module", function()
             local dir = module({ ["Races/Orc.lua"] = { append = [[
-FastesBoooy.AddLibraryInsert({ after = "mx-ud-364-in", race = "Orc", steps = {
+AdventureAtlas.AddLibraryInsert({ after = "mx-ud-364-in", race = "Orc", steps = {
     { id = "mx-orc-lost", go = true, at = { 1420, 30.2, 71.7 } },
 } })
 ]] } })
@@ -505,7 +505,7 @@ FastesBoooy.AddLibraryInsert({ after = "mx-ud-364-in", race = "Orc", steps = {
             assert.same({}, with(composed.results[1], "shared-unused"))
             -- harness run on a mixed module with a broken template: not reported there
             local dir = module({ ["Races/Orc.lua"] = { append = [[
-FastesBoooy.AddLibraryInsert({ after = "mx-nowhere", race = "Orc", steps = { { id = "mx-orc-lost", manual = true } } })
+AdventureAtlas.AddLibraryInsert({ after = "mx-nowhere", race = "Orc", steps = { { id = "mx-orc-lost", manual = true } } })
 ]] } })
             local hb = Harness.Build(dir, { schema = schema, segments = { "mx-dur" },
                 profile = { race = "Orc", class = "WARRIOR", faction = "Horde" } })
@@ -563,7 +563,7 @@ FastesBoooy.AddLibraryInsert({ after = "mx-nowhere", race = "Orc", steps = { { i
             -- the simulator loads the same files into the mock client
             code, out = run(SIMULATE .. dir)
             assert.equal(1, code, out)
-            assert.matches("FAIL FastesBoooy_Mx%d+: 1 load/schema error%(s%)", out)
+            assert.matches("FAIL AdventureAtlas_Mx%d+: 1 load/schema error%(s%)", out)
             code, out = run(SIMULATE .. "--skip 'Classes/*' --keep Classes/Warrior.lua " .. dir)
             assert.equal(0, code, out)
             assert.matches("OK   mx%-undead%-paladin %(Scourge PALADIN Horde%): 4 steps", out)
@@ -598,7 +598,7 @@ FastesBoooy.AddLibraryInsert({ after = "mx-nowhere", race = "Orc", steps = { { i
 
             -- the validator: a typo in --own would make every warning foreign and --strict pass on anything
             local warn = module({ ["Classes/Warrior.lua"] = { append = [[
-FastesBoooy.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", steps = { { id = "mx-war-2", train = true } } })
+AdventureAtlas.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", steps = { { id = "mx-war-2", train = true } } })
 ]] } })
             local code, out = run(VALIDATE .. "-q --strict --own Classes/Warrior.lua " .. warn)
             assert.equal(1, code, out)
@@ -606,7 +606,7 @@ FastesBoooy.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", steps
                 code, out = run(VALIDATE .. "-q --strict --own " .. typo .. " " .. warn)
                 assert.equal(2, code, out)
                 assert.matches("validate_routes: %-%-own '" .. typo:gsub("%p", "%%%0") .. "' matches no loaded file of "
-                    .. "FastesBoooy_Mx%d+ .-: every warning would be foreign", out)
+                    .. "AdventureAtlas_Mx%d+ .-: every warning would be foreign", out)
                 assert.not_matches("warning%(s%)", out)
             end
             -- the own file is skipped (--keep forgotten)
@@ -634,7 +634,7 @@ FastesBoooy.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", steps
             -- the simulator and the generator
             code, out = run(SIMULATE .. "--skip 'Clases/*' " .. dir)
             assert.equal(2, code, out)
-            assert.matches("simulate_routes: %-%-skip 'Clases/%*' matches no TOC file of FastesBoooy_Mx", out)
+            assert.matches("simulate_routes: %-%-skip 'Clases/%*' matches no TOC file of AdventureAtlas_Mx", out)
             assert.not_matches("simulation%(s%)", out)
             code, out = run(SIMULATE .. "--skip 'Clases/*' " .. harness)
             assert.equal(2, code, out)
@@ -650,8 +650,8 @@ FastesBoooy.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", steps
             Mock.loadAddon(m, H.CORE_TOC)
             Mock.loadAddon(m, dir .. "/" .. name .. ".toc", name, { skip = { ["Classes/Warrior.lua"] = true } })
             assert.same({ "Classes/Warrior.lua" }, m.addons[name].skipped)
-            Mock.boot(m, { "FastesBoooy", name })
-            local ns = m.addons.FastesBoooy.ns
+            Mock.boot(m, { "AdventureAtlas", name })
+            local ns = m.addons.AdventureAtlas.ns
             local route = ns.Registry:Get("mx-orc-warrior")
             assert.is_truthy(route.stepById["mx-orc-vendor"])
             assert.is_nil(route.stepById["mx-war-train"])
@@ -734,7 +734,7 @@ FastesBoooy.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", steps
 
             local code, out = run(VALIDATE .. "-q --strict --end-level --route mx-orc-warrior " .. dir)
             assert.equal(1, code, out)
-            assert.matches("%(shared FastesBoooy_Mx%d+%) .-: 1 error%(s%)", out)
+            assert.matches("%(shared AdventureAtlas_Mx%d+%) .-: 1 error%(s%)", out)
             code, out = run(VALIDATE .. "-q --route mx-undead-paladin " .. dir)
             assert.equal(1, code, out)
             assert.not_matches("  note  ", out)
@@ -767,7 +767,7 @@ FastesBoooy.AddLibraryInsert({ after = "mx-dur-788-in", class = "WARRIOR", steps
             end
             -- a per-route insert of an unselected route with a schema error, in a file of its own
             local ins = module({ ["Races/Orc.lua"] = { append = [[
-FastesBoooy.AddInsert("mx-orc-warrior", { after = "mx-dur-788-in", steps = { { id = "mx-orc-bad", bogus = 1 } } })
+AdventureAtlas.AddInsert("mx-orc-warrior", { after = "mx-dur-788-in", steps = { { id = "mx-orc-bad", bogus = 1 } } })
 ]] } })
             assert.equal("mx-orc-warrior", validate(ins).mod.errors[1].route)
             res = validate(ins, { route = "mx-undead-paladin" })
@@ -788,7 +788,7 @@ FastesBoooy.AddInsert("mx-orc-warrior", { after = "mx-dur-788-in", steps = { { i
         it("a schema error in a file that loaded is a note only when its content goes to other routes alone", function()
             -- the paladin file: one good insert (it reaches the undead route) and one with a schema error
             local bad = [[
-FastesBoooy.AddLibraryInsert({ after = "mx-ud-364-in", class = "PALADIN", steps = { { id = "mx-pal-bad", bogus = 1 } } })
+AdventureAtlas.AddLibraryInsert({ after = "mx-ud-364-in", class = "PALADIN", steps = { { id = "mx-pal-bad", bogus = 1 } } })
 ]]
             local dir = module({ ["Classes/Paladin.lua"] = { append = bad } })
             local res = validate(dir)
@@ -811,14 +811,14 @@ FastesBoooy.AddLibraryInsert({ after = "mx-ud-364-in", class = "PALADIN", steps 
             assert.same({}, res.notes)
             -- a file that gave nothing to any route (its only registration failed): it may be exactly what
             -- the selected route misses, so it counts
-            local nothing = module({ ["Classes/Warrior.lua"] = "FastesBoooy.AddLibraryInsert({ class = \"WARRIOR\" })\n" })
+            local nothing = module({ ["Classes/Warrior.lua"] = "AdventureAtlas.AddLibraryInsert({ class = \"WARRIOR\" })\n" })
             for _, sel in ipairs({ "mx-orc-warrior", "mx-undead-paladin" }) do
                 res = validate(nothing, { route = sel })
                 assert.is_true(res.results[1].counts.ERROR >= 1, sel)
                 assert.same({}, res.notes)
             end
             -- an error in a file the route does use always counts
-            local dir2 = module({ ["Segments/Tirisfal.lua"] = { append = "FastesBoooy.AddLibrarySegment(1)\n" } })
+            local dir2 = module({ ["Segments/Tirisfal.lua"] = { append = "AdventureAtlas.AddLibrarySegment(1)\n" } })
             res = validate(dir2, { route = "mx-undead-paladin" })
             assert.equal(1, res.results[1].counts.ERROR)
             assert.same({}, res.notes)
@@ -834,7 +834,7 @@ FastesBoooy.AddLibraryInsert({ after = "mx-ud-364-in", class = "PALADIN", steps 
             local dir = module({ ["Classes/Warrior.lua"] = "this is not Lua\n" })
             local code, out = run(SIMULATE .. "--route mx-orc-warrior " .. dir)
             assert.equal(1, code, out)
-            assert.matches("FAIL FastesBoooy_Mx%d+: 1 load/schema error%(s%)", out)
+            assert.matches("FAIL AdventureAtlas_Mx%d+: 1 load/schema error%(s%)", out)
             assert.matches("simulate_routes: 1 simulation%(s%), 0 passed, 1 failed", out)
             assert.not_matches("matched no route", out)
         end)

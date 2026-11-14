@@ -5,7 +5,7 @@
 -- quest would need itself turned in first and could never be accepted. The original game has no prerequisite (the
 -- exclusive list stays). Not verified in the Forever client yet (CONFIRM on the accept steps).
 -- XP of the Forever-new Skyborne chains (92484, 92466 - 92468, 97243 - 97245, 97257) is unknown and stays estimated
--- until someone records it in game (/fb xp), with source "in game YYYY-MM-DD".
+-- until someone records it in game (/aa xp), with source "in game YYYY-MM-DD".
 return {
     quests = {
         [1516] = { preSingle = { remove = { 1516, 1519, 92466 } },

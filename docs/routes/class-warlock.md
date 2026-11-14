@@ -1,6 +1,6 @@
 # Чернокнижник: шаги класса
 
-Файл: [`Classes/Warlock.lua`](../../addons/FastesBoooy_Guides/Classes/Warlock.lua) — 37 вставок, 73 шага (21
+Файл: [`Classes/Warlock.lua`](../../addons/AdventureAtlas_Guides/Classes/Warlock.lua) — 37 вставок, 73 шага (21
 необязательный), все с областью `class = "WARLOCK"` и id `wlk-…`. Поправки к БД:
 [`tools/overrides/warlock.lua`](../../tools/overrides/warlock.lua). Гайды: `orc-warlock`, `troll-warlock`,
 `undead-warlock`. Путь, по которому идут все классы: стартовые зоны — [race-orc.md](race-orc.md) (Дуротар, у тролля
@@ -264,7 +264,7 @@
 ## 9. Как перепроверить
 
 ```
-G=addons/FastesBoooy_Guides
+G=addons/AdventureAtlas_Guides
 luacheck --config .luacheckrc $G/Classes/Warlock.lua tools/overrides/warlock.lua
 lua5.1 tools/validate_routes.lua -q --strict --end-level --summary \
     --baseline docs/dev/handover/baseline.json --route "*-warlock" \

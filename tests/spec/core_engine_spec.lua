@@ -58,7 +58,7 @@ describe("engine", function()
 
     it("drops a background goal whose quest the player abandoned and keeps the cursor (quest given up)", function()
         m, ns = H.boot()
-        local cdb = m.env.FastesBoooyCharDB
+        local cdb = m.env.AdventureAtlasCharDB
         H.playTo(m, ns, "tr-train-1")
         assert.same({ "tr-bg-364" }, H.ids(E():GetBackground()))
         local mark = #m.chat
@@ -72,7 +72,7 @@ describe("engine", function()
         assert.is_true(cdb.skipped["tr-complete-364"])
         assert.is_nil(cdb.skipped["tr-turnin-364"])
         assert.same({ accept = "tr-363-364", steps = { "tr-complete-364" } }, cdb.gaveUp[364])
-        assert.same({ 'Quest "The Mindless Ones" abandoned: its steps are skipped (/fb prev to go back).' },
+        assert.same({ 'Quest "The Mindless Ones" abandoned: its steps are skipped (/aa prev to go back).' },
             H.chat(m, mark + 1))
         -- the mixed step waits only for its other action
         E():Next() -- train
@@ -112,7 +112,7 @@ describe("engine", function()
 
     it("leaves the route's own `abandon` step alone when the player abandons that quest by hand", function()
         m, ns = H.boot()
-        local cdb = m.env.FastesBoooyCharDB
+        local cdb = m.env.AdventureAtlasCharDB
         H.playTo(m, ns, "tr-abandon-3902")
         local mark = #m.chat
         m:AbandonQuest(3902) -- what the step asks for
@@ -124,7 +124,7 @@ describe("engine", function()
 
         -- abandoned early, before the route's abandon step: the same flow as before
         m, ns = H.boot()
-        cdb = m.env.FastesBoooyCharDB
+        cdb = m.env.AdventureAtlasCharDB
         H.playTo(m, ns, "tr-optional")
         mark = #m.chat
         m:AbandonQuest(3902)
@@ -144,21 +144,21 @@ describe("engine", function()
         assert.equal("tr-train-1", H.cur(ns))
         local m2, ns2 = H.reload(m)
         assert.equal("tr-train-1", H.cur(ns2), "/reload: the give-up is saved")
-        assert.same({ accept = "tr-363-364", steps = { "tr-complete-364" } }, m2.env.FastesBoooyCharDB.gaveUp[364])
-        assert.is_true(m2.env.FastesBoooyCharDB.skipped["tr-complete-364"])
+        assert.same({ accept = "tr-363-364", steps = { "tr-complete-364" } }, m2.env.AdventureAtlasCharDB.gaveUp[364])
+        assert.is_true(m2.env.AdventureAtlasCharDB.skipped["tr-complete-364"])
         assert.is_nil(ns2.Engine:GetAcceptQuests()[364])
         m2:AssertClean()
         -- empty SavedVariables: nothing in the game says the quest was given up (like a Skip)
         local m3, ns3 = H.reload(m, { coldStart = true })
         assert.equal("tr-363-364", H.cur(ns3), "the quest is not in the log: back to its accept")
-        assert.same({}, m3.env.FastesBoooyCharDB.gaveUp)
+        assert.same({}, m3.env.AdventureAtlasCharDB.gaveUp)
         assert.is_false(H.chatHas(m3, "abandoned"), "no give-up without a QUEST_REMOVED")
         m3:AssertClean()
         -- and the usual reconstruction still lands on the right step
         local m4, ns4 = H.boot({ player = { level = 2, xp = 600 },
             mock = { completedQuests = { 363, 364, 3901, 376 } }, setup = function(mm) mm:_addToLog(380) end })
         assert.equal("tr-turnin-3901-376", H.cur(ns4))
-        assert.same({}, m4.env.FastesBoooyCharDB.gaveUp)
+        assert.same({}, m4.env.AdventureAtlasCharDB.gaveUp)
         m4:AssertClean()
     end)
 
@@ -339,8 +339,8 @@ describe("engine", function()
         m, ns = H.boot()
         H.playTo(m, ns, "tr-vendor")
         local sv = m:ExportSavedVariables()
-        assert.equal("tr-vendor", sv.FastesBoooyCharDB.cursorHintId)
-        assert.equal("test-route", sv.FastesBoooyCharDB.cursorHintRoute)
+        assert.equal("tr-vendor", sv.AdventureAtlasCharDB.cursorHintId)
+        assert.equal("test-route", sv.AdventureAtlasCharDB.cursorHintRoute)
         local m2, ns2 = H.reload(m)
         assert.equal("tr-vendor", H.cur(ns2), "/reload: high-water mark restored")
         m2:AssertClean()
@@ -355,7 +355,7 @@ describe("engine", function()
 
     it("Next / Prev / Skip / SetCursor / Reset", function()
         m, ns = H.boot()
-        local cdb = m.env.FastesBoooyCharDB
+        local cdb = m.env.AdventureAtlasCharDB
         E():Next()
         assert.is_true(cdb.manual["tr-accept-363"])
         assert.equal("tr-363-364", H.cur(ns))
@@ -404,8 +404,8 @@ describe("engine", function()
         assert.equal("tr-train-1", H.cur(ns))
         local m2, ns2 = H.reload(m)
         assert.equal(H.cur(ns), H.cur(ns2))
-        assert.is_true(m2.env.FastesBoooyCharDB.skipped["tr-accept-363"])
-        assert.is_true(m2.env.FastesBoooyCharDB.manual["tr-363-364"])
+        assert.is_true(m2.env.AdventureAtlasCharDB.skipped["tr-accept-363"])
+        assert.is_true(m2.env.AdventureAtlasCharDB.manual["tr-363-364"])
         m2:AssertClean()
     end)
 

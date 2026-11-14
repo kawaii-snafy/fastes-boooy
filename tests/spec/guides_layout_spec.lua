@@ -1,10 +1,10 @@
--- Layout of the guides module addons/FastesBoooy_Guides (docs/dev/PLAN.md A.1-A.4, C.1, C.2, D.2): the real
+-- Layout of the guides module addons/AdventureAtlas_Guides (docs/dev/PLAN.md A.1-A.4, C.1, C.2, D.2): the real
 -- module is loaded through tools/lib/route_loader.lua and its registered content is checked against the
 -- contracts the phases rely on:
 --   * no load error; the routes are exactly the race x class combos of the start zones that have announced
 --     themselves, restricted by `only`;
 --   * Route.lua for all five races (the Durotar and Mulgore files replaced by the fixture start zones of
---     tests/fixtures/guides/FastesBoooy_StartZones): 28 routes with the ids, titles, races, classes, aliases and
+--     tests/fixtures/guides/AdventureAtlas_StartZones): 28 routes with the ids, titles, races, classes, aliases and
 --     segment chains of A.4;
 --   * explicit step ids in the start zones and in the new and rewritten shared segments (a positional id can
 --     never be an anchor); the Tirisfal and Zephras segments are class-neutral and no announcement carries `only`;
@@ -31,8 +31,8 @@ local Loader = require("lib.route_loader")
 local Glob = require("lib.glob")
 local DB = require("lib.fbdb")
 
-local GUIDES = "addons/FastesBoooy_Guides"
-local FIXTURE_ZONES = "tests/fixtures/guides/FastesBoooy_StartZones"
+local GUIDES = "addons/AdventureAtlas_Guides"
+local FIXTURE_ZONES = "tests/fixtures/guides/AdventureAtlas_StartZones"
 
 local SKIP = Glob.Split(os.getenv("GUIDES_SKIP"))
 local KEEP = Glob.Split(os.getenv("GUIDES_KEEP"))
@@ -445,7 +445,7 @@ end
 
 ---------------------------------------------------------------------------------------------------------------
 
-describe("addons/FastesBoooy_Guides", function()
+describe("addons/AdventureAtlas_Guides", function()
     local mod, segments, stepById, skipped
 
     setup(function()
@@ -1106,7 +1106,7 @@ describe("addons/FastesBoooy_Guides", function()
 
         if not PARTIAL then
             it("is not in the TOC texts", function()
-                local toc = assert(Loader.readFile(GUIDES .. "/FastesBoooy_Guides.toc"))
+                local toc = assert(Loader.readFile(GUIDES .. "/AdventureAtlas_Guides.toc"))
                 local lines = 0
                 for line in toc:gmatch("[^\r\n]+") do
                     if line:find("^##") then

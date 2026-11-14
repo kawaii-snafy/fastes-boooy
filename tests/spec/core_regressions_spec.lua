@@ -14,7 +14,7 @@ local function E() return ns.Engine end
 local function boot(steps, opts)
     opts = opts or {}
     m, ns = H.new({ fixture = false, setup = opts.setup, savedVariables = opts.savedVariables })
-    local FB = m.env.FastesBoooy
+    local FB = m.env.AdventureAtlas
     FB.RegisterRoute({ api = 1, id = "rg", title = "Regression", faction = "Horde",
         races = { "Scourge" }, classes = { "PALADIN" }, levels = { 1, 10 }, default = true })
     if opts.segments then
@@ -22,7 +22,7 @@ local function boot(steps, opts)
     else
         FB.AddSegment("rg", { id = "s", title = "S", steps = steps })
     end
-    Mock.boot(m, { "FastesBoooy" })
+    Mock.boot(m, { "AdventureAtlas" })
     for k, v in pairs(opts.settings or {}) do ns.db.settings[k] = v end
     H.settle(m)
     return m, ns
@@ -99,7 +99,7 @@ describe("regressions", function()
         it("uses the client's localized area name of the generated `places` area id", function()
             m, ns = H.new({ fixture = false, locale = "ruRU",
                 mock = { areaNames = { [159] = "Брилл" }, bind = { name = "Брилл" } } })
-            local FB = m.env.FastesBoooy
+            local FB = m.env.AdventureAtlas
             FB.RegisterRoute({ api = 1, id = "rg", title = "Regression", faction = "Horde", default = true })
             FB.AddSegment("rg", { id = "s", title = "S", steps = {
                 { id = "go", go = true, at = { 1420, 60.5, 52.6 } },
@@ -109,7 +109,7 @@ describe("regressions", function()
             -- what tools/gen_route_data.lua writes (no ruRU text for Brill here: the client name wins)
             FB.AddRouteData("rg", { places = { ["Brill"] = { area = 159, en = "Brill" },
                 ["Undercity"] = { area = 1497, en = "Undercity", ru = "Подгород" } } })
-            Mock.boot(m, { "FastesBoooy" })
+            Mock.boot(m, { "AdventureAtlas" })
             H.settle(m)
             local step = E():GetSteps()[2]
             assert.equal("Брилл", ns.Steps:PlaceName("Brill"))
@@ -152,7 +152,7 @@ describe("regressions", function()
             assert.is_true(E():IsDone("t363a364"))
             assert.is_nil(E():GetAcceptQuests()[364])
             -- nothing left to skip: no give-up record, no chat line
-            assert.is_nil(m.env.FastesBoooyCharDB.gaveUp[364])
+            assert.is_nil(m.env.AdventureAtlasCharDB.gaveUp[364])
             assert.same({}, H.chat(m, mark + 1))
         end)
 
@@ -164,7 +164,7 @@ describe("regressions", function()
                 { id = "r364", accept = 364 },
                 { id = "m1", manual = true },
             })
-            local cdb = m.env.FastesBoooyCharDB
+            local cdb = m.env.AdventureAtlasCharDB
             m:AddQuestToLog(364)
             H.settle(m)
             assert.equal("c364", H.cur(ns))
@@ -207,9 +207,9 @@ describe("regressions", function()
                 { id = "m1", manual = true },
             }
         end
-        local GAVE_UP = 'Quest "The Mindless Ones" abandoned: its steps are skipped (/fb prev to go back).'
+        local GAVE_UP = 'Quest "The Mindless Ones" abandoned: its steps are skipped (/aa prev to go back).'
 
-        local function cdb() return m.env.FastesBoooyCharDB end
+        local function cdb() return m.env.AdventureAtlasCharDB end
 
         local function start()
             boot(route())
@@ -505,7 +505,7 @@ describe("regressions", function()
             H.settle(m)
             assert.is_true(E():IsDone("bgc"))
             assert.same({}, H.ids(E():GetBackground()))
-            assert.is_true(m.env.FastesBoooyCharDB.bgDone.bgc, "remembered")
+            assert.is_true(m.env.AdventureAtlasCharDB.bgDone.bgc, "remembered")
             m:RemoveItem(2876, 2) -- consumed / sold later
             H.settle(m)
             assert.is_true(E():IsDone("bgc"))
@@ -714,10 +714,10 @@ describe("regressions", function()
 
     it("refuses a route written for another format version", function()
         m, ns = H.new({ fixture = false })
-        local FB = m.env.FastesBoooy
+        local FB = m.env.AdventureAtlas
         assert.is_nil(FB.RegisterRoute({ api = 2, id = "future", title = "Future", faction = "Horde", default = true }))
         FB.AddSegment("future", { id = "f1", title = "S", steps = { { accept = 363 } } })
-        Mock.boot(m, { "FastesBoooy" })
+        Mock.boot(m, { "AdventureAtlas" })
         H.settle(m)
         assert.is_nil(ns.Engine:GetRoute())
         assert.is_nil(ns.Registry:Get("future"))

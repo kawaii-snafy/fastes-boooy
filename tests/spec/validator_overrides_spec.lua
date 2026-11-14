@@ -625,12 +625,12 @@ return { quests = {
                 "lua5.1 tools/validate_routes.lua --no-overrides -q --strict --end-level --summary " .. G,
                 "lua5.1 tools/validate_routes.lua --no-overrides " .. G .. " " .. TR,
                 "lua5.1 tools/validate_routes.lua --no-overrides -q " .. H.LIB_DIR .. " " .. H.COMPOSED_DIR .. " " .. FX
-                    .. "validator/FastesBoooy_FxClean",
+                    .. "validator/AdventureAtlas_FxClean",
                 "lua5.1 tools/validate_routes.lua --no-overrides -q --strict --harness " .. FX
-                    .. "validator/FastesBoooy_FxHarnessLib --profile race=Scourge,class=PALADIN,faction=Horde --state " .. FX
+                    .. "validator/AdventureAtlas_FxHarnessLib --profile race=Scourge,class=PALADIN,faction=Horde --state " .. FX
                     .. "validator/harness_state_6.json",
                 "lua5.1 tools/gen_route_data.lua --no-overrides --check " .. G .. " " .. H.LIB_DIR .. " " .. H.COMPOSED_DIR
-                    .. " " .. FX .. "validator/FastesBoooy_FxClean",
+                    .. " " .. FX .. "validator/AdventureAtlas_FxClean",
                 "lua5.1 tools/gen_route_data.lua --no-overrides --stdout " .. G,
                 "lua5.1 tools/simulate_routes.lua --no-overrides --no-reload --route tg-orc-warrior " .. G,
             }

@@ -27,12 +27,37 @@ leveling guide stay.
 
 ## Order (decided)
 
-1. The 28 race + class guides, levels 1-60 (docs/dev/PLAN.md).
-2. Then the atlas: the window, the knowledge base sections, the adventure flow beyond leveling.
+1. The 28 race + class guides, levels 1-60 (docs/dev/PLAN.md). Done.
+2. Then the atlas: the window, the knowledge base sections, the adventure flow beyond leveling. Started
+   2026-11-14.
 
-## What this means for the guide work now
+## Atlas stage: decisions of 2026-11-14
 
-* Packaging stays: `FastesBoooy` (core) + `FastesBoooy_Guides` (data). Atlas data will be further data files or
+* **Name.** The addon is renamed from FastesBoooy to **Adventure Atlas** (core 0.5.0): folders `AdventureAtlas` and
+  `AdventureAtlas_Guides`, global API table `AdventureAtlas`, SavedVariables `AdventureAtlasDB` /
+  `AdventureAtlasCharDB`, slash commands `/aa` and `/atlas`. SavedVariables of FastesBoooy are not migrated (the
+  engine recovers the route position from the game state; settings return to defaults). The core warns once per
+  session about loaded folders of the old name. The repository is `adventure-atlas`.
+* **History.** `docs/dev/PLAN.md`, `docs/dev/handover/` and `docs/dev/research/` are records of the guide stage and
+  keep the old name and the paths of that time (`addons/FastesBoooy/...` is `addons/AdventureAtlas/...` now).
+* **Window.** Opened by a minimap button (own code, no LibDBIcon). Two tabs for now:
+  1. **"Твоё приключение"** (your adventure): the character's development path; for now leveling 1-60 plus the
+     useful finds of the Forever community for fast leveling. Two modes: **calm** (play and level along the story)
+     and **speedrun** (the existing race + class routes). Proposed for the calm mode: a zone and story-chain guide
+     built from the DB chains (where to go at this level, which story chains are there, how far the character got),
+     not a second set of hand-written step routes.
+  2. **"База знаний"** (knowledge base): for now a quest list with search and filters (level, zone, class/race,
+     done or not, "new in Forever"), with a quest card (start/end NPC, places, chain) and "lead me with the arrow".
+* **Data.** Knowledge base quests are generated from `tools/data/forever_db.lua` into a load-on-demand data addon
+  (proposed name `AdventureAtlas_Knowledge`). The DB snapshot is Horde-focused (few Alliance-only quests): the
+  knowledge base is Horde-only for now. Community finds are sourced data entries (what, where, from which level,
+  why useful, source); nothing unverified is shown as fact.
+* **Order.** Rename -> window + minimap button -> knowledge base -> your adventure (speedrun overview, calm mode,
+  finds).
+
+## What this meant for the guide work
+
+* Packaging stays: `AdventureAtlas` (core) + `AdventureAtlas_Guides` (data). Atlas data will be further data files or
   one more data addon; the window lives in the core. Nothing in the guide phases should assume that routes are
   the only kind of content a data module registers.
 * Class files (`Classes/<Class>.lua`), race files and the hand-over notes are also the raw material of the

@@ -1,8 +1,8 @@
--- Shared inserts (FastesBoooy.AddLibraryInsert) and the pruning of shared steps by route scope
+-- Shared inserts (AdventureAtlas.AddLibraryInsert) and the pruning of shared steps by route scope
 -- in the real addon (Core/Compose.lua through Core/Registry.lua and the public API) on the strict
 -- mock: where an insert applies, scope, order, chains, registration and composition errors,
 -- per-route copies, late registration, the engine on shared-insert steps, and the mixed fixture
--- module FastesBoooy_TestGuides (shared segments + shared inserts + several routes).
+-- module AdventureAtlas_TestGuides (shared segments + shared inserts + several routes).
 
 local H = require("fixtures.core.helpers")
 
@@ -11,7 +11,7 @@ local m, ns
 local format = string.format
 
 local function E() return ns.Engine end
-local function FB() return m.env.FastesBoooy end
+local function FB() return m.env.AdventureAtlas end
 
 -- default: no route module (the routes are registered through the public API after login)
 local function boot(opts)
@@ -414,7 +414,7 @@ describe("shared inserts (AddLibraryInsert)", function()
             assert.same(want, R.errors)
         end)
 
-    describe("on the mixed fixture module (FastesBoooy_TestGuides)", function()
+    describe("on the mixed fixture module (AdventureAtlas_TestGuides)", function()
         it("login composes exactly one route: the one of the character", function()
             for _, id in ipairs(H.GUIDES_ROUTES) do
                 local gm, gns = boot({ guides = true, player = H.GUIDES_PLAYER[id] })
@@ -457,7 +457,7 @@ describe("shared inserts (AddLibraryInsert)", function()
 
         it("the engine plays across shared-insert steps; /reload and a cold start find the cursor", function()
             m, ns = boot({ guides = true, player = H.GUIDES_PLAYER["tg-orc-warrior"] })
-            local cdb = m.env.FastesBoooyCharDB
+            local cdb = m.env.AdventureAtlasCharDB
             H.playTo(m, ns, "tg-war-letter-orc")
             assert.equal("tg-war-letter-orc", H.cur(ns), "the class insert right after its anchor")
             H.playTo(m, ns, "tg-war-train-2")

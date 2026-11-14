@@ -1,6 +1,6 @@
 -- tools/lib/module_checks.lua -- validator checks on the shared TEMPLATES of a module (Lua 5.1).
 --
--- A module that registers routes and shared content (FastesBoooy_Guides: shared segments,
+-- A module that registers routes and shared content (AdventureAtlas_Guides: shared segments,
 -- AddLibraryInsert) composes every route from templates, and a route only contains the template
 -- steps its race / class / faction can match (Core/Compose.lua). A mistake in a template can
 -- therefore be invisible in every composed route: a step with `race = "Undead"` matches no route and

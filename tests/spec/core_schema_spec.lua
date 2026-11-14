@@ -1,4 +1,4 @@
--- Route format contract (addons/FastesBoooy/Core/Schema.lua): normalization and errors.
+-- Route format contract (addons/AdventureAtlas/Core/Schema.lua): normalization and errors.
 -- Schema.lua is pure Lua; it is loaded here the way the offline tools load it.
 
 local Loader = require("lib.route_loader")

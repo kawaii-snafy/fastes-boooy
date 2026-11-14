@@ -1,0 +1,12 @@
+## Interface: 16001
+## Title: AdventureAtlas test route
+## Notes: Core test fixture (busted specs, tools/simulate_routes.lua --fixtures). Not a playable guide.
+## Notes-ruRU: Тестовый маршрут ядра (busted, tools/simulate_routes.lua --fixtures). Не гайд.
+## Dependencies: AdventureAtlas
+## Version: 0.0.1
+
+Route.lua
+Locale.lua
+Segments\01_Deathknell.lua
+Segments\02_Brill.lua
+Segments\03_Travel.lua

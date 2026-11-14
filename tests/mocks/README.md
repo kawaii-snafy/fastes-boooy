@@ -9,8 +9,8 @@ local Mock = require("mocks.wow")          -- busted: .busted lpath has ./tests/
 -- tools: package.path = "./tests/?.lua;" .. package.path
 
 local m = Mock.new({ locale = "ruRU", player = { race = "Scourge", class = "PALADIN", mapID = 1420, x = 30, y = 71 } })
-local ns = Mock.loadAddon(m, "addons/FastesBoooy/FastesBoooy.toc")   -- runs the files, returns the addon ns
-Mock.boot(m, { "FastesBoooy" })            -- ADDON_LOADED, PLAYER_LOGIN, PLAYER_ENTERING_WORLD(true, false)
+local ns = Mock.loadAddon(m, "addons/AdventureAtlas/AdventureAtlas.toc")  -- runs the files, returns the addon ns
+Mock.boot(m, { "AdventureAtlas" })         -- ADDON_LOADED, PLAYER_LOGIN, PLAYER_ENTERING_WORLD(true, false)
 m:DefineQuest(363, { title = "Rude Awakening", level = 1, xp = 80 })
 m:DefineNPC(1568, { name = "Undertaker Mordo", starts = { 363 } })
 m:TalkTo(1568)                             -- QUEST_DETAIL; the addon's automation may call AcceptQuest()
@@ -98,7 +98,7 @@ shift, ctrl, alt, guid` } (raceID / classID / faction derived; Skyborne = 95 All
   `PLAYER_LOGIN`, `PLAYER_ENTERING_WORLD(not reload, reload)`, `QUEST_LOG_UPDATE`, `BAG_UPDATE_DELAYED`.
 * `m:ExportSavedVariables()` → pass as `Mock.new{ savedVariables = ... }` to simulate `/reload`
   (a cold restart on Forever may lose SavedVariables: test with no `savedVariables`).
-* `m:RunSlash("/fb xp")`, `m:RegisterAddOn(name, meta)`, `C_AddOns.GetAddOnMetadata/IsAddOnLoaded/...`.
+* `m:RunSlash("/aa xp")`, `m:RegisterAddOn(name, meta)`, `C_AddOns.GetAddOnMetadata/IsAddOnLoaded/...`.
 
 ## Simulation helpers (methods of `m`)
 

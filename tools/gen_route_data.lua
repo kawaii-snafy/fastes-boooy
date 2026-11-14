@@ -2,7 +2,7 @@
 -- tools/gen_route_data.lua -- (re)generate <module>/Data.lua for route modules.
 --
 --   lua5.1 tools/gen_route_data.lua [--db FILE] [--no-overrides] [--check] [--stdout] <module-dir> [...]
---   lua5.1 tools/gen_route_data.lua --all            (every addons/FastesBoooy_*/ module)
+--   lua5.1 tools/gen_route_data.lua --all            (every addons/AdventureAtlas_*/ module)
 --   lua5.1 tools/gen_route_data.lua --stdout --skip 'Classes/*' --keep Classes/Mage.lua <module-dir>
 --                                    (a partial load, only to look at: never written, never --check;
 --                                    a glob that matches no TOC file is refused, exit status 2)
@@ -11,11 +11,11 @@
 -- prerequisites end up in questMeta) are applied unless --no-overrides is given; an override file
 -- that does not load fails the run (a note with --skip).
 --
--- Loads the module's Route.lua + Segments (TOC order, Data.lua skipped; its FastesBoooy_*
+-- Loads the module's Route.lua + Segments (TOC order, Data.lua skipped; its AdventureAtlas_*
 -- dependencies first, like the client) in the validator's sandbox, collects every quest /
 -- NPC / object / item id the steps reference and writes, per route:
 --
---   FastesBoooy.AddRouteData("<routeId>", {
+--   AdventureAtlas.AddRouteData("<routeId>", {
 --       quests = { [id] = "enUS name", ... },
 --       npcs = { [id] = "enUS name", ... },
 --       objects = {...}, items = {...},   -- only when referenced
@@ -26,12 +26,12 @@
 --
 -- A route that uses library segments (UseSegments) lists only what its own segments and
 -- its inserts reference: the library steps' names come from the library module's
--- Data.lua. A library module (FastesBoooy.AddLibrarySegment, no route) gets
+-- Data.lua. A library module (AdventureAtlas.AddLibrarySegment, no route) gets
 --
---   FastesBoooy.AddLibraryData({ quests = {...}, npcs = {...}, ..., places = {...} })
+--   AdventureAtlas.AddLibraryData({ quests = {...}, npcs = {...}, ..., places = {...} })
 --
 -- with everything its own library segments reference (also written, with empty tables, for a
--- library module whose TOC says "## X-FastesBoooy-Module: library" and that registers no
+-- library module whose TOC says "## X-AdventureAtlas-Module: library" and that registers no
 -- segment yet, e.g. a skeleton with placeholder segment files).
 --
 -- Names come from tools/data/forever_db.lua (enUS). `places` covers the place names of
@@ -307,7 +307,7 @@ function M.Render(mod, db)
     local areaIds = M.AreaIds(db)
     if #(mod.librarySegments or {}) > 0 or #(mod.libraryInserts or {}) > 0 or mod.isLibrary then
         -- (a library module declared in its TOC may have no segment yet: empty data)
-        out[#out + 1] = "FastesBoooy.AddLibraryData({"
+        out[#out + 1] = "AdventureAtlas.AddLibraryData({"
         renderBody(out, M.CollectLibraryIds(mod), db, "library " .. mod.name, missing, notes, areaIds)
         out[#out + 1] = "})"
         out[#out + 1] = ""
@@ -318,7 +318,7 @@ function M.Render(mod, db)
     end
     table.sort(routes, function(a, b) return a.id < b.id end)
     for _, route in ipairs(routes) do
-        out[#out + 1] = string.format("FastesBoooy.AddRouteData(%s, {", luaString(route.id))
+        out[#out + 1] = string.format("AdventureAtlas.AddRouteData(%s, {", luaString(route.id))
         renderBody(out, M.CollectIds(route), db, "route " .. route.id, missing, notes, areaIds)
         out[#out + 1] = "})"
         out[#out + 1] = ""
@@ -337,7 +337,7 @@ end
 local USAGE = [[
 usage: lua5.1 tools/gen_route_data.lua [--db FILE] [--check] [--stdout] (--all | <module-dir> ...)
 
-  --all       every addons/FastesBoooy_*/ module (route and library modules)
+  --all       every addons/AdventureAtlas_*/ module (route and library modules)
   --check     do not write; exit 1 if any Data.lua is out of date
   --stdout    print the generated text instead of writing it
   --skip GLOB with --stdout only: do not load the TOC files matching GLOB (repeatable; `*` wildcard,

@@ -27,15 +27,15 @@
 -- counts.WARN, printed only with -v, not counted by --strict. `ok = { ["level-grind"] = N }` accepts
 -- only while the gate needs at most N kills (V.OkAccepts).
 --
--- Library segments (FastesBoooy.UseSegments, Core/Compose.lua): a route module is loaded
--- with its FastesBoooy_* dependencies and validated as the composed route. Messages about
+-- Library segments (AdventureAtlas.UseSegments, Core/Compose.lua): a route module is loaded
+-- with its AdventureAtlas_* dependencies and validated as the composed route. Messages about
 -- library steps / segments carry `library = "<library module>"` ("[library X]" in the text
 -- and Markdown reports) and are reported once per route (identical ones of further
 -- profiles are dropped). A library module is not a route: its own load / schema errors
 -- are reported once per run (in its own entry when it is part of the run, else with the
 -- first route module that depends on it).
 --
--- Mixed modules (routes AND shared content in one addon, FastesBoooy_Guides): the module gets one
+-- Mixed modules (routes AND shared content in one addon, AdventureAtlas_Guides): the module gets one
 -- more entry in front of its routes, "(shared <Module>)" (result.shared = module name), with the
 -- checks on its shared TEMPLATES (tools/lib/module_checks.lua: a template step with a mistyped race
 -- or an insert with a wrong anchor is composed into no route and would be invisible otherwise).
@@ -798,7 +798,7 @@ function Run:giveQuestXp(id, q, step)
         estimated = true
         self.xp.unknownXpQuests = self.xp.unknownXpQuests + 1
         self:add("INFO", "xp-unknown", step, "turnin %s: quest XP unknown in the DB (Forever-new quest?); estimated "
-            .. "%d (median of level-%d quests). Record the real value in game with /fb xp", self:qn(id), base,
+            .. "%d (median of level-%d quests). Record the real value in game with /aa xp", self:qn(id), base,
             q.level or 0)
     end
     local gained = DB.QuestXp(self.db, base, q.level, self.st.level)
@@ -2683,7 +2683,7 @@ V.IN_GAME_ONLY = {
     "**Мулгор с изменённой геометрией.** Координаты БД уже в системе Forever; совпадение точек `at` "
         .. "с реальными NPC проверено валидатором по снимку, но не на месте.",
     "**Опыт новых квестов Forever** офлайн неизвестен (в отчёте — оценка медианой по уровню). "
-        .. "Реальные значения записываются при сдаче (`/fb xp`).",
+        .. "Реальные значения записываются при сдаче (`/aa xp`).",
     "**Имена мест на языке клиента.** `sethearth` узнаёт точку привязки по имени: `GetBindLocation()` "
         .. "сравнивается с локализованным именем зоны (`C_Map.GetAreaInfo` по `places[...].area` из "
         .. "`Data.lua`) — что эти имена совпадают в ruRU, проверяется в клиенте.",
@@ -2740,8 +2740,8 @@ end
 local USAGE = [[
 usage: lua5.1 tools/validate_routes.lua [options] [module-dir ...]
 
-Validates FastesBoooy route modules against the Forever DB snapshot.
-Without module dirs, every addons/FastesBoooy_*/ module (with a TOC) is checked.
+Validates AdventureAtlas route modules against the Forever DB snapshot.
+Without module dirs, every addons/AdventureAtlas_*/ module (with a TOC) is checked.
 
 selection:
   --route ID[,ID...]    validate only these routes; `*` is a wildcard ('orc-*,troll-*', '*-warrior').
@@ -2818,7 +2818,7 @@ states and harness:
 
 harness example (Undead Paladin, from the end of the 1-22 route):
   lua5.1 tools/validate_routes.lua --route undead-paladin --write-state state_ud_22.json --until h-22-hillsbrad
-  lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Guides --segments h-22-hillsbrad \
+  lua5.1 tools/validate_routes.lua --harness addons/AdventureAtlas_Guides --segments h-22-hillsbrad \
       --profile race=Scourge,class=PALADIN,faction=Horde --state state_ud_22.json --write-state out.json
 
 exit status: 0 ok (also: a harness on a module without shared segments yet - nothing to do), 1 errors

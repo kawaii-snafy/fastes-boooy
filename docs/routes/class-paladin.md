@@ -1,6 +1,6 @@
 # Паладин: шаги класса
 
-Файл: [`Classes/Paladin.lua`](../../addons/FastesBoooy_Guides/Classes/Paladin.lua) — 32 вставки, 62 шага
+Файл: [`Classes/Paladin.lua`](../../addons/AdventureAtlas_Guides/Classes/Paladin.lua) — 32 вставки, 62 шага
 (19 необязательных), все с областью `class = "PALADIN"` и id `pal-…`. Гайд: `undead-paladin` «Нежить-паладин 1-60»
 (паладином на этой стороне может быть только нежить; прежний id `horde-undead-paladin` — псевдоним, сохранённый
 прогресс переходит сам). Путь, по которому идут все классы: стартовая зона — [race-undead.md](race-undead.md), с
@@ -103,7 +103,7 @@
 ## 3. Все вставки по порядку
 
 Якорь, шаг, действия и уровень — как их видит валидатор в маршруте `undead-paladin`
-(`lua5.1 tools/validate_routes.lua --route undead-paladin --levels addons/FastesBoooy_Guides`).
+(`lua5.1 tools/validate_routes.lua --route undead-paladin --levels addons/AdventureAtlas_Guides`).
 
 **Стартовая зона (1–12)**
 
@@ -230,13 +230,13 @@ Forever больше не даёт силу атаки), ветка Шока н�
 → 91294 (Хильда Сокрушительница) → 91316 / 91317 (Тенистая долина, голова Рудольфа) → 95803 (Сильвана, Подгород).
 Необязательно — 94427 «Урок божественности» (начало цепочки Искупления; продолжение 94435+ дважды пересекает
 Тирисфаль и не ведётся). Шаги и якоря — таблица «Стартовая зона» в §3. Опыт цепочки в снимке БД неизвестен
-(оценка валидатора; запишите в игре `/fb xp`).
+(оценка валидатора; запишите в игре `/aa xp`).
 
 ### 22–26: «Аконит»
 
 Единственная классовая цепочка паладина-нежити на 22–60 — новая цепочка Forever к «Акониту» (Wolfsbane, 22–26). Других
 заданий паладина-нежити до 60 нет ни в QuestieDB, ни в WCLBox (`research/paladin60.md` §4). Опыт всех заданий цепочки
-неизвестен (WCLBox: 0) — валидатор берёт оценку, в игре запишите `/fb xp`.
+неизвестен (WCLBox: 0) — валидатор берёт оценку, в игре запишите `/aa xp`.
 
 **Часть 1 — в маршруте, необязательно** (вставки в h-22, 10 шагов, ~25 мин, опыт ~0.36 уровня по оценке):
 
@@ -401,7 +401,7 @@ Classic почти все удары мимо). Пропустили `pal-axes` 
 ## 12. Как перепроверить
 
 ```
-G=addons/FastesBoooy_Guides
+G=addons/AdventureAtlas_Guides
 lua5.1 tools/validate_routes.lua -q --strict --end-level --route undead-paladin \
     --max-grind-until h-56-felwood-winterspring-plaguelands=4972/6179 $G     # не хуже маршрута версии 0.3
 lua5.1 tools/validate_routes.lua --route undead-paladin --levels $G            # уровень на каждом шаге

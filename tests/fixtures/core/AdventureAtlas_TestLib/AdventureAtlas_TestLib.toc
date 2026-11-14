@@ -1,0 +1,10 @@
+## Interface: 16001
+## Title: AdventureAtlas test library
+## Notes: Core test fixture: shared (class-neutral) library segments used by AdventureAtlas_TestComposed. Not a playable guide.
+## Notes-ruRU: Тестовая библиотека общих сегментов (для AdventureAtlas_TestComposed). Не гайд.
+## Dependencies: AdventureAtlas
+## Version: 0.0.1
+
+Data.lua
+Segments\01_Deathknell.lua
+Segments\02_Brill.lua

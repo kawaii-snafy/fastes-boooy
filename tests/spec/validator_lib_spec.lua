@@ -265,14 +265,14 @@ describe("route_loader", function()
     end)
 
     it("parses TOC files (meta, backslashes, comments)", function()
-        local toc = Loader.ParseToc("tests/fixtures/validator/FastesBoooy_FxClean/FastesBoooy_FxClean.toc")
+        local toc = Loader.ParseToc("tests/fixtures/validator/AdventureAtlas_FxClean/AdventureAtlas_FxClean.toc")
         assert.are.equal("16001", toc.meta.Interface)
-        assert.are.equal("FastesBoooy", toc.meta.Dependencies)
+        assert.are.equal("AdventureAtlas", toc.meta.Dependencies)
         assert.are.same({ "Route.lua", "Data.lua", "Segments/01_Deathknell.lua", "Segments/02_Brill.lua" }, toc.files)
     end)
 
     it("loads a module in a sandbox and keeps file locations", function()
-        local mod = Loader.LoadModule("tests/fixtures/validator/FastesBoooy_FxClean", { schema = S })
+        local mod = Loader.LoadModule("tests/fixtures/validator/AdventureAtlas_FxClean", { schema = S })
         assert.are.same({}, mod.errors)
         assert.are.equal(1, #mod.routes)
         local route = mod.routes[1]

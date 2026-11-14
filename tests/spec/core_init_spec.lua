@@ -6,14 +6,14 @@ local H = require("fixtures.core.helpers")
 
 local m, ns
 
-local LOCALE_DIR = "addons/FastesBoooy/Locales/"
+local LOCALE_DIR = "addons/AdventureAtlas/Locales/"
 
 local function loadLocales()
     local fake = { Locales = {} }
     for _, f in ipairs({ "enUS", "ruRU", "UI_enUS", "UI_ruRU" }) do
         local chunk = assert(loadfile(LOCALE_DIR .. f .. ".lua"))
         setfenv(chunk, {})
-        chunk("FastesBoooy", fake)
+        chunk("AdventureAtlas", fake)
     end
     return fake.Locales
 end
@@ -76,16 +76,16 @@ describe("Init", function()
 
     it("fills the SavedVariables with defaults on ADDON_LOADED and fires DB_READY", function()
         m, ns = H.new({ savedVariables = {
-            FastesBoooyDB = { settings = { lookahead = "seven", arrow = false }, frames = 5 },
-            FastesBoooyCharDB = { route = 42, cursorHint = "x", manual = { a = true } },
+            AdventureAtlasDB = { settings = { lookahead = "seven", arrow = false }, frames = 5 },
+            AdventureAtlasCharDB = { route = 42, cursorHint = "x", manual = { a = true } },
         } })
         local ready = H.record(ns, "DB_READY")
         assert.is_false(ns.dbReady)
         assert.equal(6, ns.db.settings.lookahead, "volatile defaults before ADDON_LOADED")
-        H.Mock.boot(m, { "FastesBoooy", H.FIXTURE_NAME })
+        H.Mock.boot(m, { "AdventureAtlas", H.FIXTURE_NAME })
         assert.is_true(ns.dbReady)
         assert.equal(1, #ready)
-        local db, cdb = m.env.FastesBoooyDB, m.env.FastesBoooyCharDB
+        local db, cdb = m.env.AdventureAtlasDB, m.env.AdventureAtlasCharDB
         assert.equal(db, ns.db)
         assert.equal(cdb, ns.cdb)
         assert.equal(6, db.settings.lookahead, "wrong type reset")
@@ -104,9 +104,9 @@ describe("Init", function()
 
     it("adds the automation delay settings to older SavedVariables and keeps them in range", function()
         local function bootWith(settings)
-            m, ns = H.new({ savedVariables = { FastesBoooyDB = { dbVersion = 1, settings = settings } } })
-            H.Mock.boot(m, { "FastesBoooy", H.FIXTURE_NAME })
-            return m.env.FastesBoooyDB.settings
+            m, ns = H.new({ savedVariables = { AdventureAtlasDB = { dbVersion = 1, settings = settings } } })
+            H.Mock.boot(m, { "AdventureAtlas", H.FIXTURE_NAME })
+            return m.env.AdventureAtlasDB.settings
         end
         -- saved before the setting existed: the defaults (0.5 s + random 0..0.3 s)
         local s = bootWith({ automation = true, autoAccept = false, lookahead = 4 })
@@ -138,7 +138,7 @@ describe("Init", function()
         ns.Print("%d", "not a number")
         ns.Debug("hidden")
         assert.same({ "100% done 5", "raw % text", "%d not a number" }, H.chat(m, mark + 1))
-        assert.is_truthy(m.chat[mark + 1]:find("^|cff33ff99Fastes|r|cffffd100Boooy|r: "))
+        assert.is_truthy(m.chat[mark + 1]:find("^|cff33ff99Adventure|r |cffffd100Atlas|r: "))
         ns.UI.SetSetting("debug", true)
         ns.Debug("shown", 1)
         assert.is_true(H.chatHas(m, "[debug]|r shown 1", mark + 1))
@@ -163,7 +163,7 @@ describe("locales", function()
         local toc = H.Mock.parseToc(H.CORE_TOC)
         local missing = {}
         for _, f in ipairs(toc.files) do
-            local fh = assert(io.open("addons/FastesBoooy/" .. f, "rb"))
+            local fh = assert(io.open("addons/AdventureAtlas/" .. f, "rb"))
             local src = fh:read("*a")
             fh:close()
             if not f:find("^Locales/") then

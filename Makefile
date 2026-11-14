@@ -1,4 +1,4 @@
-# FastesBoooy -- offline checks and packaging (POSIX make; the parallel targets need xargs with
+# AdventureAtlas -- offline checks and packaging (POSIX make; the parallel targets need xargs with
 # -P and -r: GNU findutils or BSD).
 #
 #   make check        lint + test + validate + simulate (+ simulate-sync), each also on the fixture routes,
@@ -8,7 +8,7 @@
 #                     takes: a comma list, `*` wildcards)
 #   make lint         luacheck with the generated 'forever' std (.luacheckrc)
 #   make test         busted specs (tests/spec)
-#   make validate     route validator against tools/data/forever_db.lua (addons/FastesBoooy_Guides: every
+#   make validate     route validator against tools/data/forever_db.lua (addons/AdventureAtlas_Guides: every
 #                     route, the shared segments and inserts), gate VALIDATE_FLAGS (--strict --end-level,
 #                     the grind budget of levels 1-22 and the baseline of the base profiles)
 #   make simulate     run every route through the real engine on the WoW mock, JOBS simulations at a
@@ -22,11 +22,11 @@
 #   make simulate-sync-full   the same for every route (nightly CI, .github/workflows/nightly.yml)
 #   make validate-fixtures / simulate-fixtures   the same on the known-good fixture routes
 #   make harness-fixtures  validator (--strict) + simulator harness of the fixture library from its start state
-#   make harness PROFILE=race=Scourge,class=PALADIN,faction=Horde [LIB=addons/FastesBoooy_Guides]
+#   make harness PROFILE=race=Scourge,class=PALADIN,faction=Horde [LIB=addons/AdventureAtlas_Guides]
 #                [SEGMENTS=h-a,h-b] [STATE=start.json] [OUT=end.json]
 #                     validate, then simulate a part of the shared segments from a start state (OUT: end state)
 #   make report       write docs/VALIDATION.md (validator Markdown report; fails when no report was written)
-#   make routedata    regenerate Data.lua of every guide module (addons/FastesBoooy_Guides/Data.lua)
+#   make routedata    regenerate Data.lua of every guide module (addons/AdventureAtlas_Guides/Data.lua)
 #   make api BIR=... WOWUI=...          regenerate tools/data/forever_api.lua
 #   make db RESEARCH=... CONVERSION=... regenerate tools/data/forever_db.lua (objective counts:
 #                     tools/data/wowhead_requirements.json)
@@ -73,17 +73,17 @@ ROUTE = *undead-paladin
 NO_OVERRIDES = --no-overrides
 # Known-good fixture routes: must validate with 0 errors and simulate cleanly, so the
 # validate / simulate stages also check the tools themselves on small routes with known results.
-# FastesBoooy_TestComposed = own segments + library segments of FastesBoooy_TestLib (UseSegments)
+# AdventureAtlas_TestComposed = own segments + library segments of AdventureAtlas_TestLib (UseSegments)
 # + class inserts (AddInsert); the library module itself is validated / regenerated, not simulated.
-# FastesBoooy_TestGuides = one module with shared segments per start zone, shared class / race inserts
+# AdventureAtlas_TestGuides = one module with shared segments per start zone, shared class / race inserts
 # (AddLibraryInsert), a class reward table and three routes registered from a table (the shape of
-# FastesBoooy_Guides).
-FIXTURE_VALIDATE = tests/fixtures/validator/FastesBoooy_FxClean tests/fixtures/validator/FastesBoooy_FxNs \
-	tests/fixtures/core/FastesBoooy_TestRoute tests/fixtures/core/FastesBoooy_TestLib \
-	tests/fixtures/core/FastesBoooy_TestComposed tests/fixtures/validator/FastesBoooy_FxHarnessLib \
-	tests/fixtures/core/FastesBoooy_TestGuides
-FIXTURE_SIMULATE = tests/fixtures/core/FastesBoooy_TestRoute tests/fixtures/core/FastesBoooy_TestComposed \
-	tests/fixtures/core/FastesBoooy_TestGuides
+# AdventureAtlas_Guides).
+FIXTURE_VALIDATE = tests/fixtures/validator/AdventureAtlas_FxClean tests/fixtures/validator/AdventureAtlas_FxNs \
+	tests/fixtures/core/AdventureAtlas_TestRoute tests/fixtures/core/AdventureAtlas_TestLib \
+	tests/fixtures/core/AdventureAtlas_TestComposed tests/fixtures/validator/AdventureAtlas_FxHarnessLib \
+	tests/fixtures/core/AdventureAtlas_TestGuides
+FIXTURE_SIMULATE = tests/fixtures/core/AdventureAtlas_TestRoute tests/fixtures/core/AdventureAtlas_TestComposed \
+	tests/fixtures/core/AdventureAtlas_TestGuides
 # make simulate-sync: the routes of the "player ahead of the route" runs: one route per race with five
 # different classes (docs/dev/PLAN.md A.7); every route: make simulate-sync-full.
 SYNC_ROUTES = orc-warrior troll-shaman tauren-hunter undead-paladin skyborne-druid
@@ -94,17 +94,17 @@ SYNC_LEVELS = 10 23 35 48
 SYNC_MID = 21/h-15-barrens 29/h-24-barrens-stonetalon
 # levels above the route's plan during normal play, levelSync "auto" (--level-plus N)
 SYNC_PLUS = 2 4
-FIXTURE_ROUTEDATA = tests/fixtures/validator/FastesBoooy_FxClean tests/fixtures/core/FastesBoooy_TestLib \
-	tests/fixtures/core/FastesBoooy_TestComposed tests/fixtures/validator/FastesBoooy_FxHarnessLib \
-	tests/fixtures/core/FastesBoooy_TestGuides
+FIXTURE_ROUTEDATA = tests/fixtures/validator/AdventureAtlas_FxClean tests/fixtures/core/AdventureAtlas_TestLib \
+	tests/fixtures/core/AdventureAtlas_TestComposed tests/fixtures/validator/AdventureAtlas_FxHarnessLib \
+	tests/fixtures/core/AdventureAtlas_TestGuides
 # Start-state harness fixture (tools/lib/harness.lua): a library module that validates /
 # simulates cleanly only from its start state, for both 22-60 profiles.
-FIXTURE_HARNESS_LIB = tests/fixtures/validator/FastesBoooy_FxHarnessLib
+FIXTURE_HARNESS_LIB = tests/fixtures/validator/AdventureAtlas_FxHarnessLib
 FIXTURE_HARNESS_STATE = tests/fixtures/validator/harness_state_6.json
 PROFILE_UD = race=Scourge,class=PALADIN,faction=Horde
 PROFILE_SD = race=Skyborne,class=DRUID,faction=Horde
 # The guides module: every route, shared segment and shared insert.
-GUIDES = addons/FastesBoooy_Guides
+GUIDES = addons/AdventureAtlas_Guides
 # make harness: module with shared segments, segments (empty: all), profile (required), start state,
 # end state (the tools treat an empty --segments / --state / --write-state value as "not given")
 LIB = $(GUIDES)

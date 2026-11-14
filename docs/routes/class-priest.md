@@ -1,6 +1,6 @@
 # Жрец: шаги класса
 
-Файл: [`Classes/Priest.lua`](../../addons/FastesBoooy_Guides/Classes/Priest.lua) — 36 вставок, 42 шага (9 необязательных),
+Файл: [`Classes/Priest.lua`](../../addons/AdventureAtlas_Guides/Classes/Priest.lua) — 36 вставок, 42 шага (9 необязательных),
 все с областью `class = "PRIEST"` и id `pri-…`. Поправок к БД нет (`tools/overrides/priest.lua` не нужен). Гайды:
 `troll-priest`, `undead-priest`. Путь, по которому идут все классы: стартовые зоны — [race-troll.md](race-troll.md)
 (Дуротар), [race-undead.md](race-undead.md), с 12-го — [shared-path.md](shared-path.md). Здесь — только то, что
@@ -236,7 +236,7 @@
 ## 9. Как перепроверить
 
 ```
-G=addons/FastesBoooy_Guides
+G=addons/AdventureAtlas_Guides
 luacheck --config .luacheckrc $G/Classes/Priest.lua
 lua5.1 tools/validate_routes.lua -q --strict --end-level --summary \
     --baseline docs/dev/handover/baseline.json --route "*-priest" \

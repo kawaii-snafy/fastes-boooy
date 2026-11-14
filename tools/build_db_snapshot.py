@@ -158,7 +158,7 @@ EXTRA_UIMAPS = {
 # Check: pixel size * 533.333/512 reproduces conversion.json target_bounds to 0.1 yard on all 49
 # maps that have both (confidence: likely). {uiMapID: (widthPx, heightPx, source map slug)}.
 # Zephras Isle 2521 (5340 x 3560 px on map "zephras-isle" = 5562.5 x 3708.3 yd) is deliberately NOT
-# sized yet: the validator fixtures (tests/spec/validator_fixtures_spec.lua, FastesBoooy_FxNpcFar) use
+# sized yet: the validator fixtures (tests/spec/validator_fixtures_spec.lua, AdventureAtlas_FxNpcFar) use
 # it as the map-percent fallback example; add it here once they use another map without a size.
 WCLBOX_MAP_PIXELS = OrderedDict([
     (2482, (3334.0, 2222.0, "kalimdor")),           # Mount Hyjal

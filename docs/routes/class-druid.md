@@ -1,6 +1,6 @@
 # Друид: шаги класса
 
-Файл: [`Classes/Druid.lua`](../../addons/FastesBoooy_Guides/Classes/Druid.lua) — 43 вставки, 96 шагов
+Файл: [`Classes/Druid.lua`](../../addons/AdventureAtlas_Guides/Classes/Druid.lua) — 43 вставки, 96 шагов
 (9 необязательных), все с областью `class = "DRUID"` и id `dru-…`, и таблица наград класса. Гайдов два:
 `tauren-druid` «Таурен-друид 1-60» и `skyborne-druid` «Скайборн-друид 1-60» (прежний id `horde-skyborne-druid` —
 псевдоним, сохранённый прогресс переходит сам). Путь, по которому идут все классы: стартовые зоны —
@@ -167,7 +167,7 @@ Blizzard — 206-207 з.). Заклинания и уровни — клиент
 
 Якорь, шаг, действия и уровень перед шагом (обычно / худший; одно число — они равны) — как их видит валидатор в
 маршрутах `tauren-druid` и `skyborne-druid` (`lua5.1 tools/validate_routes.lua --route tauren-druid --levels
---skip 'Classes/*' --keep Classes/Druid.lua addons/FastesBoooy_Guides`). «—» — шага в маршруте этой расы нет.
+--skip 'Classes/*' --keep Classes/Druid.lua addons/AdventureAtlas_Guides`). «—» — шага в маршруте этой расы нет.
 Порядок — как в файле.
 
 | Якорь | Шаг | Действия |  | Раса (пусто — любая) | Таурен | Скайборн |
@@ -434,7 +434,7 @@ Blizzard — 206-207 з.). Заклинания и уровни — клиент
 
 ## 8. Награды
 
-Выбор наград в стартовой зоне задаёт таблица наград класса (`FastesBoooy.AddLibraryData({ rewards = { DRUID = … } })`
+Выбор наград в стартовой зоне задаёт таблица наград класса (`AdventureAtlas.AddLibraryData({ rewards = { DRUID = … } })`
 в начале файла), а не шаги сегментов — общие шаги класс не знают. Индексы (ветка друида у RestedXP): 92461 = 1,
 92463 = 3, 92469 = 1, 92470 = 2, 92473 = 1, 92517 = 3, 92528 = 1, 92550 = 3, 93318 = 1 (`sd-01`); 92579 = 3, 92684 = 3,
 93172 = 1, 93165 = 1 (`sd-02`). Для остальных сдач выбора нет в таблице: если игра его предложит, автоматика
@@ -519,7 +519,7 @@ Blizzard — 206-207 з.). Заклинания и уровни — клиент
 ## 12. Как перепроверить
 
 ```
-G=addons/FastesBoooy_Guides
+G=addons/AdventureAtlas_Guides
 lua5.1 tools/validate_routes.lua -q --strict --end-level --route skyborne-druid \
     --max-grind-until h-56-felwood-winterspring-plaguelands=4878/6082 $G     # не хуже маршрута версии 0.3
 lua5.1 tools/validate_routes.lua --route skyborne-druid --levels $G            # уровень на каждом шаге

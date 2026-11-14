@@ -1,0 +1,10 @@
+## Interface: 16001
+## Title: AdventureAtlas fixture: harness library
+## Notes: Validator test fixture: a tiny library module (real Forever quests, Deathknell / Brill) checked from a start state with the harness (tools/lib/harness.lua). Not a playable guide.
+## Dependencies: AdventureAtlas
+## Version: 0.0.1
+## X-AdventureAtlas-Module: library
+
+Data.lua
+Segments\01_Deathknell.lua
+Segments\02_Brill.lua

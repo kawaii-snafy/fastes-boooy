@@ -4,7 +4,7 @@
 -- the quest log from "log" / "complete", the level from "level" / "xpFrac", flight paths,
 -- end state and chaining) and the --harness / --state / --write-state CLI of
 -- tools/validate_routes.lua and tools/simulate_routes.lua.
--- Fixture: the tiny library tests/fixtures/validator/FastesBoooy_FxHarnessLib (real Forever
+-- Fixture: the tiny library tests/fixtures/validator/AdventureAtlas_FxHarnessLib (real Forever
 -- quests in Deathknell / Brill) and its start state tests/fixtures/validator/harness_state_6.json.
 
 local DB = require("lib.fbdb")
@@ -13,7 +13,7 @@ local V = require("lib.validator")
 local Harness = require("lib.harness")
 local json = require("lib.json")
 
-local LIB = "tests/fixtures/validator/FastesBoooy_FxHarnessLib"
+local LIB = "tests/fixtures/validator/AdventureAtlas_FxHarnessLib"
 local STATE = "tests/fixtures/validator/harness_state_6.json"
 local PALADIN = { race = "Scourge", class = "PALADIN", faction = "Horde" }
 local DRUID = { race = "Skyborne", class = "DRUID", faction = "Horde" }
@@ -173,7 +173,7 @@ describe("start-state harness", function()
             assert.are.same({ "fh-brill", "fh-deathknell" }, hb.segments)
             assert.are.equal("fh-brill", hb.route.segments[1].id)
             assert.are.equal("fh-johaan", hb.route.steps[1].id)
-            assert.are.equal("FastesBoooy_FxHarnessLib", hb.route.steps[1].library)
+            assert.are.equal("AdventureAtlas_FxHarnessLib", hb.route.steps[1].library)
             assert.are.same({ { race = "Skyborne", class = "DRUID", faction = "Horde" } }, V.Profiles(hb.route))
             assert.is_true(hb.route.harness)
         end)
@@ -187,14 +187,14 @@ describe("start-state harness", function()
         it("reports unknown segments with the list of known ones", function()
             local hb = Harness.Build(LIB, { schema = schema, segments = { "fh-brill", "fh-nope" }, profile = PALADIN })
             assert.are.equal(1, #hb.errors)
-            assert.matches("unknown library segment 'fh%-nope' %(FastesBoooy_FxHarnessLib registers: fh%-deathknell, "
+            assert.matches("unknown library segment 'fh%-nope' %(AdventureAtlas_FxHarnessLib registers: fh%-deathknell, "
                 .. "fh%-brill%)", hb.errors[1].msg)
             assert.are.same({ "fh-brill" }, hb.segments)
         end)
 
         it("accepts a module that registers routes when it has shared segments; refuses the others", function()
-            -- a mixed module (the shape of FastesBoooy_Guides): the harness uses its shared part
-            local hb = Harness.Build("tests/fixtures/core/FastesBoooy_TestGuides", { schema = schema, profile = PALADIN,
+            -- a mixed module (the shape of AdventureAtlas_Guides): the harness uses its shared part
+            local hb = Harness.Build("tests/fixtures/core/AdventureAtlas_TestGuides", { schema = schema, profile = PALADIN,
                 segments = { "tg-ud-01-deathknell" } })
             assert.is_nil(hb.fatal)
             assert.are.same({}, hb.errors)
@@ -204,9 +204,9 @@ describe("start-state harness", function()
             -- the shared insert of the paladin's class file applies to the harness route
             assert.is_truthy(hb.route.stepById["tg-pal-train-1"])
             -- a route module without shared segments has nothing for a harness
-            hb = Harness.Build("tests/fixtures/validator/FastesBoooy_FxClean", { schema = schema, profile = PALADIN })
+            hb = Harness.Build("tests/fixtures/validator/AdventureAtlas_FxClean", { schema = schema, profile = PALADIN })
             assert.matches("registers route%(s%) %(fx%-clean%) but no shared segments", hb.fatal)
-            hb = Harness.Build("tests/fixtures/validator/FastesBoooy_Nope", { schema = schema, profile = PALADIN })
+            hb = Harness.Build("tests/fixtures/validator/AdventureAtlas_Nope", { schema = schema, profile = PALADIN })
             assert.matches("no TOC file found", hb.fatal)
         end)
 
@@ -325,7 +325,7 @@ describe("start-state harness", function()
         end)
 
         it("a full route also has an end state (from level 1, or from --state)", function()
-            local res = V.ValidateModule("tests/fixtures/validator/FastesBoooy_FxClean", { db = db, schema = schema })
+            local res = V.ValidateModule("tests/fixtures/validator/AdventureAtlas_FxClean", { db = db, schema = schema })
             local es = res.results[1].endState
             assert.is_true(es.level >= 5)
             assert.is_true(#es.done > 5)
@@ -335,17 +335,17 @@ describe("start-state harness", function()
 
         it("a shared step of another class is not composed into the harness route (no step-no-profile)", function()
             local root = tmpname()
-            os.execute(("mkdir -p '%s/FastesBoooy_HxLib'"):format(root))
-            writeFile(root .. "/FastesBoooy_HxLib/FastesBoooy_HxLib.toc",
-                "## Interface: 16001\n## Dependencies: FastesBoooy\n## X-FastesBoooy-Module: library\nLib.lua\n")
-            writeFile(root .. "/FastesBoooy_HxLib/Lib.lua", [[
-FastesBoooy.AddLibrarySegment({ id = "hx", title = "X", levels = { 1, 2 }, steps = {
+            os.execute(("mkdir -p '%s/AdventureAtlas_HxLib'"):format(root))
+            writeFile(root .. "/AdventureAtlas_HxLib/AdventureAtlas_HxLib.toc",
+                "## Interface: 16001\n## Dependencies: AdventureAtlas\n## X-AdventureAtlas-Module: library\nLib.lua\n")
+            writeFile(root .. "/AdventureAtlas_HxLib/Lib.lua", [[
+AdventureAtlas.AddLibrarySegment({ id = "hx", title = "X", levels = { 1, 2 }, steps = {
     { id = "hx-1", accept = 363, npc = 1568, at = { 1420, 30.2, 71.7 } },
     { id = "hx-druid", manual = true, class = "DRUID" },
     { id = "hx-2", turnin = 363, npc = 1569, at = { 1420, 30.8, 66.2 } },
 } })
 ]])
-            local r, hb = harness(nil, { lib = root .. "/FastesBoooy_HxLib" })
+            local r, hb = harness(nil, { lib = root .. "/AdventureAtlas_HxLib" })
             os.execute(("rm -rf '%s'"):format(root))
             assert.are.equal(0, r.counts.ERROR + r.counts.WARN)
             assert.is_nil(codes(r)["step-no-profile"])
@@ -367,7 +367,7 @@ FastesBoooy.AddLibrarySegment({ id = "hx", title = "X", levels = { 1, 2 }, steps
             local code, out = run(VAL .. "--strict --harness " .. LIB .. " --segments fh-deathknell " .. CLI_PALADIN
                 .. " --state " .. STATE .. " --write-state " .. out1)
             assert.are.equal(0, code, out)
-            assert.matches("== route harness%-FxHarnessLib %[Scourge PALADIN Horde%] module FastesBoooy_FxHarnessLib", out)
+            assert.matches("== route harness%-FxHarnessLib %[Scourge PALADIN Horde%] module AdventureAtlas_FxHarnessLib", out)
             assert.matches("end state of harness%-FxHarnessLib %[Scourge PALADIN Horde%] written to ", out)
             local mid = assert(Harness.ReadState(out1))
             assert.are.same({ 382 }, mid.log)
@@ -394,9 +394,9 @@ FastesBoooy.AddLibrarySegment({ id = "hx", title = "X", levels = { 1, 2 }, steps
             code, out = run(VAL .. "--harness " .. LIB .. " --profile race=Skyborne,class=DRUID")
             assert.are.equal(2, code)
             assert.matches("give the faction too", out)
-            code = run(VAL .. "--harness " .. LIB .. " " .. CLI_PALADIN .. " tests/fixtures/validator/FastesBoooy_FxClean")
+            code = run(VAL .. "--harness " .. LIB .. " " .. CLI_PALADIN .. " tests/fixtures/validator/AdventureAtlas_FxClean")
             assert.are.equal(2, code)
-            code = run(VAL .. "--segments fh-brill tests/fixtures/validator/FastesBoooy_FxClean")
+            code = run(VAL .. "--segments fh-brill tests/fixtures/validator/AdventureAtlas_FxClean")
             assert.are.equal(2, code)
             local bad = tmpname()
             writeFile(bad, '{"level": 70}')
@@ -409,12 +409,12 @@ FastesBoooy.AddLibrarySegment({ id = "hx", title = "X", levels = { 1, 2 }, steps
         it("validate: --write-state of a full route needs exactly one route x profile", function()
             local f = tmpname()
             local code, out = run(VAL .. "-q --route fx-clean --write-state " .. f
-                .. " tests/fixtures/validator/FastesBoooy_FxClean")
+                .. " tests/fixtures/validator/AdventureAtlas_FxClean")
             assert.are.equal(0, code, out)
             local st = assert(Harness.ReadState(f))
             assert.are.equal("fx-clean", st.meta.route)
-            code, out = run(VAL .. "-q --write-state " .. f .. " tests/fixtures/validator/FastesBoooy_FxClean "
-                .. "tests/fixtures/validator/FastesBoooy_FxNs")
+            code, out = run(VAL .. "-q --write-state " .. f .. " tests/fixtures/validator/AdventureAtlas_FxClean "
+                .. "tests/fixtures/validator/AdventureAtlas_FxNs")
             assert.are.equal(2, code)
             assert.matches("needs exactly one route x profile, this run has 2", out)
             os.remove(f)
@@ -424,27 +424,27 @@ FastesBoooy.AddLibrarySegment({ id = "hx", title = "X", levels = { 1, 2 }, steps
             local f, g = tmpname(), tmpname()
             -- the composed fixture: own tc-intro, then the library segment tl-deathknell
             local code, out = run(VAL .. "-q --route test-composed --write-state " .. f .. " --until tl-deathknell "
-                .. "tests/fixtures/core/FastesBoooy_TestComposed")
+                .. "tests/fixtures/core/AdventureAtlas_TestComposed")
             assert.are.equal(0, code, out)
             assert.matches("state before tl%-deathknell of test%-composed", out)
             local before = assert(Harness.ReadState(f))
             assert.are.equal("tl-accept-363", before.meta.untilStep)
             assert.are.same({}, before.done)
             code, out = run(VAL .. "-q --route test-composed --write-state " .. g .. " --until tl-363-364 "
-                .. "tests/fixtures/core/FastesBoooy_TestComposed")
+                .. "tests/fixtures/core/AdventureAtlas_TestComposed")
             assert.are.equal(0, code, out)
             local mid = assert(Harness.ReadState(g))
             assert.are.same({ 363 }, mid.log)
             local full = tmpname()
-            code = run(VAL .. "-q --route test-composed --write-state " .. full .. " tests/fixtures/core/FastesBoooy_TestComposed")
+            code = run(VAL .. "-q --route test-composed --write-state " .. full .. " tests/fixtures/core/AdventureAtlas_TestComposed")
             assert.are.equal(0, code)
             assert.is_true(#assert(Harness.ReadState(full)).done > #mid.done)
             -- unknown id / without --write-state: usage errors
             code, out = run(VAL .. "-q --route test-composed --write-state " .. g .. " --until nope "
-                .. "tests/fixtures/core/FastesBoooy_TestComposed")
+                .. "tests/fixtures/core/AdventureAtlas_TestComposed")
             assert.are.equal(2, code)
             assert.matches("%-%-until nope matched no step id and no segment id of test%-composed", out)
-            code, out = run(VAL .. "-q --until tl-deathknell tests/fixtures/core/FastesBoooy_TestComposed")
+            code, out = run(VAL .. "-q --until tl-deathknell tests/fixtures/core/AdventureAtlas_TestComposed")
             assert.are.equal(2, code)
             assert.matches("%-%-until is only used with %-%-write%-state", out)
             os.remove(f) os.remove(g) os.remove(full)
@@ -452,22 +452,22 @@ FastesBoooy.AddLibrarySegment({ id = "hx", title = "X", levels = { 1, 2 }, steps
 
         it("a declared library without segments: a clear message, nothing to do", function()
             local root = tmpname()
-            os.execute(("mkdir -p '%s/FastesBoooy_HxEmpty/Segments'"):format(root))
-            local dir = root .. "/FastesBoooy_HxEmpty"
-            writeFile(dir .. "/FastesBoooy_HxEmpty.toc", "## Interface: 16001\n## Dependencies: FastesBoooy\n"
-                .. "## X-FastesBoooy-Module: library\nData.lua\nSegments\\01_a.lua\n")
+            os.execute(("mkdir -p '%s/AdventureAtlas_HxEmpty/Segments'"):format(root))
+            local dir = root .. "/AdventureAtlas_HxEmpty"
+            writeFile(dir .. "/AdventureAtlas_HxEmpty.toc", "## Interface: 16001\n## Dependencies: AdventureAtlas\n"
+                .. "## X-AdventureAtlas-Module: library\nData.lua\nSegments\\01_a.lua\n")
             writeFile(dir .. "/Segments/01_a.lua", "-- placeholder: no registration yet\n")
             -- gen_route_data writes empty library data for it
             local code, out = run("lua5.1 tools/gen_route_data.lua --no-overrides --stdout '" .. dir .. "'")
             assert.are.equal(0, code, out)
-            assert.matches("FastesBoooy.AddLibraryData%({\n    quests = {},\n    npcs = {},\n}%)", out)
+            assert.matches("AdventureAtlas.AddLibraryData%({\n    quests = {},\n    npcs = {},\n}%)", out)
             run("lua5.1 tools/gen_route_data.lua --no-overrides '" .. dir .. "'")
             local mod = Loader.LoadModule(dir, { schema = schema })
             assert.is_true(mod.isLibrary)
             assert.are.same({}, mod.errors)
             code, out = run(VAL .. "--harness '" .. dir .. "' " .. CLI_PALADIN .. " --state " .. STATE)
             assert.are.equal(0, code, out)
-            assert.matches("library module FastesBoooy_HxEmpty registers no library segments yet", out)
+            assert.matches("library module AdventureAtlas_HxEmpty registers no library segments yet", out)
             code, out = run(SIM .. "--harness '" .. dir .. "' " .. CLI_PALADIN)
             assert.are.equal(0, code, out)
             assert.matches("nothing to simulate", out)
@@ -508,32 +508,32 @@ FastesBoooy.AddLibrarySegment({ id = "hx", title = "X", levels = { 1, 2 }, steps
 
         it("simulate: --write-state of a full route; several simulations are refused", function()
             local f = tmpname()
-            local code, out = run(SIM .. "--no-reload --write-state " .. f .. " tests/fixtures/core/FastesBoooy_TestRoute")
+            local code, out = run(SIM .. "--no-reload --write-state " .. f .. " tests/fixtures/core/AdventureAtlas_TestRoute")
             assert.are.equal(0, code, out)
             local st = assert(Harness.ReadState(f))
             assert.are.equal("test-route", st.meta.route)
-            code, out = run(SIM .. "--no-reload --write-state " .. f .. " tests/fixtures/core/FastesBoooy_TestRoute "
-                .. "tests/fixtures/core/FastesBoooy_TestComposed")
+            code, out = run(SIM .. "--no-reload --write-state " .. f .. " tests/fixtures/core/AdventureAtlas_TestRoute "
+                .. "tests/fixtures/core/AdventureAtlas_TestComposed")
             assert.are.equal(2, code, out)
             assert.matches("needs exactly one simulation", out)
             os.remove(f)
         end)
     end)
 
-    describe("route_loader: ## X-FastesBoooy-Module", function()
+    describe("route_loader: ## X-AdventureAtlas-Module", function()
         it("declares a library; a bad value or routes in a declared library are errors", function()
             local root = tmpname()
-            os.execute(("mkdir -p '%s/FastesBoooy_HxBad' '%s/FastesBoooy_HxRoute'"):format(root, root))
-            writeFile(root .. "/FastesBoooy_HxBad/FastesBoooy_HxBad.toc",
-                "## Interface: 16001\n## Dependencies: FastesBoooy\n## X-FastesBoooy-Module: libary\n")
-            writeFile(root .. "/FastesBoooy_HxRoute/FastesBoooy_HxRoute.toc",
-                "## Interface: 16001\n## Dependencies: FastesBoooy\n## X-FastesBoooy-Module: library\nRoute.lua\n")
-            writeFile(root .. "/FastesBoooy_HxRoute/Route.lua",
-                "FastesBoooy.RegisterRoute({ api = 1, id = \"hx-route\", title = \"R\", faction = \"Horde\" })\n")
-            local bad = Loader.LoadModule(root .. "/FastesBoooy_HxBad", { schema = schema })
-            local route = Loader.LoadModule(root .. "/FastesBoooy_HxRoute", { schema = schema })
+            os.execute(("mkdir -p '%s/AdventureAtlas_HxBad' '%s/AdventureAtlas_HxRoute'"):format(root, root))
+            writeFile(root .. "/AdventureAtlas_HxBad/AdventureAtlas_HxBad.toc",
+                "## Interface: 16001\n## Dependencies: AdventureAtlas\n## X-AdventureAtlas-Module: libary\n")
+            writeFile(root .. "/AdventureAtlas_HxRoute/AdventureAtlas_HxRoute.toc",
+                "## Interface: 16001\n## Dependencies: AdventureAtlas\n## X-AdventureAtlas-Module: library\nRoute.lua\n")
+            writeFile(root .. "/AdventureAtlas_HxRoute/Route.lua",
+                "AdventureAtlas.RegisterRoute({ api = 1, id = \"hx-route\", title = \"R\", faction = \"Horde\" })\n")
+            local bad = Loader.LoadModule(root .. "/AdventureAtlas_HxBad", { schema = schema })
+            local route = Loader.LoadModule(root .. "/AdventureAtlas_HxRoute", { schema = schema })
             os.execute(("rm -rf '%s'"):format(root))
-            assert.matches("X%-FastesBoooy%-Module must be \"library\" %(got \"libary\"%)", bad.errors[1].msg)
+            assert.matches("X%-AdventureAtlas%-Module must be \"library\" %(got \"libary\"%)", bad.errors[1].msg)
             assert.is_false(bad.isLibrary)
             assert.matches("but the module registers route%(s%)", route.errors[1].msg)
             assert.is_false(route.isLibrary)

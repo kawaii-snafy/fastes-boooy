@@ -1,8 +1,8 @@
 # Нежить: стартовая зона и шаги расы
 
-Файлы: [`Segments/Tirisfal/01_Deathknell.lua`](../../addons/FastesBoooy_Guides/Segments/Tirisfal/01_Deathknell.lua)
-(`ud-01-deathknell`), [`Segments/Tirisfal/02_Tirisfal.lua`](../../addons/FastesBoooy_Guides/Segments/Tirisfal/02_Tirisfal.lua)
-(`ud-02-tirisfal`), [`Races/Scourge.lua`](../../addons/FastesBoooy_Guides/Races/Scourge.lua) (шаги расы на общем пути).
+Файлы: [`Segments/Tirisfal/01_Deathknell.lua`](../../addons/AdventureAtlas_Guides/Segments/Tirisfal/01_Deathknell.lua)
+(`ud-01-deathknell`), [`Segments/Tirisfal/02_Tirisfal.lua`](../../addons/AdventureAtlas_Guides/Segments/Tirisfal/02_Tirisfal.lua)
+(`ud-02-tirisfal`), [`Races/Scourge.lua`](../../addons/AdventureAtlas_Guides/Races/Scourge.lua) (шаги расы на общем пути).
 Гайды: `undead-mage`, `undead-paladin`, `undead-priest`, `undead-rogue`, `undead-warlock`, `undead-warrior`
 (raceFile нежити в клиенте — `Scourge`). Общий путь с 12-го уровня — [shared-path.md](shared-path.md); шаги паладина —
 [class-paladin.md](class-paladin.md). Числа — вывод валидатора на момент написания; свежие — в
@@ -190,7 +190,7 @@ RestedXP берёт, мы пропускаем: 95328 (предмет с эли�
 ## 9. Все шаги стартовой зоны (базовый профиль)
 
 Шаг, уровень перед шагом (обычно, худший случай), действия. Команда:
-`lua5.1 tools/validate_routes.lua --route undead-warrior --levels addons/FastesBoooy_Guides`.
+`lua5.1 tools/validate_routes.lua --route undead-warrior --levels addons/AdventureAtlas_Guides`.
 
 ```
 ud01-start                 1.00   1.00  accept 363
@@ -327,7 +327,7 @@ ud02-silverpine-road      12.10  12.09  go
 ## 10. Что проверить в игре
 
 * **98389**: предлагает ли Арамис задание всем классам (§7). Если нет — три шага переедут в файл паладина.
-* Опыт новых квестов Forever (`/fb xp`).
+* Опыт новых квестов Forever (`/aa xp`).
 * Точки окончания сопровождения 99144, шанс письма 361, линия пешего пути Подгород → Серебряный бор.
 * Цена верховой езды у Вельмы и выдаётся ли конь вместе с навыком.
 * Порядок вариантов в окнах наград (для таблиц наград классов).
@@ -335,7 +335,7 @@ ud02-silverpine-road      12.10  12.09  go
 ## 11. Как перепроверить
 
 ```
-G=addons/FastesBoooy_Guides
+G=addons/AdventureAtlas_Guides
 lua5.1 tools/validate_routes.lua -q --strict --end-level --summary --route 'undead-*' $G
 lua5.1 tools/validate_routes.lua --route undead-warrior --levels $G
 lua5.1 tools/validate_routes.lua --route undead-warrior --write-state state.json --until h-13-silverpine $G   # передача общему пути

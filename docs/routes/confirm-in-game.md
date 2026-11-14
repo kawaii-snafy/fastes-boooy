@@ -1,6 +1,6 @@
 # Что подтверждается только в игре (`-- CONFIRM`)
 
-Сгенерировано из комментариев `-- CONFIRM` модуля `addons/FastesBoooy_Guides` (фаза R, 77 пунктов). Текст пунктов —
+Сгенерировано из комментариев `-- CONFIRM` модуля `addons/AdventureAtlas_Guides` (фаза R, 77 пунктов). Текст пунктов —
 комментарии кода как есть (английский). Подтвердили пункт в игре — уберите `CONFIRM` из комментария (и, если пункт
 держится на поправке БД, поставьте ей `verified = true` в `tools/overrides/*.lua`); не подтвердился — исправьте шаг.
 Пересобрать список: `python3 -I tools/gen_confirm_list.py > docs/routes/confirm-in-game.md`.
@@ -104,7 +104,7 @@
 
 | Строка | Шаг | Что проверить |
 |---|---|---|
-| 48 | заголовок файла | No class reward table (FastesBoooy.AddLibraryData({ rewards = { PALADIN = ... } })): the DB snapshot has no reward lists and the old route named the items without their index in the reward window; a wrong index would make the automation take the wrong item, no index only shows a hint. CONFIRM: the reward indexes of 3901, 376, 3902, 380, 381, 382, 426, 398, 358, 97558, 374 in game, then add the table. |
+| 48 | заголовок файла | No class reward table (AdventureAtlas.AddLibraryData({ rewards = { PALADIN = ... } })): the DB snapshot has no reward lists and the old route named the items without their index in the reward window; a wrong index would make the automation take the wrong item, no index only shows a hint. CONFIRM: the reward indexes of 3901, 376, 3902, 380, 381, 382, 426, 398, 358, 97558, 374 in game, then add the table. |
 | 50 | заголовок файла | Training on 12-60 (CONFIRM, docs/dev/PLAN.md E.3: the paladin trainers Garen Largo 260093 in the Undercity and Alodan the Hopeful 246344 in Thunder Bluff are in the DB but not on the web; every step at them carries a CONFIRM comment and its note names Shari Stilwell in Brill as the fallback: the zeppelins of 22.0, 31.1 and 41.0 land ~200 yd south of her, the Undercity entrance is ~400 yd south): 14        Garen Largo (Undercity, War Quarter), after h13-uc-end (the gate h13-lvl-14 guarantees the level) 18        Alodan the Hopeful (Thunder Bluff, Pools of Vision: Zamah's cave), after h18-tb-zamah (gate h18-lvl-18) 20        Alodan, after h18-tb-2 (from Elder Rise over the central mesa to Spirit Rise; gate h18-lvl-20) 22        Alodan, after h-22-tb-start (Zamah hands out 1065 right after the turn-in of 1064: a training step between the two would be fast-forwarded by the automation) |
 | 417 | `pal-train-14` | The paladin trainer Garen Largo in the Undercity (in the DB, not on the web) |
 | 434 | `pal-train-18` | The paladin trainer Alodan the Hopeful in Thunder Bluff (in the DB, not on the web) |
@@ -173,7 +173,7 @@
 
 | Строка | Шаг | Что проверить |
 |---|---|---|
-| 98 | заголовок файла | Class reward table: none. The DB has no reward lists, so the index of a warrior's choice is unknown; the notes of the class steps name the items instead (CONFIRM the indexes in game, then FastesBoooy.AddLibraryData). |
+| 98 | заголовок файла | Class reward table: none. The DB has no reward lists, so the index of a warrior's choice is unknown; the notes of the class steps name the items instead (CONFIRM the indexes in game, then AdventureAtlas.AddLibraryData). |
 | 209 | `war-dur-uzzek` | The river crossing from the crocolisks to Far Watch Post (swim or bridge) and ~3 min there and back |
 | 400 | `war-tir-ulag` | Ulag appears when the mausoleum trigger (object index 706178, outside the snapshot) is used |
 | 542 | `war-zep-94003-turnin` | 94003 teaches Defensive Stance (Warcraft Tavern; the DB has no rewards), classes.md 8.4 item 6 |

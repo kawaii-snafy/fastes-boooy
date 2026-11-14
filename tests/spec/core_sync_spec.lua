@@ -84,12 +84,12 @@ end
 local function boot(level, opts)
     opts = opts or {}
     local sv
-    if opts.settings then sv = { FastesBoooyDB = { settings = opts.settings } } end
+    if opts.settings then sv = { AdventureAtlasDB = { settings = opts.settings } } end
     local m, ns = H.new({ fixture = false, quests = false, setup = defineQuests, register = register(opts.meta),
         player = { level = level }, savedVariables = opts.savedVariables or sv })
     local rec = {}
     for _, msg in ipairs(opts.listen or { "SYNC_SUGGESTION" }) do rec[msg] = H.record(ns, msg) end
-    Mock.boot(m, { "FastesBoooy" })
+    Mock.boot(m, { "AdventureAtlas" })
     H.settle(m)
     return m, ns, rec
 end
@@ -392,15 +392,15 @@ describe("level sync", function()
         end)
 
         it("a floor of another route or of an unknown step is ignored", function()
-            local _, ns = boot(7, { savedVariables = { FastesBoooyCharDB = {
+            local _, ns = boot(7, { savedVariables = { AdventureAtlasCharDB = {
                 syncFloor = { route = "other-route", stepId = "s2-a3" } } } })
             assert.is_nil(E(ns):GetSyncFloor())
             assert.equal("s1-a1", H.cur(ns))
-            local _, ns2 = boot(7, { savedVariables = { FastesBoooyCharDB = {
+            local _, ns2 = boot(7, { savedVariables = { AdventureAtlasCharDB = {
                 syncFloor = { route = ROUTE, stepId = "gone" } } } })
             assert.is_nil(E(ns2):GetSyncFloor())
             assert.equal("s1-a1", H.cur(ns2))
-            local _, ns3 = boot(7, { savedVariables = { FastesBoooyCharDB = { syncFloor = "junk", syncDismissed = 4 } } })
+            local _, ns3 = boot(7, { savedVariables = { AdventureAtlasCharDB = { syncFloor = "junk", syncDismissed = 4 } } })
             assert.is_nil(ns3.cdb.syncFloor)
             assert.is_nil(ns3.cdb.syncDismissed)
         end)
@@ -499,8 +499,8 @@ describe("gray quests (settings.skipGray)", function()
                     for _, q in ipairs(opts.completed or {}) do m.completed[q] = true end
                 end,
                 player = { level = 15 },
-                savedVariables = { FastesBoooyDB = { settings = { levelSync = opts.levelSync or "off" } } } })
-            Mock.boot(m, { "FastesBoooy" })
+                savedVariables = { AdventureAtlasDB = { settings = { levelSync = opts.levelSync or "off" } } } })
+            Mock.boot(m, { "AdventureAtlas" })
             H.settle(m)
             return m, ns
         end
@@ -691,7 +691,7 @@ describe("route data questMeta", function()
         assert.equal(0, code, out)
         local chunk = assert(loadstring(out))
         local captured
-        setfenv(chunk, { FastesBoooy = { AddLibraryData = function(d) captured = d end } })
+        setfenv(chunk, { AdventureAtlas = { AddLibraryData = function(d) captured = d end } })
         chunk()
         assert.same({ level = 1, reqLevel = 1 }, captured.questMeta[363])
         assert.same({ level = 4, reqLevel = 2, preAny = { 376 } }, captured.questMeta[380])
@@ -717,12 +717,12 @@ end)
 
 describe("settings", function()
     it("defaults and load-time migration", function()
-        local m, ns = H.new({ savedVariables = { FastesBoooyDB = { settings = {
+        local m, ns = H.new({ savedVariables = { AdventureAtlasDB = { settings = {
             levelSync = "maybe", levelSyncMargin = 7.6, skipGray = "yes" } } } })
         assert.equal("ask", ns.DEFAULTS.db.settings.levelSync)
         assert.equal(2, ns.DEFAULTS.db.settings.levelSyncMargin)
         assert.is_true(ns.DEFAULTS.db.settings.skipGray)
-        Mock.boot(m, { "FastesBoooy", H.FIXTURE_NAME })
+        Mock.boot(m, { "AdventureAtlas", H.FIXTURE_NAME })
         local s = ns.db.settings
         assert.equal("ask", s.levelSync)
         assert.equal(5, s.levelSyncMargin)
@@ -735,16 +735,16 @@ describe("settings", function()
 end)
 
 describe("the guides module", function()
-    local MODULES = { { "addons/FastesBoooy_Guides/FastesBoooy_Guides.toc", "FastesBoooy_Guides" } }
+    local MODULES = { { "addons/AdventureAtlas_Guides/AdventureAtlas_Guides.toc", "AdventureAtlas_Guides" } }
 
-    -- 0.4.0 renamed the two routes of 0.3 (three modules -> FastesBoooy_Guides). Their former ids are `aliases`
+    -- 0.4.0 renamed the two routes of 0.3 (three modules -> AdventureAtlas_Guides). Their former ids are `aliases`
     -- in Route.lua; without them a character silently loses the manual route choice, the high-water mark and
     -- the level-sync floor, and no tool notices.
     it("keeps the former route ids as aliases: progress saved by 0.3 is adopted", function()
         local FLOOR = "h-27-ashenvale-needles-level-gate" -- a step of the shared path, in both routes
         local function bootSaved(old)
             return H.boot({ fixture = false, db = true, modules = MODULES, player = { level = 30 },
-                savedVariables = { FastesBoooyCharDB = {
+                savedVariables = { AdventureAtlasCharDB = {
                     route = old, cursorHint = 1, cursorHintId = FLOOR, cursorHintRoute = old,
                     syncFloor = { route = old, stepId = FLOOR, from = "h-27-ashenvale-needles",
                         to = "h-27-ashenvale-needles", level = 30, hint = { 1, FLOOR, old } },
@@ -758,7 +758,7 @@ describe("the guides module", function()
             { old = "horde-skyborne-druid", id = "skyborne-druid" },
         }) do
             local m, ns = bootSaved(case.old)
-            local R, e, cdb = ns.Registry, E(ns), m.env.FastesBoooyCharDB
+            local R, e, cdb = ns.Registry, E(ns), m.env.AdventureAtlasCharDB
             assert.same({}, R.errors)
             assert.equal("undead-paladin", (R:Get("horde-undead-paladin") or {}).id, "alias lost in Route.lua")
             assert.equal("skyborne-druid", (R:Get("horde-skyborne-druid") or {}).id, "alias lost in Route.lua")
@@ -780,8 +780,8 @@ end)
 describe("performance", function()
     it("a refresh of a 1700-step route with the void pass stays cheap", function()
         local m, ns = H.new({ fixture = false, db = true, player = { level = 23 }, modules = {
-            { "addons/FastesBoooy_Guides/FastesBoooy_Guides.toc", "FastesBoooy_Guides" } } })
-        Mock.boot(m, { "FastesBoooy", "FastesBoooy_Guides" })
+            { "addons/AdventureAtlas_Guides/AdventureAtlas_Guides.toc", "AdventureAtlas_Guides" } } })
+        Mock.boot(m, { "AdventureAtlas", "AdventureAtlas_Guides" })
         H.settle(m)
         local e = E(ns)
         assert.equal("undead-paladin", e:GetRoute().id)

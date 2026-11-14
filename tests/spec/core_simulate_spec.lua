@@ -12,20 +12,20 @@ end
 local root
 
 local BROKEN = {
-    ["FastesBoooy_Broken/FastesBoooy_Broken.toc"] = "## Interface: 16001\n## Dependencies: FastesBoooy\nRoute.lua\n",
-    ["FastesBoooy_Broken/Route.lua"] = [[
-FastesBoooy.RegisterRoute({ api = 1, id = "broken", title = "Broken", faction = "Horde",
+    ["AdventureAtlas_Broken/AdventureAtlas_Broken.toc"] = "## Interface: 16001\n## Dependencies: AdventureAtlas\nRoute.lua\n",
+    ["AdventureAtlas_Broken/Route.lua"] = [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "broken", title = "Broken", faction = "Horde",
     races = { "Scourge" }, classes = { "PALADIN" }, levels = { 1, 5 } })
-FastesBoooy.AddSegment("broken", { id = "b1", title = "B1", steps = {
+AdventureAtlas.AddSegment("broken", { id = "b1", title = "B1", steps = {
     { accept = 363, npc = 1568, at = { 1420, 30.2, 71.7 } },
     { turnin = 364, npc = 1569, at = { 1420, 30.8, 66.2 } },
 } })
 ]],
-    ["FastesBoooy_Sky/FastesBoooy_Sky.toc"] = "## Interface: 16001\n## Dependencies: FastesBoooy\nRoute.lua\n",
-    ["FastesBoooy_Sky/Route.lua"] = [[
-FastesBoooy.RegisterRoute({ api = 1, id = "sky", title = "Sky", faction = "Horde",
+    ["AdventureAtlas_Sky/AdventureAtlas_Sky.toc"] = "## Interface: 16001\n## Dependencies: AdventureAtlas\nRoute.lua\n",
+    ["AdventureAtlas_Sky/Route.lua"] = [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "sky", title = "Sky", faction = "Horde",
     races = { "Skyborne" }, classes = { "DRUID" }, levels = { 1, 5 } })
-FastesBoooy.AddSegment("sky", { id = "s1", title = "S1", steps = {
+AdventureAtlas.AddSegment("sky", { id = "s1", title = "S1", steps = {
     { accept = 90001, npc = 100, at = { 2521, 40, 40 } },
     { turnin = 90001, accept = 90002, npc = 100, at = { 2521, 40, 40 } },
     { go = true, at = { 2521, 60, 60 } },
@@ -33,11 +33,11 @@ FastesBoooy.AddSegment("sky", { id = "s1", title = "S1", steps = {
 } })
 ]],
     -- 870 "The Forgotten Pools": exploration only (DB objectives.event) -- must not be complete on accept
-    ["FastesBoooy_Event/FastesBoooy_Event.toc"] = "## Interface: 16001\n## Dependencies: FastesBoooy\nRoute.lua\n",
-    ["FastesBoooy_Event/Route.lua"] = [[
-FastesBoooy.RegisterRoute({ api = 1, id = "event", title = "Event", faction = "Horde",
+    ["AdventureAtlas_Event/AdventureAtlas_Event.toc"] = "## Interface: 16001\n## Dependencies: AdventureAtlas\nRoute.lua\n",
+    ["AdventureAtlas_Event/Route.lua"] = [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "event", title = "Event", faction = "Horde",
     races = { "Orc" }, classes = { "WARRIOR" }, levels = { 10, 12 } })
-FastesBoooy.AddSegment("event", { id = "e1", title = "E1", steps = {
+AdventureAtlas.AddSegment("event", { id = "e1", title = "E1", steps = {
     { accept = 870, npc = 3448, at = { 1413, 52.26, 31.93 } },
     { fp = "The Crossroads", npc = 3615, at = { 1413, 51.50, 30.34 } },
     { go = true, at = { 1413, 48.0, 26.0 } },
@@ -48,11 +48,11 @@ FastesBoooy.AddSegment("event", { id = "e1", title = "E1", steps = {
     -- Stranglethorn Vale (uiMap 1434) is no built-in mock map: its world size comes from the DB snapshot,
     -- so the hearth landing is checked against the step location (bb: lands there; gg: does not, its `at` is
     -- the Nesingwary camp)
-    ["FastesBoooy_Hearth/FastesBoooy_Hearth.toc"] = "## Interface: 16001\n## Dependencies: FastesBoooy\nRoute.lua\n",
-    ["FastesBoooy_Hearth/Route.lua"] = [[
-FastesBoooy.RegisterRoute({ api = 1, id = "hearth", title = "Hearth", faction = "Horde",
+    ["AdventureAtlas_Hearth/AdventureAtlas_Hearth.toc"] = "## Interface: 16001\n## Dependencies: AdventureAtlas\nRoute.lua\n",
+    ["AdventureAtlas_Hearth/Route.lua"] = [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "hearth", title = "Hearth", faction = "Horde",
     races = { "Orc" }, classes = { "WARRIOR" }, levels = { 44, 45 } })
-FastesBoooy.AddSegment("hearth", { id = "h1", title = "H1", steps = {
+AdventureAtlas.AddSegment("hearth", { id = "h1", title = "H1", steps = {
     { id = "bind", sethearth = "Booty Bay", npc = 6807, at = { 1434, 27.04, 77.31 } },
     { go = true, at = { 1434, 32.0, 29.0 } },
     { id = "bb", hearth = "Booty Bay", at = { 1434, 27.04, 77.31 } },
@@ -62,11 +62,11 @@ FastesBoooy.AddSegment("hearth", { id = "h1", title = "H1", steps = {
 ]],
     -- the paladin trainer Aramis Hammerhand 244808 also offers 90902: talking to him opens the gossip first,
     -- the automation accepts 90902 (next step, within the lookahead) and the visit is fast-forwarded
-    ["FastesBoooy_Gossip/FastesBoooy_Gossip.toc"] = "## Interface: 16001\n## Dependencies: FastesBoooy\nRoute.lua\n",
-    ["FastesBoooy_Gossip/Route.lua"] = [[
-FastesBoooy.RegisterRoute({ api = 1, id = "gossip", title = "Gossip", faction = "Horde",
+    ["AdventureAtlas_Gossip/AdventureAtlas_Gossip.toc"] = "## Interface: 16001\n## Dependencies: AdventureAtlas\nRoute.lua\n",
+    ["AdventureAtlas_Gossip/Route.lua"] = [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "gossip", title = "Gossip", faction = "Horde",
     races = { "Scourge" }, classes = { "PALADIN" }, levels = { 1, 3 } })
-FastesBoooy.AddSegment("gossip", { id = "g1", title = "G1", steps = {
+AdventureAtlas.AddSegment("gossip", { id = "g1", title = "G1", steps = {
     { accept = 363, npc = 1568, at = { 1420, 30.2, 71.7 } },
     { turnin = 363, accept = 364, npc = 1569, at = { 1420, 30.8, 66.2 } },
     { complete = 364, at = { 1420, 32.5, 63.5 } },
@@ -79,30 +79,30 @@ FastesBoooy.AddSegment("gossip", { id = "g1", title = "G1", steps = {
     -- --ahead 6: segment a1 (1-2) is outleveled, the sync jumps to a2 (6-10); 3901 needs 364 (DB preQuestSingle),
     -- which the character never took (below the floor). With questMeta the engine skips the accept of 3901;
     -- without it (older Data.lua) it cannot know, and the simulator refuses the accept.
-    ["FastesBoooy_Ahead/FastesBoooy_Ahead.toc"] = "## Interface: 16001\n## Dependencies: FastesBoooy\nRoute.lua\n",
-    ["FastesBoooy_Ahead/Route.lua"] = [[
+    ["AdventureAtlas_Ahead/AdventureAtlas_Ahead.toc"] = "## Interface: 16001\n## Dependencies: AdventureAtlas\nRoute.lua\n",
+    ["AdventureAtlas_Ahead/Route.lua"] = [[
 for _, id in ipairs({ "ahead", "ahead-nometa" }) do
-    FastesBoooy.RegisterRoute({ api = 1, id = id, title = "Ahead", faction = "Horde",
+    AdventureAtlas.RegisterRoute({ api = 1, id = id, title = "Ahead", faction = "Horde",
         races = { "Scourge" }, classes = { "PALADIN" }, levels = { 1, 10 } })
-    FastesBoooy.AddSegment(id, { id = "a1", title = "A1", levels = { 1, 2 }, steps = {
+    AdventureAtlas.AddSegment(id, { id = "a1", title = "A1", levels = { 1, 2 }, steps = {
         { accept = 364, npc = 1569, at = { 1420, 30.8, 66.2 } },
         { complete = 364, at = { 1420, 32.5, 63.5 } },
         { turnin = 364, npc = 1569, at = { 1420, 30.8, 66.2 } },
     } })
-    FastesBoooy.AddSegment(id, { id = "a2", title = "A2", levels = { 6, 10 }, steps = {
+    AdventureAtlas.AddSegment(id, { id = "a2", title = "A2", levels = { 6, 10 }, steps = {
         { accept = 3901, npc = 1569, at = { 1420, 30.8, 66.2 } },
         { complete = 3901, at = { 1420, 32.5, 61.0 } },
         { turnin = 3901, npc = 1569, at = { 1420, 30.8, 66.2 } },
         { go = true, at = { 1420, 40, 40 } },
     } })
 end
-FastesBoooy.AddRouteData("ahead", { questMeta = {
+AdventureAtlas.AddRouteData("ahead", { questMeta = {
     [364] = { level = 2, reqLevel = 1 }, [3901] = { level = 3, reqLevel = 1, preAny = { 364 } } } })
 ]],
-    ["FastesBoooy_Schema/FastesBoooy_Schema.toc"] = "## Interface: 16001\nRoute.lua\n",
-    ["FastesBoooy_Schema/Route.lua"] = [[
-FastesBoooy.RegisterRoute({ api = 1, id = "schema", title = "S" })
-FastesBoooy.AddSegment("schema", { id = "s", title = "S", steps = { { bogus = true } } })
+    ["AdventureAtlas_Schema/AdventureAtlas_Schema.toc"] = "## Interface: 16001\nRoute.lua\n",
+    ["AdventureAtlas_Schema/Route.lua"] = [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "schema", title = "S" })
+AdventureAtlas.AddSegment("schema", { id = "s", title = "S", steps = { { bogus = true } } })
 ]],
 }
 
@@ -127,7 +127,7 @@ describe("tools/simulate_routes.lua", function()
         assert.is_truthy(out:find("OK   test-route (Scourge PALADIN Horde): 26 steps", 1, true), out)
         -- the composed fixture (library segments + inserts); its library module is not simulated alone
         assert.is_truthy(out:find("OK   test-composed (Scourge PALADIN Horde): 26 steps", 1, true), out)
-        assert.is_truthy(out:find("skip FastesBoooy_TestLib: library module", 1, true), out)
+        assert.is_truthy(out:find("skip AdventureAtlas_TestLib: library module", 1, true), out)
         assert.is_truthy(out:find("0 failed", 1, true), out)
     end)
 
@@ -138,14 +138,14 @@ describe("tools/simulate_routes.lua", function()
     end)
 
     it("builds a Skyborne Horde player (raceID 96) for a Skyborne route on Zephras Isle", function()
-        local code, out = run("--no-db --verbose '" .. root .. "/FastesBoooy_Sky'")
+        local code, out = run("--no-db --verbose '" .. root .. "/AdventureAtlas_Sky'")
         assert.equal(0, code, out)
         assert.is_truthy(out:find("OK   sky (Skyborne DRUID Horde)", 1, true), out)
         assert.is_truthy(out:find("race Skyborne (raceID 96), class DRUID (classID 11), faction Horde", 1, true), out)
     end)
 
     it("keeps exploration / escort quests incomplete until the route's complete step", function()
-        local code, out = run("--verbose '" .. root .. "/FastesBoooy_Event'")
+        local code, out = run("--verbose '" .. root .. "/AdventureAtlas_Event'")
         assert.equal(0, code, out)
         assert.is_truthy(out:find("OK   event (Orc WARRIOR Horde): 5 steps, 5 iterations", 1, true), out)
         assert.is_truthy(out:find("[2/5] e1:2 [fp The Crossroads]", 1, true), out)
@@ -154,20 +154,20 @@ describe("tools/simulate_routes.lua", function()
     end)
 
     it("checks the hearth landing on 22-60 maps with the world size from the DB snapshot", function()
-        local code, out = run("'" .. root .. "/FastesBoooy_Hearth'")
+        local code, out = run("'" .. root .. "/AdventureAtlas_Hearth'")
         assert.equal(0, code, out)
         assert.is_truthy(out:find("OK   hearth (Orc WARRIOR Horde): 5 steps", 1, true), out)
         assert.is_falsy(out:find("step bb [hearth Booty Bay]: the hearthstone bind point", 1, true), out)
         assert.is_truthy(out:find("step gg [hearth Booty Bay]: the hearthstone bind point (Booty Bay) is not at the "
             .. "step location", 1, true), out)
         -- without the DB snapshot the map has no world size: the landing cannot be checked
-        code, out = run("--no-db '" .. root .. "/FastesBoooy_Hearth'")
+        code, out = run("--no-db '" .. root .. "/AdventureAtlas_Hearth'")
         assert.equal(0, code, out)
         assert.is_truthy(out:find("step bb [hearth Booty Bay]: the hearthstone bind point", 1, true), out)
     end)
 
     it("talks to a service NPC that offers route quests first: a fast-forwarded visit is a warning", function()
-        local code, out = run("'" .. root .. "/FastesBoooy_Gossip'")
+        local code, out = run("'" .. root .. "/AdventureAtlas_Gossip'")
         assert.equal(0, code, out)
         assert.is_truthy(out:find("OK   gossip (Scourge PALADIN Horde)", 1, true), out)
         assert.is_truthy(out:find("step visit [train]: fast-forwarded before its train window opened: talking to NPC "
@@ -175,29 +175,29 @@ describe("tools/simulate_routes.lua", function()
     end)
 
     it("fails a route that cannot be followed", function()
-        local code, out = run("'" .. root .. "/FastesBoooy_Broken'")
+        local code, out = run("'" .. root .. "/AdventureAtlas_Broken'")
         assert.equal(1, code, out)
         assert.is_truthy(out:find("FAIL broken (Scourge PALADIN Horde)", 1, true), out)
         assert.is_truthy(out:find("turnin 364 but the quest is not in the quest log", 1, true), out)
     end)
 
     it("fails a module with schema errors", function()
-        local code, out = run("'" .. root .. "/FastesBoooy_Schema'")
+        local code, out = run("'" .. root .. "/AdventureAtlas_Schema'")
         assert.equal(1, code, out)
-        assert.is_truthy(out:find("FAIL FastesBoooy_Schema: ", 1, true), out)
+        assert.is_truthy(out:find("FAIL AdventureAtlas_Schema: ", 1, true), out)
         assert.is_truthy(out:find("unknown step key 'bogus'", 1, true), out)
     end)
 
     describe("--ahead (player ahead of the route)", function()
         it("applies the suggested level sync and plays on to the end", function()
-            local code, out = run("--ahead 6 tests/fixtures/core/FastesBoooy_TestComposed")
+            local code, out = run("--ahead 6 tests/fixtures/core/AdventureAtlas_TestComposed")
             assert.equal(0, code, out)
             assert.is_truthy(out:find("OK   test-composed (Scourge PALADIN Horde) ahead: level 6:", 1, true), out)
             assert.is_truthy(out:find("sync: level 6: tc-intro -> tl-brill", 1, true), out)
         end)
 
         it("the engine skips an accept whose route prerequisite was never taken (questMeta)", function()
-            local code, out = run("--ahead 6 --route ahead '" .. root .. "/FastesBoooy_Ahead'")
+            local code, out = run("--ahead 6 --route ahead '" .. root .. "/AdventureAtlas_Ahead'")
             assert.equal(0, code, out)
             assert.is_truthy(out:find("OK   ahead (Scourge PALADIN Horde) ahead: level 6: 7 steps", 1, true), out)
             assert.is_truthy(out:find("sync: level 6: a1 -> a2; at the end 0 gray / 1 unreachable accept(s)", 1, true),
@@ -205,12 +205,12 @@ describe("tools/simulate_routes.lua", function()
         end)
 
         it("refuses an unreachable accept the engine did not skip", function()
-            local code, out = run("--ahead 6 --route ahead-nometa '" .. root .. "/FastesBoooy_Ahead'")
+            local code, out = run("--ahead 6 --route ahead-nometa '" .. root .. "/AdventureAtlas_Ahead'")
             assert.equal(1, code, out)
             assert.is_truthy(out:find("unreachable accept: step a2:1 [accept 3901] accepts 3901 but its route "
                 .. "prerequisite(s) one of 364 are not turned in", 1, true), out)
             -- a normal run of the same route is unaffected
-            code, out = run("--route ahead-nometa '" .. root .. "/FastesBoooy_Ahead'")
+            code, out = run("--route ahead-nometa '" .. root .. "/AdventureAtlas_Ahead'")
             assert.equal(0, code, out)
             assert.is_falsy(out:find("sync:", 1, true), out)
         end)
@@ -223,14 +223,14 @@ describe("tools/simulate_routes.lua", function()
 
         it("--ahead-at: plays to the middle of a segment, then jumps with the quests of the log", function()
             local code, out = run("--ahead 6 --ahead-at no-such-segment,tl-deathknell "
-                .. "tests/fixtures/core/FastesBoooy_TestComposed")
+                .. "tests/fixtures/core/AdventureAtlas_TestComposed")
             assert.equal(0, code, out)
             assert.is_truthy(out:find("OK   test-composed (Scourge PALADIN Horde) ahead: level 6 at "
                 .. "no-such-segment,tl-deathknell:", 1, true), out)
             assert.is_truthy(out:find("sync: at step 9 (tl-deathknell) with 1 quest(s) in the log: level 6: "
                 .. "tl-deathknell -> tl-brill", 1, true), out)
             assert.is_truthy(out:find("1 dropped quest(s) abandoned, 0 incomplete left in the log", 1, true), out)
-            code, out = run("--ahead 6 --ahead-at nope tests/fixtures/core/FastesBoooy_TestComposed")
+            code, out = run("--ahead 6 --ahead-at nope tests/fixtures/core/AdventureAtlas_TestComposed")
             assert.equal(1, code, out)
             assert.is_truthy(out:find("--ahead-at: none of the segments nope is in this route", 1, true), out)
             code, out = run("--ahead-at tl-deathknell")
@@ -239,7 +239,7 @@ describe("tools/simulate_routes.lua", function()
         end)
 
         it("--level-plus: normal play above the plan in auto mode, no jump over the segment ends", function()
-            local code, out = run("--level-plus 3 tests/fixtures/core/FastesBoooy_TestComposed")
+            local code, out = run("--level-plus 3 tests/fixtures/core/AdventureAtlas_TestComposed")
             assert.equal(0, code, out)
             assert.is_truthy(out:find("OK   test-composed (Scourge PALADIN Horde) level plan +3 (auto): 26 steps", 1,
                 true), out)

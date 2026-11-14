@@ -1,6 +1,6 @@
 -- UI tests on the strict widget mock: step window (layout invariants: top anchor, fixed
 -- button row; Back / Forward / Settings; upcoming list; level-sync banner + Undo link), arrow,
--- settings panel (incl. level sync) and the slash commands (/fb ... incl. status,
+-- settings panel (incl. level sync) and the slash commands (/aa ... incl. status,
 -- xp, sync), in enUS and ruRU.
 
 local H = require("fixtures.core.helpers")
@@ -98,7 +98,7 @@ end
 local BANNER = 'You are level 6: you have outleveled "1-4 Deathknell". Jump to "4-5 Brill"?'
 local JUMPED = 'Jumped to "4-5 Brill" to fit your level.'
 local APPLIED = 'Level sync: you are level 6 -- continuing at "4-5 Brill" ("1-4 Deathknell" is below your level). '
-    .. "Undo: /fb sync undo"
+    .. "Undo: /aa sync undo"
 local UNDONE = "Level sync undone: the route continues where it was before."
 
 describe("step window", function()
@@ -154,14 +154,14 @@ describe("step window", function()
             "Steps also complete by themselves as soon as the game reports the progress." }, m:TooltipLines())
         m:Leave(f.forwardButton)
         m:Enter(f.settingsButton)
-        assert.same({ "Settings", "Open the settings (/fb config)." }, m:TooltipLines())
+        assert.same({ "Settings", "Open the settings (/aa config)." }, m:TooltipLines())
         m:Leave(f.settingsButton)
     end)
 
     it("Forward skips the step or brings a step shown with Back forward again; Back undoes a skip", function()
         m, ns = H.boot()
         local f = frame()
-        local cdb = m.env.FastesBoooyCharDB
+        local cdb = m.env.AdventureAtlasCharDB
         m:Click(f.forwardButton)
         refresh()
         assert.is_true(cdb.skipped["tr-accept-363"])
@@ -262,7 +262,7 @@ describe("step window", function()
             { point = "RIGHT", y = 120, v = 0.5 },
             { point = "BOTTOMRIGHT", y = 300, v = 1 },
         }) do
-            m, ns = H.boot({ savedVariables = { FastesBoooyDB = { frames = { steps = {
+            m, ns = H.boot({ savedVariables = { AdventureAtlasDB = { frames = { steps = {
                 point = old.point, relativePoint = old.point, x = -80, y = old.y } } } } })
             local f = frame()
             local h = f:GetHeight()
@@ -373,12 +373,12 @@ describe("step window", function()
         assert.equal("Вернуть", f.banner.undoButton:GetText())
     end)
 
-    it("hides with /fb hide, in combat with hideInCombat, and shows again", function()
+    it("hides with /aa hide, in combat with hideInCombat, and shows again", function()
         m, ns = H.boot()
-        assert.same({ "Guide hidden. Type /fb show to bring it back." }, slash("/fb hide"))
+        assert.same({ "Guide hidden. Type /aa show to bring it back." }, slash("/aa hide"))
         assert.is_false(m:IsWidgetVisible(frame()))
         assert.is_false(m:IsWidgetVisible(arrow()))
-        slash("/fb show")
+        slash("/aa show")
         refresh()
         assert.is_true(m:IsWidgetVisible(frame()))
         assert.is_true(m:IsWidgetVisible(arrow()))
@@ -410,10 +410,10 @@ describe("step window", function()
     it("says at login that the guide is hidden (the flag is account-wide)", function()
         m, ns = H.boot()
         assert.is_false(H.chatHas(m, "Guide hidden."), "nothing to say while the guide is shown")
-        slash("/fb hide")
+        slash("/aa hide")
         m, ns = H.reload(m) -- a new client: a new chat log
         assert.is_false(m:IsWidgetVisible(frame()))
-        assert.is_true(H.chatHas(m, "Guide hidden. Type /fb show to bring it back."))
+        assert.is_true(H.chatHas(m, "Guide hidden. Type /aa show to bring it back."))
     end)
 end)
 
@@ -435,7 +435,7 @@ describe("level sync in the step window", function()
         assert.same(before, rowPoints(f), "the banner does not move the buttons")
         m:Enter(f.banner.goButton)
         assert.same({ "Jump", "The steps before it count as done. To go back: the Undo link right after the jump, "
-            .. "or /fb sync undo." }, m:TooltipLines())
+            .. "or /aa sync undo." }, m:TooltipLines())
         m:Leave(f.banner.goButton)
         m:Enter(f.banner.stayButton)
         assert.same({ "Stay", "Keep doing this segment. The offer comes back at your next level-up." }, m:TooltipLines())
@@ -494,15 +494,15 @@ describe("level sync in the step window", function()
         m:Advance(3) -- the window refreshes about once a second
         assert.is_false(m:IsWidgetVisible(f.banner), "expired")
         assert.equal("tr-go-brill", H.cur(ns), "the jump stays")
-        assert.same({ "Usage: /fb sync [undo]" }, slash("/fb sync now"))
-        assert.same({ UNDONE }, slash("/fb sync undo"))
+        assert.same({ "Usage: /aa sync [undo]" }, slash("/aa sync now"))
+        assert.same({ UNDONE }, slash("/aa sync undo"))
         -- jump again with the command, then do the step: the link closes
         m:SetLevel(7) -- the next level-up lifts "Stay" / the undo's silence; Brill is outleveled at 7
         UI().SetSetting("levelSyncMargin", 3)
         H.settle(m)
         assert.is_true(m:IsWidgetVisible(f.banner.goButton))
         assert.same({ 'Level sync: you are level 7 -- continuing at "4-5 Brill" ("1-4 Deathknell" is below your '
-            .. 'level). Undo: /fb sync undo' }, slash("/fb sync"))
+            .. 'level). Undo: /aa sync undo' }, slash("/aa sync"))
         H.settle(m)
         assert.is_true(m:IsWidgetVisible(f.banner.undoButton))
         m:MoveTo(1420, 60.5, 52.5) -- tr-go-brill done
@@ -536,7 +536,7 @@ describe("level sync in the step window", function()
         m:SetLevel(6)
         H.settle(m)
         assert.is_false(m:IsWidgetVisible(frame().banner))
-        assert.same({ APPLIED }, slash("/fb sync"), "the command jumps on request")
+        assert.same({ APPLIED }, slash("/aa sync"), "the command jumps on request")
         H.settle(m)
         assert.is_true(m:IsWidgetVisible(frame().banner.undoButton))
         m, ns = H.reload(m)
@@ -544,7 +544,7 @@ describe("level sync in the step window", function()
         assert.is_false(m:IsWidgetVisible(frame().banner))
     end)
 
-    it("works with a core without level sync: no banner, /fb sync says so", function()
+    it("works with a core without level sync: no banner, /aa sync says so", function()
         m, ns = H.boot()
         local E = ns.Engine
         -- the UI's view of an older engine: the level-sync methods missing, the rest as is
@@ -553,8 +553,8 @@ describe("level sync in the step window", function()
         m:SetLevel(6)
         H.settle(m)
         assert.is_false(m:IsWidgetVisible(frame().banner))
-        assert.same({ "Level sync is not available in this core version." }, slash("/fb sync"))
-        assert.same({ "Level sync is not available in this core version." }, slash("/fb sync undo"))
+        assert.same({ "Level sync is not available in this core version." }, slash("/aa sync"))
+        assert.same({ "Level sync is not available in this core version." }, slash("/aa sync undo"))
         ns.Engine = E
     end)
 end)
@@ -597,7 +597,7 @@ describe("settings panel", function()
         local cat = UI().Options:GetCategory()
         assert.is_table(cat)
         assert.is_true(cat.registered)
-        assert.equal("FastesBoooy", cat:GetName())
+        assert.equal("Adventure Atlas", cat:GetName())
         local panel = UI().Options:GetPanel()
         assert.equal(panel, cat.frame)
         UI().Options:Open() -- Settings.OpenToCategory shows the canvas: OnShow syncs the controls
@@ -625,7 +625,7 @@ describe("settings panel", function()
         assert.is_true(s.automation)
         assert.equal(6, s.lookahead)
         assert.equal(1, s.frameScale)
-        assert.equal(1, m.env.FastesBoooyDB.settings.frameScale, "saved account-wide")
+        assert.equal(1, m.env.AdventureAtlasDB.settings.frameScale, "saved account-wide")
     end)
 
     it("has the automation delay sliders (0-3 s, random extra 0-1 s, step 0.1)", function()
@@ -666,7 +666,7 @@ describe("settings panel", function()
         assert.equal(0.3, s.autoDelayJitter)
         assert.is_true(delay:IsEnabled())
         assert.equal(0.5, delay:GetValue())
-        assert.equal(0.5, m.env.FastesBoooyDB.settings.autoDelay, "saved account-wide")
+        assert.equal(0.5, m.env.AdventureAtlasDB.settings.autoDelay, "saved account-wide")
     end)
 
     it("edits the level sync settings: mode, level margin, gray quests", function()
@@ -691,7 +691,7 @@ describe("settings panel", function()
         assert.same({ false, true, false }, checked())
         m:Enter(radio("auto"))
         assert.same({ "Jump ahead automatically", "Jump to the first segment that fits your level at once and say "
-            .. "so in the chat. Undo: the link in the guide window or /fb sync undo." }, m:TooltipLines())
+            .. "so in the chat. Undo: the link in the guide window or /aa sync undo." }, m:TooltipLines())
         m:Leave(radio("auto"))
         local margin = widget(function(w) return w.def and w.def.key == "levelSyncMargin" end)
         assert.same({ 0, 5 }, { margin:GetMinMaxValues() })
@@ -720,7 +720,7 @@ describe("settings panel", function()
         assert.equal(2, margin:GetValue())
         assert.is_true(margin:IsEnabled())
         assert.is_true(gray:GetChecked())
-        assert.equal("ask", m.env.FastesBoooyDB.settings.levelSync, "saved account-wide")
+        assert.equal("ask", m.env.AdventureAtlasDB.settings.levelSync, "saved account-wide")
     end)
 
     it("shows the automation delay sliders in ruRU", function()
@@ -745,16 +745,16 @@ describe("slash commands", function()
 
     it("help, unknown commands, routes, route, status", function()
         m, ns = H.boot()
-        local out = slash("/fb")
+        local out = slash("/aa")
         assert.equal("Commands:", out[1])
         assert.is_true(#out > 5)
-        assert.same({ "Unknown command 'bogus'. Type /fb help." }, slash("/fb bogus"))
-        assert.same({ "Installed routes:", "* test-route - Test route" }, slash("/fb routes"))
-        assert.same({ "Route: Test route" }, slash("/fb route test-route"))
-        assert.same({ "Unknown route 'nope'. Type /fb routes." }, slash("/fb route nope"))
-        out = slash("/fastesboooy status")
+        assert.same({ "Unknown command 'bogus'. Type /aa help." }, slash("/aa bogus"))
+        assert.same({ "Installed routes:", "* test-route - Test route" }, slash("/aa routes"))
+        assert.same({ "Route: Test route" }, slash("/aa route test-route"))
+        assert.same({ "Unknown route 'nope'. Type /aa routes." }, slash("/aa route nope"))
+        out = slash("/atlas status")
         assert.same({
-            "FastesBoooy 0.4.0 (route API 1.2)",
+            "Adventure Atlas 0.5.0 (route API 1.2)",
             "Route: Test route (test-route)",
             "Step 1/26: Accept: Rude Awakening",
             "Automation: on",
@@ -762,28 +762,28 @@ describe("slash commands", function()
             "Recorded quest XP rewards: 0",
         }, out)
         m:SetShift(true)
-        assert.is_true(has(slash("/fb status"), "Automation: paused"))
+        assert.is_true(has(slash("/aa status"), "Automation: paused"))
         m:SetShift(false)
     end)
 
     it("next / prev / skip / reset", function()
         m, ns = H.boot()
-        local cdb = m.env.FastesBoooyCharDB
-        slash("/fb next")
+        local cdb = m.env.AdventureAtlasCharDB
+        slash("/aa next")
         assert.equal("tr-363-364", H.cur(ns))
-        slash("/fb prev")
+        slash("/aa prev")
         assert.equal("tr-accept-363", H.cur(ns))
-        slash("/fb forward") -- the Forward button: skips
+        slash("/aa forward") -- the Forward button: skips
         assert.is_true(cdb.skipped["tr-accept-363"])
-        slash("/fb back") -- the Back button: undoes the skip
+        slash("/aa back") -- the Back button: undoes the skip
         assert.is_nil(cdb.skipped["tr-accept-363"])
         assert.equal("tr-accept-363", H.cur(ns))
-        slash("/fb skip")
+        slash("/aa skip")
         assert.is_true(cdb.skipped["tr-accept-363"])
-        slash("/fb reset")
-        assert.is_true(m:PopupVisible("FASTESBOOOY_RESET"))
+        slash("/aa reset")
+        assert.is_true(m:PopupVisible("ADVENTUREATLAS_RESET"))
         local mark = #m.chat
-        m:PopupClick("FASTESBOOOY_RESET", "button1")
+        m:PopupClick("ADVENTUREATLAS_RESET", "button1")
         assert.is_nil(cdb.skipped["tr-accept-363"])
         assert.is_true(H.chatHas(m, "Route progress reset", mark + 1))
         assert.equal("tr-accept-363", H.cur(ns))
@@ -792,29 +792,29 @@ describe("slash commands", function()
     it("delay: prints and sets the automation delay", function()
         m, ns = H.boot()
         local s = ns.db.settings
-        local usage = "Usage: /fb delay <seconds 0-3> [random extra 0-1], e.g. /fb delay 0.5 0.3 (0 = instant)"
-        assert.is_true(has(slash("/fb help"),
-            "/fb delay [seconds [random]] - pause before automatic quest actions (0-3 s, + random 0-1 s)"))
-        assert.same({ "Automation delay: 0.5 s + random up to 0.3 s.", usage }, slash("/fb delay"))
-        assert.same({ "Automation delay: 1.2 s + random up to 0.3 s." }, slash("/fb delay 1.2"))
+        local usage = "Usage: /aa delay <seconds 0-3> [random extra 0-1], e.g. /aa delay 0.5 0.3 (0 = instant)"
+        assert.is_true(has(slash("/aa help"),
+            "/aa delay [seconds [random]] - pause before automatic quest actions (0-3 s, + random 0-1 s)"))
+        assert.same({ "Automation delay: 0.5 s + random up to 0.3 s.", usage }, slash("/aa delay"))
+        assert.same({ "Automation delay: 1.2 s + random up to 0.3 s." }, slash("/aa delay 1.2"))
         assert.equal(1.2, s.autoDelay)
         assert.equal(0.3, s.autoDelayJitter, "jitter unchanged")
-        assert.same({ "Automation delay: 0.8 s." }, slash("/fb delay 0,8 0"))
+        assert.same({ "Automation delay: 0.8 s." }, slash("/aa delay 0,8 0"))
         assert.equal(0.8, s.autoDelay)
         assert.equal(0, s.autoDelayJitter)
-        assert.same({ "Automation delay: 3.0 s + random up to 1.0 s." }, slash("/fb delay 10 5"), "clamped")
-        assert.same({ "Automation delay: 0.3 s + random up to 0.2 s." }, slash("/fb delay 0.26 0.17"), "step 0.1")
-        assert.same({ "Automation delay: none, actions are instant." }, slash("/fb delay 0"))
+        assert.same({ "Automation delay: 3.0 s + random up to 1.0 s." }, slash("/aa delay 10 5"), "clamped")
+        assert.same({ "Automation delay: 0.3 s + random up to 0.2 s." }, slash("/aa delay 0.26 0.17"), "step 0.1")
+        assert.same({ "Automation delay: none, actions are instant." }, slash("/aa delay 0"))
         assert.equal(0, s.autoDelay)
         assert.equal(0.2, s.autoDelayJitter)
-        for _, bad in ipairs({ "/fb delay soon", "/fb delay 1 x", "/fb delay 1 2 3" }) do
+        for _, bad in ipairs({ "/aa delay soon", "/aa delay 1 x", "/aa delay 1 2 3" }) do
             assert.same({ usage }, slash(bad), bad)
         end
         assert.equal(0, s.autoDelay, "unchanged by invalid input")
         assert.equal(0.2, s.autoDelayJitter)
         -- the panel follows the command
         UI().Options:Open()
-        slash("/fb delay 2 0.4")
+        slash("/aa delay 2 0.4")
         local delay = widget(function(w) return w.def and w.def.key == "autoDelay" end)
         assert.equal(2, delay:GetValue())
         assert.equal("Automation delay: 2.0 s", delay.label:GetText())
@@ -830,24 +830,24 @@ describe("slash commands", function()
 
     it("sync: jumps to the segment that fits the level, says when the route fits, undo", function()
         m, ns = H.boot()
-        assert.is_true(has(slash("/fb help"),
-            "/fb sync [undo] - jump to the part of the route that fits your level (undo: go back)"))
-        assert.is_true(has(slash("/fb help"), "/fb back | forward - like the Back / Forward buttons; /fb next | skip - "
+        assert.is_true(has(slash("/aa help"),
+            "/aa sync [undo] - jump to the part of the route that fits your level (undo: go back)"))
+        assert.is_true(has(slash("/aa help"), "/aa back | forward - like the Back / Forward buttons; /aa next | skip - "
             .. "mark the step done / skipped"))
-        assert.same({ "The route fits your level (1): nothing to jump over." }, slash("/fb sync"))
-        assert.same({ "No level sync to undo." }, slash("/fb sync undo"))
-        assert.same({ "Usage: /fb sync [undo]" }, slash("/fb sync later"))
+        assert.same({ "The route fits your level (1): nothing to jump over." }, slash("/aa sync"))
+        assert.same({ "No level sync to undo." }, slash("/aa sync undo"))
+        assert.same({ "Usage: /aa sync [undo]" }, slash("/aa sync later"))
         m:SetLevel(6)
         H.settle(m)
         local cur = H.cur(ns)
-        assert.same({ APPLIED }, slash("/fb sync"))
+        assert.same({ APPLIED }, slash("/aa sync"))
         assert.equal("tr-go-brill", H.cur(ns))
-        assert.same({ "The route fits your level (6): nothing to jump over." }, slash("/fb sync"))
-        assert.same({ UNDONE }, slash("/fb sync UNDO"))
+        assert.same({ "The route fits your level (6): nothing to jump over." }, slash("/aa sync"))
+        assert.same({ UNDONE }, slash("/aa sync UNDO"))
         assert.equal(cur, H.cur(ns))
-        assert.same({ "No level sync to undo." }, slash("/fb sync undo"))
+        assert.same({ "No level sync to undo." }, slash("/aa sync undo"))
         m, ns = H.boot({ fixture = false })
-        assert.same({ "No route selected for this character. Type /fb routes." }, slash("/fb sync"))
+        assert.same({ "No route selected for this character. Type /aa routes." }, slash("/aa sync"))
     end)
 
     it("sync undo leaves the floor of another route alone", function()
@@ -856,16 +856,16 @@ describe("slash commands", function()
         m:SetLevel(6)
         H.settle(m)
         local route1 = ns.Engine:GetRoute().id
-        slash("/fb sync")
+        slash("/aa sync")
         H.settle(m)
         local floorRec = ns.cdb.syncFloor
         assert.is_table(floorRec)
-        slash("/fb route " .. H.COMPOSED_ID)
+        slash("/aa route " .. H.COMPOSED_ID)
         H.settle(m)
         assert.is_nil(UI().SyncFloor())
-        assert.same({ "No level sync to undo." }, slash("/fb sync undo"))
+        assert.same({ "No level sync to undo." }, slash("/aa sync undo"))
         assert.equal(floorRec, ns.cdb.syncFloor, "still there for " .. route1)
-        slash("/fb route " .. route1)
+        slash("/aa route " .. route1)
         H.settle(m)
         assert.equal(floorRec, UI().SyncFloor())
         assert.equal("tr-go-brill", H.cur(ns))
@@ -874,16 +874,16 @@ describe("slash commands", function()
 
     it("delay works in ruRU", function()
         m, ns = H.boot({ locale = "ruRU" })
-        local out = slash("/fb delay")
+        local out = slash("/aa delay")
         assert.equal("Задержка автоматики: 0.5 с + случайно до 0.3 с.", out[1])
-        assert.same({ "Задержка автоматики: нет, действия мгновенные." }, slash("/fb delay 0"))
+        assert.same({ "Задержка автоматики: нет, действия мгновенные." }, slash("/aa delay 0"))
     end)
 
     it("lock / unlock / debug / config", function()
         m, ns = H.boot()
-        assert.same({ "Frames locked." }, slash("/fb lock"))
+        assert.same({ "Frames locked." }, slash("/aa lock"))
         assert.is_true(ns.db.settings.locked)
-        slash("/fb unlock")
+        slash("/aa unlock")
         assert.is_false(ns.db.settings.locked)
         -- resetpos: the default places again, the hidden flag untouched
         local a = arrow()
@@ -892,25 +892,25 @@ describe("slash commands", function()
         a:SetPoint("BOTTOMLEFT", m.env.UIParent, "BOTTOMLEFT", 5, 5)
         a:GetScript("OnDragStop")(a)
         assert.equal("BOTTOMLEFT", ns.db.frames.arrow.point)
-        assert.same({ "The guide window and the arrow are back at their default places." }, slash("/fb resetpos"))
+        assert.same({ "The guide window and the arrow are back at their default places." }, slash("/aa resetpos"))
         assert.same({ "TOP", m.env.UIParent, "TOP", 0, -140 }, { a:GetPoint(1) })
         assert.equal("TOPRIGHT", ns.db.frames.steps.point)
-        assert.same({ "Debug output: on" }, slash("/fb debug"))
+        assert.same({ "Debug output: on" }, slash("/aa debug"))
         assert.is_true(ns.IsDebug())
-        slash("/fb debug")
+        slash("/aa debug")
         assert.is_false(ns.IsDebug())
-        slash("/fb config")
+        slash("/aa config")
         assert.equal(UI().Options:GetCategory():GetID(), m.settingsOpened)
         m.settingsOpened = nil
         m:EnterCombat()
-        assert.same({ "Can't open the settings in combat." }, slash("/fb config"))
+        assert.same({ "Can't open the settings in combat." }, slash("/aa config"))
         assert.is_nil(m.settingsOpened)
         m:LeaveCombat()
     end)
 
     it("xp: export window with a loadable Lua table, chat listing and clearing", function()
         m, ns = H.boot()
-        assert.same({ "No quest XP rewards recorded yet. They are recorded when you turn in quests." }, slash("/fb xp"))
+        assert.same({ "No quest XP rewards recorded yet. They are recorded when you turn in quests." }, slash("/aa xp"))
         m:AddQuestToLog(363)
         m:OpenQuestComplete(363) -- turned in by the automation: 40 XP at level 1
         H.waitAuto(m, ns)
@@ -918,7 +918,7 @@ describe("slash commands", function()
         m:AddQuestToLog(3901)
         m:CompleteObjectives(3901)
         m:TurnInQuest(3901)
-        assert.same({ "2 quest XP reward(s) recorded, 290 XP in total." }, slash("/fb xp"))
+        assert.same({ "2 quest XP reward(s) recorded, 290 XP in total." }, slash("/aa xp"))
         local ef = UI().Options:GetExportFrame()
         assert.is_true(m:IsWidgetVisible(ef))
         local text = ef.edit:GetText()
@@ -932,12 +932,12 @@ describe("slash commands", function()
         m:TypeText(ef.edit, "garbage")
         assert.equal(text, ef.edit:GetText())
         assert.same({ "2 quest XP reward(s) recorded, 290 XP in total.", "  quest 363: 40 XP (level 1)",
-            "  quest 3901: 250 XP (level 3)" }, slash("/fb xp chat"))
-        assert.is_true(has(slash("/fb status"), "Recorded quest XP rewards: 2"))
-        slash("/fb xp clear")
-        assert.is_true(m:PopupVisible("FASTESBOOOY_XP_CLEAR"))
+            "  quest 3901: 250 XP (level 3)" }, slash("/aa xp chat"))
+        assert.is_true(has(slash("/aa status"), "Recorded quest XP rewards: 2"))
+        slash("/aa xp clear")
+        assert.is_true(m:PopupVisible("ADVENTUREATLAS_XP_CLEAR"))
         local mark = #m.chat
-        m:PopupClick("FASTESBOOOY_XP_CLEAR", "button1")
+        m:PopupClick("ADVENTUREATLAS_XP_CLEAR", "button1")
         assert.same({ "XP log cleared." }, H.chat(m, mark + 1))
         assert.is_nil(next(ns.db.xpLog))
         assert.is_nil(next(ns.db.xpLogLevel))
@@ -945,22 +945,22 @@ describe("slash commands", function()
 
     it("work in ruRU", function()
         m, ns = H.boot({ locale = "ruRU" })
-        local out = slash("/fb status")
+        local out = slash("/aa status")
         assert.is_truthy(out[2]:find("Тестовый маршрут", 1, true))
         assert.is_truthy(out[3]:find("Взять: Rude Awakening", 1, true))
-        assert.is_true(has(slash("/fb help"), "/fb sync [undo] - перейти к участку маршрута по вашему уровню (undo - вернуть)"))
-        assert.same({ "Маршрут соответствует вашему уровню (1): пропускать нечего." }, slash("/fb sync"))
-        assert.same({ "Нечего возвращать: перехода по уровню не было." }, slash("/fb sync undo"))
+        assert.is_true(has(slash("/aa help"), "/aa sync [undo] - перейти к участку маршрута по вашему уровню (undo - вернуть)"))
+        assert.same({ "Маршрут соответствует вашему уровню (1): пропускать нечего." }, slash("/aa sync"))
+        assert.same({ "Нечего возвращать: перехода по уровню не было." }, slash("/aa sync undo"))
         m:SetLevel(6)
         H.settle(m)
         assert.same({ "Синхронизация по уровню: у вас 6 ур. — продолжаем с «4-5 Брилл» («1-4 Мертвый Звон» пройден по "
-            .. "уровню). Вернуть: /fb sync undo" }, slash("/fb sync"))
-        assert.same({ "Синхронизация по уровню отменена: маршрут продолжается с прежнего места." }, slash("/fb sync undo"))
+            .. "уровню). Вернуть: /aa sync undo" }, slash("/aa sync"))
+        assert.same({ "Синхронизация по уровню отменена: маршрут продолжается с прежнего места." }, slash("/aa sync undo"))
     end)
 end)
 
--- One module with many routes (FastesBoooy_Guides; here the fixture FastesBoooy_TestGuides with three):
--- the settings panel and /fb routes show the routes of the character and only COUNT the others.
+-- One module with many routes (AdventureAtlas_Guides; here the fixture AdventureAtlas_TestGuides with three):
+-- the settings panel and /aa routes show the routes of the character and only COUNT the others.
 -- Composing a route of another class costs about 1.2 MB, so listing must never do it.
 describe("route list with many routes (mixed module)", function()
     after_each(function() m:AssertClean() end)
@@ -979,7 +979,7 @@ describe("route list with many routes (mixed module)", function()
         return list
     end
 
-    it("the settings panel and /fb routes leave the routes of other characters uncomposed", function()
+    it("the settings panel and /aa routes leave the routes of other characters uncomposed", function()
         m, ns = H.boot({ guides = true, db = true, player = H.GUIDES_PLAYER["tg-orc-warrior"] })
         assert.same({ "tg-orc-warrior" }, composed())
         UI().Options:Open()
@@ -988,7 +988,7 @@ describe("route list with many routes (mixed module)", function()
         assert.equal(1, #buttons, "one button: the route of this character")
         assert.equal("tg-orc-warrior", buttons[1].route.id)
         assert.equal("|cff40ff40Orc Warrior 1-3 (test)|r (active)", buttons[1]:GetText())
-        assert.is_true(has(texts(panel), "...and 2 more. Type /fb routes."))
+        assert.is_true(has(texts(panel), "...and 2 more. Type /aa routes."))
         m:Enter(buttons[1])
         assert.same({ "Orc Warrior 1-3 (test)", "ID: tg-orc-warrior", "Levels 1-3", "Version: 0.0.1", "Steps: 9",
             "Test route: the start zone of the race.", "Click to make this route active for this character." },
@@ -998,31 +998,31 @@ describe("route list with many routes (mixed module)", function()
         assert.same({
             "Installed routes:",
             "* tg-orc-warrior - Orc Warrior 1-3 (test)",
-            "Other routes (other races and classes): 2. Type /fb routes all.",
-        }, slash("/fb routes"))
+            "Other routes (other races and classes): 2. Type /aa routes all.",
+        }, slash("/aa routes"))
         assert.same({
             "Installed routes:",
             "- tg-undead-paladin - Undead Paladin 1-3 (test)",
             "* tg-orc-warrior - Orc Warrior 1-3 (test)",
             "- tg-troll-mage - Troll Mage 1-3 (test)",
-        }, slash("/fb routes all"))
+        }, slash("/aa routes all"))
         assert.same({ "tg-orc-warrior" }, composed(), "neither the panel nor the listings composed a route")
         assert.equal(0, #ns.Registry.routes["tg-troll-mage"].steps)
 
         -- a route chosen by hand for another race / class is shown too (first), with the character's own
-        assert.same({ "Route: Troll Mage 1-3 (test)" }, slash("/fb route tg-troll-mage"))
+        assert.same({ "Route: Troll Mage 1-3 (test)" }, slash("/aa route tg-troll-mage"))
         assert.same({ "tg-orc-warrior", "tg-troll-mage" }, composed(), "choosing a route composes it")
         buttons = routeButtons()
         assert.equal(2, #buttons)
         assert.same({ "Orc Warrior 1-3 (test)", "|cff40ff40Troll Mage 1-3 (test)|r (active)" },
             { buttons[1]:GetText(), buttons[2]:GetText() })
-        assert.is_true(has(texts(panel), "...and 1 more. Type /fb routes."))
+        assert.is_true(has(texts(panel), "...and 1 more. Type /aa routes."))
         assert.same({
             "Installed routes:",
             "* tg-troll-mage - Troll Mage 1-3 (test)",
             "- tg-orc-warrior - Orc Warrior 1-3 (test)",
-            "Other routes (other races and classes): 1. Type /fb routes all.",
-        }, slash("/fb routes"))
+            "Other routes (other races and classes): 1. Type /aa routes all.",
+        }, slash("/aa routes"))
         assert.is_false(ns.Registry:IsComposed(ns.Registry.routes["tg-undead-paladin"]))
         assert.same({}, ns.Registry.errors)
     end)
@@ -1046,32 +1046,32 @@ describe("route list with many routes (mixed module)", function()
         assert.is_false(ns.Registry:IsComposed(other))
     end)
 
-    it("a character no route matches: the panel and /fb routes say so and count the routes", function()
+    it("a character no route matches: the panel and /aa routes say so and count the routes", function()
         m, ns = H.boot({ guides = true, db = true, player = { race = "Tauren", class = "DRUID", mapID = 1412, x = 44, y = 77 } })
         assert.is_nil(ns.Engine:GetRoute())
         UI().Options:Open()
         assert.equal(0, #routeButtons())
-        assert.is_true(has(texts(UI().Options:GetPanel()), "No route for this character (3 installed). Type /fb routes all."))
+        assert.is_true(has(texts(UI().Options:GetPanel()), "No route for this character (3 installed). Type /aa routes all."))
         assert.same({
             "No route for this character.",
-            "Other routes (other races and classes): 3. Type /fb routes all.",
-        }, slash("/fb routes"))
-        assert.equal(4, #slash("/fb routes all"))
+            "Other routes (other races and classes): 3. Type /aa routes all.",
+        }, slash("/aa routes"))
+        assert.equal(4, #slash("/aa routes all"))
         for _, r in ipairs(ns.Registry.order) do assert.is_false(ns.Registry:IsComposed(r), r.id) end
     end)
 
-    it("no route module at all: the hint names FastesBoooy_Guides (enUS, ruRU)", function()
+    it("no route module at all: the hint names AdventureAtlas_Guides (enUS, ruRU)", function()
         m, ns = H.boot({ fixture = false })
         UI().Options:Open()
         assert.is_true(has(texts(UI().Options:GetPanel()),
-            "No routes installed. Enable the guides module (FastesBoooy_Guides) in the AddOns list."))
-        assert.same({ "No routes installed." }, slash("/fb routes"))
-        assert.same({ "No routes installed." }, slash("/fb routes all"))
+            "No routes installed. Enable the guides module (AdventureAtlas_Guides) in the AddOns list."))
+        assert.same({ "No routes installed." }, slash("/aa routes"))
+        assert.same({ "No routes installed." }, slash("/aa routes all"))
         m:AssertClean()
         m, ns = H.boot({ fixture = false, locale = "ruRU" })
         UI().Options:Open()
         assert.is_true(has(texts(UI().Options:GetPanel()),
-            "Маршруты не установлены. Включите модуль гайдов (FastesBoooy_Guides) в списке модификаций."))
+            "Маршруты не установлены. Включите модуль гайдов (AdventureAtlas_Guides) в списке модификаций."))
     end)
 
     it("ruRU: the listing of the character's routes and the count of the others", function()
@@ -1079,16 +1079,16 @@ describe("route list with many routes (mixed module)", function()
         assert.same({
             "Установленные маршруты:",
             "* tg-orc-warrior - Орк-воин 1-3 (тест)",
-            "Другие маршруты (других рас и классов): 2. Введите /fb routes all.",
-        }, slash("/fb routes"))
+            "Другие маршруты (других рас и классов): 2. Введите /aa routes all.",
+        }, slash("/aa routes"))
         UI().Options:Open()
-        assert.is_true(has(texts(UI().Options:GetPanel()), "...и ещё 2. Введите /fb routes."))
+        assert.is_true(has(texts(UI().Options:GetPanel()), "...и ещё 2. Введите /aa routes."))
     end)
 end)
 
--- Guide modules of core 0.3 and older (their content is part of FastesBoooy_Guides now): the hint to
--- delete them is right only when FastesBoooy_Guides is installed as well.
-describe("obsolete guide modules", function()
+-- Folders of the addon before the rename (FastesBoooy, its guides, the guide modules of core 0.3):
+-- Adventure Atlas replaces them, so a loaded one gets a hint to delete it.
+describe("obsolete addon folders", function()
     after_each(function() m:AssertClean() end)
 
     local function count(text)
@@ -1099,58 +1099,36 @@ describe("obsolete guide modules", function()
         return n
     end
 
-    it("warns once at login when an old module folder is loaded next to FastesBoooy_Guides (enUS, ruRU)", function()
+    it("warns once at login about every loaded old folder (enUS, ruRU)", function()
         m, ns = H.boot({ setup = function(mm)
-            mm:RegisterAddOn("FastesBoooy_Guides", { Title = "new" })
+            mm:RegisterAddOn("AdventureAtlas_Guides", { Title = "new" })
+            mm:RegisterAddOn("FastesBoooy", { Title = "old core" })
             mm:RegisterAddOn("FastesBoooy_Horde", { Title = "old" })
-            mm:RegisterAddOn("FastesBoooy_SkyborneDruid", { Title = "old" })
-            mm:RegisterAddOn("FastesBoooy_UndeadPaladin", { Title = "old, not loaded" }, false)
+            mm:RegisterAddOn("FastesBoooy_Guides", { Title = "old, not loaded" }, false)
         end })
-        assert.same({ "FastesBoooy_Horde", "FastesBoooy_SkyborneDruid" }, UI().Options:ObsoleteModules())
-        local line = "Delete the old folders FastesBoooy_Horde, FastesBoooy_SkyborneDruid from Interface\\AddOns: "
-            .. "their guides are now part of FastesBoooy_Guides."
+        assert.same({ "FastesBoooy", "FastesBoooy_Horde" }, UI().Options:ObsoleteModules())
+        local line = "Delete the old folders FastesBoooy, FastesBoooy_Horde from Interface\\AddOns: "
+            .. "Adventure Atlas replaces them (AdventureAtlas and AdventureAtlas_Guides)."
         assert.equal(1, count(line))
         -- once per session: another PLAYER_LOGIN delivery does not repeat it
         ns:DispatchEvent("PLAYER_LOGIN")
         assert.equal(1, count(line))
         m:AssertClean()
 
+        -- also without AdventureAtlas_Guides: the old folders never belong to this installation
         m, ns = H.boot({ locale = "ruRU", setup = function(mm)
-            mm:RegisterAddOn("FastesBoooy_UndeadPaladin", {})
             mm:RegisterAddOn("FastesBoooy_Guides", {})
         end })
-        assert.equal(1, count("Удалите старые папки FastesBoooy_UndeadPaladin из Interface\\AddOns: их гайды теперь "
-            .. "входят в FastesBoooy_Guides."))
+        assert.equal(1, count("Удалите старые папки FastesBoooy_Guides из Interface\\AddOns: их заменил "
+            .. "Adventure Atlas (AdventureAtlas и AdventureAtlas_Guides)."))
     end)
 
     it("says nothing without them", function()
-        m, ns = H.boot({ setup = function(mm) mm:RegisterAddOn("FastesBoooy_Guides", {}) end })
+        m, ns = H.boot({ setup = function(mm) mm:RegisterAddOn("AdventureAtlas_Guides", {}) end })
         assert.same({}, UI().Options:ObsoleteModules())
-        assert.equal(0, count("FastesBoooy_Guides"))
-        assert.is_false(ns.Compat.IsAddOnLoaded("FastesBoooy_Horde"))
-        assert.is_true(ns.Compat.IsAddOnLoaded("FastesBoooy_Guides"))
-        assert.is_true(ns.Compat.IsAddOnLoaded("FastesBoooy"))
-    end)
-
-    it("says nothing while FastesBoooy_Guides is not loaded: the old modules are the guides then", function()
-        -- a core updated on its own (and every state before the new module exists)
-        m, ns = H.boot({ setup = function(mm)
-            mm:RegisterAddOn("FastesBoooy_Horde", { Title = "old" })
-            mm:RegisterAddOn("FastesBoooy_UndeadPaladin", { Title = "old" })
-        end })
-        assert.is_true(ns.Compat.IsAddOnLoaded("FastesBoooy_Horde"))
-        assert.is_false(ns.Compat.IsAddOnLoaded("FastesBoooy_Guides"))
-        assert.same({}, UI().Options:ObsoleteModules())
-        assert.equal(0, count("FastesBoooy_Guides"))
-        ns:DispatchEvent("PLAYER_LOGIN")
-        assert.equal(0, count("FastesBoooy_Guides"))
-        m:AssertClean()
-        -- ... also when its folder is there but disabled
-        m, ns = H.boot({ setup = function(mm)
-            mm:RegisterAddOn("FastesBoooy_Horde", { Title = "old" })
-            mm:RegisterAddOn("FastesBoooy_Guides", { Title = "disabled" }, false)
-        end })
-        assert.same({}, UI().Options:ObsoleteModules())
-        assert.equal(0, count("FastesBoooy_Guides"))
+        assert.equal(0, count("Delete the old folders"))
+        assert.is_false(ns.Compat.IsAddOnLoaded("FastesBoooy"))
+        assert.is_true(ns.Compat.IsAddOnLoaded("AdventureAtlas_Guides"))
+        assert.is_true(ns.Compat.IsAddOnLoaded("AdventureAtlas"))
     end)
 end)

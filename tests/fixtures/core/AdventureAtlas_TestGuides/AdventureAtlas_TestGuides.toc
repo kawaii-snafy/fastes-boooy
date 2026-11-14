@@ -1,0 +1,16 @@
+## Interface: 16001
+## Title: AdventureAtlas guides test module
+## Notes: Core test fixture: one module with shared segments per start zone, shared class and race inserts and several routes registered from a table (the shape of AdventureAtlas_Guides). Not a playable guide.
+## Notes-ruRU: Тестовый модуль: общие сегменты стартовых зон, общие вставки классов и рас и несколько маршрутов из таблицы (как AdventureAtlas_Guides). Не гайд.
+## Dependencies: AdventureAtlas
+## Version: 0.0.1
+
+Data.lua
+Segments\Tirisfal\01_Deathknell.lua
+Segments\Durotar\01_ValleyOfTrials.lua
+Segments\Mulgore\01_CampNarache.lua
+Classes\Mage.lua
+Classes\Paladin.lua
+Classes\Warrior.lua
+Races\Troll.lua
+Route.lua

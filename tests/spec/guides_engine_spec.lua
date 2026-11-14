@@ -1,5 +1,5 @@
 -- luacheck: std lua51+busted
--- Engine scenarios on the real guides module (addons/FastesBoooy_Guides) in the mock client: what the
+-- Engine scenarios on the real guides module (addons/AdventureAtlas_Guides) in the mock client: what the
 -- validator and the simulator cannot show, because both take every quest a step names.
 --
 --   * 98389 "A Light in the Darkness" (docs/dev/PLAN.md E.6): the quest starts and ends at the paladin
@@ -18,7 +18,7 @@ local H = require("fixtures.core.helpers")
 local Mock = H.Mock
 local Glob = require("lib.glob")
 
-local NAME = "FastesBoooy_Guides"
+local NAME = "AdventureAtlas_Guides"
 local TOC = "addons/" .. NAME .. "/" .. NAME .. ".toc"
 local SKIP_GLOBS = { "Segments/Durotar/*", "Segments/Mulgore/*", "Segments/Zephras/*", "Classes/*", "Races/*" }
 local KEEP_GLOBS = { "Classes/Paladin.lua", "Races/Scourge.lua" }
@@ -65,7 +65,7 @@ local function client(opts)
             n.bind = U.deepcopy(from.bind)
         end or nil })
     Mock.loadAddon(m, TOC, NAME, { skip = skipped() })
-    Mock.boot(m, { "FastesBoooy", NAME }, { reload = from ~= nil and not opts.coldStart })
+    Mock.boot(m, { "AdventureAtlas", NAME }, { reload = from ~= nil and not opts.coldStart })
     H.settle(m)
     return m, ns
 end
@@ -157,8 +157,8 @@ describe("the guides module in the engine: 98389, a quest that may not be offere
         end
         assert.is_false(m:IsOnQuest(Q))
         assert.is_false(m:IsQuestCompleted(Q))
-        assert.same({}, m.env.FastesBoooyCharDB.skipped or {}, "nobody pressed Skip")
-        assert.same({}, m.env.FastesBoooyCharDB.manual or {}, "nobody pressed Next")
+        assert.same({}, m.env.AdventureAtlasCharDB.skipped or {}, "nobody pressed Skip")
+        assert.same({}, m.env.AdventureAtlasCharDB.manual or {}, "nobody pressed Next")
         m:AssertClean()
 
         -- /reload and a cold start (SavedVariables lost) land on the same step

@@ -6,18 +6,18 @@
 local H = require("fixtures.core.helpers")
 local A = H.Mock.allowlist
 
-local ADDON_DIR = "addons/FastesBoooy/"
+local ADDON_DIR = "addons/AdventureAtlas/"
 
 -- globals the core addon may create (docs/ARCHITECTURE.md + UI/Options.lua)
 local OWN_GLOBALS = {
-    FastesBoooy = true, FastesBoooyDB = true, FastesBoooyCharDB = true,
-    SLASH_FASTESBOOOY1 = true, SLASH_FASTESBOOOY2 = true,
+    AdventureAtlas = true, AdventureAtlasDB = true, AdventureAtlasCharDB = true,
+    SLASH_ADVENTUREATLAS1 = true, SLASH_ADVENTUREATLAS2 = true,
 }
 -- fields the addon may add to Blizzard tables
 local OWN_FIELDS = {
-    ["SlashCmdList.FASTESBOOOY"] = true,
-    ["StaticPopupDialogs.FASTESBOOOY_RESET"] = true,
-    ["StaticPopupDialogs.FASTESBOOOY_XP_CLEAR"] = true,
+    ["SlashCmdList.ADVENTUREATLAS"] = true,
+    ["StaticPopupDialogs.ADVENTUREATLAS_RESET"] = true,
+    ["StaticPopupDialogs.ADVENTUREATLAS_XP_CLEAR"] = true,
 }
 
 -- non-function members of the Lua libraries (not in the API dump; same as .luacheckrc)
@@ -88,7 +88,7 @@ local function scan(path)
 end
 
 local function addonFiles()
-    local toc = H.Mock.parseToc(ADDON_DIR .. "FastesBoooy.toc")
+    local toc = H.Mock.parseToc(ADDON_DIR .. "AdventureAtlas.toc")
     local out = {}
     for _, f in ipairs(toc.files) do out[#out + 1] = ADDON_DIR .. f end
     return out
@@ -207,8 +207,8 @@ describe("run-time strictness of a full scenario", function()
         m:Click(f.nextButton)
         H.settle(m)
         assert.is_nil(ns.Engine:GetCursor())
-        for _, cmd in ipairs({ "/fb", "/fb status", "/fb routes", "/fb xp", "/fb xp chat", "/fb hide", "/fb show",
-            "/fb lock", "/fb unlock", "/fb debug", "/fb debug", "/fb config", "/fb route test-route" }) do
+        for _, cmd in ipairs({ "/aa", "/aa status", "/aa routes", "/aa xp", "/aa xp chat", "/aa hide", "/aa show",
+            "/aa lock", "/aa unlock", "/aa debug", "/aa debug", "/aa config", "/aa route test-route" }) do
             assert.is_true(m:RunSlash(cmd), cmd)
         end
         for _, b in ipairs({ f.prevButton, f.settingsButton }) do m:Enter(b); m:Leave(b) end

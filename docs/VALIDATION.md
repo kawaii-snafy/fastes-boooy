@@ -16,7 +16,7 @@
 
 ## Модули и общие проверки
 
-### Общая часть модуля FastesBoooy_Guides
+### Общая часть модуля AdventureAtlas_Guides
 
 Проверки шаблонов (shared: 26 segment(s), 364 insert(s), 2747 step(s)): общие сегменты и общие вставки (`AddLibraryInsert`) проверяются один раз для всех маршрутов. Результат: **0 ERROR, 0 WARN, 0 INFO**.
 
@@ -194,7 +194,7 @@ ERROR и WARN на шагах общих сегментов — по одной 
 
 ### orc-hunter — Orc Hunter 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Orc HUNTER Horde. Результат: **0 ERROR, 0 WARN, 433 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+Модуль `AdventureAtlas_Guides`, профиль: Orc HUNTER Horde. Результат: **0 ERROR, 0 WARN, 433 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1907650 (из них оценено 86545; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 814496, гринд 1362620 (~4944 убийств); максимум квестов в журнале 23 из 40; принято 703, сдано 703, не сдано к концу 0.
 
@@ -227,7 +227,7 @@ INFO (433): `complete-kill-xp` 343, `complete-no-kill` 19, `complete-no-objectiv
 
 ### orc-mage — Orc Mage 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Orc MAGE Horde. Результат: **0 ERROR, 0 WARN, 429 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
+Модуль `AdventureAtlas_Guides`, профиль: Orc MAGE Horde. Результат: **0 ERROR, 0 WARN, 429 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899180 (из них оценено 86665; квестов с оценённым опытом: 65, 4.6 % опыта квестов), за убийства по целям 814532, гринд 1371190 (~4978 убийств); максимум квестов в журнале 23 из 40; принято 698, сдано 698, не сдано к концу 0.
 
@@ -260,7 +260,7 @@ INFO (429): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 
 ### orc-rogue — Orc Rogue 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Orc ROGUE Horde. Результат: **0 ERROR, 0 WARN, 430 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
+Модуль `AdventureAtlas_Guides`, профиль: Orc ROGUE Horde. Результат: **0 ERROR, 0 WARN, 430 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1903560 (из них оценено 86545; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 814779, гринд 1366510 (~4954 убийств); максимум квестов в журнале 23 из 40; принято 702, сдано 702, не сдано к концу 0.
 
@@ -293,7 +293,7 @@ INFO (430): `complete-kill-xp` 343, `complete-no-kill` 17, `complete-no-objectiv
 
 ### orc-shaman — Orc Shaman 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Orc SHAMAN Horde. Результат: **0 ERROR, 0 WARN, 432 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+Модуль `AdventureAtlas_Guides`, профиль: Orc SHAMAN Horde. Результат: **0 ERROR, 0 WARN, 432 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1906710 (из них оценено 86545; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 812989, гринд 1365110 (~4937 убийств); максимум квестов в журнале 23 из 40; принято 709, сдано 709, не сдано к концу 0.
 
@@ -324,7 +324,7 @@ INFO (430): `complete-kill-xp` 343, `complete-no-kill` 17, `complete-no-objectiv
 
 <details><summary>Принятые предупреждения, `ok` (1)</summary>
 
-- [library FastesBoooy_Guides] dur-01-valley-of-trials#24 id=sha-dur-1516 (Classes/Shaman.lua) `db-override-unverified` accept 1516 "Call of Earth": the prerequisite check passes only because of the unverified DB override in tools/overrides/shaman.lua (source: https://www.wowhead.com/classic/quest=1516): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
+- [library AdventureAtlas_Guides] dur-01-valley-of-trials#24 id=sha-dur-1516 (Classes/Shaman.lua) `db-override-unverified` accept 1516 "Call of Earth": the prerequisite check passes only because of the unverified DB override in tools/overrides/shaman.lua (source: https://www.wowhead.com/classic/quest=1516): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
 
 </details>
 
@@ -332,7 +332,7 @@ INFO (432): `complete-kill-xp` 346, `complete-no-kill` 16, `complete-no-objectiv
 
 ### orc-warlock — Orc Warlock 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Orc WARLOCK Horde. Результат: **0 ERROR, 0 WARN, 439 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+Модуль `AdventureAtlas_Guides`, профиль: Orc WARLOCK Horde. Результат: **0 ERROR, 0 WARN, 439 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1917320 (из них оценено 89055; квестов с оценённым опытом: 66, 4.6 % опыта квестов), за убийства по целям 815897, гринд 1351590 (~4897 убийств); максимум квестов в журнале 23 из 40; принято 712, сдано 712, не сдано к концу 0.
 
@@ -363,7 +363,7 @@ INFO (432): `complete-kill-xp` 346, `complete-no-kill` 16, `complete-no-objectiv
 
 <details><summary>Принятые предупреждения, `ok` (1)</summary>
 
-- [library FastesBoooy_Guides] h-46-tanaris-feralas#1 id=wlk-46-menara (Classes/Warlock.lua) `db-override-unverified` accept 4975 "The Completed Orb of Noh'Orahil" (exclusive with 4962 "Shard of a Felhound" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: original game (classes.md 5.5): Shard of a Felhound -> Orb of Noh'Orahil): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
+- [library AdventureAtlas_Guides] h-46-tanaris-feralas#1 id=wlk-46-menara (Classes/Warlock.lua) `db-override-unverified` accept 4975 "The Completed Orb of Noh'Orahil" (exclusive with 4962 "Shard of a Felhound" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: original game (classes.md 5.5): Shard of a Felhound -> Orb of Noh'Orahil): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
 
 </details>
 
@@ -371,7 +371,7 @@ INFO (439): `complete-kill-xp` 348, `complete-no-kill` 18, `complete-no-objectiv
 
 ### orc-warrior — Orc Warrior 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Orc WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 433 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+Модуль `AdventureAtlas_Guides`, профиль: Orc WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 433 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1911300 (из них оценено 86965; квестов с оценённым опытом: 64, 4.5 % опыта квестов), за убийства по целям 817019, гринд 1356395 (~4914 убийств); максимум квестов в журнале 23 из 40; принято 707, сдано 707, не сдано к концу 0.
 
@@ -404,7 +404,7 @@ INFO (433): `complete-kill-xp` 345, `complete-no-kill` 17, `complete-no-objectiv
 
 ### troll-hunter — Troll Hunter 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Troll HUNTER Horde. Результат: **0 ERROR, 0 WARN, 433 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+Модуль `AdventureAtlas_Guides`, профиль: Troll HUNTER Horde. Результат: **0 ERROR, 0 WARN, 433 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1907650 (из них оценено 86545; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 814496, гринд 1362620 (~4944 убийств); максимум квестов в журнале 23 из 40; принято 703, сдано 703, не сдано к концу 0.
 
@@ -437,7 +437,7 @@ INFO (433): `complete-kill-xp` 343, `complete-no-kill` 19, `complete-no-objectiv
 
 ### troll-mage — Troll Mage 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Troll MAGE Horde. Результат: **0 ERROR, 0 WARN, 428 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
+Модуль `AdventureAtlas_Guides`, профиль: Troll MAGE Horde. Результат: **0 ERROR, 0 WARN, 428 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1899180 (из них оценено 86625; квестов с оценённым опытом: 64, 4.6 % опыта квестов), за убийства по целям 814532, гринд 1371190 (~4978 убийств); максимум квестов в журнале 23 из 40; принято 698, сдано 698, не сдано к концу 0.
 
@@ -470,7 +470,7 @@ INFO (428): `complete-kill-xp` 342, `complete-no-kill` 16, `complete-no-objectiv
 
 ### troll-priest — Troll Priest 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Troll PRIEST Horde. Результат: **0 ERROR, 0 WARN, 429 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
+Модуль `AdventureAtlas_Guides`, профиль: Troll PRIEST Horde. Результат: **0 ERROR, 0 WARN, 429 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1905580 (из них оценено 86545; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 816121, гринд 1363140 (~4950 убийств); максимум квестов в журнале 23 из 40; принято 702, сдано 702, не сдано к концу 0.
 
@@ -503,7 +503,7 @@ INFO (429): `complete-kill-xp` 343, `complete-no-kill` 17, `complete-no-objectiv
 
 ### troll-rogue — Troll Rogue 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Troll ROGUE Horde. Результат: **0 ERROR, 0 WARN, 430 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
+Модуль `AdventureAtlas_Guides`, профиль: Troll ROGUE Horde. Результат: **0 ERROR, 0 WARN, 430 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1903560 (из них оценено 86545; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 814779, гринд 1366510 (~4954 убийств); максимум квестов в журнале 23 из 40; принято 702, сдано 702, не сдано к концу 0.
 
@@ -536,7 +536,7 @@ INFO (430): `complete-kill-xp` 343, `complete-no-kill` 17, `complete-no-objectiv
 
 ### troll-shaman — Troll Shaman 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Troll SHAMAN Horde. Результат: **0 ERROR, 0 WARN, 432 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+Модуль `AdventureAtlas_Guides`, профиль: Troll SHAMAN Horde. Результат: **0 ERROR, 0 WARN, 432 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1906710 (из них оценено 86545; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 812989, гринд 1365110 (~4937 убийств); максимум квестов в журнале 23 из 40; принято 709, сдано 709, не сдано к концу 0.
 
@@ -567,7 +567,7 @@ INFO (430): `complete-kill-xp` 343, `complete-no-kill` 17, `complete-no-objectiv
 
 <details><summary>Принятые предупреждения, `ok` (1)</summary>
 
-- [library FastesBoooy_Guides] dur-01-valley-of-trials#24 id=sha-dur-1516 (Classes/Shaman.lua) `db-override-unverified` accept 1516 "Call of Earth": the prerequisite check passes only because of the unverified DB override in tools/overrides/shaman.lua (source: https://www.wowhead.com/classic/quest=1516): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
+- [library AdventureAtlas_Guides] dur-01-valley-of-trials#24 id=sha-dur-1516 (Classes/Shaman.lua) `db-override-unverified` accept 1516 "Call of Earth": the prerequisite check passes only because of the unverified DB override in tools/overrides/shaman.lua (source: https://www.wowhead.com/classic/quest=1516): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
 
 </details>
 
@@ -575,7 +575,7 @@ INFO (432): `complete-kill-xp` 346, `complete-no-kill` 16, `complete-no-objectiv
 
 ### troll-warlock — Troll Warlock 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Troll WARLOCK Horde. Результат: **0 ERROR, 0 WARN, 440 INFO**; принято предупреждений (`ok`): 19; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+Модуль `AdventureAtlas_Guides`, профиль: Troll WARLOCK Horde. Результат: **0 ERROR, 0 WARN, 440 INFO**; принято предупреждений (`ok`): 19; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1917320 (из них оценено 89095; квестов с оценённым опытом: 67, 4.7 % опыта квестов), за убийства по целям 815897, гринд 1351590 (~4897 убийств); максимум квестов в журнале 23 из 40; принято 712, сдано 712, не сдано к концу 0.
 
@@ -606,9 +606,9 @@ INFO (432): `complete-kill-xp` 346, `complete-no-kill` 16, `complete-no-objectiv
 
 <details><summary>Принятые предупреждения, `ok` (3)</summary>
 
-- [library FastesBoooy_Guides] h-12-orgrimmar-tirisfal#4 id=wlk-ganrul (Classes/Warlock.lua) `db-override-unverified` accept 1501 "Creature of the Void": the race check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: https://www.warcrafttavern.com/forever/guides/warlock-leveling/): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
-- [library FastesBoooy_Guides] h-12-orgrimmar-tirisfal#15 id=wlk-ganrul-2 (Classes/Warlock.lua) `db-override-unverified` accept 1504 "The Binding": the race check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: https://www.warcrafttavern.com/forever/guides/warlock-leveling/): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
-- [library FastesBoooy_Guides] h-46-tanaris-feralas#1 id=wlk-46-menara (Classes/Warlock.lua) `db-override-unverified` accept 4975 "The Completed Orb of Noh'Orahil" (exclusive with 4962 "Shard of a Felhound" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: original game (classes.md 5.5): Shard of a Felhound -> Orb of Noh'Orahil): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
+- [library AdventureAtlas_Guides] h-12-orgrimmar-tirisfal#4 id=wlk-ganrul (Classes/Warlock.lua) `db-override-unverified` accept 1501 "Creature of the Void": the race check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: https://www.warcrafttavern.com/forever/guides/warlock-leveling/): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
+- [library AdventureAtlas_Guides] h-12-orgrimmar-tirisfal#15 id=wlk-ganrul-2 (Classes/Warlock.lua) `db-override-unverified` accept 1504 "The Binding": the race check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: https://www.warcrafttavern.com/forever/guides/warlock-leveling/): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
+- [library AdventureAtlas_Guides] h-46-tanaris-feralas#1 id=wlk-46-menara (Classes/Warlock.lua) `db-override-unverified` accept 4975 "The Completed Orb of Noh'Orahil" (exclusive with 4962 "Shard of a Felhound" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: original game (classes.md 5.5): Shard of a Felhound -> Orb of Noh'Orahil): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
 
 </details>
 
@@ -616,7 +616,7 @@ INFO (440): `complete-kill-xp` 348, `complete-no-kill` 18, `complete-no-objectiv
 
 ### troll-warrior — Troll Warrior 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Troll WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 433 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+Модуль `AdventureAtlas_Guides`, профиль: Troll WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 433 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1911300 (из них оценено 86965; квестов с оценённым опытом: 64, 4.5 % опыта квестов), за убийства по целям 817019, гринд 1356395 (~4914 убийств); максимум квестов в журнале 23 из 40; принято 707, сдано 707, не сдано к концу 0.
 
@@ -649,7 +649,7 @@ INFO (433): `complete-kill-xp` 345, `complete-no-kill` 17, `complete-no-objectiv
 
 ### tauren-druid — Tauren Druid 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Tauren DRUID Horde. Результат: **0 ERROR, 0 WARN, 435 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
+Модуль `AdventureAtlas_Guides`, профиль: Tauren DRUID Horde. Результат: **0 ERROR, 0 WARN, 435 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1916620 (из них оценено 89285; квестов с оценённым опытом: 67, 4.7 % опыта квестов), за убийства по целям 817081, гринд 1351210 (~4890 убийств); максимум квестов в журнале 23 из 40; принято 716, сдано 716, не сдано к концу 0.
 
@@ -683,7 +683,7 @@ INFO (435): `complete-kill-xp` 343, `complete-no-kill` 20, `complete-no-objectiv
 
 ### tauren-hunter — Tauren Hunter 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Tauren HUNTER Horde. Результат: **0 ERROR, 0 WARN, 432 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
+Модуль `AdventureAtlas_Guides`, профиль: Tauren HUNTER Horde. Результат: **0 ERROR, 0 WARN, 432 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1908920 (из них оценено 85385; квестов с оценённым опытом: 62, 4.5 % опыта квестов), за убийства по целям 814406, гринд 1361390 (~4933 убийств); максимум квестов в журнале 23 из 40; принято 709, сдано 709, не сдано к концу 0.
 
@@ -717,7 +717,7 @@ INFO (432): `complete-kill-xp` 343, `complete-no-kill` 20, `complete-no-objectiv
 
 ### tauren-shaman — Tauren Shaman 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Tauren SHAMAN Horde. Результат: **0 ERROR, 0 WARN, 432 INFO**; принято предупреждений (`ok`): 19; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
+Модуль `AdventureAtlas_Guides`, профиль: Tauren SHAMAN Horde. Результат: **0 ERROR, 0 WARN, 432 INFO**; принято предупреждений (`ok`): 19; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1907890 (из них оценено 85385; квестов с оценённым опытом: 62, 4.5 % опыта квестов), за убийства по целям 812898, гринд 1364060 (~4930 убийств); максимум квестов в журнале 23 из 40; принято 715, сдано 715, не сдано к концу 0.
 
@@ -749,7 +749,7 @@ INFO (432): `complete-kill-xp` 343, `complete-no-kill` 20, `complete-no-objectiv
 
 <details><summary>Принятые предупреждения, `ok` (1)</summary>
 
-- [library FastesBoooy_Guides] mul-01-camp-narache#12 id=sha-mul-1519 (Classes/Shaman.lua) `db-override-unverified` accept 1519 "Call of Earth": the prerequisite check passes only because of the unverified DB override in tools/overrides/shaman.lua (source: https://www.wowhead.com/classic/quest=1519): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
+- [library AdventureAtlas_Guides] mul-01-camp-narache#12 id=sha-mul-1519 (Classes/Shaman.lua) `db-override-unverified` accept 1519 "Call of Earth": the prerequisite check passes only because of the unverified DB override in tools/overrides/shaman.lua (source: https://www.wowhead.com/classic/quest=1519): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
 
 </details>
 
@@ -757,7 +757,7 @@ INFO (432): `complete-kill-xp` 346, `complete-no-kill` 17, `complete-no-objectiv
 
 ### tauren-warrior — Tauren Warrior 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Tauren WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 433 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
+Модуль `AdventureAtlas_Guides`, профиль: Tauren WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 433 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1912550 (из них оценено 85805; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 816835, гринд 1355415 (~4905 убийств); максимум квестов в журнале 23 из 40; принято 713, сдано 713, не сдано к концу 0.
 
@@ -791,7 +791,7 @@ INFO (433): `complete-kill-xp` 345, `complete-no-kill` 18, `complete-no-objectiv
 
 ### undead-mage — Undead Mage 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Scourge MAGE Horde. Результат: **0 ERROR, 0 WARN, 438 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+Модуль `AdventureAtlas_Guides`, профиль: Scourge MAGE Horde. Результат: **0 ERROR, 0 WARN, 438 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1898895 (из них оценено 85160; квестов с оценённым опытом: 64, 4.5 % опыта квестов), за убийства по целям 815827, гринд 1370200 (~4973 убийств); максимум квестов в журнале 23 из 40; принято 706, сдано 706, не сдано к концу 0.
 
@@ -823,7 +823,7 @@ INFO (438): `complete-kill-xp` 348, `complete-no-kill` 17, `complete-no-objectiv
 
 ### undead-paladin — Undead Paladin 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Scourge PALADIN Horde. Результат: **0 ERROR, 0 WARN, 465 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
+Модуль `AdventureAtlas_Guides`, профиль: Scourge PALADIN Horde. Результат: **0 ERROR, 0 WARN, 465 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1912445 (из них оценено 100075; квестов с оценённым опытом: 82, 5.2 % опыта квестов), за убийства по целям 814089, гринд 1358320 (~4902 убийств); максимум квестов в журнале 23 из 40; принято 721, сдано 721, не сдано к концу 0.
 
@@ -855,7 +855,7 @@ INFO (465): `complete-kill-xp` 351, `complete-no-kill` 24, `complete-no-objectiv
 
 ### undead-priest — Undead Priest 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Scourge PRIEST Horde. Результат: **0 ERROR, 0 WARN, 440 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+Модуль `AdventureAtlas_Guides`, профиль: Scourge PRIEST Horde. Результат: **0 ERROR, 0 WARN, 440 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1904530 (из них оценено 85500; квестов с оценённым опытом: 64, 4.5 % опыта квестов), за убийства по целям 817474, гринд 1362800 (~4951 убийств); максимум квестов в журнале 23 из 40; принято 708, сдано 708, не сдано к концу 0.
 
@@ -887,7 +887,7 @@ INFO (440): `complete-kill-xp` 349, `complete-no-kill` 18, `complete-no-objectiv
 
 ### undead-rogue — Undead Rogue 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Scourge ROGUE Horde. Результат: **0 ERROR, 0 WARN, 441 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
+Модуль `AdventureAtlas_Guides`, профиль: Scourge ROGUE Horde. Результат: **0 ERROR, 0 WARN, 441 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 17.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1904610 (из них оценено 85080; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 815217, гринд 1365120 (~4948 убийств); максимум квестов в журнале 23 из 40; принято 713, сдано 713, не сдано к концу 0.
 
@@ -919,7 +919,7 @@ INFO (441): `complete-kill-xp` 349, `complete-no-kill` 18, `complete-no-objectiv
 
 ### undead-warlock — Undead Warlock 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Scourge WARLOCK Horde. Результат: **0 ERROR, 0 WARN, 447 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+Модуль `AdventureAtlas_Guides`, профиль: Scourge WARLOCK Horde. Результат: **0 ERROR, 0 WARN, 447 INFO**; принято предупреждений (`ok`): 17; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1916080 (из них оценено 87590; квестов с оценённым опытом: 66, 4.6 % опыта квестов), за убийства по целям 817142, гринд 1351615 (~4898 убийств); максимум квестов в журнале 23 из 40; принято 718, сдано 718, не сдано к концу 0.
 
@@ -949,7 +949,7 @@ INFO (441): `complete-kill-xp` 349, `complete-no-kill` 18, `complete-no-objectiv
 
 <details><summary>Принятые предупреждения, `ok` (1)</summary>
 
-- [library FastesBoooy_Guides] h-46-tanaris-feralas#1 id=wlk-46-menara (Classes/Warlock.lua) `db-override-unverified` accept 4975 "The Completed Orb of Noh'Orahil" (exclusive with 4962 "Shard of a Felhound" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: original game (classes.md 5.5): Shard of a Felhound -> Orb of Noh'Orahil): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
+- [library AdventureAtlas_Guides] h-46-tanaris-feralas#1 id=wlk-46-menara (Classes/Warlock.lua) `db-override-unverified` accept 4975 "The Completed Orb of Noh'Orahil" (exclusive with 4962 "Shard of a Felhound" in the snapshot): the exclusivity check passes only because of the unverified DB override in tools/overrides/warlock.lua (source: original game (classes.md 5.5): Shard of a Felhound -> Orb of Noh'Orahil): confirm it in game and set verified = true, or acknowledge it (ok = "db-override-unverified" with a -- CONFIRM: comment)
 
 </details>
 
@@ -957,7 +957,7 @@ INFO (447): `complete-kill-xp` 355, `complete-no-kill` 19, `complete-no-objectiv
 
 ### undead-warrior — Undead Warrior 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Scourge WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 440 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
+Модуль `AdventureAtlas_Guides`, профиль: Scourge WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 440 INFO**; принято предупреждений (`ok`): 16; из них на общих шагах: 0 ERROR, 0 WARN, принято 16.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1912260 (из них оценено 85080; квестов с оценённым опытом: 63, 4.5 % опыта квестов), за убийства по целям 817341, гринд 1355160 (~4904 убийств); максимум квестов в журнале 23 из 40; принято 716, сдано 716, не сдано к концу 0.
 
@@ -989,7 +989,7 @@ INFO (440): `complete-kill-xp` 351, `complete-no-kill` 18, `complete-no-objectiv
 
 ### skyborne-druid — Skyborne Druid 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Skyborne DRUID Horde. Результат: **0 ERROR, 0 WARN, 513 INFO**; принято предупреждений (`ok`): 19; из них на общих шагах: 0 ERROR, 0 WARN, принято 19.
+Модуль `AdventureAtlas_Guides`, профиль: Skyborne DRUID Horde. Результат: **0 ERROR, 0 WARN, 513 INFO**; принято предупреждений (`ok`): 19; из них на общих шагах: 0 ERROR, 0 WARN, принято 19.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1924535 (из них оценено 120750; квестов с оценённым опытом: 125, 6.3 % опыта квестов), за убийства по целям 816584, гринд 1343820 (~4852 убийств); максимум квестов в журнале 23 из 40; принято 728, сдано 728, не сдано к концу 0.
 
@@ -1023,7 +1023,7 @@ INFO (513): `complete-kill-xp` 353, `complete-no-kill` 29, `complete-no-objectiv
 
 ### skyborne-hunter — Skyborne Hunter 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Skyborne HUNTER Horde. Результат: **0 ERROR, 0 WARN, 510 INFO**; принято предупреждений (`ok`): 19; из них на общих шагах: 0 ERROR, 0 WARN, принято 19.
+Модуль `AdventureAtlas_Guides`, профиль: Skyborne HUNTER Horde. Результат: **0 ERROR, 0 WARN, 510 INFO**; принято предупреждений (`ok`): 19; из них на общих шагах: 0 ERROR, 0 WARN, принято 19.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1916495 (из них оценено 116850; квестов с оценённым опытом: 120, 6.1 % опыта квестов), за убийства по целям 814752, гринд 1353470 (~4888 убийств); максимум квестов в журнале 23 из 40; принято 722, сдано 722, не сдано к концу 0.
 
@@ -1057,7 +1057,7 @@ INFO (510): `complete-kill-xp` 352, `complete-no-kill` 31, `complete-no-objectiv
 
 ### skyborne-rogue — Skyborne Rogue 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Skyborne ROGUE Horde. Результат: **0 ERROR, 0 WARN, 504 INFO**; принято предупреждений (`ok`): 19; из них на общих шагах: 0 ERROR, 0 WARN, принято 19.
+Модуль `AdventureAtlas_Guides`, профиль: Skyborne ROGUE Horde. Результат: **0 ERROR, 0 WARN, 504 INFO**; принято предупреждений (`ok`): 19; из них на общих шагах: 0 ERROR, 0 WARN, принято 19.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1912775 (из них оценено 115010; квестов с оценённым опытом: 116, 6.0 % опыта квестов), за убийства по целям 815871, гринд 1356190 (~4889 убийств); максимум квестов в журнале 23 из 40; принято 721, сдано 721, не сдано к концу 0.
 
@@ -1091,7 +1091,7 @@ INFO (504): `complete-kill-xp` 352, `complete-no-kill` 29, `complete-no-objectiv
 
 ### skyborne-shaman — Skyborne Shaman 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Skyborne SHAMAN Horde. Результат: **0 ERROR, 0 WARN, 514 INFO**; принято предупреждений (`ok`): 20; из них на общих шагах: 0 ERROR, 0 WARN, принято 20.
+Модуль `AdventureAtlas_Guides`, профиль: Skyborne SHAMAN Horde. Результат: **0 ERROR, 0 WARN, 514 INFO**; принято предупреждений (`ok`): 20; из них на общих шагах: 0 ERROR, 0 WARN, принято 20.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1913885 (из них оценено 117915; квестов с оценённым опытом: 123, 6.2 % опыта квестов), за убийства по целям 813496, гринд 1357485 (~4896 убийств); максимум квестов в журнале 23 из 40; принято 727, сдано 727, не сдано к концу 0.
 
@@ -1125,7 +1125,7 @@ INFO (514): `complete-kill-xp` 354, `complete-no-kill` 30, `complete-no-objectiv
 
 ### skyborne-warrior — Skyborne Warrior 1-60
 
-Модуль `FastesBoooy_Guides`, профиль: Skyborne WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 506 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
+Модуль `AdventureAtlas_Guides`, профиль: Skyborne WARRIOR Horde. Результат: **0 ERROR, 0 WARN, 506 INFO**; принято предупреждений (`ok`): 18; из них на общих шагах: 0 ERROR, 0 WARN, принято 18.
 
 Симуляция: конец маршрута на уровне **60.00** (оптимистично 60.00; план 60); опыт квестов 1919715 (из них оценено 115590; квестов с оценённым опытом: 117, 6.0 % опыта квестов), за убийства по целям 816957, гринд 1348095 (~4862 убийств); максимум квестов в журнале 23 из 40; принято 723, сдано 723, не сдано к концу 0.
 
@@ -1179,7 +1179,7 @@ INFO (506): `complete-kill-xp` 354, `complete-no-kill` 29, `complete-no-objectiv
 * **Автоматизация без аппаратного события.** `AcceptQuest`, `CompleteQuest`, `GetQuestReward`, `AcknowledgeAutoAcceptQuest`, `C_GossipInfo.SelectAvailableQuest/SelectActiveQuest/SelectOption`, `SelectAvailableQuest/SelectActiveQuest` (окно приветствия) вызываются из обработчиков событий (`QUEST_DETAIL`, `QUEST_PROGRESS`, `QUEST_COMPLETE`, `GOSSIP_SHOW`, `QUEST_GREETING`). В моке они разрешены; что Forever не требует для них аппаратного события, проверяется только в клиенте.
 * **Остров Зефрас (uiMap 2521) и прочие карты без мирового преобразования.** Стрелка и расстояние там приблизительные (номинальный размер карты, `approx`); пересчёт координат Зефраса и переход на Мулгор (высадка с небесного корабля / лодки) — только в игре.
 * **Мулгор с изменённой геометрией.** Координаты БД уже в системе Forever; совпадение точек `at` с реальными NPC проверено валидатором по снимку, но не на месте.
-* **Опыт новых квестов Forever** офлайн неизвестен (в отчёте — оценка медианой по уровню). Реальные значения записываются при сдаче (`/fb xp`).
+* **Опыт новых квестов Forever** офлайн неизвестен (в отчёте — оценка медианой по уровню). Реальные значения записываются при сдаче (`/aa xp`).
 * **Имена мест на языке клиента.** `sethearth` узнаёт точку привязки по имени: `GetBindLocation()` сравнивается с локализованным именем зоны (`C_Map.GetAreaInfo` по `places[...].area` из `Data.lua`) — что эти имена совпадают в ruRU, проверяется в клиенте.
 * **События окон и цели-события.** Порядок `TRAINER_*`/`MERCHANT_*`/`TAXIMAP_*` и `PLAYER_INTERACTION_MANAGER_FRAME_*` (одно окно засчитывается один раз); что `UnitGUID("npc")` в момент `TRAINER_SHOW`/`MERCHANT_SHOW` отдаёт NPC окна (по нему окно засчитывается только шагу с этим `npc`); выполнение целей исследования и сопровождения (в моке — только по явному событию).
 * **Количество целей квестов** — из подсказок Wowhead Forever (`tools/data/wowhead_requirements.json`): местами они расходятся с WCLBox и текстом Classic (например 364: 8 + 8, WCLBox — 5 + 5); в игре не сверялись. От них зависят только оценки опыта за убийства.

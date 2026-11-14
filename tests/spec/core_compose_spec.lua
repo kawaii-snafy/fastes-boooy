@@ -29,11 +29,11 @@ end
 local function libSeg(id, steps, over)
     local def = { id = id, title = { en = id, ru = id }, zone = "Tirisfal Glades", levels = { 1, 5 }, steps = steps }
     for k, v in pairs(over or {}) do def[k] = v end
-    return m.env.FastesBoooy.AddLibrarySegment(def)
+    return m.env.AdventureAtlas.AddLibrarySegment(def)
 end
 
 local function route(id, segSteps)
-    local FB = m.env.FastesBoooy
+    local FB = m.env.AdventureAtlas
     local r = FB.RegisterRoute({ api = 1, id = id, title = "Route " .. id, faction = "Horde", races = { "Scourge" },
         classes = { "PALADIN" }, levels = { 1, 60 } })
     if segSteps then FB.AddSegment(id, { id = id .. "-own", title = "Own", steps = segSteps }) end
@@ -111,7 +111,7 @@ describe("core composition (library segments, UseSegments, AddInsert)", function
     it("restores the cursor by step id after /reload and rebuilds it on a cold start", function()
         m, ns = boot()
         H.playTo(m, ns, "tl-turnin-376")
-        local cdb = m.env.FastesBoooyCharDB
+        local cdb = m.env.AdventureAtlasCharDB
         assert.equal("tl-turnin-376", cdb.cursorHintId)
         assert.equal(H.COMPOSED_ID, cdb.cursorHintRoute)
         local m2, ns2 = H.reload(m, { composed = true })
@@ -128,7 +128,7 @@ describe("core composition (library segments, UseSegments, AddInsert)", function
 
     it("gives up a quest of a library segment that the player abandons", function()
         m, ns = boot()
-        local cdb = m.env.FastesBoooyCharDB
+        local cdb = m.env.AdventureAtlasCharDB
         H.playTo(m, ns, "tl-complete-3901")
         m:AbandonQuest(3901)
         H.settle(m, 1)
@@ -145,7 +145,7 @@ describe("core composition (library segments, UseSegments, AddInsert)", function
 
     it("reports a missing library segment and an unknown anchor once", function()
         m, ns = boot({ fixture = false })
-        local FB = m.env.FastesBoooy
+        local FB = m.env.AdventureAtlas
         libSeg("lib-a", { { id = "lib-a-1", accept = 363 }, { id = "lib-a-2", turnin = 363 } })
         route("r1", { { id = "r1-go", go = true, at = { 1420, 30, 70 } } })
         assert.is_true(FB.UseSegments("r1", { "lib-a", "lib-missing" }))
@@ -167,7 +167,7 @@ describe("core composition (library segments, UseSegments, AddInsert)", function
 
     it("composes only the routes the character can use; the others when listed or chosen", function()
         m, ns = boot({ fixture = false })
-        local FB = m.env.FastesBoooy
+        local FB = m.env.AdventureAtlas
         libSeg("lib-a", { { id = "lib-a-1", accept = 363 }, { id = "lib-a-2", turnin = 363 } })
         route("rp")
         FB.UseSegments("rp", { "lib-a" })
@@ -180,7 +180,7 @@ describe("core composition (library segments, UseSegments, AddInsert)", function
         assert.is_falsy(R.routes.rp.dirty)
         assert.is_true(R.routes.rd.dirty, "the druid route is not composed for a paladin")
         assert.equal(0, #R.routes.rd.steps)
-        -- listed (/fb routes, settings) or chosen: composed then
+        -- listed (/aa routes, settings) or chosen: composed then
         assert.same({ "lib-a-1", "lib-a-2" }, H.ids(R:Get("rd").steps))
         assert.is_falsy(R.routes.rd.dirty)
         assert.same({}, R.errors)
@@ -188,7 +188,7 @@ describe("core composition (library segments, UseSegments, AddInsert)", function
 
     it("reports duplicate step ids after composition, duplicate library segments and bad definitions", function()
         m, ns = boot({ fixture = false })
-        local FB = m.env.FastesBoooy
+        local FB = m.env.AdventureAtlas
         local R = ns.Registry
         libSeg("lib-a", { { id = "lib-a-1", accept = 363 } })
         assert.is_nil(libSeg("lib-a", { { id = "other", accept = 364 } }))
@@ -231,7 +231,7 @@ describe("core composition (library segments, UseSegments, AddInsert)", function
 
     it("queues UseSegments / AddInsert called before RegisterRoute (with an error)", function()
         m, ns = boot({ fixture = false })
-        local FB = m.env.FastesBoooy
+        local FB = m.env.AdventureAtlas
         local R = ns.Registry
         libSeg("lib-q", { { id = "lib-q-1", accept = 363 }, { id = "lib-q-2", turnin = 363 } })
         assert.is_false(FB.UseSegments("late", { "lib-q" }))
@@ -250,7 +250,7 @@ describe("core composition (library segments, UseSegments, AddInsert)", function
 
     it("resolves inserts lazily: before UseSegments, at steps of other inserts, call order per anchor", function()
         m, ns = boot({ fixture = false })
-        local FB = m.env.FastesBoooy
+        local FB = m.env.AdventureAtlas
         libSeg("lib-o", { { id = "o1", accept = 363 }, { id = "o2", turnin = 363 } })
         route("r3", { { id = "own1", go = true, at = { 1420, 30, 70 } } })
         -- registered before UseSegments, anchored at a library step
@@ -272,7 +272,7 @@ describe("core composition (library segments, UseSegments, AddInsert)", function
 
     it("keeps routes without UseSegments / AddInsert as they were and shares library segments between routes", function()
         m, ns = boot({ fixture = false })
-        local FB = m.env.FastesBoooy
+        local FB = m.env.AdventureAtlas
         local plain = route("plain", { { id = "p1", accept = 363 } })
         assert.is_nil(plain.own)
         local steps = plain.steps

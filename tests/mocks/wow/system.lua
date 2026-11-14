@@ -411,7 +411,7 @@ end
 -- slash commands
 ---------------------------------------------------------------------------
 
---- Run a chat slash command ("/fb xp"). Returns true when a handler ran.
+--- Run a chat slash command ("/aa xp"). Returns true when a handler ran.
 function M:RunSlash(text)
     local cmd, rest = tostring(text):match("^(/%S+)%s*(.-)%s*$")
     if not cmd then return false end

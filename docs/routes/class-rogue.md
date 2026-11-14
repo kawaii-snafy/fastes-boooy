@@ -1,6 +1,6 @@
 # Разбойник: шаги класса
 
-Файл: [`Classes/Rogue.lua`](../../addons/FastesBoooy_Guides/Classes/Rogue.lua) — 36 вставок, 62 шага (11 необязательных),
+Файл: [`Classes/Rogue.lua`](../../addons/AdventureAtlas_Guides/Classes/Rogue.lua) — 36 вставок, 62 шага (11 необязательных),
 все с областью `class = "ROGUE"` и id `rog-…`. Гайды: `orc-rogue`, `troll-rogue`, `undead-rogue`, `skyborne-rogue`.
 Путь, по которому идут все классы: стартовые зоны — [race-orc.md](race-orc.md) (Дуротар, у тролля то же),
 [race-undead.md](race-undead.md), [race-skyborne.md](race-skyborne.md), с 12-го — [shared-path.md](shared-path.md).
@@ -262,7 +262,7 @@
 ## 9. Как перепроверить
 
 ```
-G=addons/FastesBoooy_Guides
+G=addons/AdventureAtlas_Guides
 luacheck --config .luacheckrc $G/Classes/Rogue.lua tools/overrides/rogue.lua
 lua5.1 tools/validate_routes.lua -q --strict --end-level --summary \
     --baseline docs/dev/handover/baseline.json --route "*-rogue" \

@@ -1,4 +1,4 @@
-# Офлайн-инструменты FastesBoooy
+# Офлайн-инструменты AdventureAtlas
 
 Всё, что проверяет аддон и маршруты **без запуска игры**: генераторы данных о клиенте
 World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), снимок базы
@@ -20,7 +20,7 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 | `package_addons.py` | `dist/<Аддон>-<версия>.zip` для каждого каталога `addons/*` |
 | `gen_confirm_list.py` | список «что подтвердить в игре» из комментариев `-- CONFIRM` модуля гайдов: `python3 -I tools/gen_confirm_list.py > docs/routes/confirm-in-game.md` (вручную, после правок с `CONFIRM`; CI его свежесть не проверяет) |
 | `simulate_routes.lua` | прогон маршрутов через настоящий движок на моке (принадлежит ядру; цели-события exploration/escort и квесты с шагом `complete` без целей в БД не выполнены при взятии — их выполняет шаг `complete`; визит `train`/`vendor`/`fp`/`sethearth` к NPC, который выдаёт квест маршрута или принимает выполненный, начинается с его диалога (`m:TalkTo`), как в игре, — если автоматика при этом перемотала обязательный визит, это предупреждение (валидатор: `lookahead-skip`); библиотеки-зависимости грузятся в мок раньше модуля, сами отдельно не прогоняются; часть библиотеки из стартового состояния — `--harness`, раздел 7; «игрок обогнал маршрут» — `--ahead L`, раздел 8; список маршрутов `--list-routes`, выбор маршрутов, фильтр файлов, проверка наград — раздел 9) |
-| `lib/route_loader.lua` | загрузка модуля маршрута в песочнице (сначала его зависимости `FastesBoooy_*` из `## Dependencies`) + нормализация через `Core/Schema.lua` и сборка маршрута через `Core/Compose.lua` (общие сегменты, общие вставки, вставки маршрута). Результат: `mod.routes`, `mod.librarySegments`, `mod.libraryInserts` (шаблоны общих вставок с файлом, областью и списком маршрутов, куда они попали), `mod.aliases`, `mod.errors` (у ошибки — файл, `route` — маршрут, к которому она относится, `load` — файл не загрузился). Опции: `skipGlobs` / `keepGlobs` (фильтр файлов TOC), `replace = { [путь TOC] = другой файл }` (подмена файла — для спеков) |
+| `lib/route_loader.lua` | загрузка модуля маршрута в песочнице (сначала его зависимости `AdventureAtlas_*` из `## Dependencies`) + нормализация через `Core/Schema.lua` и сборка маршрута через `Core/Compose.lua` (общие сегменты, общие вставки, вставки маршрута). Результат: `mod.routes`, `mod.librarySegments`, `mod.libraryInserts` (шаблоны общих вставок с файлом, областью и списком маршрутов, куда они попали), `mod.aliases`, `mod.errors` (у ошибки — файл, `route` — маршрут, к которому она относится, `load` — файл не загрузился). Опции: `skipGlobs` / `keepGlobs` (фильтр файлов TOC), `replace = { [путь TOC] = другой файл }` (подмена файла — для спеков) |
 | `lib/fbdb.lua` | доступ к снимку БД: маски рас/классов, поиск, расстояния, формулы опыта; слой поправок `DB.ApplyOverrides` |
 | `overrides/*.lua` | поправки к снимку БД: значение для одного квеста или NPC с источником и отметкой «проверено в игре» (формат и правила — `overrides/README.md`) |
 | `lib/validator.lua` | валидатор: прогон маршрута по профилю, проверки, отчёт о гринде, принятые предупреждения (`ok`), числовые критерии, текстовый и JSON-отчёты |
@@ -38,7 +38,7 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 
 | Цель | Команда |
 |---|---|
-| `make check` | `lint` + `test` + `validate` + `validate-fixtures` + `simulate` + `simulate-sync` + `simulate-fixtures` + `harness-fixtures` (то же, что CI, раздел 10). На 4 ядрах с 11 маршрутами `FastesBoooy_Guides` ≈ 4 мин (F2e: 246 с, из них `busted` 71 с; было ≈ 3,7 мин с двумя маршрутами в F1). `make simulate-sync-full` (88 прогонов) ≈ 7 мин |
+| `make check` | `lint` + `test` + `validate` + `validate-fixtures` + `simulate` + `simulate-sync` + `simulate-fixtures` + `harness-fixtures` (то же, что CI, раздел 10). На 4 ядрах с 11 маршрутами `AdventureAtlas_Guides` ≈ 4 мин (F2e: 246 с, из них `busted` 71 с; было ≈ 3,7 мин с двумя маршрутами в F1). `make simulate-sync-full` (88 прогонов) ≈ 7 мин |
 | `make check-fast` | быстрый круг: `lint` + `validate` + фикстуры + симуляция маршрута `ROUTE` (по умолчанию `*undead-paladin`) — около полминуты, без busted и без sync-прогонов |
 | `make route ROUTE=<id>` | валидатор с `VALIDATE_FLAGS` и симулятор для одного маршрута (`ROUTE` — то же, что принимает `--route`: список через запятую, `*`) |
 | `make lint` | `luacheck --config .luacheckrc addons tools tests` |
@@ -49,8 +49,8 @@ World of Warcraft: Forever (билд 1.60.1.70862, `## Interface: 16001`), сн�
 | `make simulate-sync-full` | то же для **всех** маршрутов (`--list-routes`): ночной запуск CI |
 | `JOBS=N` | число параллельных симуляций `simulate` / `simulate-sync` (по умолчанию — число процессоров, `nproc`) |
 | `make validate-fixtures` / `make simulate-fixtures` | валидатор (0 ERROR) / симулятор на заведомо хороших фикстурах (`FxClean`, `FxNs`, `TestRoute`, библиотека `TestLib` + составной маршрут `TestComposed`, `FxHarnessLib`, модуль с общим содержимым и тремя маршрутами `TestGuides`; симулятор — `TestRoute`, `TestComposed`, `TestGuides`) — стадии проверяют что-то и до появления первого модуля маршрута. Все цели фикстур передают `--no-overrides`: фикстуры используют настоящие id квестов и не должны меняться вместе с `tools/overrides` |
-| `make harness-fixtures` | harness на фикстуре-библиотеке `FastesBoooy_FxHarnessLib` из её состояния `tests/fixtures/validator/harness_state_6.json`: валидатор (`--strict`) и симулятор, оба профиля 22-60 |
-| `make harness PROFILE=… [LIB=…] [SEGMENTS=…] [STATE=…] [OUT=…]` | часть общих сегментов модуля из стартового состояния (раздел 7): валидатор (с `--write-state OUT`), затем симулятор; `LIB` по умолчанию `addons/FastesBoooy_Guides`, пустой `SEGMENTS` — все сегменты |
+| `make harness-fixtures` | harness на фикстуре-библиотеке `AdventureAtlas_FxHarnessLib` из её состояния `tests/fixtures/validator/harness_state_6.json`: валидатор (`--strict`) и симулятор, оба профиля 22-60 |
+| `make harness PROFILE=… [LIB=…] [SEGMENTS=…] [STATE=…] [OUT=…]` | часть общих сегментов модуля из стартового состояния (раздел 7): валидатор (с `--write-state OUT`), затем симулятор; `LIB` по умолчанию `addons/AdventureAtlas_Guides`, пустой `SEGMENTS` — все сегменты |
 | `make report` | пишет `docs/VALIDATION.md` (сводный Markdown-отчёт валидатора, раздел 5). Ошибки маршрутов не роняют цель; цель падает, если валидатор не записал отчёт (ошибка Lua в генераторе, неверные аргументы): отчёт сначала пишется во временный файл, так что `docs/VALIDATION.md` либо новый, либо не тронут. `REPORT=файл` — писать в другой файл |
 | `make routedata` / `make routedata-check` | перегенерировать / проверить актуальность `Data.lua` всех модулей маршрутов и библиотек (check — и фикстуры `FxClean`, `TestLib`, `TestComposed`, `FxHarnessLib`, `TestGuides`, без поправок) |
 | `make api BIR=… WOWUI=…` | перегенерировать `data/forever_api.lua` (оба пути обязательны; `WOWUI=none` — без глобалов FrameXML) |
@@ -113,8 +113,8 @@ python3 -I tools/gen_forever_api.py --bir <BlizzardInterfaceResources>/Resources
 
 | Файлы | std |
 |---|---|
-| `addons/FastesBoooy/**` | `forever+fastesboooy` (писать можно только `FastesBoooy`, `FastesBoooyDB`, `FastesBoooyCharDB`, `SLASH_FASTESBOOOY1/2`, `SlashCmdList.FASTESBOOOY`) |
-| `addons/FastesBoooy_*/**`, `tests/fixtures/FastesBoooy_*/**`, `tests/fixtures/*/FastesBoooy_*/**` | `fastesboooy_route` (модули маршрутов **и модули-библиотеки**): только чтение `FastesBoooy.RegisterRoute/AddSegment/AddRouteData/UseSegments/AddInsert/AddLibrarySegment/AddLibraryInsert/AddLibraryData` и базовый Lua, который даёт песочница инструментов (`ipairs pairs next select type tostring tonumber unpack string table math`). `C_*`, SavedVariables, `io` / `os` / `print` и запись в глобальные имена остаются ошибками |
+| `addons/AdventureAtlas/**` | `forever+adventureatlas` (писать можно только `AdventureAtlas`, `AdventureAtlasDB`, `AdventureAtlasCharDB`, `SLASH_ADVENTUREATLAS1/2`, `SlashCmdList.ADVENTUREATLAS`) |
+| `addons/AdventureAtlas_*/**`, `tests/fixtures/AdventureAtlas_*/**`, `tests/fixtures/*/AdventureAtlas_*/**` | `adventureatlas_route` (модули маршрутов **и модули-библиотеки**): только чтение `AdventureAtlas.RegisterRoute/AddSegment/AddRouteData/UseSegments/AddInsert/AddLibrarySegment/AddLibraryInsert/AddLibraryData` и базовый Lua, который даёт песочница инструментов (`ipairs pairs next select type tostring tonumber unpack string table math`). `C_*`, SavedVariables, `io` / `os` / `print` и запись в глобальные имена остаются ошибками |
 | `tools/overrides/*.lua` | `none`: никаких глобальных имён (файл — одно `return { ... }`) |
 | `tools/**` | `lua51` |
 | `tests/spec/**`, `tests/mocks/**`, `tests/fixtures/core/helpers.lua` | `lua51+busted` (мок ставит глобалы WoW; ослабленные правила только здесь) |
@@ -230,7 +230,7 @@ python3 -I tools/fetch_wowhead_requirements.py [--db tools/data/forever_db.lua |
   иначе WCLBox (`wclbox-classic`, равен Classic), иначе QuestieDB XP (`questie-classic`);
   для 974 квестов опыт неизвестен (`xp = nil`): 537 новых квестов Forever и 437 «same», у которых
   WCLBox даёт `xp = 0`, а строки в QuestieDB XP нет (вероятно, квесты без опыта; не проверено) —
-  валидатор оценивает его, а аддон записывает реальные значения в игре (`/fb xp`).
+  валидатор оценивает его, а аддон записывает реальные значения в игре (`/aa xp`).
 * **Дополнения** (`SUPPLEMENT_*` в начале скрипта): пробелы research-данных, найденные при работе
   над маршрутами, закрываются явно и детерминированно — только там, где во входе данных нет, до
   любой другой обработки, с источником у каждой записи и счётчиками `meta.counts.supplements.*`:
@@ -264,7 +264,7 @@ python3 -I tools/fetch_wowhead_requirements.py [--db tools/data/forever_db.lua |
   2482 — 3 472,9 × 2 314,6, Darkspear Islands 2524 — 1 925 × 1 283,3, Shen'dralas 2652 —
   2 050 × 1 366,7. Итого 53 карты с размером. **Zephras Isle 2521 пока без размера** (по тем же
   данным было бы 5 562,5 × 3 708,3: 5 340 × 3 560 px на карте `zephras-isle`): фикстуры валидатора
-  (`FastesBoooy_FxNpcFar` в `tests/spec/validator_fixtures_spec.lua`) используют её как пример
+  (`AdventureAtlas_FxNpcFar` в `tests/spec/validator_fixtures_spec.lua`) используют её как пример
   запасного режима «проценты карты»; размер включается добавлением строки в `WCLBOX_MAP_PIXELS`
   (проверено: маршруты 1-22 с ним не получают новых замечаний — все `at` на острове ближе 40 ярдов).
   Остальные карты без размера — данжевые карты-псевдонимы QuestieDB и 2665.
@@ -318,7 +318,7 @@ return {
 
 ```
 lua5.1 tools/gen_route_data.lua <каталог-модуля> [...]   # записать
-lua5.1 tools/gen_route_data.lua --all                     # все addons/FastesBoooy_*/ (маршруты и библиотеки)
+lua5.1 tools/gen_route_data.lua --all                     # все addons/AdventureAtlas_*/ (маршруты и библиотеки)
 lua5.1 tools/gen_route_data.lua --all --check             # CI: код 1, если Data.lua устарел
 lua5.1 tools/gen_route_data.lua --stdout <каталог>        # напечатать
 lua5.1 tools/gen_route_data.lua --stdout --skip 'Classes/*' --keep Classes/Warrior.lua <каталог>
@@ -329,11 +329,11 @@ lua5.1 tools/gen_route_data.lua --stdout --skip 'Classes/*' --keep Classes/Warri
 берёт из БД имена и `questMeta`; поправка предпосылок квеста меняет его `questMeta`).
 
 Загружает `Route.lua` и сегменты (порядок TOC, сам `Data.lua` пропускается; модули-зависимости
-`FastesBoooy_*` — раньше, как клиент) в песочнице (все файлы модуля получают одну общую
+`AdventureAtlas_*` — раньше, как клиент) в песочнице (все файлы модуля получают одну общую
 приватную таблицу `local _, ns = ...`, как в клиенте), собирает маршрут (`Core/Compose.lua`),
 собирает id квестов (`accept/turnin/complete/abandon`, ключи `reward`), NPC (`npc`),
 объектов (`object`), предметов (`collect`, `use`) и пишет для каждого маршрута
-`FastesBoooy.AddRouteData("<id>", { quests = {[id] = "enUS"}, npcs = {...}, objects = ..., items = ..., places = ...,
+`AdventureAtlas.AddRouteData("<id>", { quests = {[id] = "enUS"}, npcs = {...}, objects = ..., items = ..., places = ...,
 questMeta = ... })`.
 
 `questMeta` — для каждого квеста из `quests`, который знает снимок БД:
@@ -344,8 +344,8 @@ questMeta = ... })`.
 `docs/ARCHITECTURE.md`); библиотечные `questMeta` подмешиваются под данные маршрута по квесту.
 Пустая таблица не пишется.
 
-**Модуль с общим содержимым и маршрутами** (форма `FastesBoooy_Guides`, фикстура `TestGuides`)
-получает один вызов `FastesBoooy.AddLibraryData({...})` со всем, на что ссылаются его общие
+**Модуль с общим содержимым и маршрутами** (форма `AdventureAtlas_Guides`, фикстура `TestGuides`)
+получает один вызов `AdventureAtlas.AddLibraryData({...})` со всем, на что ссылаются его общие
 сегменты **и общие вставки** (`AddLibraryInsert`). Маршрут, который ничем не владеет (нет своих
 сегментов и вставок `AddInsert`), блока `AddRouteData` не получает: пустой блок был бы ошибкой
 загрузки, когда `Data.lua` стоит в TOC раньше `Route.lua`. Квесты таблицы наград (`rewards`) —
@@ -354,10 +354,10 @@ questMeta = ... })`.
 **Общие сегменты** (`docs/ROUTE_FORMAT.md`, «Общие сегменты и вставки»). Модуль маршрута с
 `UseSegments` перечисляет только то, на что ссылаются его **собственные сегменты и вставки**
 (шаги библиотеки — не его). Модуль-библиотека (`AddLibrarySegment`, без маршрута) получает
-`FastesBoooy.AddLibraryData({ quests = ..., npcs = ..., objects = ..., items = ..., places = ... })`
+`AdventureAtlas.AddLibraryData({ quests = ..., npcs = ..., objects = ..., items = ..., places = ... })`
 со всем, на что ссылаются **его** сегменты; в игре эти имена подмешиваются в данные каждого
 маршрута, использующего библиотеку. Ошибки загрузки зависимости (файл `<Библиотека>/<файл>`)
-тоже останавливают генерацию. Библиотека, объявленная в TOC (`## X-FastesBoooy-Module: library`),
+тоже останавливают генерацию. Библиотека, объявленная в TOC (`## X-AdventureAtlas-Module: library`),
 у которой ещё нет сегментов (заготовка: файлы сегментов — только комментарии), получает пустой `AddLibraryData({ quests = {}, npcs = {} })`; модуль без маршрута,
 без сегментов и без этого объявления — по-прежнему ошибка («no routes (and no library segments)»).
 
@@ -380,7 +380,7 @@ enUS-именем из `areaNames` снимка БД: в игре аддон б�
 lua5.1 tools/validate_routes.lua [опции] [каталог-модуля ...]
 ```
 
-Без каталогов проверяет все `addons/FastesBoooy_*/` с TOC (модули маршрутов — собранными вместе с их
+Без каталогов проверяет все `addons/AdventureAtlas_*/` с TOC (модули маршрутов — собранными вместе с их
 библиотеками-зависимостями, и сами модули-библиотеки). `--help` печатает опции теми же группами.
 
 **Выбор**
@@ -461,7 +461,7 @@ lua5.1 tools/validate_routes.lua -q --strict --end-level --summary --route '*-wa
 # куда встали мои шаги и на каком уровне
 lua5.1 tools/validate_routes.lua -q --levels --route orc-warrior --skip 'Classes/*' --keep Classes/Warrior.lua
 # автор стартовой зоны: свои сегменты с нового персонажа, без шагов классов
-lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Guides --segments <id,...> \
+lua5.1 tools/validate_routes.lua --harness addons/AdventureAtlas_Guides --segments <id,...> \
     --profile race=Orc,class=WARRIOR --skip 'Classes/*' --end-level --write-state orc.json
 ```
 
@@ -479,10 +479,10 @@ lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Guides --segments 
 ### Как работает
 
 1. Модуль грузится в песочнице (`lib/route_loader.lua`): только чистые библиотеки Lua и
-   заглушка `FastesBoooy`, которая нормализует `RegisterRoute/AddSegment/AddRouteData`
-   **настоящим** `addons/FastesBoooy/Core/Schema.lua` (как `Core/Registry.lua`) и собирает
+   заглушка `AdventureAtlas`, которая нормализует `RegisterRoute/AddSegment/AddRouteData`
+   **настоящим** `addons/AdventureAtlas/Core/Schema.lua` (как `Core/Registry.lua`) и собирает
    маршрут из своих сегментов, сегментов библиотеки и вставок (`UseSegments`/`AddInsert`,
-   **настоящий** `Core/Compose.lua`). Сначала грузятся модули `FastesBoooy_*` из `## Dependencies`/
+   **настоящий** `Core/Compose.lua`). Сначала грузятся модули `AdventureAtlas_*` из `## Dependencies`/
    `## RequiredDeps` TOC (рекурсивно, из того же каталога `addons`, каждый со своей таблицей
    `ns`); их файлы называются `<Модуль>/<файл>`. Ошибки схемы, загрузки, объявление глобалов,
    ошибки сборки (неизвестный сегмент библиотеки / якорь вставки, id шагов, совпавшие после
@@ -772,12 +772,12 @@ lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Guides --segments 
 ## 6. Тесты и фикстуры
 
 * `tests/spec/validator_fixtures_spec.lua` — модули-фикстуры `tests/fixtures/validator/`
-  на реальных данных Forever (Мертвый Звон): чистый маршрут `FastesBoooy_FxClean` (0 ERROR,
-  0 WARN), `FastesBoooy_FxNs` (файлы модуля делят таблицу `ns`) и по модулю на каждую ошибку:
+  на реальных данных Forever (Мертвый Звон): чистый маршрут `AdventureAtlas_FxClean` (0 ERROR,
+  0 WARN), `AdventureAtlas_FxNs` (файлы модуля делят таблицу `ns`) и по модулю на каждую ошибку:
   неверный id квеста, квест другой расы/фракции/класса, нет предквеста, NPC далеко от `at`
   (ярды; Zephras Isle — приблизительно), не тот NPC выдачи/сдачи, переполнение журнала,
   низкий уровень, не тот тренер/полётчик/трактирщик, учёт журнала (exclusive, дубли,
-  сдача невзятого), ошибки схемы, фильтры шагов (`FastesBoooy_FxFilters`); плюс маршруты в
+  сдача невзятого), ошибки схемы, фильтры шагов (`AdventureAtlas_FxFilters`); плюс маршруты в
   памяти: порядок действий в шаге, exclusive в обе стороны, `untilCompleted`/`disabledBy`,
   частичный `complete`, Skyborne без фракции, ярды на разных картах, прореженные спавны.
 * `tests/spec/validator_lib_spec.lua` — маски > 32 бит, формулы опыта, структура снимка,
@@ -786,12 +786,12 @@ lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Guides --segments 
   `gen_route_data.lua --check/--stdout`.
 * `tests/spec/validator_compose_spec.lua` — составные маршруты в инструментах: загрузчик
   (зависимости, имена файлов, ненайденная зависимость, цикл, ошибки сборки), валидатор (0 ERROR
-  на `FastesBoooy_TestComposed`, метка `library`, «один раз на маршрут» при двух профилях,
+  на `AdventureAtlas_TestComposed`, метка `library`, «один раз на маршрут» при двух профилях,
   ошибки библиотеки один раз за запуск, неизвестный сегмент/якорь), `gen_route_data`
   (`AddLibraryData` библиотеки, данные маршрута — только свои сегменты и вставки), симулятор
   (библиотека грузится как зависимость и пропускается, два профиля с классовой вставкой,
-  неизвестный сегмент → FAIL). Фикстуры: `tests/fixtures/core/FastesBoooy_TestLib` (библиотека)
-  и `FastesBoooy_TestComposed` (свои сегменты + `UseSegments` + вставки до/после шагов
+  неизвестный сегмент → FAIL). Фикстуры: `tests/fixtures/core/AdventureAtlas_TestLib` (библиотека)
+  и `AdventureAtlas_TestComposed` (свои сегменты + `UseSegments` + вставки до/после шагов
   библиотеки и своих); в аддоне их проверяет `tests/spec/core_compose_spec.lua`.
 * `tests/spec/validator_harness_spec.lua` — harness (раздел 7): декодер JSON, файл состояния
   (чтение, все ошибки списком, детерминированная запись, точность `xpFrac`), `Harness.Build`
@@ -802,8 +802,8 @@ lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Guides --segments 
   состояния; конечное состояние; **цепочка двух прогонов = один прогон**; конечное состояние
   полного маршрута; harness не сообщает `step-no-profile`), CLI обоих инструментов
   (`--harness/--state/--write-state`, коды выхода, пустая объявленная библиотека — понятное
-  сообщение и пустой `AddLibraryData`), `## X-FastesBoooy-Module`. Фикстура:
-  `tests/fixtures/validator/FastesBoooy_FxHarnessLib` (два сегмента, Мертвый Звон / Брилл,
+  сообщение и пустой `AddLibraryData`), `## X-AdventureAtlas-Module`. Фикстура:
+  `tests/fixtures/validator/AdventureAtlas_FxHarnessLib` (два сегмента, Мертвый Звон / Брилл,
   проходит только из состояния `tests/fixtures/validator/harness_state_6.json`).
 * `tests/spec/validator_checks_spec.lua` — проверки `lookahead-skip` (визит к тренеру / торговцу перед
   квестом того же NPC в пределах `lookahead`; объединённый шаг, шаг дальше окна, `optional`-визит, сдача
@@ -826,7 +826,7 @@ lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Guides --segments 
 * `tests/spec/validator_lint_spec.lua` — std `forever` ловит несуществующие API; модулям маршрутов
   известны `AddLibraryInsert` и базовый Lua, файлам поправок — ничего.
 * `tests/spec/validator_guides_spec.lua` — инструменты на модуле с общим содержимым и маршрутами
-  (фикстура `tests/fixtures/core/FastesBoooy_TestGuides`: общие сегменты двух стартовых зон, общие
+  (фикстура `tests/fixtures/core/AdventureAtlas_TestGuides`: общие сегменты двух стартовых зон, общие
   вставки с областью класса и расы, таблица наград, три маршрута из таблицы): загрузчик
   (`mod.libraryInserts`, алиасы, `opts.replace`, `opts.skip`, файлы ошибок), генератор, командные
   строки валидатора и симулятора; **награды в симуляторе** (выбор из таблицы класса, `reward` шага
@@ -870,7 +870,7 @@ lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Guides --segments 
   Skip на `accept`), `Forward()`, `GetUpcoming()`, `questMeta` в `gen_route_data` и в составном
   маршруте, миграция настроек, производительность (`Refresh` маршрута на 1 713 шагов < 60 мс).
   `tests/spec/core_simulate_spec.lua` — `--ahead` симулятора (синхронизация на
-  `FastesBoooy_TestComposed`, пропуск недоступного `accept` движком, отказ симулятора без
+  `AdventureAtlas_TestComposed`, пропуск недоступного `accept` движком, отказ симулятора без
   `questMeta`, проверка аргумента), `--ahead-at` (прыжок посреди сегмента с квестом в журнале,
   брошенный квест отменён) и `--level-plus` (опережение без прыжков).
   `tests/spec/core_sync_keep_spec.lua` — синхронизация с журналом: цели «Попутно» ниже порога
@@ -882,15 +882,15 @@ lua5.1 tools/validate_routes.lua --harness addons/FastesBoooy_Guides --segments 
 
 ```
 busted tests/spec/validator_*_spec.lua
-lua5.1 tools/validate_routes.lua tests/fixtures/validator/FastesBoooy_FxClean
+lua5.1 tools/validate_routes.lua tests/fixtures/validator/AdventureAtlas_FxClean
 ```
 
 ## 7. Harness: часть библиотеки из стартового состояния
 
-Общие сегменты (модуль-библиотека или общая часть `addons/FastesBoooy_Guides`) проверяются и по
+Общие сегменты (модуль-библиотека или общая часть `addons/AdventureAtlas_Guides`) проверяются и по
 отдельности, без полного маршрута класса. Чтобы проверить **один сегмент** (или несколько
 подряд), валидатор и симулятор умеют стартовать из явного состояния персонажа. То же работает
-на модуле, который регистрирует и общее содержимое, и маршруты (`FastesBoooy_Guides`): берётся его
+на модуле, который регистрирует и общее содержимое, и маршруты (`AdventureAtlas_Guides`): берётся его
 общая часть, синтетический маршрут `harness-<Имя>` выбирается явно, общие вставки модуля
 применяются к нему автоматически, а шаги других рас и классов (общих сегментов и вставок) в него
 не собираются. Чтобы проверить зону без шагов классов — `--skip 'Classes/*'`.
@@ -1147,7 +1147,7 @@ lua5.1 tools/simulate_routes.lua --skip 'Classes/*' --keep Classes/Warrior.lua -
 ## Ограничения
 
 * Опыт ~720 новых квестов Forever неизвестен офлайн — уровни в симуляции приблизительны,
-  пока не собраны реальные значения (`/fb xp` в аддоне → обновить данные).
+  пока не собраны реальные значения (`/aa xp` в аддоне → обновить данные).
 * Опыт за мобов — формула Classic + приблизительный штраф Forever; вероятности выпадения
   предметов в снимке нет.
 * Расстояние считается в ярдах по размерам карт из `conversion.json`; у карт без известных

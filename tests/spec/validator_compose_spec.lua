@@ -31,9 +31,9 @@ local TOC = "## Interface: 16001\n## Dependencies: %s\n%s\n"
 
 -- temporary addons directory: library + route modules that depend on it
 local MODULES = {
-    ["FastesBoooy_TLib/FastesBoooy_TLib.toc"] = TOC:format("FastesBoooy", "Lib.lua"),
-    ["FastesBoooy_TLib/Lib.lua"] = [[
-FastesBoooy.AddLibrarySegment({ id = "x-lib", title = "X", zone = "Tirisfal Glades", levels = { 1, 3 }, steps = {
+    ["AdventureAtlas_TLib/AdventureAtlas_TLib.toc"] = TOC:format("AdventureAtlas", "Lib.lua"),
+    ["AdventureAtlas_TLib/Lib.lua"] = [[
+AdventureAtlas.AddLibrarySegment({ id = "x-lib", title = "X", zone = "Tirisfal Glades", levels = { 1, 3 }, steps = {
     { id = "x-1", accept = 363, npc = 1568, at = { 1420, 30.2, 71.7 } },
     -- `at` far from Shadow Priest Sarvis: a library-step WARN (at-far) in every route using it
     { id = "x-2", turnin = 363, accept = 364, npc = 1569, at = { 1420, 32.5, 66.2 } },
@@ -42,44 +42,44 @@ FastesBoooy.AddLibrarySegment({ id = "x-lib", title = "X", zone = "Tirisfal Glad
 } })
 ]],
     -- two profiles (Scourge PALADIN, Scourge WARRIOR) + a class insert
-    ["FastesBoooy_TMulti/FastesBoooy_TMulti.toc"] = TOC:format("FastesBoooy, FastesBoooy_TLib", "Route.lua"),
-    ["FastesBoooy_TMulti/Route.lua"] = [[
-FastesBoooy.RegisterRoute({ api = 1, id = "multi", title = "Multi", faction = "Horde", races = { "Scourge" },
+    ["AdventureAtlas_TMulti/AdventureAtlas_TMulti.toc"] = TOC:format("AdventureAtlas, AdventureAtlas_TLib", "Route.lua"),
+    ["AdventureAtlas_TMulti/Route.lua"] = [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "multi", title = "Multi", faction = "Horde", races = { "Scourge" },
     classes = { "PALADIN", "WARRIOR" }, levels = { 1, 3 } })
-FastesBoooy.UseSegments("multi", { "x-lib" })
-FastesBoooy.AddInsert("multi", { after = "x-2", steps = {
+AdventureAtlas.UseSegments("multi", { "x-lib" })
+AdventureAtlas.AddInsert("multi", { after = "x-2", steps = {
     { id = "m-train", train = true, class = "PALADIN", npc = 244808, at = { 1420, 31.1, 66.4 } },
 } })
 ]],
-    ["FastesBoooy_TMissing/FastesBoooy_TMissing.toc"] = TOC:format("FastesBoooy, FastesBoooy_TLib", "Route.lua"),
-    ["FastesBoooy_TMissing/Route.lua"] = [[
-FastesBoooy.RegisterRoute({ api = 1, id = "missing", title = "Missing", faction = "Horde", races = { "Scourge" },
+    ["AdventureAtlas_TMissing/AdventureAtlas_TMissing.toc"] = TOC:format("AdventureAtlas, AdventureAtlas_TLib", "Route.lua"),
+    ["AdventureAtlas_TMissing/Route.lua"] = [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "missing", title = "Missing", faction = "Horde", races = { "Scourge" },
     classes = { "PALADIN" }, levels = { 1, 3 } })
-FastesBoooy.UseSegments("missing", { "x-lib", "x-nope" })
-FastesBoooy.AddInsert("missing", { before = "x-zzz", steps = { { manual = true } } })
+AdventureAtlas.UseSegments("missing", { "x-lib", "x-nope" })
+AdventureAtlas.AddInsert("missing", { before = "x-zzz", steps = { { manual = true } } })
 ]],
-    ["FastesBoooy_TBadLib/FastesBoooy_TBadLib.toc"] = TOC:format("FastesBoooy", "Seg.lua"),
-    ["FastesBoooy_TBadLib/Seg.lua"] = [[
-FastesBoooy.AddLibrarySegment({ id = "bad-lib", title = "Bad", steps = {
+    ["AdventureAtlas_TBadLib/AdventureAtlas_TBadLib.toc"] = TOC:format("AdventureAtlas", "Seg.lua"),
+    ["AdventureAtlas_TBadLib/Seg.lua"] = [[
+AdventureAtlas.AddLibrarySegment({ id = "bad-lib", title = "Bad", steps = {
     { id = "b-1", accept = 363, npc = 1568, at = { 1420, 30.2, 71.7 } },
     { id = "b-2", turnin = 363, npc = 1569, at = { 1420, 30.8, 66.2 }, bogus = 1 },
 } })
 ]],
-    ["FastesBoooy_TBadRoute/FastesBoooy_TBadRoute.toc"] = TOC:format("FastesBoooy, FastesBoooy_TBadLib", "Route.lua"),
-    ["FastesBoooy_TBadRoute/Route.lua"] = [[
-FastesBoooy.RegisterRoute({ api = 1, id = "bad-route", title = "Bad route", faction = "Horde",
+    ["AdventureAtlas_TBadRoute/AdventureAtlas_TBadRoute.toc"] = TOC:format("AdventureAtlas, AdventureAtlas_TBadLib", "Route.lua"),
+    ["AdventureAtlas_TBadRoute/Route.lua"] = [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "bad-route", title = "Bad route", faction = "Horde",
     races = { "Scourge" }, classes = { "PALADIN" }, levels = { 1, 2 } })
-FastesBoooy.UseSegments("bad-route", { "bad-lib" })
+AdventureAtlas.UseSegments("bad-route", { "bad-lib" })
 ]],
-    ["FastesBoooy_TNoDep/FastesBoooy_TNoDep.toc"] = TOC:format("FastesBoooy, FastesBoooy_Nope", "Route.lua"),
-    ["FastesBoooy_TNoDep/Route.lua"] = [[
-FastesBoooy.RegisterRoute({ api = 1, id = "nodep", title = "No dep", faction = "Horde" })
-FastesBoooy.UseSegments("nodep", { "x-lib" })
+    ["AdventureAtlas_TNoDep/AdventureAtlas_TNoDep.toc"] = TOC:format("AdventureAtlas, AdventureAtlas_Nope", "Route.lua"),
+    ["AdventureAtlas_TNoDep/Route.lua"] = [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "nodep", title = "No dep", faction = "Horde" })
+AdventureAtlas.UseSegments("nodep", { "x-lib" })
 ]],
-    ["FastesBoooy_TCycA/FastesBoooy_TCycA.toc"] = TOC:format("FastesBoooy, FastesBoooy_TCycB", "A.lua"),
-    ["FastesBoooy_TCycA/A.lua"] = "FastesBoooy.AddLibraryData({ quests = { [363] = \"A\" } })\n",
-    ["FastesBoooy_TCycB/FastesBoooy_TCycB.toc"] = TOC:format("FastesBoooy, FastesBoooy_TCycA", "B.lua"),
-    ["FastesBoooy_TCycB/B.lua"] = "FastesBoooy.AddLibraryData({ quests = { [364] = \"B\" } })\n",
+    ["AdventureAtlas_TCycA/AdventureAtlas_TCycA.toc"] = TOC:format("AdventureAtlas, AdventureAtlas_TCycB", "A.lua"),
+    ["AdventureAtlas_TCycA/A.lua"] = "AdventureAtlas.AddLibraryData({ quests = { [363] = \"A\" } })\n",
+    ["AdventureAtlas_TCycB/AdventureAtlas_TCycB.toc"] = TOC:format("AdventureAtlas, AdventureAtlas_TCycA", "B.lua"),
+    ["AdventureAtlas_TCycB/B.lua"] = "AdventureAtlas.AddLibraryData({ quests = { [364] = \"B\" } })\n",
 }
 
 local root
@@ -106,7 +106,7 @@ describe("composed routes in the offline tools", function()
     teardown(function() os.execute(("rm -rf '%s'"):format(root)) end)
 
     describe("route_loader", function()
-        it("loads the FastesBoooy_* dependencies first and composes like the addon", function()
+        it("loads the AdventureAtlas_* dependencies first and composes like the addon", function()
             local mod = Loader.LoadModule(H.COMPOSED_DIR, { schema = Schema })
             assert.same({}, mod.errors)
             assert.equal(1, #mod.deps)
@@ -129,8 +129,8 @@ describe("composed routes in the offline tools", function()
             assert.equal("Rude Awakening", mod.data[H.COMPOSED_ID].quests[363])
             assert.equal("Joshua Kien", mod.data[H.COMPOSED_ID].npcs[2115])
             -- Loader.Dependencies reads both TOC keys
-            assert.same({ "FastesBoooy_A", "FastesBoooy_B" },
-                Loader.Dependencies({ meta = { Dependencies = "FastesBoooy, FastesBoooy_A", RequiredDeps = "FastesBoooy_B" } }))
+            assert.same({ "AdventureAtlas_A", "AdventureAtlas_B" },
+                Loader.Dependencies({ meta = { Dependencies = "AdventureAtlas, AdventureAtlas_A", RequiredDeps = "AdventureAtlas_B" } }))
         end)
 
         it("recognizes a library module", function()
@@ -143,29 +143,29 @@ describe("composed routes in the offline tools", function()
         end)
 
         it("reports a missing dependency, a dependency cycle and composition errors with their file", function()
-            local nodep = Loader.LoadModule(dir("FastesBoooy_TNoDep"), { schema = Schema })
+            local nodep = Loader.LoadModule(dir("AdventureAtlas_TNoDep"), { schema = Schema })
             local msgs = {}
             for _, e in ipairs(nodep.errors) do msgs[#msgs + 1] = (e.file or "?") .. ": " .. e.msg end
             local all = table.concat(msgs, "\n")
-            assert.matches("FastesBoooy_TNoDep.toc: dependency FastesBoooy_Nope %(## Dependencies of FastesBoooy_TNoDep%) "
+            assert.matches("AdventureAtlas_TNoDep.toc: dependency AdventureAtlas_Nope %(## Dependencies of AdventureAtlas_TNoDep%) "
                 .. "not found", all)
             assert.matches("Route.lua: route nodep: UseSegments: unknown shared segment 'x%-lib'", all)
 
-            local cyc = Loader.LoadModule(dir("FastesBoooy_TCycA"), { schema = Schema })
+            local cyc = Loader.LoadModule(dir("AdventureAtlas_TCycA"), { schema = Schema })
             assert.equal(1, #cyc.errors)
-            assert.matches("dependency cycle: FastesBoooy_TCycB %-> FastesBoooy_TCycA", cyc.errors[1].msg)
+            assert.matches("dependency cycle: AdventureAtlas_TCycB %-> AdventureAtlas_TCycA", cyc.errors[1].msg)
             assert.is_true(cyc.isLibrary)
 
-            local missing = Loader.LoadModule(dir("FastesBoooy_TMissing"), { schema = Schema })
+            local missing = Loader.LoadModule(dir("AdventureAtlas_TMissing"), { schema = Schema })
             assert.equal(2, #missing.errors)
             assert.equal("Route.lua", missing.errors[1].file)
             assert.matches("unknown shared segment 'x%-nope'", missing.errors[1].msg)
             assert.matches("unknown anchor step 'x%-zzz'", missing.errors[2].msg)
 
-            local bad = Loader.LoadModule(dir("FastesBoooy_TBadRoute"), { schema = Schema })
+            local bad = Loader.LoadModule(dir("AdventureAtlas_TBadRoute"), { schema = Schema })
             assert.equal(1, #bad.errors)
-            assert.equal("FastesBoooy_TBadLib/Seg.lua", bad.errors[1].file)
-            assert.equal("FastesBoooy_TBadLib", bad.errors[1].library)
+            assert.equal("AdventureAtlas_TBadLib/Seg.lua", bad.errors[1].file)
+            assert.equal("AdventureAtlas_TBadLib", bad.errors[1].library)
             assert.matches("^library: segment bad%-lib step 2: unknown step key 'bogus'", bad.errors[1].msg)
         end)
 
@@ -201,8 +201,8 @@ describe("composed routes in the offline tools", function()
                 for i, s in ipairs(r.segments) do out[i] = s.id end
                 return out
             end)())
-            assert.matches("^%[library FastesBoooy_TestLib%] tl%-deathknell#3 id=tl%-complete%-364 "
-                .. "%(FastesBoooy_TestLib/Segments/01_Deathknell.lua%)$", V.LocStr((function()
+            assert.matches("^%[library AdventureAtlas_TestLib%] tl%-deathknell#3 id=tl%-complete%-364 "
+                .. "%(AdventureAtlas_TestLib/Segments/01_Deathknell.lua%)$", V.LocStr((function()
                     for _, m in ipairs(r.messages) do
                         if m.stepId == "tl-complete-364" then return m end
                     end
@@ -210,14 +210,14 @@ describe("composed routes in the offline tools", function()
         end)
 
         it("reports a library-step message once per route (not once per profile)", function()
-            local res = V.ValidateModule(dir("FastesBoooy_TMulti"), { db = DB(), schema = Schema })
+            local res = V.ValidateModule(dir("AdventureAtlas_TMulti"), { db = DB(), schema = Schema })
             assert.equal(2, #res.results)
             local function farMsgs(r)
                 local n = 0
                 for _, m in ipairs(r.messages) do
                     if m.code == "at-far" and m.stepId == "x-2" then
                         n = n + 1
-                        assert.equal("FastesBoooy_TLib", m.library)
+                        assert.equal("AdventureAtlas_TLib", m.library)
                     end
                 end
                 return n
@@ -234,26 +234,26 @@ describe("composed routes in the offline tools", function()
         end)
 
         it("reports the load errors of a library once per run, in the library's own entry", function()
-            local code, out = run("lua5.1 tools/validate_routes.lua --no-overrides '" .. dir("FastesBoooy_TBadRoute") .. "'")
+            local code, out = run("lua5.1 tools/validate_routes.lua --no-overrides '" .. dir("AdventureAtlas_TBadRoute") .. "'")
             assert.equal(1, code, out)
             assert.equal(1, count(out, "unknown step key 'bogus'"), out)
-            assert.matches("ERROR %[library FastesBoooy_TBadLib%] %(FastesBoooy_TBadLib/Seg.lua%) %[schema%]", out)
+            assert.matches("ERROR %[library AdventureAtlas_TBadLib%] %(AdventureAtlas_TBadLib/Seg.lua%) %[schema%]", out)
 
-            code, out = run("lua5.1 tools/validate_routes.lua --no-overrides '" .. dir("FastesBoooy_TBadLib") .. "' '"
-                .. dir("FastesBoooy_TBadRoute") .. "'")
+            code, out = run("lua5.1 tools/validate_routes.lua --no-overrides '" .. dir("AdventureAtlas_TBadLib") .. "' '"
+                .. dir("AdventureAtlas_TBadRoute") .. "'")
             assert.equal(1, code, out)
             assert.equal(1, count(out, "unknown step key 'bogus'"), out)
-            assert.matches("== library module FastesBoooy_TBadLib %[library: 1 segment%(s%), 2 step%(s%)%]", out)
-            assert.matches("ERROR %[library FastesBoooy_TBadLib%] %(Seg.lua%) %[schema%]", out)
+            assert.matches("== library module AdventureAtlas_TBadLib %[library: 1 segment%(s%), 2 step%(s%)%]", out)
+            assert.matches("ERROR %[library AdventureAtlas_TBadLib%] %(Seg.lua%) %[schema%]", out)
 
             code, out = run("lua5.1 tools/validate_routes.lua --no-overrides -q " .. H.LIB_DIR .. " " .. H.COMPOSED_DIR)
             assert.equal(0, code, out)
-            assert.matches("%(library FastesBoooy_TestLib%) %[library: 3 segment%(s%), 19 step%(s%)%]: 0 error", out)
+            assert.matches("%(library AdventureAtlas_TestLib%) %[library: 3 segment%(s%), 19 step%(s%)%]: 0 error", out)
             assert.matches("test%-composed %[Scourge PALADIN Horde%]: 0 error%(s%)", out)
         end)
 
         it("fails a route whose library segment or anchor does not exist", function()
-            local code, out = run("lua5.1 tools/validate_routes.lua --no-overrides -q '" .. dir("FastesBoooy_TMissing") .. "'")
+            local code, out = run("lua5.1 tools/validate_routes.lua --no-overrides -q '" .. dir("AdventureAtlas_TMissing") .. "'")
             assert.equal(1, code, out)
             assert.matches("missing %[Scourge PALADIN Horde%]: 2 error", out)
         end)
@@ -266,7 +266,7 @@ describe("composed routes in the offline tools", function()
             assert.not_matches("AddRouteData", out)
             local chunk = assert(loadstring(out))
             local captured
-            setfenv(chunk, { FastesBoooy = { AddLibraryData = function(d) captured = d end } })
+            setfenv(chunk, { AdventureAtlas = { AddLibraryData = function(d) captured = d end } })
             chunk()
             assert.equal("Rude Awakening", captured.quests[363])
             assert.equal("The Scarlet Crusade", captured.quests[381])
@@ -280,7 +280,7 @@ describe("composed routes in the offline tools", function()
             assert.equal(0, code, out)
             local chunk = assert(loadstring(out))
             local captured
-            setfenv(chunk, { FastesBoooy = { AddRouteData = function(id, d) captured = { id = id, data = d } end } })
+            setfenv(chunk, { AdventureAtlas = { AddRouteData = function(id, d) captured = { id = id, data = d } end } })
             chunk()
             assert.equal(H.COMPOSED_ID, captured.id)
             assert.same({}, captured.data.quests)
@@ -296,9 +296,9 @@ describe("composed routes in the offline tools", function()
         end)
 
         it("writes nothing when a dependency has errors", function()
-            local code, out = run("lua5.1 tools/gen_route_data.lua --no-overrides --stdout '" .. dir("FastesBoooy_TBadRoute") .. "'")
+            local code, out = run("lua5.1 tools/gen_route_data.lua --no-overrides --stdout '" .. dir("AdventureAtlas_TBadRoute") .. "'")
             assert.equal(1, code, out)
-            assert.matches("FastesBoooy_TBadLib/Seg.lua: library: segment bad%-lib step 2", out)
+            assert.matches("AdventureAtlas_TBadLib/Seg.lua: library: segment bad%-lib step 2", out)
             assert.matches("Data.lua not generated", out)
         end)
     end)
@@ -307,22 +307,22 @@ describe("composed routes in the offline tools", function()
         it("plays the composed route with its library loaded first and skips the library module", function()
             local code, out = run("lua5.1 tools/simulate_routes.lua --no-overrides " .. H.LIB_DIR .. " " .. H.COMPOSED_DIR)
             assert.equal(0, code, out)
-            assert.is_truthy(out:find("skip FastesBoooy_TestLib: library module", 1, true), out)
+            assert.is_truthy(out:find("skip AdventureAtlas_TestLib: library module", 1, true), out)
             assert.is_truthy(out:find("OK   test-composed (Scourge PALADIN Horde): 26 steps", 1, true), out)
             assert.is_truthy(out:find("1 simulation(s), 1 passed, 0 failed", 1, true), out)
         end)
 
         it("plays a route of two profiles with a class insert", function()
-            local code, out = run("lua5.1 tools/simulate_routes.lua --no-overrides '" .. dir("FastesBoooy_TMulti") .. "'")
+            local code, out = run("lua5.1 tools/simulate_routes.lua --no-overrides '" .. dir("AdventureAtlas_TMulti") .. "'")
             assert.equal(0, code, out)
             assert.is_truthy(out:find("OK   multi (Scourge PALADIN Horde): 5 steps", 1, true), out)
             assert.is_truthy(out:find("OK   multi (Scourge WARRIOR Horde): 4 steps", 1, true), out)
         end)
 
         it("fails a route whose library segment does not exist", function()
-            local code, out = run("lua5.1 tools/simulate_routes.lua --no-overrides '" .. dir("FastesBoooy_TMissing") .. "'")
+            local code, out = run("lua5.1 tools/simulate_routes.lua --no-overrides '" .. dir("AdventureAtlas_TMissing") .. "'")
             assert.equal(1, code, out)
-            assert.is_truthy(out:find("FAIL FastesBoooy_TMissing: 2 load/schema error(s)", 1, true), out)
+            assert.is_truthy(out:find("FAIL AdventureAtlas_TMissing: 2 load/schema error(s)", 1, true), out)
             assert.is_truthy(out:find("unknown shared segment 'x-nope'", 1, true), out)
         end)
     end)

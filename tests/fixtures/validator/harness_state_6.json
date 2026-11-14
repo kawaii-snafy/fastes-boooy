@@ -5,5 +5,5 @@
   "log": [{"id": 381, "complete": true}],
   "at": [1420, 32.0, 66.0],
   "flightPaths": ["Undercity"],
-  "meta": {"note": "validator test fixture: start state of FastesBoooy_FxHarnessLib (tests/spec/validator_harness_spec.lua)"}
+  "meta": {"note": "validator test fixture: start state of AdventureAtlas_FxHarnessLib (tests/spec/validator_harness_spec.lua)"}
 }

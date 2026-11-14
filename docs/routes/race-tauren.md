@@ -1,9 +1,9 @@
 # Таурен: стартовая зона Мулгор и шаги расы
 
-Файлы: [`Segments/Mulgore/01_CampNarache.lua`](../../addons/FastesBoooy_Guides/Segments/Mulgore/01_CampNarache.lua)
-(`mul-01-camp-narache`), [`Segments/Mulgore/02_Mulgore.lua`](../../addons/FastesBoooy_Guides/Segments/Mulgore/02_Mulgore.lua)
-(`mul-02-mulgore`), [`Segments/Mulgore/03_BarrensCrossing.lua`](../../addons/FastesBoooy_Guides/Segments/Mulgore/03_BarrensCrossing.lua)
-(`mul-03-barrens-crossing`), [`Races/Tauren.lua`](../../addons/FastesBoooy_Guides/Races/Tauren.lua) (шаги расы на общем
+Файлы: [`Segments/Mulgore/01_CampNarache.lua`](../../addons/AdventureAtlas_Guides/Segments/Mulgore/01_CampNarache.lua)
+(`mul-01-camp-narache`), [`Segments/Mulgore/02_Mulgore.lua`](../../addons/AdventureAtlas_Guides/Segments/Mulgore/02_Mulgore.lua)
+(`mul-02-mulgore`), [`Segments/Mulgore/03_BarrensCrossing.lua`](../../addons/AdventureAtlas_Guides/Segments/Mulgore/03_BarrensCrossing.lua)
+(`mul-03-barrens-crossing`), [`Races/Tauren.lua`](../../addons/AdventureAtlas_Guides/Races/Tauren.lua) (шаги расы на общем
 пути). Гайды: `tauren-druid`, `tauren-hunter`, `tauren-shaman`, `tauren-warrior`. Общий путь с 12-го уровня —
 [shared-path.md](shared-path.md); шаги друида — [class-druid.md](class-druid.md). Числа — вывод валидатора на конец
 фазы P2 (базовый профиль: без классовых файлов); свежие — в [docs/VALIDATION.md](../VALIDATION.md) и в
@@ -214,7 +214,7 @@
 * Даёт ли Сергра 844 таурену после 861 / 854 (E.21).
 * Костёр 96605 (как в Тирисфале), мясо равнинного бегуна для 99411 (`mul02-kyle`), появление Арра'чи и 776 сразу после
   775 (`mul02-arrachea`), путь вдоль реки к воротам Оргриммара (`mul03-org-gate`).
-* Опыт новых квестов Forever (`/fb xp`).
+* Опыт новых квестов Forever (`/aa xp`).
 * Цена верховой езды у Кара Буревестника и выдаётся ли кодо вместе с навыком; русские имена Кара и Харба по клиенту.
 
 ## 9. Все шаги стартовой зоны (базовый профиль `tauren-warrior`)
@@ -339,7 +339,7 @@
 ## 10. Как перепроверить
 
 ```
-G=addons/FastesBoooy_Guides
+G=addons/AdventureAtlas_Guides
 lua5.1 tools/validate_routes.lua -q --strict --end-level --summary --skip 'Classes/*' \
     --grind-until h-18-stonetalon-ashenvale --route 'tauren-*' $G                  # базовые профили
 lua5.1 tools/validate_routes.lua --route tauren-warrior --levels --skip 'Classes/*' $G

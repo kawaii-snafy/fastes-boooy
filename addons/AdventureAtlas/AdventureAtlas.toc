@@ -1,0 +1,29 @@
+## Interface: 16001
+## Title: |cff33ff99Adventure|r |cffffd100Atlas|r
+## Notes: Adventure atlas for World of Warcraft: Forever (core: leveling route engine, quest automation, navigation arrow).
+## Notes-ruRU: Атлас приключений для World of Warcraft: Forever (ядро: движок маршрутов прокачки, автоматизация квестов, стрелка-навигатор).
+## Author: Adventure Atlas contributors
+## Version: 0.5.0
+## Category: Quests
+## Category-ruRU: Задания
+## IconTexture: Interface\Icons\INV_Scroll_04
+## SavedVariables: AdventureAtlasDB
+## SavedVariablesPerCharacter: AdventureAtlasCharDB
+## X-License: GPL-3.0-or-later
+
+Locales\enUS.lua
+Locales\ruRU.lua
+Locales\UI_enUS.lua
+Locales\UI_ruRU.lua
+Core\Init.lua
+Core\Schema.lua
+Core\Compose.lua
+Core\Compat.lua
+Core\Registry.lua
+Core\Steps.lua
+Core\Engine.lua
+Core\Automation.lua
+Core\Waypoint.lua
+UI\StepFrame.lua
+UI\Arrow.lua
+UI\Options.lua

@@ -77,7 +77,7 @@ local function boot(level, opts)
     opts = opts or {}
     local m, ns = H.new({ fixture = false, quests = false, setup = defineQuests, register = register,
         player = { level = level }, savedVariables = opts.savedVariables })
-    Mock.boot(m, { "FastesBoooy" })
+    Mock.boot(m, { "AdventureAtlas" })
     H.settle(m)
     return m, ns
 end
@@ -280,7 +280,7 @@ describe("when a jump is worth suggesting", function()
     end)
 
     it("auto mode does not jump at the end of a segment it is ahead of", function()
-        local m, ns = boot(1, { savedVariables = { FastesBoooyDB = { settings = { levelSync = "auto" } } } })
+        local m, ns = boot(1, { savedVariables = { AdventureAtlasDB = { settings = { levelSync = "auto" } } } })
         m:AddQuestToLog(93001)
         m:AddQuestToLog(93002)
         m:AddQuestToLog(93003)
@@ -294,7 +294,7 @@ end)
 
 describe("collect actions of quests the player never took", function()
     it("are void with the objective items of questMeta, or the step's quests", function()
-        local m, ns = boot(1, { savedVariables = { FastesBoooyDB = { settings = { levelSync = "off" } } } })
+        local m, ns = boot(1, { savedVariables = { AdventureAtlasDB = { settings = { levelSync = "off" } } } })
         assert.equal("k1-a1", H.cur(ns))
         E(ns):Forward() -- skip the accept step: neither quest is taken
         H.settle(m)
@@ -319,7 +319,7 @@ end)
 describe("UndoSync", function()
     it("refuses the floor of another route", function()
         local floorRec = { route = "other-route", stepId = "k2-go" }
-        local _, ns = boot(1, { savedVariables = { FastesBoooyCharDB = { syncFloor = floorRec } } })
+        local _, ns = boot(1, { savedVariables = { AdventureAtlasCharDB = { syncFloor = floorRec } } })
         assert.is_false(E(ns):UndoSync())
         assert.equal("other-route", ns.cdb.syncFloor.route, "kept for its route")
     end)

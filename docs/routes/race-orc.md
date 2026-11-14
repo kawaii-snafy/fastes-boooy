@@ -1,8 +1,8 @@
 # Орк: стартовая зона Дуротар и шаги расы
 
-Файлы: [`Segments/Durotar/01_ValleyOfTrials.lua`](../../addons/FastesBoooy_Guides/Segments/Durotar/01_ValleyOfTrials.lua)
-(`dur-01-valley-of-trials`), [`Segments/Durotar/02_Durotar.lua`](../../addons/FastesBoooy_Guides/Segments/Durotar/02_Durotar.lua)
-(`dur-02-durotar` и четыре вставки орков и троллей на общем пути), [`Races/Orc.lua`](../../addons/FastesBoooy_Guides/Races/Orc.lua)
+Файлы: [`Segments/Durotar/01_ValleyOfTrials.lua`](../../addons/AdventureAtlas_Guides/Segments/Durotar/01_ValleyOfTrials.lua)
+(`dur-01-valley-of-trials`), [`Segments/Durotar/02_Durotar.lua`](../../addons/AdventureAtlas_Guides/Segments/Durotar/02_Durotar.lua)
+(`dur-02-durotar` и четыре вставки орков и троллей на общем пути), [`Races/Orc.lua`](../../addons/AdventureAtlas_Guides/Races/Orc.lua)
 (шаги расы на общем пути). Гайды: `orc-hunter`, `orc-mage`, `orc-rogue`, `orc-shaman`, `orc-warlock`, `orc-warrior`.
 Дуротар у орков и троллей общий: отличия троллей — [race-troll.md](race-troll.md). Общий путь с 12-го уровня —
 [shared-path.md](shared-path.md). Числа — вывод валидатора на конец фазы P2 (базовый профиль: без классовых файлов);
@@ -217,7 +217,7 @@
 * Таймер 812 (E.20) и падают ли ядовитые мешочки без взятого 813 (`dur02-rhinag-accept`, `dur02-rhinag`): если да,
   `dur02-korghan-accept` / `dur02-end` можно свернуть в вариант плана.
 * Костёр 96604 (как `ud02-campfire` в Тирисфале).
-* Опыт новых квестов Forever (`/fb xp`): 15 заданий зоны с оценкой опыта (у 96821 на вики 410 против оценки 550).
+* Опыт новых квестов Forever (`/aa xp`): 15 заданий зоны с оценкой опыта (у 96821 на вики 410 против оценки 550).
 * Цена верховой езды у Килдара и выдаётся ли волк вместе с навыком.
 * Русские названия мест в заметках (Колючий Холм, Расселина Тьмы, Громовой хребет) — по клиенту ruRU.
 
@@ -343,7 +343,7 @@
 ## 10. Как перепроверить
 
 ```
-G=addons/FastesBoooy_Guides
+G=addons/AdventureAtlas_Guides
 lua5.1 tools/validate_routes.lua -q --strict --end-level --summary --skip 'Classes/*' \
     --grind-until h-18-stonetalon-ashenvale --route 'orc-*' $G                      # базовые профили
 lua5.1 tools/validate_routes.lua --route orc-warrior --levels --skip 'Classes/*' $G  # уровни у всех id

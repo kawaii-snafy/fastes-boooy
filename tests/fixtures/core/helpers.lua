@@ -6,16 +6,16 @@
 --   H.settle(m)                                      -- run the throttled refresh / tickers
 --   H.cur(ns)                                        -- id of the displayed step
 --
--- Not a route module (the FastesBoooy_* directories next to this file are).
+-- Not a route module (the AdventureAtlas_* directories next to this file are).
 
 local Mock = require("mocks.wow")
 
 local H = {}
 
-H.CORE_TOC = "addons/FastesBoooy/FastesBoooy.toc"
-H.FIXTURE_DIR = "tests/fixtures/core/FastesBoooy_TestRoute"
-H.FIXTURE_TOC = H.FIXTURE_DIR .. "/FastesBoooy_TestRoute.toc"
-H.FIXTURE_NAME = "FastesBoooy_TestRoute"
+H.CORE_TOC = "addons/AdventureAtlas/AdventureAtlas.toc"
+H.FIXTURE_DIR = "tests/fixtures/core/AdventureAtlas_TestRoute"
+H.FIXTURE_TOC = H.FIXTURE_DIR .. "/AdventureAtlas_TestRoute.toc"
+H.FIXTURE_NAME = "AdventureAtlas_TestRoute"
 H.ROUTE_ID = "test-route"
 H.DB_FILE = "tools/data/forever_db.lua"
 
@@ -32,13 +32,13 @@ H.STEP_IDS = {
 H.INDEX = {}
 for i, id in ipairs(H.STEP_IDS) do H.INDEX[id] = i end
 
--- Composed fixture: route "test-composed" (FastesBoooy_TestComposed) = own segments +
--- library segments of FastesBoooy_TestLib (UseSegments) + class inserts (AddInsert).
-H.LIB_DIR = "tests/fixtures/core/FastesBoooy_TestLib"
-H.LIB_NAME = "FastesBoooy_TestLib"
+-- Composed fixture: route "test-composed" (AdventureAtlas_TestComposed) = own segments +
+-- library segments of AdventureAtlas_TestLib (UseSegments) + class inserts (AddInsert).
+H.LIB_DIR = "tests/fixtures/core/AdventureAtlas_TestLib"
+H.LIB_NAME = "AdventureAtlas_TestLib"
 H.LIB_TOC = H.LIB_DIR .. "/" .. H.LIB_NAME .. ".toc"
-H.COMPOSED_DIR = "tests/fixtures/core/FastesBoooy_TestComposed"
-H.COMPOSED_NAME = "FastesBoooy_TestComposed"
+H.COMPOSED_DIR = "tests/fixtures/core/AdventureAtlas_TestComposed"
+H.COMPOSED_NAME = "AdventureAtlas_TestComposed"
 H.COMPOSED_TOC = H.COMPOSED_DIR .. "/" .. H.COMPOSED_NAME .. ".toc"
 H.COMPOSED_ID = "test-composed"
 -- every composed step id in route order (route.steps), with its segment
@@ -62,11 +62,11 @@ for _, e in ipairs(H.COMPOSED_ALL) do
     if e[1] ~= "tc-warrior-only" then H.COMPOSED_IDS[#H.COMPOSED_IDS + 1] = e[1] end
 end
 
--- Mixed fixture: FastesBoooy_TestGuides (the shape of FastesBoooy_Guides) = shared segments per
+-- Mixed fixture: AdventureAtlas_TestGuides (the shape of AdventureAtlas_Guides) = shared segments per
 -- start zone, shared class / race inserts (AddLibraryInsert), a class reward table and three
 -- routes registered from a table. Needs the DB snapshot for its Durotar quests (opts.db = true).
-H.GUIDES_DIR = "tests/fixtures/core/FastesBoooy_TestGuides"
-H.GUIDES_NAME = "FastesBoooy_TestGuides"
+H.GUIDES_DIR = "tests/fixtures/core/AdventureAtlas_TestGuides"
+H.GUIDES_NAME = "AdventureAtlas_TestGuides"
 H.GUIDES_TOC = H.GUIDES_DIR .. "/" .. H.GUIDES_NAME .. ".toc"
 H.GUIDES_ROUTES = { "tg-undead-paladin", "tg-orc-warrior", "tg-troll-mage" } -- registration order
 -- composed step ids per route (every step can match its route: nothing else is composed)
@@ -123,7 +123,7 @@ function H.defineQuests(m)
 end
 
 --- Route / library modules a helper boot loads after the core: { { toc, name }, ... }.
--- opts.modules overrides; opts.guides = the mixed module FastesBoooy_TestGuides; opts.composed =
+-- opts.modules overrides; opts.guides = the mixed module AdventureAtlas_TestGuides; opts.composed =
 -- the library + the composed route; opts.fixture == false = none; default = the test route.
 function H.modules(opts)
     opts = opts or {}
@@ -137,7 +137,7 @@ function H.modules(opts)
 end
 
 local function bootList(opts)
-    local addons = { "FastesBoooy" }
+    local addons = { "AdventureAtlas" }
     for _, mod in ipairs(H.modules(opts)) do addons[#addons + 1] = mod[2] end
     return addons
 end
@@ -145,9 +145,9 @@ end
 --- Create a mock with the core addon (and the test route unless opts.fixture == false) loaded.
 -- opts: locale, player = {...}, savedVariables, db (use the Forever DB snapshot), quests
 -- (define the test route quests, default true), fixture, composed (load the library +
--- composed route instead), guides (load FastesBoooy_TestGuides instead), modules (see H.modules),
+-- composed route instead), guides (load AdventureAtlas_TestGuides instead), modules (see H.modules),
 -- mock = { extra Mock.new options },
--- register = function(api, m) -- registers routes through the public FastesBoooy API after the
+-- register = function(api, m) -- registers routes through the public AdventureAtlas API after the
 -- modules are loaded (before ADDON_LOADED / PLAYER_LOGIN), like a route module would.
 function H.new(opts)
     opts = opts or {}
@@ -162,7 +162,7 @@ function H.new(opts)
     local ns = Mock.loadAddon(m, H.CORE_TOC)
     for _, mod in ipairs(H.modules(opts)) do Mock.loadAddon(m, mod[1], mod[2]) end
     if opts.register then
-        m:_top(function() opts.register(rawget(m.env, "FastesBoooy"), m) end)
+        m:_top(function() opts.register(rawget(m.env, "AdventureAtlas"), m) end)
     end
     return m, ns
 end
@@ -246,7 +246,7 @@ end
 function H.chat(m, from)
     local out = {}
     for i = from or 1, #m.chat do
-        out[#out + 1] = (m.chat[i]:gsub("^|cff33ff99Fastes|r|cffffd100Boooy|r: ", ""))
+        out[#out + 1] = (m.chat[i]:gsub("^|cff33ff99Adventure|r |cffffd100Atlas|r: ", ""))
     end
     return out
 end

@@ -1,6 +1,6 @@
 # Шаман: шаги класса
 
-Файл: [`Classes/Shaman.lua`](../../addons/FastesBoooy_Guides/Classes/Shaman.lua) — 48 вставок, 91 шаг (13
+Файл: [`Classes/Shaman.lua`](../../addons/AdventureAtlas_Guides/Classes/Shaman.lua) — 48 вставок, 91 шаг (13
 необязательных), все с областью `class = "SHAMAN"` и id `sha-…`. Гайды: `orc-shaman`, `troll-shaman`,
 `tauren-shaman`, `skyborne-shaman` («Орк-шаман 1-60» и т. д.). Путь, по которому идут все классы: стартовые зоны —
 [race-orc.md](race-orc.md) (Дуротар, его же проходит тролль: [race-troll.md](race-troll.md)),
@@ -349,7 +349,7 @@ Forever ([classes.md](../dev/research/classes.md) §5.4: «Язык пламен
 ## 9. Как перепроверить
 
 ```
-G=addons/FastesBoooy_Guides
+G=addons/AdventureAtlas_Guides
 luacheck --config .luacheckrc $G/Classes/Shaman.lua tools/overrides/shaman.lua
 lua5.1 tools/validate_routes.lua -q --strict --end-level --summary --baseline docs/dev/handover/baseline.json \
     --route "*-shaman" --skip 'Classes/*' --keep "Classes/Shaman.lua" --own "Classes/Shaman.lua" $G

@@ -1,17 +1,17 @@
 -- tools/lib/route_loader.lua -- load route modules offline (Lua 5.1).
 --
--- A route module is an addon directory (addons/FastesBoooy_<Name>/) whose TOC lists
+-- A route module is an addon directory (addons/AdventureAtlas_<Name>/) whose TOC lists
 -- Route.lua, Data.lua and Segments/*.lua. The files are executed in a SANDBOX whose
--- only global besides the pure Lua libraries is a stub `FastesBoooy` table that
+-- only global besides the pure Lua libraries is a stub `AdventureAtlas` table that
 -- captures RegisterRoute / AddSegment / AddRouteData / AddLibrarySegment /
 -- AddLibraryData / AddLibraryInsert / UseSegments / AddInsert and normalizes them with the real
--- route-format contract (addons/FastesBoooy/Core/Schema.lua) and composes the routes
--- with the real composition code (addons/FastesBoooy/Core/Compose.lua), exactly like
+-- route-format contract (addons/AdventureAtlas/Core/Schema.lua) and composes the routes
+-- with the real composition code (addons/AdventureAtlas/Core/Compose.lua), exactly like
 -- the addon's Registry does (registrations that arrive before their route are queued
 -- and an error is recorded).
 --
--- Dependencies: the FastesBoooy_* addons named by "## Dependencies" / "## RequiredDeps"
--- of the module's TOC (e.g. a shared library module FastesBoooy_<Lib>) are loaded first,
+-- Dependencies: the AdventureAtlas_* addons named by "## Dependencies" / "## RequiredDeps"
+-- of the module's TOC (e.g. a shared library module AdventureAtlas_<Lib>) are loaded first,
 -- recursively, from the same addons directory, each with its own private addon table
 -- -- the load order of the client. Their file names are reported as
 -- "<Dependency>/<file>" and their registrations carry `library = "<Dependency>"`.
@@ -48,11 +48,11 @@
 --   mod.filtered      -- #mod.skipped > 0: a partial load (an anchor or a route may live in a skipped file)
 --   mod.skipSet       -- { [TOC path] = true }: every file that was not loaded (opts.skip and the filter);
 --                        the simulator gives it to Mock.loadAddon so that the client loads the same files
---   mod.declaredLibrary -- the TOC says "## X-FastesBoooy-Module: library"
+--   mod.declaredLibrary -- the TOC says "## X-AdventureAtlas-Module: library"
 --   mod.isLibrary     -- no route, and library segments / inserts / data registered or declared in the TOC
 --                        (a declared library may still be empty: placeholder segment files)
--- A module without the TOC line "## X-FastesBoooy-Module: library" may register shared content AND
--- routes (FastesBoooy_Guides); a declared library may not register routes.
+-- A module without the TOC line "## X-AdventureAtlas-Module: library" may register shared content AND
+-- routes (AdventureAtlas_Guides); a declared library may not register routes.
 
 local Glob = require("lib.glob")
 
@@ -98,16 +98,16 @@ Loader.baseEnv = baseEnv
 
 --- Load the route-format contract (Core/Schema.lua) and the composition code
 -- (Core/Compose.lua) with one shared `ns`, like the addon's TOC does.
--- @param root repository root (contains addons/FastesBoooy/Core/Schema.lua)
+-- @param root repository root (contains addons/AdventureAtlas/Core/Schema.lua)
 -- @return Schema (Schema.Compose = the Compose table), Compose
 function Loader.LoadSchema(root)
-    local core = (root or ".") .. "/addons/FastesBoooy/Core/"
+    local core = (root or ".") .. "/addons/AdventureAtlas/Core/"
     local ns = {}
     local function run(file)
         local chunk, err = loadfile(core .. file)
         if not chunk then error("cannot load " .. file .. ": " .. tostring(err), 0) end
         setfenv(chunk, baseEnv())
-        return chunk("FastesBoooy", ns)
+        return chunk("AdventureAtlas", ns)
     end
     local ret = run("Schema.lua")
     local Schema = type(ret) == "table" and ret or ns.Schema
@@ -159,12 +159,12 @@ function Loader.FindToc(dir)
     return nil
 end
 
---- FastesBoooy_* dependencies named by a parsed TOC (## Dependencies, ## RequiredDeps).
+--- AdventureAtlas_* dependencies named by a parsed TOC (## Dependencies, ## RequiredDeps).
 function Loader.Dependencies(toc)
     local out, seen = {}, {}
     for _, key in ipairs({ "Dependencies", "RequiredDeps" }) do
         for name in tostring(toc and toc.meta[key] or ""):gmatch("[^,%s]+") do
-            if name:match("^FastesBoooy_") and not seen[name] then
+            if name:match("^AdventureAtlas_") and not seen[name] then
                 seen[name] = true
                 out[#out + 1] = name
             end
@@ -177,7 +177,7 @@ local function dirname(path)
     return path:match("^(.*)[/\\][^/\\]+$") or "."
 end
 
---- Execute the module's files (after its FastesBoooy_* dependencies) in a sandbox,
+--- Execute the module's files (after its AdventureAtlas_* dependencies) in a sandbox,
 -- capture the registrations and compose the module's routes.
 -- @param dir module directory
 -- @param opts { schema = Schema (required), skip = { [relpath] = true } (module's own files),
@@ -418,14 +418,14 @@ function Loader.LoadModule(dir, opts)
                         addError("load error: " .. tostring(err), nil, { load = true })
                     else
                         local env = baseEnv()
-                        env.FastesBoooy = api
+                        env.AdventureAtlas = api
                         setfenv(chunk, env)
                         local ok, rerr = pcall(chunk, mname, private)
                         if not ok then addError("runtime error: " .. tostring(rerr), nil, { load = true }) end
                         local base = baseEnv()
                         for k in pairs(env) do
-                            if k ~= "FastesBoooy" and base[k] == nil then
-                                addError(("defines global '%s' (route modules may only call FastesBoooy.*)")
+                            if k ~= "AdventureAtlas" and base[k] == nil then
+                                addError(("defines global '%s' (route modules may only call AdventureAtlas.*)")
                                     :format(tostring(k)))
                             end
                         end
@@ -460,10 +460,10 @@ function Loader.LoadModule(dir, opts)
         local deps = (toc.meta.Dependencies or "") .. "," .. (toc.meta.RequiredDeps or "")
         local hasCore = false
         for name in deps:gmatch("[^,%s]+") do
-            if name == "FastesBoooy" then hasCore = true end
+            if name == "AdventureAtlas" then hasCore = true end
         end
         if not hasCore then
-            addError("## Dependencies must include FastesBoooy", tocFile)
+            addError("## Dependencies must include AdventureAtlas", tocFile)
         end
         currentModule = saved
         return toc, tocFile, tocPath
@@ -478,12 +478,12 @@ function Loader.LoadModule(dir, opts)
         mod.toc = toc
         mod.tocFile = tocFile
         files = toc.files
-        local kind = toc.meta["X-FastesBoooy-Module"]
+        local kind = toc.meta["X-AdventureAtlas-Module"]
         if kind ~= nil then
             if kind == "library" then
                 mod.declaredLibrary = true
             else
-                addError("## X-FastesBoooy-Module must be \"library\" (got \"" .. tostring(kind) .. "\")", tocFile)
+                addError("## X-AdventureAtlas-Module must be \"library\" (got \"" .. tostring(kind) .. "\")", tocFile)
             end
         end
     end
@@ -578,7 +578,7 @@ function Loader.LoadModule(dir, opts)
     mod.isLibrary = #mod.routes == 0 and (#mod.librarySegments > 0 or #mod.libraryInserts > 0 or mod.libraryData
         or mod.declaredLibrary or false)
     if mod.declaredLibrary and #mod.routes > 0 then
-        addError("## X-FastesBoooy-Module: library, but the module registers route(s): a library module only "
+        addError("## X-AdventureAtlas-Module: library, but the module registers route(s): a library module only "
             .. "registers library segments / data", mod.tocFile)
     end
     return mod
@@ -611,13 +611,13 @@ function Loader.UnmatchedFilters(dirs, skip, keep)
     return out
 end
 
---- List route module directories under `addonsDir` (FastesBoooy_* with a TOC), sorted.
+--- List route module directories under `addonsDir` (AdventureAtlas_* with a TOC), sorted.
 function Loader.DiscoverModules(addonsDir)
     local out = {}
     local p = io.popen('ls -1 "' .. addonsDir:gsub('"', '\\"') .. '" 2>/dev/null')
     if not p then return out end
     for name in p:lines() do
-        if name:match("^FastesBoooy_") then
+        if name:match("^AdventureAtlas_") then
             local dir = addonsDir .. "/" .. name
             if Loader.FindToc(dir) then out[#out + 1] = dir end
         end

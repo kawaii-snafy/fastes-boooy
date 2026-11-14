@@ -4,8 +4,8 @@
 --
 --   local Mock = require("mocks.wow")          -- busted: lpath has ./tests/?.lua
 --   local m = Mock.new({ locale = "ruRU", player = { race = "Scourge", class = "PALADIN" } })
---   local ns = Mock.loadAddon(m, "addons/FastesBoooy/FastesBoooy.toc")
---   Mock.boot(m, { "FastesBoooy" })
+--   local ns = Mock.loadAddon(m, "addons/AdventureAtlas/AdventureAtlas.toc")
+--   Mock.boot(m, { "AdventureAtlas" })
 --   m:DefineQuest(363, { title = "Rude Awakening", level = 1 })
 --   m:OpenQuestDetail(363)                      -- fires QUEST_DETAIL; the addon may AcceptQuest()
 --

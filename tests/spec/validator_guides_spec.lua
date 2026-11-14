@@ -1,6 +1,6 @@
 -- Offline tools on a MIXED module: one addon that registers shared segments, shared inserts
--- (FastesBoooy.AddLibraryInsert) and several routes -- the shape of FastesBoooy_Guides; fixture
--- tests/fixtures/core/FastesBoooy_TestGuides. tools/lib/route_loader.lua (the AddLibraryInsert stub,
+-- (AdventureAtlas.AddLibraryInsert) and several routes -- the shape of AdventureAtlas_Guides; fixture
+-- tests/fixtures/core/AdventureAtlas_TestGuides. tools/lib/route_loader.lua (the AddLibraryInsert stub,
 -- mod.libraryInserts, route aliases, opts.replace / opts.skip, error files), gen_route_data
 -- (AddLibraryData covers the shared inserts, no block for a route that owns nothing) and the
 -- validator / simulator command lines on the fixture.
@@ -34,9 +34,9 @@ local function write(path, content)
     return root .. "/" .. path
 end
 
-local TOC = "## Interface: 16001\n## Dependencies: FastesBoooy\n%s\n"
+local TOC = "## Interface: 16001\n## Dependencies: AdventureAtlas\n%s\n"
 -- the plain fixture route (no shared content): its turn-in of 3901 carries a step-level `reward`
-local TEST_ROUTE_DIR = "tests/fixtures/core/FastesBoooy_TestRoute"
+local TEST_ROUTE_DIR = "tests/fixtures/core/AdventureAtlas_TestRoute"
 
 describe("a mixed module (shared segments + shared inserts + routes) in the offline tools", function()
     setup(function()
@@ -115,9 +115,9 @@ describe("a mixed module (shared segments + shared inserts + routes) in the offl
 
         it("opts.replace reads a TOC file from another path (a placeholder zone gets a fixture file)", function()
             local file = write("replace/Mulgore.lua", [[
-if not FastesBoooy.AddLibraryInsert then return end
+if not AdventureAtlas.AddLibraryInsert then return end
 local _, ns = ...
-FastesBoooy.AddLibrarySegment({ id = "tg-mul-01", title = "Camp Narache", zone = "Mulgore", levels = { 1, 3 }, steps = {
+AdventureAtlas.AddLibrarySegment({ id = "tg-mul-01", title = "Camp Narache", zone = "Mulgore", levels = { 1, 3 }, steps = {
     { id = "tg-mul-747", accept = 747, npc = 2980, at = { 1412, 44.9, 77.1 } },
 } })
 ns.startZones = ns.startZones or {}
@@ -138,7 +138,7 @@ ns.startZones.Mulgore = { "tg-mul-01" }
 
             -- mistakes: a key that is no TOC file, a replacement that does not exist
             mod = Loader.LoadModule(H.GUIDES_DIR, { schema = Schema, replace = { ["Segments/Nope.lua"] = file } })
-            assert.same({ "FastesBoooy_TestGuides.toc: replace: Segments/Nope.lua is not a file of the TOC" }, messages(mod))
+            assert.same({ "AdventureAtlas_TestGuides.toc: replace: Segments/Nope.lua is not a file of the TOC" }, messages(mod))
             mod = Loader.LoadModule(H.GUIDES_DIR, { schema = Schema,
                 replace = { ["Races/Troll.lua"] = root .. "/replace/missing.lua" } })
             assert.equal(1, #mod.errors)
@@ -157,36 +157,36 @@ ns.startZones.Mulgore = { "tg-mul-01" }
         end)
 
         it("reports shared-insert errors with the file of the insert; composition errors once per route", function()
-            write("FastesBoooy_TMix/FastesBoooy_TMix.toc", TOC:format("Seg.lua\nIns.lua\nRoute.lua"))
-            write("FastesBoooy_TMix/Seg.lua", [[
-FastesBoooy.AddLibrarySegment({ id = "m-seg", title = "M", steps = {
+            write("AdventureAtlas_TMix/AdventureAtlas_TMix.toc", TOC:format("Seg.lua\nIns.lua\nRoute.lua"))
+            write("AdventureAtlas_TMix/Seg.lua", [[
+AdventureAtlas.AddLibrarySegment({ id = "m-seg", title = "M", steps = {
     { accept = 363 },
     { id = "m-2", turnin = 363 },
 } })
 ]])
-            write("FastesBoooy_TMix/Ins.lua", [[
+            write("AdventureAtlas_TMix/Ins.lua", [[
 -- a positional anchor, twice: one composition error per route
-FastesBoooy.AddLibraryInsert({ after = "m-seg:1", steps = { { id = "m-x", manual = true } } })
-FastesBoooy.AddLibraryInsert({ after = "m-seg:1", steps = { { id = "m-y", manual = true } } })
+AdventureAtlas.AddLibraryInsert({ after = "m-seg:1", steps = { { id = "m-x", manual = true } } })
+AdventureAtlas.AddLibraryInsert({ after = "m-seg:1", steps = { { id = "m-y", manual = true } } })
 -- a step without id: the insert is rejected
-FastesBoooy.AddLibraryInsert({ after = "m-2", steps = { { id = "m-good", manual = true }, { manual = true } } })
+AdventureAtlas.AddLibraryInsert({ after = "m-2", steps = { { id = "m-good", manual = true }, { manual = true } } })
 -- an anchor no route has: no error of the loader (the validator's module checks see `applied`)
-FastesBoooy.AddLibraryInsert({ after = "nowhere", class = "PALADN", steps = { { id = "m-z", manual = true } } })
+AdventureAtlas.AddLibraryInsert({ after = "nowhere", class = "PALADN", steps = { { id = "m-z", manual = true } } })
 -- an empty scope list: rejected as a whole (unscoped it would land in every route)
-FastesBoooy.AddLibraryInsert({ after = "m-2", class = {}, steps = { { id = "m-empty", manual = true } } })
+AdventureAtlas.AddLibraryInsert({ after = "m-2", class = {}, steps = { { id = "m-empty", manual = true } } })
 -- the class reward table: shape errors are reported with the file (the data is merged as given)
-FastesBoooy.AddLibraryData({ rewards = { PALADIN = { [363] = 0 }, Paladin = { [363] = 1 } } })
+AdventureAtlas.AddLibraryData({ rewards = { PALADIN = { [363] = 0 }, Paladin = { [363] = 1 } } })
 ]])
-            write("FastesBoooy_TMix/Route.lua", [[
-FastesBoooy.RegisterRoute({ api = 1, id = "r1", title = "R1", faction = "Horde", races = { "Scourge" },
+            write("AdventureAtlas_TMix/Route.lua", [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "r1", title = "R1", faction = "Horde", races = { "Scourge" },
     classes = { "PALADIN" }, aliases = "r0" })
-FastesBoooy.UseSegments("r1", { "m-seg" })
-FastesBoooy.RegisterRoute({ api = 1, id = "r2", title = "R2", faction = "Horde", races = { "Scourge" },
+AdventureAtlas.UseSegments("r1", { "m-seg" })
+AdventureAtlas.RegisterRoute({ api = 1, id = "r2", title = "R2", faction = "Horde", races = { "Scourge" },
     classes = { "WARRIOR" }, aliases = { "r1", "r0", "r2-old" } })
-FastesBoooy.UseSegments("r2", { "m-seg" })
-FastesBoooy.RegisterRoute({ api = 1, id = "r2-old", title = "R3", faction = "Horde" })
+AdventureAtlas.UseSegments("r2", { "m-seg" })
+AdventureAtlas.RegisterRoute({ api = 1, id = "r2-old", title = "R3", faction = "Horde" })
 ]])
-            local mod = Loader.LoadModule(root .. "/FastesBoooy_TMix", { schema = Schema })
+            local mod = Loader.LoadModule(root .. "/AdventureAtlas_TMix", { schema = Schema })
             local pos = "AddLibraryInsert: anchor 'm-seg:1' is a positional step id: give the anchor step an explicit id"
             assert.same({
                 "Ins.lua: library: insert after 'm-2' step 2: an explicit id is required in a shared insert",
@@ -215,39 +215,39 @@ FastesBoooy.RegisterRoute({ api = 1, id = "r2-old", title = "R3", faction = "Hor
         end)
 
         it("shared inserts of a dependency apply to the routes of the module that uses it", function()
-            write("FastesBoooy_TShLib/FastesBoooy_TShLib.toc",
-                "## Interface: 16001\n## Dependencies: FastesBoooy\n## X-FastesBoooy-Module: library\nLib.lua\n")
-            write("FastesBoooy_TShLib/Lib.lua", [[
-FastesBoooy.AddLibrarySegment({ id = "sl", title = "SL", steps = { { accept = 363 }, { id = "sl-2", turnin = 363 } } })
-FastesBoooy.AddLibraryInsert({ after = "sl:1", steps = { { id = "sl-pos", manual = true } } })
-FastesBoooy.AddLibraryInsert({ before = "sl-2", class = "PALADIN", steps = { { id = "sl-pal", manual = true } } })
+            write("AdventureAtlas_TShLib/AdventureAtlas_TShLib.toc",
+                "## Interface: 16001\n## Dependencies: AdventureAtlas\n## X-AdventureAtlas-Module: library\nLib.lua\n")
+            write("AdventureAtlas_TShLib/Lib.lua", [[
+AdventureAtlas.AddLibrarySegment({ id = "sl", title = "SL", steps = { { accept = 363 }, { id = "sl-2", turnin = 363 } } })
+AdventureAtlas.AddLibraryInsert({ after = "sl:1", steps = { { id = "sl-pos", manual = true } } })
+AdventureAtlas.AddLibraryInsert({ before = "sl-2", class = "PALADIN", steps = { { id = "sl-pal", manual = true } } })
 ]])
-            write("FastesBoooy_TShRoute/FastesBoooy_TShRoute.toc",
-                "## Interface: 16001\n## Dependencies: FastesBoooy, FastesBoooy_TShLib\nRoute.lua\n")
-            write("FastesBoooy_TShRoute/Route.lua", [[
-FastesBoooy.RegisterRoute({ api = 1, id = "sh", title = "SH", faction = "Horde", races = { "Scourge" }, classes = { "PALADIN" } })
-FastesBoooy.UseSegments("sh", { "sl" })
+            write("AdventureAtlas_TShRoute/AdventureAtlas_TShRoute.toc",
+                "## Interface: 16001\n## Dependencies: AdventureAtlas, AdventureAtlas_TShLib\nRoute.lua\n")
+            write("AdventureAtlas_TShRoute/Route.lua", [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "sh", title = "SH", faction = "Horde", races = { "Scourge" }, classes = { "PALADIN" } })
+AdventureAtlas.UseSegments("sh", { "sl" })
 ]])
             -- the library alone: declared, shared inserts and no route
-            local lib = Loader.LoadModule(root .. "/FastesBoooy_TShLib", { schema = Schema })
+            local lib = Loader.LoadModule(root .. "/AdventureAtlas_TShLib", { schema = Schema })
             assert.same({}, lib.errors)
             assert.is_true(lib.isLibrary)
             assert.equal(2, #lib.libraryInserts)
             -- the route module: the dependency's inserts are not its own; errors carry the dependency
-            local mod = Loader.LoadModule(root .. "/FastesBoooy_TShRoute", { schema = Schema })
+            local mod = Loader.LoadModule(root .. "/AdventureAtlas_TShRoute", { schema = Schema })
             assert.same({ "sl:1", "sl-pos", "sl-pal", "sl-2" }, H.ids(mod.routes[1].steps))
             assert.equal(0, #mod.libraryInserts)
             assert.equal(2, #mod.lib.inserts)
             assert.equal(1, #mod.errors)
-            assert.equal("FastesBoooy_TShLib/Lib.lua", mod.errors[1].file)
-            assert.equal("FastesBoooy_TShLib", mod.errors[1].library)
+            assert.equal("AdventureAtlas_TShLib/Lib.lua", mod.errors[1].file)
+            assert.equal("AdventureAtlas_TShLib", mod.errors[1].library)
             assert.matches("^route sh: AddLibraryInsert: anchor 'sl:1' is a positional step id", mod.errors[1].msg)
-            assert.equal("FastesBoooy_TShLib", mod.routes[1].stepById["sl-pal"].library)
+            assert.equal("AdventureAtlas_TShLib", mod.routes[1].stepById["sl-pal"].library)
             -- a module that registers nothing but a shared insert is shared content too
-            write("FastesBoooy_TOnlyIns/FastesBoooy_TOnlyIns.toc", TOC:format("Ins.lua"))
-            write("FastesBoooy_TOnlyIns/Ins.lua",
-                "FastesBoooy.AddLibraryInsert({ after = \"x\", steps = { { id = \"only\", manual = true } } })\n")
-            local only = Loader.LoadModule(root .. "/FastesBoooy_TOnlyIns", { schema = Schema })
+            write("AdventureAtlas_TOnlyIns/AdventureAtlas_TOnlyIns.toc", TOC:format("Ins.lua"))
+            write("AdventureAtlas_TOnlyIns/Ins.lua",
+                "AdventureAtlas.AddLibraryInsert({ after = \"x\", steps = { { id = \"only\", manual = true } } })\n")
+            local only = Loader.LoadModule(root .. "/AdventureAtlas_TOnlyIns", { schema = Schema })
             assert.same({}, only.errors)
             assert.is_true(only.isLibrary)
         end)
@@ -260,7 +260,7 @@ FastesBoooy.UseSegments("sh", { "sl" })
             assert.is_nil(out:find("AddRouteData", 1, true), "Data.lua is listed before Route.lua: no route exists yet")
             local chunk = assert(loadstring(out))
             local captured, calls = nil, 0
-            setfenv(chunk, { FastesBoooy = { AddLibraryData = function(d) captured, calls = d, calls + 1 end } })
+            setfenv(chunk, { AdventureAtlas = { AddLibraryData = function(d) captured, calls = d, calls + 1 end } })
             chunk()
             assert.equal(1, calls)
             -- segment steps
@@ -281,7 +281,7 @@ FastesBoooy.UseSegments("sh", { "sl" })
         it("the committed Data.lua of the fixture is up to date (--check)", function()
             local code, out = run("lua5.1 tools/gen_route_data.lua --no-overrides --check " .. H.GUIDES_DIR)
             assert.equal(0, code, out)
-            assert.matches("FastesBoooy_TestGuides/Data.lua up to date", out)
+            assert.matches("AdventureAtlas_TestGuides/Data.lua up to date", out)
         end)
 
         it("Gen.OwnsSteps: own segment steps or per-route inserts", function()
@@ -319,7 +319,7 @@ FastesBoooy.UseSegments("sh", { "sl" })
         end)
     end)
 
-    -- docs/dev/PLAN.md A.6.5: the class reward table (FastesBoooy.AddLibraryData{ rewards = { CLASS =
+    -- docs/dev/PLAN.md A.6.5: the class reward table (AdventureAtlas.AddLibraryData{ rewards = { CLASS =
     -- { [quest] = index } } }) is exercised end to end. The fixture turns 789 (Durotar) and 3901
     -- (Deathknell) in on shared steps without a `reward`; Classes/*.lua name the choice per class.
     describe("simulate_routes: reward choices from the class reward table", function()
@@ -352,11 +352,11 @@ FastesBoooy.UseSegments("sh", { "sl" })
             p:close()
             local alt = root .. "/" .. name
             os.execute(("mkdir -p '%s/addons'"):format(alt))
-            assert.equal(0, (run(("cp -R '%s/addons/FastesBoooy' '%s/addons/FastesBoooy'"):format(here, alt))))
+            assert.equal(0, (run(("cp -R '%s/addons/AdventureAtlas' '%s/addons/AdventureAtlas'"):format(here, alt))))
             for _, link in ipairs({ "tests", "tools" }) do
                 assert.equal(0, (run(("ln -s '%s/%s' '%s/%s'"):format(here, link, alt, link))))
             end
-            local path = alt .. "/addons/FastesBoooy/Core/Engine.lua"
+            local path = alt .. "/addons/AdventureAtlas/Core/Engine.lua"
             local fh = assert(io.open(path, "rb"))
             local text = fh:read("*a")
             fh:close()
@@ -456,16 +456,16 @@ FastesBoooy.UseSegments("sh", { "sl" })
         end)
 
         it("a module with load errors: exit 1, a message on stderr and NO id on stdout", function()
-            write("FastesBoooy_LrBroken/FastesBoooy_LrBroken.toc", TOC:format("Route.lua\nSegments.lua"))
-            write("FastesBoooy_LrBroken/Route.lua", [[
-FastesBoooy.RegisterRoute({ api = 1, id = "lr-broken", title = "t", faction = "Horde", races = { "Scourge" },
+            write("AdventureAtlas_LrBroken/AdventureAtlas_LrBroken.toc", TOC:format("Route.lua\nSegments.lua"))
+            write("AdventureAtlas_LrBroken/Route.lua", [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "lr-broken", title = "t", faction = "Horde", races = { "Scourge" },
     classes = { "PALADIN" } })
 ]])
-            write("FastesBoooy_LrBroken/Segments.lua", "FastesBoooy.AddSegment('lr-broken', { id = 's', steps = { {\n")
-            local broken = root .. "/FastesBoooy_LrBroken"
+            write("AdventureAtlas_LrBroken/Segments.lua", "AdventureAtlas.AddSegment('lr-broken', { id = 's', steps = { {\n")
+            local broken = root .. "/AdventureAtlas_LrBroken"
             local code, out = run(LIST .. broken)
             assert.equal(1, code, out)
-            assert.matches("%-%-list%-routes: FastesBoooy_LrBroken: %d+ load/schema error%(s%)", out)
+            assert.matches("%-%-list%-routes: AdventureAtlas_LrBroken: %d+ load/schema error%(s%)", out)
             assert.matches("Segments%.lua: ", out)
             assert.matches("did not load: no route list", out)
             -- a good module next to it does not make the list "partly" valid
@@ -474,8 +474,8 @@ FastesBoooy.RegisterRoute({ api = 1, id = "lr-broken", title = "t", faction = "H
             assert.equal("", onlyStdout(LIST .. H.GUIDES_DIR .. " " .. broken))
             assert.equal("", onlyStdout(LIST .. broken))
             -- no TOC at all
-            os.execute(("mkdir -p '%s/FastesBoooy_LrEmpty'"):format(root))
-            code, out = run(LIST .. root .. "/FastesBoooy_LrEmpty")
+            os.execute(("mkdir -p '%s/AdventureAtlas_LrEmpty'"):format(root))
+            code, out = run(LIST .. root .. "/AdventureAtlas_LrEmpty")
             assert.equal(1, code, out)
             assert.matches("no TOC", out)
         end)

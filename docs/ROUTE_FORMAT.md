@@ -1,35 +1,35 @@
 # Формат маршрутов (API v1)
 
-Маршрут — это обычный аддон-модуль, который зависит от ядра `FastesBoooy` и
-регистрирует данные через глобальную таблицу `FastesBoooy`. Контракт формата
-реализован в [`addons/FastesBoooy/Core/Schema.lua`](../addons/FastesBoooy/Core/Schema.lua)
+Маршрут — это обычный аддон-модуль, который зависит от ядра `AdventureAtlas` и
+регистрирует данные через глобальную таблицу `AdventureAtlas`. Контракт формата
+реализован в [`addons/AdventureAtlas/Core/Schema.lua`](../addons/AdventureAtlas/Core/Schema.lua)
 (чистый Lua 5.1, общий для аддона и офлайн-валидатора).
 
 ## Структура модуля
 
 ```
-addons/FastesBoooy_<Name>/
-  FastesBoooy_<Name>.toc   -- ## Interface: 16001, ## Dependencies: FastesBoooy
-  Route.lua                -- FastesBoooy.RegisterRoute{...}
-  Data.lua                 -- (генерируется, make routedata) FastesBoooy.AddRouteData(id, {quests=..., npcs=..., places=...,
-                           --   questMeta=...})
-  Segments/01_*.lua        -- FastesBoooy.AddSegment(id, {...}) — по файлу на сегмент
+addons/AdventureAtlas_<Name>/
+  AdventureAtlas_<Name>.toc  -- ## Interface: 16001, ## Dependencies: AdventureAtlas
+  Route.lua                  -- AdventureAtlas.RegisterRoute{...}
+  Data.lua                   -- (генерируется, make routedata) AdventureAtlas.AddRouteData(id, {quests=..., npcs=..., places=...,
+                             --   questMeta=...})
+  Segments/01_*.lua          -- AdventureAtlas.AddSegment(id, {...}) — по файлу на сегмент
 ```
 
 Файлы грузятся в порядке TOC. `RegisterRoute` должен идти первым.
 
 Маршрут может брать готовые **общие сегменты** (например, общий путь 12-60 модуля
-`FastesBoooy_Guides`, `Segments/Shared/`) и добавлять к ним свои классовые шаги — см. раздел
+`AdventureAtlas_Guides`, `Segments/Shared/`) и добавлять к ним свои классовые шаги — см. раздел
 [«Общие сегменты и вставки»](#общие-сегменты-и-вставки). Один модуль может держать и общие
 сегменты, и общие вставки классов и рас, и сразу много маршрутов (так устроен
-`FastesBoooy_Guides`: 28 маршрутов «раса + класс» из одного набора файлов) — см.
+`AdventureAtlas_Guides`: 28 маршрутов «раса + класс» из одного набора файлов) — см.
 [«Общие вставки»](#общие-вставки-addlibraryinsert) и
 [«Модуль с общим содержимым и маршрутами»](#модуль-с-общим-содержимым-и-маршрутами).
 
 ## Маршрут
 
 ```lua
-FastesBoooy.RegisterRoute({
+AdventureAtlas.RegisterRoute({
     api = 1,                                  -- версия формата (обязательно)
     id = "undead-paladin",                    -- [A-Za-z0-9-_]
     title = { ru = "Нежить-паладин 1-60", en = "Undead Paladin 1-60" },
@@ -49,9 +49,9 @@ FastesBoooy.RegisterRoute({
 раньше (ядро 0.4.0+). Сохранённый прогресс персонажа привязан к id маршрута; алиас переносит
 его на новый id:
 
-* `Registry:Get(id)` (и `/fb route <id>`) находит маршрут и по алиасу, если маршрута с таким
+* `Registry:Get(id)` (и `/aa route <id>`) находит маршрут и по алиасу, если маршрута с таким
   id нет — **id маршрута всегда важнее алиаса**;
-* при активации маршрута (`Engine:ActivateRoute`) записи `FastesBoooyCharDB.route`,
+* при активации маршрута (`Engine:ActivateRoute`) записи `AdventureAtlasCharDB.route`,
   `cursorHintRoute`, `syncFloor.route` и `syncDismissed.route`, которые хранят алиас,
   переписываются на новый id: выбранный вручную маршрут, отметка самого дальнего шага и порог
   синхронизации переживают переименование. Отметки шагов (`manual`, `skipped`) хранятся по id
@@ -62,17 +62,17 @@ FastesBoooy.RegisterRoute({
   которого кто-то объявил алиасом («its id is an alias of route …» — старый модуль ещё
   установлен: его маршрут остаётся собой).
 
-Пример: `undead-paladin` модуля `FastesBoooy_Guides` с `aliases = "horde-undead-paladin"`
+Пример: `undead-paladin` модуля `AdventureAtlas_Guides` с `aliases = "horde-undead-paladin"`
 подхватывает прогресс персонажа, начатый в прежнем модуле `FastesBoooy_UndeadPaladin` (так же
 `skyborne-druid` ← `horde-skyborne-druid`).
 
 ## Сегмент
 
-Собственный сегмент маршрута (`AddSegment`; у маршрутов `FastesBoooy_Guides` своих сегментов
+Собственный сегмент маршрута (`AddSegment`; у маршрутов `AdventureAtlas_Guides` своих сегментов
 нет — тот же формат там регистрирует `AddLibrarySegment`, см. «Общие сегменты и вставки»):
 
 ```lua
-FastesBoooy.AddSegment("my-route", {
+AdventureAtlas.AddSegment("my-route", {
     id = "ud-01-deathknell",
     title = { ru = "1-6 Мертвый Звон", en = "1-6 Deathknell" },
     zone = "Tirisfal Glades",
@@ -88,7 +88,7 @@ FastesBoooy.AddSegment("my-route", {
 * **синхронизация по уровню**: сегмент «перерос по уровню», если `уровень игрока ≥ levels[2] +
   запас` (настройка `levelSyncMargin`, по умолчанию 2); если перерос сегмент текущего шага,
   игроку предлагается первый более поздний сегмент, который он не перерос (баннер окна шагов,
-  `/fb sync`, режим `"auto"` — сразу). Слишком низкий `levels[2]` будет уводить игроков вперёд
+  `/aa sync`, режим `"auto"` — сразу). Слишком низкий `levels[2]` будет уводить игроков вперёд
   раньше времени, слишком высокий — держать их в серой зоне;
 * **серые квесты** (`skipGray`): `accept` серого для игрока квеста пропускается, только если
   игрок перерос сегмент этого шага (`уровень > levels[2]`) — серые квесты, которые маршрут берёт
@@ -121,7 +121,7 @@ FastesBoooy.AddSegment("my-route", {
 | `sethearth` | `"Brill"` | точка привязки камня изменилась на этом шаге или уже равна месту (имя сравнивается и на языке клиента — через `places` из `Data.lua`) |
 | `hearth` | `"Brill"` | игрок в радиусе 80 ярдов от `at` после телепорта |
 | `vendor` | `true` | окно торговца было открыто и закрыто (с `npc` — окно этого NPC, как у `train`) |
-| `manual` | `true` | только вручную (кнопка «Вперёд», `/fb next`) |
+| `manual` | `true` | только вручную (кнопка «Вперёд», `/aa next`) |
 
 `accept/turnin/complete/abandon/collect/level` — **stateful**: их состояние читается
 из игры в любой момент. Остальные — **transient**: наблюдаемы только пока шаг
@@ -140,7 +140,7 @@ NPC окна (`UnitGUID("npc")`) есть в `npc` шага; шаг без `npc`
   ранние `sethearth`/`train`/`fp`; шаг `{ level = 10, accept = Q }` — опорный, когда
   выполнены оба действия), `abandon` (выполнен «пусто» для никогда не взятого квеста),
   `collect` (предметы могут оказаться в сумках случайно), `bg`-шаги;
-* сохранённая отметка самого дальнего достигнутого шага (`FastesBoooyCharDB.cursorHint`).
+* сохранённая отметка самого дальнего достигнутого шага (`AdventureAtlasCharDB.cursorHint`).
 
 **Шаг-визит перед квестом того же NPC.** Разговор с NPC сначала открывает его диалог (gossip), и
 автоматика сразу берёт квесты маршрута из шагов `[курсор, курсор + lookahead]` (настройка
@@ -172,9 +172,9 @@ stateful-действия, которые иначе вернули бы кур�
 маршрут сам ведёт квест — его поток не меняется), квест считается **оставленным**:
 
 * невыполненные не-`bg` шаги, все действия которых — `complete`/`turnin` этого квеста,
-  отмечаются пропущенными (`FastesBoooyCharDB.skipped`; какие отметки поставил гайд —
-  в `FastesBoooyCharDB.gaveUp`), в чат пишется «Задание «X» брошено — его шаги пропущены
-  (/fb prev — вернуться)»;
+  отмечаются пропущенными (`AdventureAtlasCharDB.skipped`; какие отметки поставил гайд —
+  в `AdventureAtlasCharDB.gaveUp`), в чат пишется «Задание «X» брошено — его шаги пропущены
+  (/aa prev — вернуться)»;
 * шаг, где квест смешан с другими действиями (`turnin = { Q, R }`, `turnin = Q, accept = R`),
   не отмечается: действия брошенного квеста в нём считаются выполненными, шаг ждёт только
   остальных;
@@ -184,11 +184,11 @@ stateful-действия, которые иначе вернули бы кур�
   `accept`, ничего не меняет — до `accept` маршрут ещё дойдёт.
 
 Так же оставленным считается квест, более поздний шаг с `complete`/`turnin` которого отмечен
-(кнопкой «Вперёд», `/fb skip` / `/fb next`) или является `optional`-шагом позади границы перемотки. Вернуть
+(кнопкой «Вперёд», `/aa skip` / `/aa next`) или является `optional`-шагом позади границы перемотки. Вернуть
 брошенный квест: взять его снова вручную (отметки гайда снимаются, шаги квеста снова нужны;
 если квест взят для следующего `accept` того же квеста в окне автоматики, прежний экземпляр
-остаётся пропущенным), `/fb prev` сразу после сообщения (или «Назад» на один из отмеченных
-шагов) — курсор вернётся к его `accept`; `/fb reset` забывает и эти отметки. Отметки живут в
+остаётся пропущенным), `/aa prev` сразу после сообщения (или «Назад» на один из отмеченных
+шагов) — курсор вернётся к его `accept`; `/aa reset` забывает и эти отметки. Отметки живут в
 SavedVariables, как пропуск шага: холодный старт с пустыми SavedVariables восстанавливает
 курсор по состоянию игры (квеста нет в журнале → его `accept`).
 
@@ -270,7 +270,7 @@ steps = {
 **модуле-библиотеке** (сегменты без классовых шагов), а модуль маршрута класса берёт из неё
 нужные сегменты и вставляет свои шаги (тренер, классовые квесты) рядом с шагами библиотеки.
 Это аддитивное расширение API v1: маршрут без `UseSegments`/`AddInsert` работает как раньше.
-Реализация — [`Core/Compose.lua`](../addons/FastesBoooy/Core/Compose.lua) (чистый Lua, общий
+Реализация — [`Core/Compose.lua`](../addons/AdventureAtlas/Core/Compose.lua) (чистый Lua, общий
 для аддона и всех инструментов: валидатор, симулятор и `gen_route_data` собирают маршрут тем
 же кодом, что и игра).
 
@@ -279,18 +279,18 @@ steps = {
 (Id квестов, NPC и шагов в примерах этого раздела условные; рабочий пример — фикстура в
 конце раздела. Отдельный модуль-библиотека нужен, когда общее содержимое делят несколько
 аддонов; так был устроен общий путь 22-60 до версии 0.4 (`FastesBoooy_Horde`). Модуль гайдов
-`FastesBoooy_Guides` регистрирует общее содержимое и маршруты сам — см. [«Модуль с общим
+`AdventureAtlas_Guides` регистрирует общее содержимое и маршруты сам — см. [«Модуль с общим
 содержимым и маршрутами»](#модуль-с-общим-содержимым-и-маршрутами).)
 
 ```
-addons/FastesBoooy_MyLib/
-  FastesBoooy_MyLib.toc    -- ## Interface: 16001, ## Dependencies: FastesBoooy,
-                           -- ## X-FastesBoooy-Module: library
-  Data.lua                 -- (генерируется, make routedata) FastesBoooy.AddLibraryData({...})
-  Segments/01_h-22-hillsbrad.lua  -- FastesBoooy.AddLibrarySegment({...}) — по файлу на сегмент
+addons/AdventureAtlas_MyLib/
+  AdventureAtlas_MyLib.toc  -- ## Interface: 16001, ## Dependencies: AdventureAtlas,
+                            -- ## X-AdventureAtlas-Module: library
+  Data.lua                  -- (генерируется, make routedata) AdventureAtlas.AddLibraryData({...})
+  Segments/01_h-22-hillsbrad.lua  -- AdventureAtlas.AddLibrarySegment({...}) — по файлу на сегмент
 ```
 
-`## X-FastesBoooy-Module: library` в TOC объявляет модуль библиотекой явно. Инструменты и так
+`## X-AdventureAtlas-Module: library` в TOC объявляет модуль библиотекой явно. Инструменты и так
 узнают библиотеку по регистрациям (`AddLibrarySegment`/`AddLibraryData` без маршрута), но
 заготовке, у которой сегментов ещё нет (файлы сегментов — только комментарии), объявление
 нужно: `gen_route_data` пишет для неё пустой `AddLibraryData({ quests = {}, npcs = {} })`,
@@ -299,7 +299,7 @@ addons/FastesBoooy_MyLib/
 свободные метаданные TOC).
 
 ```lua
-FastesBoooy.AddLibrarySegment({
+AdventureAtlas.AddLibrarySegment({
     id = "h-22-barrens",                      -- id общих сегментов пути: префикс "h-" (соглашение)
     title = { ru = "22-24 Степи", en = "22-24 The Barrens" },
     zone = "The Barrens",
@@ -328,7 +328,7 @@ FastesBoooy.AddLibrarySegment({
   шагов обязательны по смыслу (якоря вставок и `cursorHint` ссылаются на id); по соглашению
   шаги общего пути начинаются с `h` (`h-22-…`, `h15-…`), шаги стартовых зон — с префикса зоны
   (`ud01-…`, `sd02-…`). Без id шаг получает `<сегмент>:<n>`, как в `AddSegment`.
-* `Data.lua` библиотеки генерирует `make routedata`: `FastesBoooy.AddLibraryData({ quests = {...},
+* `Data.lua` библиотеки генерирует `make routedata`: `AdventureAtlas.AddLibraryData({ quests = {...},
   npcs = {...}, objects = ..., items = ..., places = {...}, questMeta = {...} })` — всё, на что
   ссылаются её сегменты. Эти данные подмешиваются в данные каждого маршрута, который использует
   сегменты библиотеки (значения самого маршрута важнее; `questMeta` — по квесту).
@@ -336,30 +336,30 @@ FastesBoooy.AddLibrarySegment({
 ### Маршрут, который использует библиотеку
 
 ```
-## Dependencies: FastesBoooy, FastesBoooy_MyLib     -- в TOC модуля маршрута: библиотека грузится раньше
+## Dependencies: AdventureAtlas, AdventureAtlas_MyLib  -- в TOC модуля маршрута: библиотека грузится раньше
 ```
 
 ```lua
 -- Route.lua
-FastesBoooy.RegisterRoute({ api = 1, id = "my-route", levels = { 1, 60 }, ... })
-FastesBoooy.UseSegments("my-route", {
+AdventureAtlas.RegisterRoute({ api = 1, id = "my-route", levels = { 1, 60 }, ... })
+AdventureAtlas.UseSegments("my-route", {
     "h-22-barrens", "h-24-stonetalon", "pal-26-class", "h-27-hillsbrad", ...
 })
 
 -- Inserts.lua (классовые шаги)
-FastesBoooy.AddInsert("my-route", {
+AdventureAtlas.AddInsert("my-route", {
     after = "h-24-turnin-1062",               -- id шага маршрута: своего или библиотечного
     steps = {
         { id = "pal-24-train", train = true, class = "PALADIN", npc = 3352, at = { 1454, 45.1, 76.9 } },
     },
 })
-FastesBoooy.AddInsert("my-route", {
+AdventureAtlas.AddInsert("my-route", {
     before = "h-27-accept-498",
     steps = { { id = "pal-26-level", level = 26 } },
 })
 ```
 
-**`FastesBoooy.UseSegments(routeId, { id, ... })`** — добавляет сегменты библиотеки после
+**`AdventureAtlas.UseSegments(routeId, { id, ... })`** — добавляет сегменты библиотеки после
 собственных сегментов маршрута, в порядке списка (несколько вызовов — в порядке вызовов).
 Вызывать **после** `RegisterRoute` (иначе — ошибка регистрации, вызов ставится в очередь, как
 `AddSegment` до маршрута). Элемент списка может назвать и **собственный** сегмент маршрута
@@ -368,7 +368,7 @@ FastesBoooy.AddInsert("my-route", {
 общими сегментами. Неизвестный id — ошибка регистрации (один раз): «unknown library segment
 … list it in ## Dependencies»; id, указанный дважды, — ошибка (второй пропускается).
 
-**`FastesBoooy.AddInsert(routeId, { after = "<stepId>" | before = "<stepId>", steps = {...} })`** —
+**`AdventureAtlas.AddInsert(routeId, { after = "<stepId>" | before = "<stepId>", steps = {...} })`** —
 вставляет шаги маршрута сразу после / перед шагом-якорем:
 
 * якорь — любой шаг маршрута после сборки: собственный, библиотечный или шаг другой вставки;
@@ -411,7 +411,7 @@ AddInsert:          after "tl-363-364" { tc-train-1 };  after "tl-363-364" { tc-
                     tl-brill:      ..., tl-sethearth
 ```
 
-(Это фикстура тестов `tests/fixtures/core/FastesBoooy_TestLib` + `FastesBoooy_TestComposed`.)
+(Это фикстура тестов `tests/fixtures/core/AdventureAtlas_TestLib` + `AdventureAtlas_TestComposed`.)
 
 ### Общие вставки: `AddLibraryInsert`
 
@@ -420,7 +420,7 @@ AddInsert:          after "tl-363-364" { tc-train-1 };  after "tl-363-364" { tc-
 раз** как общие вставки (ядро 0.4.0+) и попадают во все маршруты, которым подходят:
 
 ```lua
-FastesBoooy.AddLibraryInsert({
+AdventureAtlas.AddLibraryInsert({
     after = "h15-xroads-fp",       -- или before = "<stepId>": ровно одно из двух
     class = "WARRIOR",             -- область: токен или список токенов класса (необязательно)
     race = { "Orc", "Troll" },     -- область: raceFile или список (необязательно)
@@ -472,7 +472,7 @@ FastesBoooy.AddLibraryInsert({
     Ядру это не нужно (правило 9 и так не пускает вставку в другие маршруты); валидатор требует
     этого (`ERROR insert-scope-wider-than-anchor`), чтобы намерение автора было записано.
 
-Ошибки (в игре — `Registry.errors` с префиксом `library:`, их печатает `/fb routes`; в
+Ошибки (в игре — `Registry.errors` с префиксом `library:`, их печатает `/aa routes`; в
 инструментах — `schema` с именем файла):
 
 | Ситуация | Когда сообщается |
@@ -489,7 +489,7 @@ FastesBoooy.AddLibraryInsert({
 не виден ни в одном собранном маршруте — поэтому такие ошибки ищет валидатор, обходя **шаблоны**
 (общие сегменты и вставки), а не собранные маршруты.
 
-Рабочий пример — фикстура `tests/fixtures/core/FastesBoooy_TestGuides`: область по классу и по
+Рабочий пример — фикстура `tests/fixtures/core/AdventureAtlas_TestGuides`: область по классу и по
 расе, вставка на шаг другой вставки, вставка на якорь с фильтром.
 
 ### Таблица наград по классам
@@ -498,7 +498,7 @@ FastesBoooy.AddLibraryInsert({
 `reward`. Выбор по классу — отдельный вид данных (ядро 0.4.0+), по одному вызову в файле класса:
 
 ```lua
-FastesBoooy.AddLibraryData({ rewards = { DRUID = { [92461] = 1, [92463] = 3 } } })
+AdventureAtlas.AddLibraryData({ rewards = { DRUID = { [92461] = 1, [92463] = 3 } } })
 ```
 
 * `Engine:GetRewardChoice(questID)`: сначала `reward` шага маршрута (шаг, который сдаёт квест, иначе
@@ -522,9 +522,9 @@ FastesBoooy.AddLibraryData({ rewards = { DRUID = { [92461] = 1, [92463] = 3 } } 
 данные и любое число маршрутов. Так устроен модуль гайдов:
 
 ```
-addons/FastesBoooy_Guides/
-  FastesBoooy_Guides.toc     -- ## Dependencies: FastesBoooy; БЕЗ ## X-FastesBoooy-Module: library
-  Data.lua                   -- (генерируется) один вызов FastesBoooy.AddLibraryData({...})
+addons/AdventureAtlas_Guides/
+  AdventureAtlas_Guides.toc  -- ## Dependencies: AdventureAtlas; БЕЗ ## X-AdventureAtlas-Module: library
+  Data.lua                   -- (генерируется) один вызов AdventureAtlas.AddLibraryData({...})
   Segments/<Зона>/NN_*.lua   -- AddLibrarySegment: стартовые зоны рас и общий путь
   Classes/<Class>.lua        -- AddLibraryInsert с областью класса + таблица наград класса
   Races/<Race>.lua           -- AddLibraryInsert с областью расы
@@ -537,10 +537,10 @@ addons/FastesBoooy_Guides/
   сегменты уже зарегистрированными (иначе — «unknown shared segment … is its file listed in the
   TOC before Route.lua?»).
 * Маршруты такого модуля **ничем не владеют**: нет `AddSegment`, `AddInsert`, `AddRouteData`.
-  Объявление `## X-FastesBoooy-Module: library` не ставится (объявленная библиотека не может
+  Объявление `## X-AdventureAtlas-Module: library` не ставится (объявленная библиотека не может
   регистрировать маршруты).
 * **Строка-страж.** Каждый файл, кроме `Data.lua`, начинается с
-  `if not FastesBoooy.AddLibraryInsert then return end` — см. «Версия ядра».
+  `if not AdventureAtlas.AddLibraryInsert then return end` — см. «Версия ядра».
 * Все файлы модуля делят приватную таблицу `local _, ns = ...` (в клиенте и в инструментах): через
   неё файлы сегментов могут передать `Route.lua`, какие стартовые зоны готовы.
 * Инструменты: модуль проверяется как набор маршрутов, а его шаблоны — один раз (запись
@@ -567,7 +567,7 @@ addons/FastesBoooy_Guides/
 ### Версия ядра
 
 Формат маршрутов остаётся `api = 1`: все расширения аддитивные. Уровень возможностей ядра виден
-в `FastesBoooy.API_MINOR` (у ядра 0.1.x поля нет); `/fb status` показывает версию ядра и
+в `AdventureAtlas.API_MINOR` (у ядра 0.1.x поля нет); `/aa status` показывает версию ядра и
 `route API 1.<API_MINOR>`.
 
 | `API_MINOR` | Ядро | Что появилось для модулей маршрутов |
@@ -580,11 +580,11 @@ addons/FastesBoooy_Guides/
 Со старым ядром модуль, вызвавший функцию, которой в нём нет, получил бы ошибку Lua
 (`attempt to call field 'UseSegments' (a nil value)`). Два способа этого избежать:
 
-**Строка-страж в каждом файле** (так делает `FastesBoooy_Guides`): первая строка каждого файла
+**Строка-страж в каждом файле** (так делает `AdventureAtlas_Guides`): первая строка каждого файла
 модуля, кроме `Data.lua` (в нём только `AddLibraryData`, который есть с 0.2.0):
 
 ```lua
-if not FastesBoooy.AddLibraryInsert then return end
+if not AdventureAtlas.AddLibraryInsert then return end
 ```
 
 Со старым ядром модуль тогда не регистрирует ничего, ошибок Lua нет, а ядро показывает свою
@@ -594,19 +594,19 @@ if not FastesBoooy.AddLibraryInsert then return end
 
 ```lua
 -- Data.lua (библиотека) / Route.lua (маршрут): первая строка модуля
-if (FastesBoooy.API_MINOR or 0) < 1 then
-    print("FastesBoooy_MyLib: обновите аддон FastesBoooy (нужно ядро 0.2.0+) / update the FastesBoooy core (0.2.0+)")
+if (AdventureAtlas.API_MINOR or 0) < 1 then
+    print("AdventureAtlas_MyLib: обновите аддон AdventureAtlas (нужно ядро 0.2.0+) / update the AdventureAtlas core (0.2.0+)")
     return
 end
 ```
 
 (`return` прекращает только этот файл; остальные файлы модуля тогда тоже должны проверять
-`FastesBoooy.UseSegments` / `FastesBoooy.AddLibrarySegment` перед вызовом или полагаться на то,
+`AdventureAtlas.UseSegments` / `AdventureAtlas.AddLibrarySegment` перед вызовом или полагаться на то,
 что без зарегистрированного маршрута их вызовы ничего не ломают.)
 
-Если вместе с `FastesBoooy_Guides` остались установлены прежние модули (`FastesBoooy_Horde`,
-`FastesBoooy_UndeadPaladin`, `FastesBoooy_SkyborneDruid`), ядро 0.4.0 один раз за сессию пишет
-в чат, что их папки нужно удалить: их гайды вошли в `FastesBoooy_Guides`.
+Если включены папки аддона под прежним именем (`FastesBoooy`, `FastesBoooy_Guides`, а с версии 0.3 —
+`FastesBoooy_Horde`, `FastesBoooy_UndeadPaladin`, `FastesBoooy_SkyborneDruid`), ядро (0.5.0+) один раз за
+сессию пишет в чат, что их нужно удалить: их заменил Adventure Atlas.
 
 ### `questMeta` в `Data.lua`
 
@@ -643,7 +643,7 @@ end
   покрывает общие сегменты **и общие вставки**; маршрут, который ничем не владеет, блока
   `AddRouteData` не получает.
 * Валидатор, симулятор и `gen_route_data` читают `## Dependencies` / `## RequiredDeps` TOC
-  модуля и загружают модули `FastesBoooy_*` из того же каталога раньше него (в песочнице, как
+  модуля и загружают модули `AdventureAtlas_*` из того же каталога раньше него (в песочнице, как
   клиент), затем собирают маршрут кодом `Core/Compose.lua`. Сообщения валидатора о шагах
   модуля-зависимости помечены `[library <модуль>]` (файл — `<модуль>/Segments/…`) и
   выводятся один раз на маршрут; ошибки загрузки самой библиотеки — один раз за запуск.
@@ -653,7 +653,7 @@ end
   (`--skip` / `--keep`) и отвечать только за свои (`--own`) — [tools/README.md](../tools/README.md),
   раздел 5.
 * luacheck проверяет модули-библиотеки тем же std, что и модули маршрутов (только API
-  `FastesBoooy.*`).
+  `AdventureAtlas.*`).
 * **Часть библиотеки из стартового состояния** (сегменты пишутся параллельно): валидатор и
   симулятор с `--harness <каталог библиотеки> --segments h-a,h-b --profile race=…,class=…,faction=…
   --state <состояние.json> [--write-state <конец.json>]` собирают синтетический маршрут

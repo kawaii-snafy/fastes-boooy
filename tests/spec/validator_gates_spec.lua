@@ -254,19 +254,19 @@ describe("validator gates", function()
         end)
 
         describe("ok-unused", function()
-            local TOC = "## Interface: 16001\n## Dependencies: FastesBoooy\n%s\n"
+            local TOC = "## Interface: 16001\n## Dependencies: AdventureAtlas\n%s\n"
 
             it("a listed code that fires in none of the validated routes; only on a full run", function()
-                write("FastesBoooy_OkOwn/FastesBoooy_OkOwn.toc", TOC:format("Extra.lua\nRoute.lua"))
-                write("FastesBoooy_OkOwn/Extra.lua", "-- registers nothing\n")
-                write("FastesBoooy_OkOwn/Route.lua", [[
-FastesBoooy.RegisterRoute({ api = 1, id = "ok-own", title = "R", faction = "Horde", races = { "Scourge" },
+                write("AdventureAtlas_OkOwn/AdventureAtlas_OkOwn.toc", TOC:format("Extra.lua\nRoute.lua"))
+                write("AdventureAtlas_OkOwn/Extra.lua", "-- registers nothing\n")
+                write("AdventureAtlas_OkOwn/Route.lua", [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "ok-own", title = "R", faction = "Horde", races = { "Scourge" },
     classes = { "PALADIN" } })
-FastesBoooy.AddSegment("ok-own", { id = "ok-seg", title = "S", ok = "segment-level", steps = {
+AdventureAtlas.AddSegment("ok-own", { id = "ok-seg", title = "S", ok = "segment-level", steps = {
     { id = "ok-a", accept = 363, npc = 1568, at = { 1420, 30.2, 71.7 }, ok = { "at-far", "quest-carried" } },
 } })
 ]])
-                local dir = root .. "/FastesBoooy_OkOwn"
+                local dir = root .. "/AdventureAtlas_OkOwn"
                 local code, out = run(VALIDATE .. dir)
                 assert.equal(0, code, out)
                 -- quest-carried fires (accepted); at-far and segment-level do not
@@ -292,31 +292,31 @@ FastesBoooy.AddSegment("ok-own", { id = "ok-seg", title = "S", ok = "segment-lev
             end)
 
             it("a shared step is unused only when no route containing it reports the code", function()
-                write("FastesBoooy_OkShared/FastesBoooy_OkShared.toc", TOC:format("Seg.lua\nRoute.lua"))
-                write("FastesBoooy_OkShared/Seg.lua", [[
-FastesBoooy.AddLibrarySegment({ id = "os-seg", title = "S", steps = {
+                write("AdventureAtlas_OkShared/AdventureAtlas_OkShared.toc", TOC:format("Seg.lua\nRoute.lua"))
+                write("AdventureAtlas_OkShared/Seg.lua", [[
+AdventureAtlas.AddLibrarySegment({ id = "os-seg", title = "S", steps = {
     -- a pet trainer: fine for the hunter (INFO train-service), a WARN for the warrior
     { id = "os-pet", train = true, npc = 3620, ok = "train-not-class-trainer" },
     { id = "os-stale", manual = true, note = "x", ok = "at-far" },
 } })
 ]])
-                write("FastesBoooy_OkShared/Route.lua", [[
-FastesBoooy.RegisterRoute({ api = 1, id = "os-hunter", title = "H", faction = "Horde", races = { "Orc" }, classes = { "HUNTER" } })
-FastesBoooy.UseSegments("os-hunter", { "os-seg" })
-FastesBoooy.RegisterRoute({ api = 1, id = "os-warrior", title = "W", faction = "Horde", races = { "Orc" }, classes = { "WARRIOR" } })
-FastesBoooy.UseSegments("os-warrior", { "os-seg" })
+                write("AdventureAtlas_OkShared/Route.lua", [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "os-hunter", title = "H", faction = "Horde", races = { "Orc" }, classes = { "HUNTER" } })
+AdventureAtlas.UseSegments("os-hunter", { "os-seg" })
+AdventureAtlas.RegisterRoute({ api = 1, id = "os-warrior", title = "W", faction = "Horde", races = { "Orc" }, classes = { "WARRIOR" } })
+AdventureAtlas.UseSegments("os-warrior", { "os-seg" })
 ]])
-                local dir = root .. "/FastesBoooy_OkShared"
+                local dir = root .. "/AdventureAtlas_OkShared"
                 local code, out = run(VALIDATE .. "-v " .. dir)
                 assert.equal(0, code, out)
                 -- reported once, in the module's entry
                 local _, n = out:gsub("%[ok%-unused%]", "")
                 assert.equal(1, n)
-                assert.matches("== shared content of module FastesBoooy_OkShared.-\n  WARN  %[library FastesBoooy_OkShared%] "
+                assert.matches("== shared content of module AdventureAtlas_OkShared.-\n  WARN  %[library AdventureAtlas_OkShared%] "
                     .. "os%-seg#2 id=os%-stale %(Seg.lua%) %[ok%-unused%] ok lists 'at%-far', but none of the 2 validated "
                     .. "route%(s%)", out)
                 assert.is_nil(out:find("ok lists 'train-not-class-trainer'", 1, true))
-                assert.matches("\n  ok    %[library FastesBoooy_OkShared%] os%-seg#1 id=os%-pet %(Seg.lua%) "
+                assert.matches("\n  ok    %[library AdventureAtlas_OkShared%] os%-seg#1 id=os%-pet %(Seg.lua%) "
                     .. "%[train%-not%-class%-trainer%]", out)
                 assert.matches("validate_routes: 1 module%(s%), 0 error%(s%), 1 warning%(s%), 1 accepted", out)
             end)
@@ -324,31 +324,33 @@ FastesBoooy.UseSegments("os-warrior", { "os-seg" })
     end)
 
     describe("--strict and --own", function()
-        local TOC = "## Interface: 16001\n## Dependencies: FastesBoooy\nSegments\\Zone.lua\nClasses\\Paladin.lua\n"
+        local TOC = "## Interface: 16001\n## Dependencies: AdventureAtlas\nSegments\\Zone.lua\nClasses\\Paladin.lua\n"
             .. "Classes\\Warrior.lua\nRoute.lua\n"
         local dir
 
         setup(function()
-            dir = root .. "/FastesBoooy_Own"
-            write("FastesBoooy_Own/FastesBoooy_Own.toc", TOC)
-            write("FastesBoooy_Own/Segments/Zone.lua", [[
-FastesBoooy.AddLibrarySegment({ id = "own-seg", title = "S", steps = {
+            dir = root .. "/AdventureAtlas_Own"
+            write("AdventureAtlas_Own/AdventureAtlas_Own.toc", TOC)
+            write("AdventureAtlas_Own/Segments/Zone.lua", [[
+AdventureAtlas.AddLibrarySegment({ id = "own-seg", title = "S", steps = {
     { id = "own-363", accept = 363, npc = 1568, at = { 1420, 30.2, 71.7 } },
     { id = "own-363-in", turnin = 363, npc = 1569, at = { 1420, 30.8, 66.2 } },
 } })
 ]])
             -- one WARN in each class file: a train step without npc
-            write("FastesBoooy_Own/Classes/Paladin.lua", [[
-FastesBoooy.AddLibraryInsert({ after = "own-363", class = "PALADIN", steps = { { id = "own-pal", train = true } } })
+            write("AdventureAtlas_Own/Classes/Paladin.lua", [[
+AdventureAtlas.AddLibraryInsert({ after = "own-363", class = "PALADIN", steps = { { id = "own-pal", train = true } } })
 ]])
-            write("FastesBoooy_Own/Classes/Warrior.lua", [[
-FastesBoooy.AddLibraryInsert({ after = "own-363", class = "WARRIOR", steps = { { id = "own-war", train = true } } })
+            write("AdventureAtlas_Own/Classes/Warrior.lua", [[
+AdventureAtlas.AddLibraryInsert({ after = "own-363", class = "WARRIOR", steps = { { id = "own-war", train = true } } })
 ]])
-            write("FastesBoooy_Own/Route.lua", [[
-FastesBoooy.RegisterRoute({ api = 1, id = "own-paladin", title = "P", faction = "Horde", races = { "Scourge" }, classes = { "PALADIN" } })
-FastesBoooy.UseSegments("own-paladin", { "own-seg" })
-FastesBoooy.RegisterRoute({ api = 1, id = "own-warrior", title = "W", faction = "Horde", races = { "Scourge" }, classes = { "WARRIOR" } })
-FastesBoooy.UseSegments("own-warrior", { "own-seg" })
+            write("AdventureAtlas_Own/Route.lua", [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "own-paladin", title = "P", faction = "Horde", races = { "Scourge" },
+    classes = { "PALADIN" } })
+AdventureAtlas.UseSegments("own-paladin", { "own-seg" })
+AdventureAtlas.RegisterRoute({ api = 1, id = "own-warrior", title = "W", faction = "Horde", races = { "Scourge" },
+    classes = { "WARRIOR" } })
+AdventureAtlas.UseSegments("own-warrior", { "own-seg" })
 ]])
         end)
 
@@ -367,7 +369,7 @@ FastesBoooy.UseSegments("own-warrior", { "own-seg" })
             assert.matches("own%-paladin %[Scourge PALADIN Horde%]: 0 error%(s%), 1 warning%(s%), %d+ info %(1 of the "
                 .. "warnings foreign%)", out)
             assert.matches("own%-warrior %[Scourge WARRIOR Horde%]: 0 error%(s%), 1 warning%(s%), %d+ info\n", out)
-            assert.matches("\nforeign warnings: 1 %(report them in the hand%-over%)\n  WARN  %[library FastesBoooy_Own%] "
+            assert.matches("\nforeign warnings: 1 %(report them in the hand%-over%)\n  WARN  %[library AdventureAtlas_Own%] "
                 .. "own%-seg#1 id=own%-pal %(Classes/Paladin.lua%) %[train%-no%-npc%]", out)
             assert.matches("2 warning%(s%) %(1 of them foreign%) %(strict%)", out)
             -- a file without warnings of its own: the run passes, both are foreign
@@ -381,12 +383,12 @@ FastesBoooy.UseSegments("own-warrior", { "own-seg" })
 
         it("the foreign block names the route of a message that has no step: one line per route", function()
             -- both routes plan level 9 and end far below: WARN route-level, a message of Route.lua
-            write("FastesBoooy_OwnLv/FastesBoooy_OwnLv.toc", TOC)
+            write("AdventureAtlas_OwnLv/AdventureAtlas_OwnLv.toc", TOC)
             for _, f in ipairs({ "Segments/Zone.lua", "Classes/Paladin.lua", "Classes/Warrior.lua" }) do
-                write("FastesBoooy_OwnLv/" .. f, readAll(dir .. "/" .. f))
+                write("AdventureAtlas_OwnLv/" .. f, readAll(dir .. "/" .. f))
             end
-            write("FastesBoooy_OwnLv/Route.lua", (readAll(dir .. "/Route.lua"):gsub("classes = ", "levels = { 1, 9 }, classes = ")))
-            local code, out = run(VALIDATE .. "-q --strict --own 'Segments/*' " .. root .. "/FastesBoooy_OwnLv")
+            write("AdventureAtlas_OwnLv/Route.lua", (readAll(dir .. "/Route.lua"):gsub("classes = ", "levels = { 1, 9 }, classes = ")))
+            local code, out = run(VALIDATE .. "-q --strict --own 'Segments/*' " .. root .. "/AdventureAtlas_OwnLv")
             assert.equal(0, code, out)
             assert.matches("\nforeign warnings: 4 %(report them in the hand%-over%)\n", out)
             assert.matches("\n  WARN  route own%-paladin %(Route.lua%) %[route%-level%] route ends at simulated level [%d.]+; "
@@ -412,28 +414,29 @@ FastesBoooy.UseSegments("own-warrior", { "own-seg" })
         end)
 
         it("errors always count, in any file", function()
-            write("FastesBoooy_OwnErr/FastesBoooy_OwnErr.toc", "## Interface: 16001\n## Dependencies: FastesBoooy\nA.lua\nRoute.lua\n")
-            write("FastesBoooy_OwnErr/A.lua", [[
-FastesBoooy.AddLibrarySegment({ id = "oe-seg", title = "S", steps = { { id = "oe-1", turnin = 363 } } })
+            write("AdventureAtlas_OwnErr/AdventureAtlas_OwnErr.toc",
+                "## Interface: 16001\n## Dependencies: AdventureAtlas\nA.lua\nRoute.lua\n")
+            write("AdventureAtlas_OwnErr/A.lua", [[
+AdventureAtlas.AddLibrarySegment({ id = "oe-seg", title = "S", steps = { { id = "oe-1", turnin = 363 } } })
 ]])
-            write("FastesBoooy_OwnErr/Route.lua", [[
-FastesBoooy.RegisterRoute({ api = 1, id = "oe", title = "P", faction = "Horde", races = { "Scourge" }, classes = { "PALADIN" } })
-FastesBoooy.UseSegments("oe", { "oe-seg" })
+            write("AdventureAtlas_OwnErr/Route.lua", [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "oe", title = "P", faction = "Horde", races = { "Scourge" }, classes = { "PALADIN" } })
+AdventureAtlas.UseSegments("oe", { "oe-seg" })
 ]])
-            local code, out = run(VALIDATE .. "-q --strict --own Route.lua " .. root .. "/FastesBoooy_OwnErr")
+            local code, out = run(VALIDATE .. "-q --strict --own Route.lua " .. root .. "/AdventureAtlas_OwnErr")
             assert.equal(1, code, out)
             assert.matches("oe %[Scourge PALADIN Horde%]: 1 error%(s%)", out)
         end)
 
         it("accepted warnings do not fail --strict", function()
-            write("FastesBoooy_Acc/FastesBoooy_Acc.toc", "## Interface: 16001\n## Dependencies: FastesBoooy\nRoute.lua\n")
-            write("FastesBoooy_Acc/Route.lua", [[
-FastesBoooy.RegisterRoute({ api = 1, id = "acc", title = "P", faction = "Horde", races = { "Scourge" }, classes = { "PALADIN" } })
-FastesBoooy.AddSegment("acc", { id = "acc-seg", title = "S", steps = {
+            write("AdventureAtlas_Acc/AdventureAtlas_Acc.toc", "## Interface: 16001\n## Dependencies: AdventureAtlas\nRoute.lua\n")
+            write("AdventureAtlas_Acc/Route.lua", [[
+AdventureAtlas.RegisterRoute({ api = 1, id = "acc", title = "P", faction = "Horde", races = { "Scourge" }, classes = { "PALADIN" } })
+AdventureAtlas.AddSegment("acc", { id = "acc-seg", title = "S", steps = {
     { id = "acc-1", train = true, ok = "train-no-npc" }, -- CONFIRM: trainer id unknown
 } })
 ]])
-            local code, out = run(VALIDATE .. "-q --strict " .. root .. "/FastesBoooy_Acc")
+            local code, out = run(VALIDATE .. "-q --strict " .. root .. "/AdventureAtlas_Acc")
             assert.equal(0, code, out)
             assert.matches("acc %[Scourge PALADIN Horde%]: 0 error%(s%), 0 warning%(s%), 1 accepted, 0 info", out)
             assert.matches("validate_routes: 1 module%(s%), 0 error%(s%), 0 warning%(s%), 1 accepted %(strict%)", out)
@@ -476,7 +479,7 @@ FastesBoooy.AddSegment("acc", { id = "acc-seg", title = "S", steps = {
         end)
 
         it("--end-level in a harness run: the planned end level of the last segment", function()
-            local LIB = FX .. "validator/FastesBoooy_FxHarnessLib"
+            local LIB = FX .. "validator/AdventureAtlas_FxHarnessLib"
             local args = "-q --harness " .. LIB .. " --profile race=Scourge,class=PALADIN "
                 .. "--state " .. FX .. "validator/harness_state_6.json "
             local code, out = run(VALIDATE .. args .. "--end-level --segments fh-deathknell")
@@ -488,7 +491,7 @@ FastesBoooy.AddSegment("acc", { id = "acc-seg", title = "S", steps = {
         end)
 
         it("--grind-until / --max-grind-until: the kills up to the end of a segment against a budget", function()
-            local TR = FX .. "core/FastesBoooy_TestRoute"
+            local TR = FX .. "core/AdventureAtlas_TestRoute"
             local res = V.ValidateModule(TR, { db = db, schema = schema, grindUntil = "tr-01" })
             assert.same({ segment = "tr-01", kills = 2, killsWorst = 2 }, res.results[1].summary.grindUntil)
             res = V.ValidateModule(TR, { db = db, schema = schema, maxGrindUntil = { segment = "tr-02", kills = 2, worst = 2 } })
@@ -515,7 +518,7 @@ FastesBoooy.AddSegment("acc", { id = "acc-seg", title = "S", steps = {
         end)
 
         it("--grind-until with a segment id no validated route has is refused (exit 2), nothing is written", function()
-            local TR, TG = FX .. "core/FastesBoooy_TestRoute", FX .. "core/FastesBoooy_TestGuides"
+            local TR, TG = FX .. "core/AdventureAtlas_TestRoute", FX .. "core/AdventureAtlas_TestGuides"
             local file = root .. "/baseline_typo.json"
             local code, out = run(VALIDATE .. "-q --summary --grind-until tr-1 --write-baseline " .. file .. " " .. TR)
             assert.equal(2, code, out)
@@ -534,8 +537,8 @@ FastesBoooy.AddSegment("acc", { id = "acc-seg", title = "S", steps = {
         end)
 
         it("--summary: one TSV line per route after the normal output", function()
-            local code, out = run(VALIDATE .. "-q --summary --grind-until tr-01 " .. FX .. "core/FastesBoooy_TestRoute "
-                .. FX .. "core/FastesBoooy_TestGuides")
+            local code, out = run(VALIDATE .. "-q --summary --grind-until tr-01 " .. FX .. "core/AdventureAtlas_TestRoute "
+                .. FX .. "core/AdventureAtlas_TestGuides")
             assert.equal(0, code, out)
             local lines = {}
             for line in out:gmatch("[^\n]+") do
@@ -550,14 +553,14 @@ FastesBoooy.AddSegment("acc", { id = "acc-seg", title = "S", steps = {
             -- they come after the last normal line; the module entry has no line
             assert.matches("validate_routes: 2 module%(s%).-\ntest%-route\t", out)
             -- columns 4-6: own unaccepted warnings, accepted, foreign
-            code, out = run(VALIDATE .. "-q --summary --own Route.lua " .. FX .. "core/FastesBoooy_TestRoute")
+            code, out = run(VALIDATE .. "-q --summary --own Route.lua " .. FX .. "core/AdventureAtlas_TestRoute")
             assert.equal(0, code, out)
             assert.matches("\ntest%-route\tScourge PALADIN Horde\t0\t1\t0\t5\t", out)
         end)
 
         it("--write-baseline / --baseline: per race the maximum of its routes; more kills are an ERROR", function()
             local file = root .. "/baseline.json"
-            local TR, TG = FX .. "core/FastesBoooy_TestRoute", FX .. "core/FastesBoooy_TestGuides"
+            local TR, TG = FX .. "core/AdventureAtlas_TestRoute", FX .. "core/AdventureAtlas_TestGuides"
             local code, out = run(VALIDATE .. "-q --grind-until tr-01 --write-baseline " .. file .. " " .. TR .. " " .. TG)
             assert.equal(0, code, out)
             local data = json.decode(readAll(file))
@@ -593,7 +596,7 @@ FastesBoooy.AddSegment("acc", { id = "acc-seg", title = "S", steps = {
 
         it("the criteria work in a harness run too", function()
             local file = root .. "/harness_baseline.json"
-            local args = "-q --harness " .. FX .. "validator/FastesBoooy_FxHarnessLib --profile race=Scourge,class=PALADIN "
+            local args = "-q --harness " .. FX .. "validator/AdventureAtlas_FxHarnessLib --profile race=Scourge,class=PALADIN "
                 .. "--state " .. FX .. "validator/harness_state_6.json "
             local code, out = run(VALIDATE .. args .. "--summary --grind-until fh-deathknell --write-baseline " .. file)
             assert.equal(0, code, out)
@@ -608,7 +611,7 @@ FastesBoooy.AddSegment("acc", { id = "acc-seg", title = "S", steps = {
 
     describe("--levels", function()
         it("prints the level before every step with an explicit id, normal and worst case", function()
-            local code, out = run(VALIDATE .. "-q --levels --route tg-orc-warrior " .. FX .. "core/FastesBoooy_TestGuides")
+            local code, out = run(VALIDATE .. "-q --levels --route tg-orc-warrior " .. FX .. "core/AdventureAtlas_TestGuides")
             assert.equal(0, code, out)
             local lines = {}
             for line in out:gmatch("[^\n]+") do
@@ -626,7 +629,7 @@ FastesBoooy.AddSegment("acc", { id = "acc-seg", title = "S", steps = {
         end)
 
         it("needs exactly one route; steps with positional ids are left out; the worst case differs", function()
-            local code, out = run(VALIDATE .. "-q --levels " .. FX .. "core/FastesBoooy_TestGuides")
+            local code, out = run(VALIDATE .. "-q --levels " .. FX .. "core/AdventureAtlas_TestGuides")
             assert.equal(2, code)
             assert.matches("%-%-levels needs exactly one route x profile, this run has 3", out)
             local r = full({
@@ -817,14 +820,14 @@ FastesBoooy.AddSegment("acc", { id = "acc-seg", title = "S", steps = {
             assert.equal(376, with(r, "quest-carried")[1].quest)
             assert.is_nil(kill.shared)
             -- a shared step: m.shared next to m.library, and the file of the template
-            local res = V.ValidateModule(FX .. "core/FastesBoooy_TestGuides", { db = db, schema = schema,
+            local res = V.ValidateModule(FX .. "core/AdventureAtlas_TestGuides", { db = db, schema = schema,
                 route = "tg-orc-warrior" })
             local found
             for _, m in ipairs(res.results[2].messages) do
                 if m.stepId == "tg-dur-boars" then found = m end
             end
             assert.is_true(found.shared)
-            assert.equal("FastesBoooy_TestGuides", found.library)
+            assert.equal("AdventureAtlas_TestGuides", found.library)
             assert.equal("Segments/Durotar/01_ValleyOfTrials.lua", found.file)
             assert.equal(788, found.quest)
         end)

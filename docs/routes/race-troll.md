@@ -3,7 +3,7 @@
 Тролли проходят **тот же Дуротар, что и орки**: сегменты `dur-01-valley-of-trials` и `dur-02-durotar`, те же якоря,
 гейты и четыре вставки зоны на общем пути (Кор'ган, Назгрел, Ринаг, отложенные сдачи в Колючем Холме). Всё это
 описано в [race-orc.md](race-orc.md); здесь — только отличия. Файл расы:
-[`Races/Troll.lua`](../../addons/FastesBoooy_Guides/Races/Troll.lua). Гайды: `troll-hunter`, `troll-mage`,
+[`Races/Troll.lua`](../../addons/AdventureAtlas_Guides/Races/Troll.lua). Гайды: `troll-hunter`, `troll-mage`,
 `troll-priest`, `troll-rogue`, `troll-shaman`, `troll-warlock`, `troll-warrior`. Уровни у каждого id — в
 `docs/dev/handover/levels-troll.tsv` (базовый профиль `troll-priest`).
 
@@ -60,7 +60,7 @@
 ## 6. Как перепроверить
 
 ```
-G=addons/FastesBoooy_Guides
+G=addons/AdventureAtlas_Guides
 lua5.1 tools/validate_routes.lua -q --strict --end-level --summary --skip 'Classes/*' \
     --grind-until h-18-stonetalon-ashenvale --route 'troll-*' $G
 lua5.1 tools/validate_routes.lua --route troll-priest --levels --skip 'Classes/*' $G

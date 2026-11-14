@@ -1,6 +1,6 @@
 # Маг: шаги класса
 
-Файл: [`Classes/Mage.lua`](../../addons/FastesBoooy_Guides/Classes/Mage.lua) — 30 вставок, 37 шагов (5 необязательных),
+Файл: [`Classes/Mage.lua`](../../addons/AdventureAtlas_Guides/Classes/Mage.lua) — 30 вставок, 37 шагов (5 необязательных),
 все с областью `class = "MAGE"` и id `mag-…`. Поправок к БД нет (`tools/overrides/mage.lua` не нужен). Гайды:
 `orc-mage`, `troll-mage`, `undead-mage`. Путь, по которому идут все классы: стартовые зоны —
 [race-orc.md](race-orc.md) (Дуротар, у тролля то же), [race-undead.md](race-undead.md), с 12-го —
@@ -210,7 +210,7 @@
 ## 9. Как перепроверить
 
 ```
-G=addons/FastesBoooy_Guides
+G=addons/AdventureAtlas_Guides
 luacheck --config .luacheckrc $G/Classes/Mage.lua
 lua5.1 tools/validate_routes.lua -q --strict --end-level --summary \
     --baseline docs/dev/handover/baseline.json --route "*-mage" \

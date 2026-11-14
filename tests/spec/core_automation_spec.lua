@@ -482,8 +482,8 @@ describe("quest XP log", function()
         assert.is_true(m:IsQuestCompleted(363))
         assert.equal(40, ns.db.xpLog[363])
         assert.equal(1, ns.db.xpLogLevel[363])
-        assert.equal(40, m.env.FastesBoooyDB.xpLog[363], "saved account-wide")
-        assert.equal(40, m:ExportSavedVariables().FastesBoooyDB.xpLog[363])
+        assert.equal(40, m.env.AdventureAtlasDB.xpLog[363], "saved account-wide")
+        assert.equal(40, m:ExportSavedVariables().AdventureAtlasDB.xpLog[363])
     end)
 
     it("uses the dialog reward XP when the event reports none, and keeps the maximum", function()
@@ -514,7 +514,7 @@ end)
 
 -- Reward choices of quests turned in on SHARED steps differ per class; a shared step carries no
 -- `reward`, so each class file gives its choices as route data:
--- FastesBoooy.AddLibraryData({ rewards = { CLASS = { [questID] = index } } }) (Engine:GetRewardChoice).
+-- AdventureAtlas.AddLibraryData({ rewards = { CLASS = { [questID] = index } } }) (Engine:GetRewardChoice).
 describe("automation: class reward table (route data `rewards`)", function()
     local gm, gns
 
@@ -583,7 +583,7 @@ describe("automation: class reward table (route data `rewards`)", function()
         -- That holds while the route is not composed (every file of a module is loaded before login).
         -- Library data that arrives later only fills what the composed route does not have yet, as
         -- for every data kind: the class table already in use stays.
-        gm.env.FastesBoooy.AddLibraryData({ rewards = { PALADIN = { [363] = 2, [364] = 1 }, MAGE = { [363] = 1 } } })
+        gm.env.AdventureAtlas.AddLibraryData({ rewards = { PALADIN = { [363] = 2, [364] = 1 }, MAGE = { [363] = 1 } } })
         local route = gns.Registry:Get("rw") -- (recomposed: the library changed)
         assert.equal(route, E:GetRoute())
         assert.same({ [363] = 1 }, route.data.rewards.MAGE, "a new class key is merged")
