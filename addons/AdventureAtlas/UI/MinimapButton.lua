@@ -21,7 +21,7 @@ local MB = {}
 ns.MinimapButton = MB
 
 local RIM_OFFSET = 5      -- distance of the button center outside the minimap edge
-local DEFAULT_RADIUS = 80 -- half the width of the default minimap, until it has a size
+local DEFAULT_RADIUS = 70 -- half the width of the default minimap (140), until it has a size
 
 local button
 
@@ -75,8 +75,9 @@ local function onUpdateDrag()
 end
 
 local function showTooltip(self)
-    UI.ShowTooltip(self, L.UI_TITLE, { L.UI_MINIMAP_TT_LEFT, L.UI_MINIMAP_TT_RIGHT, L.UI_MINIMAP_TT_DRAG },
-        "ANCHOR_LEFT")
+    local lines = { L.UI_MINIMAP_TT_LEFT, L.UI_MINIMAP_TT_RIGHT }
+    if not UI.Settings().locked then lines[#lines + 1] = L.UI_MINIMAP_TT_DRAG end
+    UI.ShowTooltip(self, L.UI_TITLE, lines, "ANCHOR_LEFT")
 end
 
 function MB:Create()
@@ -116,9 +117,10 @@ function MB:Create()
         b:SetScript("OnUpdate", onUpdateDrag)
         UI.HideTooltip()
     end)
-    button:SetScript("OnDragStop", function(b)
-        b:SetScript("OnUpdate", nil)
-    end)
+    local function stopDrag(b) b:SetScript("OnUpdate", nil) end
+    button:SetScript("OnDragStop", stopDrag)
+    -- a hidden frame gets no OnDragStop (Alt+Z, a cinematic in the middle of a drag): end it here
+    button:SetScript("OnHide", stopDrag)
     button:SetScript("OnEnter", showTooltip)
     button:SetScript("OnLeave", UI.HideTooltip)
 

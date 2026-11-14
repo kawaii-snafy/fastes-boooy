@@ -180,14 +180,14 @@ describe("locales", function()
         end
         -- keys built at run time (UI/Options.lua)
         for _, k in ipairs({ "automation", "autoAccept", "autoTurnin", "autoGossip", "arrow", "blizzWaypoint",
-            "locked", "hideInCombat", "debug", "lookahead", "shownNext", "frameScale", "arrowScale", "autoDelay",
+            "minimapButton", "locked", "hideInCombat", "debug", "lookahead", "shownNext", "frameScale", "arrowScale", "autoDelay",
             "autoDelayJitter" }) do
             for _, key in ipairs({ "UI_OPT_" .. k, "UI_OPT_" .. k .. "_TT" }) do
                 if L[key] == nil then missing[#missing + 1] = key end
             end
         end
-        for _, k in ipairs({ "show", "lock", "next", "reset", "routes", "route", "config", "delay", "status", "xp",
-            "debug" }) do
+        for _, k in ipairs({ "atlas", "minimap", "show", "lock", "resetpos", "next", "sync", "reset", "routes", "route",
+            "config", "delay", "status", "xp", "debug" }) do
             if L["UI_HELP_" .. k] == nil then missing[#missing + 1] = "UI_HELP_" .. k end
         end
         assert.same({}, missing)

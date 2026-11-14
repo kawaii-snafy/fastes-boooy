@@ -630,23 +630,24 @@ function Options:Build()
         y = y - 10
     end
 
-    -- left column bottom: action buttons
+    -- left column bottom: action buttons, two per row (the column stays inside the settings canvas)
+    local BW = 150
     local resetBtn = UI.CreateButton(panel, L.UI_OPT_RESET, L.UI_OPT_RESET_TT,
-        function() Options:ConfirmReset() end, 180, 22)
+        function() Options:ConfirmReset() end, BW, 22)
     resetBtn:SetPoint("TOPLEFT", panel, "TOPLEFT", x, y - 4)
     local toggleBtn = UI.CreateButton(panel, L.UI_OPT_TOGGLE_FRAME, nil, function()
         UI.SetGuideHidden(not UI.IsGuideHidden())
-    end, 180, 22)
-    toggleBtn:SetPoint("TOPLEFT", resetBtn, "BOTTOMLEFT", 0, -4)
+    end, BW, 22)
+    toggleBtn:SetPoint("LEFT", resetBtn, "RIGHT", 6, 0)
     local xpBtn = UI.CreateButton(panel, L.UI_OPT_EXPORT_XP, L.UI_OPT_EXPORT_XP_TT,
-        function() Options:ShowXPExport() end, 180, 22)
-    xpBtn:SetPoint("TOPLEFT", toggleBtn, "BOTTOMLEFT", 0, -4)
+        function() Options:ShowXPExport() end, BW, 22)
+    xpBtn:SetPoint("TOPLEFT", resetBtn, "BOTTOMLEFT", 0, -4)
     local posBtn = UI.CreateButton(panel, L.UI_OPT_RESET_POS, L.UI_OPT_RESET_POS_TT,
-        function() if UI.ResetPositions() then out(L.UI_POS_RESET) end end, 180, 22)
-    posBtn:SetPoint("TOPLEFT", xpBtn, "BOTTOMLEFT", 0, -4)
+        function() if UI.ResetPositions() then out(L.UI_POS_RESET) end end, BW, 22)
+    posBtn:SetPoint("LEFT", xpBtn, "RIGHT", 6, 0)
     local atlasBtn = UI.CreateButton(panel, L.UI_OPT_OPEN_ATLAS, nil,
-        function() if ns.Atlas then ns.Atlas:Open() end end, 180, 22)
-    atlasBtn:SetPoint("TOPLEFT", posBtn, "BOTTOMLEFT", 0, -4)
+        function() if ns.Atlas then ns.Atlas:Open() end end, BW, 22)
+    atlasBtn:SetPoint("TOPLEFT", xpBtn, "BOTTOMLEFT", 0, -4)
 
     -- right column: sliders, level sync, then routes
     local rx, ry = 330, -72

@@ -191,8 +191,9 @@ function UI.MakeMovable(frame, key, topAnchored)
     frame:SetScript("OnHide", stopDrag)
 end
 
---- Put the guide window and the arrow back to their default positions (the "hidden" flag of
--- the guide is kept). Listeners of SETTINGS_CHANGED re-apply the positions.
+--- Put every frame of ns.DEFAULTS.db.frames (the guide window, the arrow, the atlas) back to its
+-- default position; other saved keys (the guide's "hidden" flag, the atlas tab) are kept.
+-- Listeners of SETTINGS_CHANGED("frames") re-apply the positions.
 function UI.ResetPositions()
     local frames = ns.db and ns.db.frames
     local defaults = ns.DEFAULTS and ns.DEFAULTS.db and ns.DEFAULTS.db.frames

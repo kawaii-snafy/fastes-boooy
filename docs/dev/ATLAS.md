@@ -84,4 +84,3 @@ leveling guide stay.
 * Data sources for bosses, loot and professions (the DB snapshot has quests, NPCs, zones and items referenced by
   quests; not loot tables or recipes).
 * How the knowledge base is replenished (data files in the repository; maybe an in-game notes layer).
-* The minimap button without external libraries (LibDBIcon is not bundled today).
